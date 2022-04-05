@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Box, Button, Container, Flex } from "theme-ui";
 import { Icon } from "./Icon";
-import { ThusdLogo } from "./ThusdLogo";
+import { GenericIcon } from "./GenericIcon";
 import { Link } from "./Link";
 
 const logoHeight = "32px";
@@ -35,7 +35,7 @@ export const SideNav: React.FC = () => {
         >
           <Icon name="times" size="2x" />
         </Button>
-        <ThusdLogo height={logoHeight} p={2} />
+        <GenericIcon imgSrc="./threshold-usd-icon.svg" height={logoHeight} p={2} />
         <Box as="nav" sx={{ m: 3, mt: 1, p: 0 }} onClick={() => setIsVisible(false)}>
           <Link to="/">Dashboard</Link>
           <Link to="/risky-troves">Risky Troves</Link>
