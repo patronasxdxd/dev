@@ -10,7 +10,6 @@ import { useLiquity } from "./hooks/LiquityContext";
 import { TransactionMonitor } from "./components/Transaction";
 import { Nav } from "./components/Nav";
 import { SideBar } from "./components/SideBar";
-// import { Social } from "./components/Social";
 import { HamburgerMenu } from "./components/HamburgerMenu";
 import { Header } from "./components/Header";
 
