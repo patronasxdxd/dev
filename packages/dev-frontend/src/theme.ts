@@ -26,6 +26,7 @@ const colors = {
 
   menu: "#939393",
   text: "#293147",
+  heading: "#6A7793",
   background: "white",
   muted: "#eaebed"
 };
@@ -93,8 +94,7 @@ const cardGapY = [3, 3, 4];
 const card: ThemeUIStyleObject = {
   position: "relative",
   mt: cardGapY,
-  border: 1,
-  boxShadow: [1, null, 2]
+  boxShadow: [1, null, 1]
 };
 
 const infoCard: ThemeUIStyleObject = {
@@ -144,6 +144,12 @@ const modalOverlay: ThemeUIStyleObject = {
   left: 0,
   top: 0,
   height: "100vh"
+};
+
+const columns: ThemeUIStyleObject = {
+  display: "flex",
+  flexWrap: "wrap",
+  justifyItems: "center"
 };
 
 const headerGradient: ThemeUIStyleObject = {
@@ -283,7 +289,21 @@ const theme: Theme = {
     info: {
       ...infoCard,
 
-      display: ["none", "block"]
+      display: "block"
+    },
+
+    mainCards: {
+      ...card,
+
+      color: "heading",
+      fontWeight: "medium",
+
+
+      py: "2.3em",
+      px: "1em",
+      backgroundColor: "background",
+      borderRadius: "12px",
+      display: "block"
     },
 
     infoPopup: {
@@ -309,7 +329,7 @@ const theme: Theme = {
       boxShadow: 2,
 
       fontSize: 1,
-      color: "text",
+      color: "heading",
       fontWeight: "body",
       zIndex: 1
     }
@@ -385,7 +405,7 @@ const theme: Theme = {
 
       position: "fixed",
       height: "100%",
-      width: "19em",
+      width: [0, "15em", "19em"],
       top: 0,
       zIndex: 0,
       borderRight: 1,
@@ -417,27 +437,46 @@ const theme: Theme = {
       display: "flex",
       alignItems: "center",
       width: "100%",
-      maxWidth: ["728px","1540px"],
+      maxWidth: ["728px","1640px"],
       mx: ["auto"],
-      mt: "80px",
+      mt: ["100px", "100px", "80px"],
       mb: ["40px", "40px"],
-      pl: ["","20em"],
-      px: ["20px",]
+      pl: [0, "17.5em", "22em"],
+      px: ["1.5em",]
     },
 
     columns: {
-      display: "flex",
-      flexWrap: "wrap",
-      justifyItems: "center"
+      ...columns
+    },
+
+    pageColumns: {
+      ...columns,
+      maxWidth: "1100px"      
     },
 
     left: {
       pr: cardGapX,
-      width: ["100%", "100%", "58%"]
+      width: ["100%", "50%", "33%"]
+    },
+
+    middle: {
+      pr: cardGapX,
+      width: ["100%", "50%", "33%"]
     },
 
     right: {
-      width: ["100%", "100%", "42%"]
+      pr: cardGapX,
+      width: ["100%", "100%", "33%"]
+    },
+
+    firstHalf: {
+      pr: cardGapX,
+      width: ["100%", "100%", "50%"]
+    },
+
+    secondHalf: {
+      pr: cardGapX,
+      width: ["100%", "100%", "50%"]
     },
 
     actions: {
@@ -485,14 +524,16 @@ const theme: Theme = {
     },
 
     sidenav: {
-      display: ["flex", "none"],
-      flexDirection: "column",
-      p: 0,
-      m: 0,
-      borderColor: "muted",
-      mr: "25vw",
+      display: "flex",
+      mt: "5em",
+      pt: "1em",
       height: "100%",
-      ...headerGradient
+      width: "17em",
+      position: "absolute",
+      borderLeft: 1,
+      borderColor: "border",
+      bg: "white",
+      right: 0,
     },
 
     badge: {
