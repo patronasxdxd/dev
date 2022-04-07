@@ -152,10 +152,6 @@ const columns: ThemeUIStyleObject = {
   justifyItems: "center"
 };
 
-const headerGradient: ThemeUIStyleObject = {
-  background: `linear-gradient(90deg, ${colors.background}, ${colors.muted})`
-};
-
 const theme: Theme = {
   breakpoints: ["45em", "80em", "140em"],
 
@@ -211,11 +207,7 @@ const theme: Theme = {
 
       bg: "primary",
       borderColor: "primary",
-
-      ":enabled:hover": {
-        bg: "secondary",
-        borderColor: "secondary"
-      }
+      borderRadius: "12px"
     },
 
     outline: {
@@ -299,8 +291,7 @@ const theme: Theme = {
       fontWeight: "medium",
 
 
-      py: "2.3em",
-      px: "1em",
+      p: "1.5em",
       backgroundColor: "background",
       borderRadius: "12px",
       display: "block"
@@ -379,8 +370,21 @@ const theme: Theme = {
       borderRadius: ".4em"
     },
 
+    balanceRow: {
+      color: "text",
+      justifyContent: "start",
+      alignItems: "center",
+      backgroundColor: "#F6F7FA",
+      gap: "0.8em",
+
+      px: "1.1em",
+      py: "0.5em",
+      border: 1,
+      borderColor: "border",
+      borderRadius: 12,
+    },
+
     header: {
-      
       display: "flex",
       justifyContent: "space-between",
       alignItems: "stretch",

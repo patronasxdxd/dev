@@ -8,24 +8,24 @@ type InfoDataProps = {
   name: React.ReactNode;
   tooltip?: React.ReactNode;
   imgSrc: string
-  logoHeight?: string | number;
 };
 
-export const InfoData: React.FC<InfoDataProps> = ({ name, tooltip, imgSrc, logoHeight, children }) => {
+export const InfoData: React.FC<InfoDataProps> = ({ name, tooltip, imgSrc, children }) => {
     return (
       <Flex sx={{
         alignItems: "center",
         justifyContent: "center",
-        gap: ["1em", "1.5em", "4em"]
+        gap: ["1em", "1.5em", "3.5em"],
+        py: "1em"
       }}>
-        <Flex>
-          <GenericIcon imgSrc={imgSrc} height={logoHeight} />
+        <Flex sx={{minWidth: "72px"}}>
+          <GenericIcon imgSrc={imgSrc} height="72px" />
         </Flex>
         <Flex sx={{   
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",}}
-        >
+          justifyContent: "center",
+        }}>
           <Flex sx={{ fontSize: ".9em", mb: ".2em", gap: 1 }}>
             {name}
             {<InfoIcon size="sm" tooltip={<Card variant="tooltip">{tooltip}</Card>} />}

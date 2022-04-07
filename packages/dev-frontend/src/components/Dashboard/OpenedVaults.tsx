@@ -27,8 +27,7 @@ export const OpenedVaults: React.FC<SystemStatsProps> = ({ variant = "mainCards"
       <InfoData 
         name="Opened Vaults" 
         tooltip="Lorem Ipsum" 
-        imgSrc="./icons/opened-vaults.svg" 
-        logoHeight="68px"
+        imgSrc="./icons/opened-vaults.svg"
       >
         {Decimal.from(numberOfTroves).prettify(0)}
       </InfoData>

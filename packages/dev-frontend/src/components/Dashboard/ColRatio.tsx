@@ -33,7 +33,6 @@ export const ColRatio: React.FC<SystemStatsProps> = ({ variant = "mainCards" }) 
         name="Total Col. Ratio" 
         tooltip="Lorem Ipsum" 
         imgSrc="./icons/col-ratio.svg" 
-        logoHeight="68px"
       >
         {totalCollateralRatioPct.prettify()}
       </InfoData>

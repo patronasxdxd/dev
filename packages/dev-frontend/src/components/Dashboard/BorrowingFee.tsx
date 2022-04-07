@@ -30,7 +30,6 @@ export const BorrowingFee: React.FC<BorrowingFeeProps> = ({ variant = "mainCards
         name="Borrowing Fee" 
         tooltip="Lorem Ipsum" 
         imgSrc="./icons/borrowing-fee.svg" 
-        logoHeight="68px"
       >
         {borrowingFeePct.toString(2)}
       </InfoData>
