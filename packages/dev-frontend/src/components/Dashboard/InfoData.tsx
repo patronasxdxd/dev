@@ -26,11 +26,11 @@ export const InfoData: React.FC<InfoDataProps> = ({ name, tooltip, imgSrc, child
           alignItems: "center",
           justifyContent: "center",
         }}>
-          <Flex sx={{ fontSize: ".9em", mb: ".2em", gap: 1 }}>
+          <Flex sx={{ fontSize: "1em", mb: ".2em", gap: 1 }}>
             {name}
-            {<InfoIcon size="sm" tooltip={<Card variant="tooltip">{tooltip}</Card>} />}
+            <InfoIcon size="sm" tooltip={<Card variant="tooltip">{tooltip}</Card>} />
           </Flex>
-          <Flex sx={{ fontSize: "1.8em", fontWeight: "bold", color: "text" }}>
+          <Flex sx={{ fontSize: "1.9em", fontWeight: "bold", color: "text" }}>
             {children}
           </Flex>
         </Flex>

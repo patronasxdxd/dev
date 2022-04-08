@@ -17,7 +17,6 @@ const select = ({
 
 
 export const BorrowingFee: React.FC<BorrowingFeeProps> = ({ variant = "mainCards" }) => {
-  
   const {
     borrowingRate,
   } = useLiquitySelector(select);
@@ -25,7 +24,7 @@ export const BorrowingFee: React.FC<BorrowingFeeProps> = ({ variant = "mainCards
   const borrowingFeePct = new Percent(borrowingRate);
 
   return (
-    <Card {...{ variant }}>
+    <Card {...{ variant }} sx={{ display: ['none', 'block'] }}>
       <InfoData 
         name="Borrowing Fee" 
         tooltip="Lorem Ipsum" 

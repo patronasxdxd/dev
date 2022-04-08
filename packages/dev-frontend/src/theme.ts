@@ -100,15 +100,11 @@ const card: ThemeUIStyleObject = {
 const infoCard: ThemeUIStyleObject = {
   ...card,
 
-  padding: 3,
-
-  borderColor: "rgba(122,199,240,0.4)",
-  background: "linear-gradient(200deg, #d4d9fc, #cae9f9)",
-
-  h2: {
-    mb: 2,
-    fontSize: cardHeadingFontSize
-  }
+  color: "heading",
+  fontWeight: "medium",
+  p: "1.5em",
+  borderRadius: "12px",
+  background: ["white", "#F3F8FC"],
 };
 
 const formBase: ThemeUIStyleObject = {
@@ -281,20 +277,18 @@ const theme: Theme = {
     info: {
       ...infoCard,
 
-      display: "block"
+      display: "block",
+      fontSize: "0.9em"
     },
 
     mainCards: {
       ...card,
-
       color: "heading",
       fontWeight: "medium",
-
-
+      fontSize: "0.9em",
       p: "1.5em",
       backgroundColor: "background",
-      borderRadius: "12px",
-      display: "block"
+      borderRadius: "12px"
     },
 
     infoPopup: {
@@ -375,7 +369,7 @@ const theme: Theme = {
       justifyContent: "start",
       alignItems: "center",
       backgroundColor: "#F6F7FA",
-      gap: "0.8em",
+      gap: "0.9em",
 
       px: "1.1em",
       py: "0.5em",
@@ -434,7 +428,7 @@ const theme: Theme = {
       display: "flex",
       flexDirection: "column",
       minHeight: "100%",
-      backgroundColor: "#F7FAFC"
+      backgroundColor: "#f7fafca1"
     },
 
     main: {
@@ -456,6 +450,14 @@ const theme: Theme = {
     pageColumns: {
       ...columns,
       maxWidth: "1100px"      
+    },
+
+    mainRow: {
+      display: "flex",
+      flexWrap: "wrap",
+      justifyItems: "center",
+
+      flexDirection: ["column-reverse", "row"]
     },
 
     left: {
@@ -601,6 +603,15 @@ const theme: Theme = {
       mx: 3,
       mt: 4,
       mb: ["6em", "2em"],
+      color: "primary",
+      ":hover, :enabled": {
+        color: "primary",
+      },
+    },
+    cardLinks: {
+      display: "flex",
+      mr: 1,
+      pb: 3,
       color: "primary",
       ":hover, :enabled": {
         color: "primary",

@@ -23,7 +23,7 @@ export const OpenedVaults: React.FC<SystemStatsProps> = ({ variant = "mainCards"
   } = useLiquitySelector(select);
 
   return (
-    <Card {...{ variant }}>
+    <Card {...{ variant }} sx={{ display: ['none', 'block'] }}>
       <InfoData 
         name="Opened Vaults" 
         tooltip="Lorem Ipsum" 
