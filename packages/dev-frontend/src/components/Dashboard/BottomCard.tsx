@@ -38,8 +38,8 @@ export const BottomCard: React.FC<BottomCardProps> = ({
         <Flex sx={{
           width: "100%",
           flexDirection: "column",
-          pt: "2.2em",
-          px: "1.8em",
+          pt: "2.8em",
+          px: "1.6em",
           gap: "1em"
         }}>
           {token} available 
@@ -61,7 +61,7 @@ export const BottomCard: React.FC<BottomCardProps> = ({
             alignSelf: "center",
             fontSize: 11,
             fontWeight: "body",
-            pb: 2
+            pb: 3
           }}>
             <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
             in the documentation

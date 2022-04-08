@@ -44,7 +44,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
           borderColor: "border"
         }}>
           Network Stats
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">tirolipa</Card>} />
+          <InfoIcon size="sm" tooltip={<Card variant="tooltip">Lorem Ipsum</Card>} />
         </Flex>
         <Flex sx={{
           width: "100%",
@@ -99,7 +99,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
         <Flex sx={{
           width: "100%",
           gap: 1,
-          pt: 3,
+          pt: 4,
           pb: 2,
           borderBottom: 1, 
           borderColor: "border"
