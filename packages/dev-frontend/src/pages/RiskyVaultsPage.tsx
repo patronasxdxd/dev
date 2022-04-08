@@ -2,12 +2,12 @@ import React from "react";
 import { Container, Card, Box, Paragraph } from "theme-ui";
 import { SystemStats } from "../components/SystemStats";
 import { LiquidationManager } from "../components/LiquidationManager";
-import { RiskyTroves } from "../components/RiskyTroves";
+import { RiskyVaults } from "../components/RiskyVaults";
 import { InfoMessage } from "../components/InfoMessage";
 
-export const RiskyTrovesPage: React.FC = () => (
-  <Container variant="columns">
-    <Container variant="left">
+export const RiskyVaultsPage: React.FC = () => (
+  <Container variant="pageColumns">
+    <Container variant="firstHalf">
       <Card>
         <Box sx={{ p: [2, 3] }}>
           <InfoMessage title="Bot functionality">
@@ -21,10 +21,9 @@ export const RiskyTrovesPage: React.FC = () => (
       </Card>
       <LiquidationManager />
     </Container>
-
-    <Container variant="right">
+    <Container variant="secondHalf">
       <SystemStats />
     </Container>
-    <RiskyTroves pageSize={10} />
+    <RiskyVaults pageSize={10} />
   </Container>
 );

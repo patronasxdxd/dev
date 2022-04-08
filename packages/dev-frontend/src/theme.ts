@@ -449,7 +449,8 @@ const theme: Theme = {
 
     pageColumns: {
       ...columns,
-      maxWidth: "1100px"      
+      maxWidth: "1100px",
+      mt: 4    
     },
 
     mainRow: {

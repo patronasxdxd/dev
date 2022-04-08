@@ -14,8 +14,10 @@ import { HamburgerMenu } from "./components/HamburgerMenu";
 import { Header } from "./components/Header";
 
 import { PageSwitcher } from "./pages/PageSwitcher";
-import { RiskyTrovesPage } from "./pages/RiskyTrovesPage";
 import { RedemptionPage } from "./pages/RedemptionPage";
+import { RiskyVaultsPage } from "./pages/RiskyVaultsPage";
+import { StabilityPoolPage } from "./pages/StabilityPoolPage";
+import { VaultPage } from "./pages/VaultPage";
 
 import { TroveViewProvider } from "./components/Trove/context/TroveViewProvider";
 import { StabilityViewProvider } from "./components/Stability/context/StabilityViewProvider";
@@ -61,11 +63,17 @@ export const LiquityFrontend: React.FC<LiquityFrontendProps> = ({ loader }) => {
                       <Route path="/" exact>
                         <PageSwitcher />
                       </Route>
-                      <Route path="/risky-troves">
-                        <RiskyTrovesPage />
+                      <Route path="/borrow" exact>
+                        <VaultPage />
+                      </Route>
+                      <Route path="/earn" exact>
+                        <StabilityPoolPage />
                       </Route>
                       <Route path="/redemption">
                         <RedemptionPage />
+                      </Route>
+                      <Route path="/risky-vaults">
+                        <RiskyVaultsPage />
                       </Route>
                     </Switch>
                   </Container>
