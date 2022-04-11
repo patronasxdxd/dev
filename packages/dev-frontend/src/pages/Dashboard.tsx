@@ -1,20 +1,30 @@
-import { Container } from "theme-ui";
+import { Container, Heading } from "theme-ui";
 
-import { Trove } from "../components/Trove/Trove";
-import { Stability } from "../components/Stability/Stability";
-import { SystemStats } from "../components/SystemStats";
-import { PriceManager } from "../components/PriceManager";
+import { BorrowingFee } from "../components/Dashboard/BorrowingFee";
+import { OpenedVaults } from "../components/Dashboard/OpenedVaults";
+import { ColRatio } from "../components/Dashboard/ColRatio";
+import { OpenVaultCard } from "../components/Dashboard/OpenVaultCard";
+import { StabilityPoolCard } from "../components/Dashboard/StabilityPoolCard";
+import { SystemStatsCard } from "../components/Dashboard/SystemStatsCard";
 
 export const Dashboard: React.FC = () => (
-  <Container variant="columns">
-    <Container variant="left">
-      <Trove />
-      <Stability />
-    </Container>
-
-    <Container variant="right">
-      <SystemStats />
-      <PriceManager />
+  <Container>
+    <Heading as="h2" sx={{ mt: 5, fontWeight: "semibold" }}>
+      Dashboard
+    </Heading>
+    <Container variant="mainRow">
+      <Container variant="left">
+        <BorrowingFee />
+        <OpenVaultCard />
+      </Container>
+      <Container variant="middle">
+        <OpenedVaults />
+        <StabilityPoolCard />
+      </Container>
+      <Container variant="right">
+        <ColRatio />
+        <SystemStatsCard />
+      </Container>
     </Container>
   </Container>
 );

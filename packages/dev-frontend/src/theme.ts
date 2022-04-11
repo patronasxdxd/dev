@@ -26,6 +26,7 @@ const colors = {
 
   menu: "#939393",
   text: "#293147",
+  heading: "#6A7793",
   background: "white",
   muted: "#eaebed"
 };
@@ -93,22 +94,17 @@ const cardGapY = [3, 3, 4];
 const card: ThemeUIStyleObject = {
   position: "relative",
   mt: cardGapY,
-  border: 1,
-  boxShadow: [1, null, 2]
+  boxShadow: [1, null, 1]
 };
 
 const infoCard: ThemeUIStyleObject = {
   ...card,
 
-  padding: 3,
-
-  borderColor: "rgba(122,199,240,0.4)",
-  background: "linear-gradient(200deg, #d4d9fc, #cae9f9)",
-
-  h2: {
-    mb: 2,
-    fontSize: cardHeadingFontSize
-  }
+  color: "heading",
+  fontWeight: "medium",
+  p: "1.5em",
+  borderRadius: "12px",
+  background: ["white", "#F3F8FC"],
 };
 
 const formBase: ThemeUIStyleObject = {
@@ -146,8 +142,10 @@ const modalOverlay: ThemeUIStyleObject = {
   height: "100vh"
 };
 
-const headerGradient: ThemeUIStyleObject = {
-  background: `linear-gradient(90deg, ${colors.background}, ${colors.muted})`
+const columns: ThemeUIStyleObject = {
+  display: "flex",
+  flexWrap: "wrap",
+  justifyItems: "center"
 };
 
 const theme: Theme = {
@@ -205,11 +203,7 @@ const theme: Theme = {
 
       bg: "primary",
       borderColor: "primary",
-
-      ":enabled:hover": {
-        bg: "secondary",
-        borderColor: "secondary"
-      }
+      borderRadius: "12px"
     },
 
     outline: {
@@ -283,7 +277,18 @@ const theme: Theme = {
     info: {
       ...infoCard,
 
-      display: ["none", "block"]
+      display: "block",
+      fontSize: "0.9em"
+    },
+
+    mainCards: {
+      ...card,
+      color: "heading",
+      fontWeight: "medium",
+      fontSize: "0.9em",
+      p: "1.5em",
+      backgroundColor: "background",
+      borderRadius: "12px"
     },
 
     infoPopup: {
@@ -309,7 +314,7 @@ const theme: Theme = {
       boxShadow: 2,
 
       fontSize: 1,
-      color: "text",
+      color: "heading",
       fontWeight: "body",
       zIndex: 1
     }
@@ -359,8 +364,21 @@ const theme: Theme = {
       borderRadius: ".4em"
     },
 
+    balanceRow: {
+      color: "text",
+      justifyContent: "start",
+      alignItems: "center",
+      backgroundColor: "#F6F7FA",
+      gap: "0.9em",
+
+      px: "1.1em",
+      py: "0.5em",
+      border: 1,
+      borderColor: "border",
+      borderRadius: 12,
+    },
+
     header: {
-      
       display: "flex",
       justifyContent: "space-between",
       alignItems: "stretch",
@@ -385,7 +403,7 @@ const theme: Theme = {
 
       position: "fixed",
       height: "100%",
-      width: "19em",
+      width: [0, "15em", "19em"],
       top: 0,
       zIndex: 0,
       borderRight: 1,
@@ -410,34 +428,62 @@ const theme: Theme = {
       display: "flex",
       flexDirection: "column",
       minHeight: "100%",
-      backgroundColor: "#F7FAFC"
+      backgroundColor: "#f7fafca1"
     },
 
     main: {
       display: "flex",
       alignItems: "center",
       width: "100%",
-      maxWidth: ["728px","1540px"],
+      maxWidth: ["728px","1640px"],
       mx: ["auto"],
-      mt: "80px",
+      mt: ["100px", "100px", "80px"],
       mb: ["40px", "40px"],
-      pl: ["","20em"],
-      px: ["20px",]
+      pl: [0, "17.5em", "22em"],
+      px: ["1.5em",]
     },
 
     columns: {
+      ...columns
+    },
+
+    pageColumns: {
+      ...columns,
+      maxWidth: "1100px",
+      mt: 4    
+    },
+
+    mainRow: {
       display: "flex",
       flexWrap: "wrap",
-      justifyItems: "center"
+      justifyItems: "center",
+
+      flexDirection: ["column-reverse", "row"]
     },
 
     left: {
       pr: cardGapX,
-      width: ["100%", "100%", "58%"]
+      width: ["100%", "50%", "33%"]
+    },
+
+    middle: {
+      pr: cardGapX,
+      width: ["100%", "50%", "33%"]
     },
 
     right: {
-      width: ["100%", "100%", "42%"]
+      pr: cardGapX,
+      width: ["100%", "100%", "33%"]
+    },
+
+    firstHalf: {
+      pr: cardGapX,
+      width: ["100%", "100%", "50%"]
+    },
+
+    secondHalf: {
+      pr: cardGapX,
+      width: ["100%", "100%", "50%"]
     },
 
     actions: {
@@ -485,14 +531,16 @@ const theme: Theme = {
     },
 
     sidenav: {
-      display: ["flex", "none"],
-      flexDirection: "column",
-      p: 0,
-      m: 0,
-      borderColor: "muted",
-      mr: "25vw",
+      display: "flex",
+      mt: "5em",
+      pt: "1em",
       height: "100%",
-      ...headerGradient
+      width: "17em",
+      position: "absolute",
+      borderLeft: 1,
+      borderColor: "border",
+      bg: "white",
+      right: 0,
     },
 
     badge: {
@@ -556,6 +604,15 @@ const theme: Theme = {
       mx: 3,
       mt: 4,
       mb: ["6em", "2em"],
+      color: "primary",
+      ":hover, :enabled": {
+        color: "primary",
+      },
+    },
+    cardLinks: {
+      display: "flex",
+      mr: 1,
+      pb: 3,
       color: "primary",
       ":hover, :enabled": {
         color: "primary",

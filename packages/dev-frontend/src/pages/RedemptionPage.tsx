@@ -17,8 +17,8 @@ export const RedemptionPage: React.FC = () => {
   } = useLiquity();
 
   return (
-    <Container variant="columns">
-      <Container variant="left">
+    <Container variant="pageColumns">
+      <Container variant="firstHalf">
         <Card>
           <Box sx={{ p: [2, 3] }}>
             <InfoMessage title="Bot functionality">
@@ -43,7 +43,7 @@ export const RedemptionPage: React.FC = () => {
         <Redemption />
       </Container>
 
-      <Container variant="right">
+      <Container variant="secondHalf">
         <SystemStats />
       </Container>
     </Container>
