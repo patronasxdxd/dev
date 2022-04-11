@@ -3,7 +3,7 @@ import { Card } from "theme-ui";
 import { Percent, LiquityStoreState } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 
-import { InfoData } from "./InfoData";
+import { TopCard } from "./TopCard";
 
 type BorrowingFeeProps = {
   variant?: string;
@@ -25,13 +25,13 @@ export const BorrowingFee: React.FC<BorrowingFeeProps> = ({ variant = "mainCards
 
   return (
     <Card {...{ variant }} sx={{ display: ['none', 'block'] }}>
-      <InfoData 
+      <TopCard 
         name="Borrowing Fee" 
-        tooltip="Lorem Ipsum" 
+        tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount, and is part of a Vault's debt." 
         imgSrc="./icons/borrowing-fee.svg" 
       >
         {borrowingFeePct.toString(2)}
-      </InfoData>
+      </TopCard>
     </Card>
   );
 };

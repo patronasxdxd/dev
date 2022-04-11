@@ -4,13 +4,13 @@ import { InfoIcon } from "../InfoIcon";
 
 import { GenericIcon } from "../GenericIcon";
 
-type InfoDataProps = {
+type TopCardProps = {
   name: React.ReactNode;
   tooltip?: React.ReactNode;
   imgSrc: string
 };
 
-export const InfoData: React.FC<InfoDataProps> = ({ name, tooltip, imgSrc, children }) => {
+export const TopCard: React.FC<TopCardProps> = ({ name, tooltip, imgSrc, children }) => {
     return (
       <Flex sx={{
         alignItems: "center",

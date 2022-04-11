@@ -3,7 +3,7 @@ import { Card } from "theme-ui";
 import { Percent, LiquityStoreState } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 
-import { InfoData } from "./InfoData";
+import { TopCard } from "./TopCard";
 
 type SystemStatsProps = {
   variant?: string;
@@ -29,13 +29,13 @@ export const ColRatio: React.FC<SystemStatsProps> = ({ variant = "mainCards" }) 
 
   return (
     <Card {...{ variant }}>
-      <InfoData 
+      <TopCard 
         name="Total Col. Ratio" 
-        tooltip="Lorem Ipsum" 
+        tooltip="The ratio of the Dollar value of the entire system collateral at the current ETH:USD price, to the entire system debt." 
         imgSrc="./icons/col-ratio.svg" 
       >
         {totalCollateralRatioPct.prettify()}
-      </InfoData>
+      </TopCard>
     </Card>
   );
 };

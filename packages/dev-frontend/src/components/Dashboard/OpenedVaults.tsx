@@ -3,7 +3,7 @@ import { Card } from "theme-ui";
 import { Decimal, LiquityStoreState } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 
-import { InfoData } from "./InfoData";
+import { TopCard } from "./TopCard";
 
 type SystemStatsProps = {
   variant?: string;
@@ -24,13 +24,13 @@ export const OpenedVaults: React.FC<SystemStatsProps> = ({ variant = "mainCards"
 
   return (
     <Card {...{ variant }} sx={{ display: ['none', 'block'] }}>
-      <InfoData 
+      <TopCard
         name="Opened Vaults" 
-        tooltip="Lorem Ipsum" 
+        tooltip="The total number of active Vaults in the system." 
         imgSrc="./icons/opened-vaults.svg"
       >
         {Decimal.from(numberOfTroves).prettify(0)}
-      </InfoData>
+      </TopCard>
     </Card>
   );
 };
