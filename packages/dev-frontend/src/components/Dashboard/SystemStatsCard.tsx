@@ -57,25 +57,25 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
         }}>
           <SystemStat 
             info="TVL" 
-            tooltip="Lorem Ipsum" 
+            tooltip="The Total Value Locked (TVL) is the total value of Ether locked as collateral in the system, given in ETH and USD." 
           >
             {total.collateral.shorten()} ETH
           </SystemStat>
           <SystemStat 
             info="LUSD in Stability Pool" 
-            tooltip="Lorem Ipsum" 
+            tooltip="The total LUSD currently held in the Stability Pool, expressed as an amount and a fraction of the LUSD supply." 
           >
             {lusdInStabilityPool.shorten()}
           </SystemStat>
           <SystemStat 
             info="LUSD Supply" 
-            tooltip="Lorem Ipsum" 
+            tooltip="The total LUSD minted by the Liquity Protocol." 
           >
             {total.debt.shorten()}
           </SystemStat>
           <SystemStat 
             info="Recovery Mode" 
-            tooltip="Lorem Ipsum" 
+            tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Trove can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Trove's debt. Operations are also restricted that would negatively impact the TCR." 
           >
             {total.collateralRatioIsBelowCritical(price) ? <Box color="danger">Yes</Box> : "No"}
           </SystemStat>

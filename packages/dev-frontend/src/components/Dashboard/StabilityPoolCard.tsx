@@ -22,7 +22,7 @@ export const StabilityPoolCard: React.FC<StabilityPoolCardProps> = ({ variant = 
       <BottomCard 
         title='Stability Pool'
         action='Deposit'
-        tooltip='lorem ipsum'
+        tooltip='The Stability Pool is the first line of defense in maintaining system solvency. It achieves that by acting as the source of liquidity to repay debt from liquidated Troves—ensuring that the total LUSD supply always remains backed.'
         token='LUSD'
         path='/earn'
       >

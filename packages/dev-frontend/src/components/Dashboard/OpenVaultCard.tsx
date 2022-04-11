@@ -21,7 +21,7 @@ export const OpenVaultCard: React.FC<OpenVaultCardProps> = ({ variant = "mainCar
     <Card {...{ variant }}>
       <BottomCard 
         title='Open a Vault'
-        tooltip='lorem ipsum'
+        tooltip='To mint and borrow LUSD you must open a vault and deposit a certain amount of collateral (ETH) to it.'
         action='Open a Vault'
         token='ETH'
         path='/borrow'
