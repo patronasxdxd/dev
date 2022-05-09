@@ -3,19 +3,8 @@ import { Box, Card, Container, Heading, Link, Paragraph } from "theme-ui";
 import { SystemStatsCard } from "../components/SystemStatsCard";
 import { Redemption } from "../components/Redemption/Redemption";
 import { InfoMessage } from "../components/InfoMessage";
-import { useLiquity } from "../hooks/LiquityContext";
-import { Icon } from "../components/Icon";
-
-const uniLink = (lusdAddress: string) =>
-  `https://app.uniswap.org/#/swap?inputCurrency=${lusdAddress}&outputCurrency=ETH`;
 
 export const RedemptionPage: React.FC = () => {
-  const {
-    liquity: {
-      connection: { addresses }
-    }
-  } = useLiquity();
-
   return (
     <Container variant="singlePage">
       <Heading as="h2" sx={{ ml: "1em", mt: "2.5em", fontWeight: "semibold" }}>
