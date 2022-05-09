@@ -1,6 +1,6 @@
 import React from "react";
-import { Box, Card, Container, Link, Paragraph } from "theme-ui";
-import { SystemStats } from "../components/SystemStats";
+import { Box, Card, Container, Heading, Link, Paragraph } from "theme-ui";
+import { SystemStatsCard } from "../components/SystemStatsCard";
 import { Redemption } from "../components/Redemption/Redemption";
 import { InfoMessage } from "../components/InfoMessage";
 import { useLiquity } from "../hooks/LiquityContext";
@@ -17,34 +17,35 @@ export const RedemptionPage: React.FC = () => {
   } = useLiquity();
 
   return (
-    <Container variant="pageRow">
-      <Container variant="firstHalf">
-        <Card>
-          <Box sx={{ p: [2, 3] }}>
-            <InfoMessage title="Bot functionality">
-              <Paragraph>
-                Redemptions are expected to be carried out by bots when arbitrage opportunities
-                emerge.
-              </Paragraph>
-              <Paragraph sx={{ mt: 2 }}>
-                Most of the time you will get a better rate for converting LUSD to ETH on{" "}
-                <Link href={uniLink(addresses["lusdToken"])} target="_blank">
-                  Uniswap <Icon name="external-link-alt" size="xs" />
-                </Link>{" "}
-                or other exchanges.
-              </Paragraph>
-              <Paragraph sx={{ mt: 2 }}>
-                <strong>Note</strong>: Redemption is not for repaying your loan. To repay your loan,
-                adjust your Trove on the <Link href="#/">Dashboard</Link>.
-              </Paragraph>
-            </InfoMessage>
-          </Box>
-        </Card>
-        <Redemption />
-      </Container>
-
-      <Container variant="secondHalf">
-        <SystemStats />
+    <Container variant="singlePage">
+      <Heading as="h2" sx={{ ml: "1em", mt: "2.5em", fontWeight: "semibold" }}>
+        Redeem
+      </Heading>
+      <Card sx={{ mr: [0, "2em"] }}>
+        <Box sx={{ px: "2.5em", py: "1.5em" }}>
+          <InfoMessage title="About this functionality">
+            <Paragraph sx={{ mb: "0.5em" }}>
+              Redemptions are expected to be carried out by bots when arbitrage opportunities emerge.
+            </Paragraph>
+            <Paragraph sx={{ mb: "0.5em" }}>
+              Most of the time you will get a better rate for converting thUSD to tBTC on Uniswap  or other exchanges.
+            </Paragraph>
+            <Paragraph sx={{ mb: "0.5em" }}>
+            Note: Redemption is not for repaying your loan. To repay your loan, adjust your Trove on the Dashboard.
+            </Paragraph>
+            <Link variant="infoLink" href="https://github.com/Threshold-USD/dev" target="_blank">
+              Read more
+            </Link>
+          </InfoMessage>
+        </Box>
+      </Card>
+      <Container variant="pageRow">
+        <Container variant="firstHalf">
+          <Redemption />
+        </Container>
+        <Container variant="secondHalf">
+          <SystemStatsCard />
+        </Container>
       </Container>
     </Container>
   );
