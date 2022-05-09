@@ -220,7 +220,7 @@ export const EditableRow: React.FC<EditableRowProps> = ({
 
   return editing === inputId ? (
     <Flex sx={{ flexDirection: "column", flexWrap: "wrap", }}>
-      <Row {...{ label, labelFor: inputId, unit, infoIcon }} sx={{ fontSize: "1.1em", fontWeight: "medium", mb: 2 }} />
+      <Row {...{ label, labelFor: inputId, unit, infoIcon }} />
       <Input
         id={inputId}
         type="number"
@@ -248,7 +248,7 @@ export const EditableRow: React.FC<EditableRowProps> = ({
   </Flex>
   ) : (
     <Flex sx={{ flexDirection: "column", flexWrap: "wrap", }}>
-      <Row labelId={`${inputId}-label`} {...{ label, unit, infoIcon }} sx={{ fontSize: "1.1em", fontWeight: "medium", mb: 2 }} />
+      <Row labelId={`${inputId}-label`} {...{ label, unit, infoIcon }} />
       <StaticAmounts
         sx={{
           ...editableStyle,
