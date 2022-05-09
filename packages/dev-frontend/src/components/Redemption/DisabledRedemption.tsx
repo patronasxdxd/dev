@@ -1,7 +1,6 @@
-import { Box, Card, Flex, Paragraph, Text } from "theme-ui";
+import { Card, Flex, Paragraph, Text } from "theme-ui";
 
 import { InfoMessage } from "../InfoMessage";
-import { Icon } from "../Icon";
 
 type DisabledRedemptionProps = {
   disabledDays: number;
