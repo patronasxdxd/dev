@@ -28,7 +28,7 @@ export const RedemptionAction: React.FC<RedemptionActionProps> = ({
   );
 
   return (
-    <Button disabled={disabled} onClick={sendTransaction}>
+    <Button disabled={disabled} onClick={sendTransaction} sx={{ width: '100%' }}>
       Confirm
     </Button>
   );

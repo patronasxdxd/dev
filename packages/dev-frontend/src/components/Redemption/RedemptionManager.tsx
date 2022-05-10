@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Button, Box, Flex, Card, Heading } from "theme-ui";
+import { Box, Flex, Card, Link } from "theme-ui";
 
 import { Decimal, Percent, LiquityStoreState, MINIMUM_COLLATERAL_RATIO } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 
 import { COIN } from "../../strings";
 
-import { Icon } from "../Icon";
 import { LoadingOverlay } from "../LoadingOverlay";
 import { EditableRow, StaticRow } from "../Trove/Editor";
 import { ActionDescription, Amount } from "../ActionDescription";
@@ -87,66 +86,78 @@ export const RedemptionManager: React.FC = () => {
       ];
 
   return (
-    <Card>
-      <Heading>
-        Redeem
-        {dirty && !changePending && (
-          <Button
-            variant="titleIcon"
-            sx={{ ":enabled:hover": { color: "danger" } }}
-            onClick={() => setLUSDAmount(Decimal.ZERO)}
-          >
-            <Icon name="history" size="lg" />
-          </Button>
-        )}
-      </Heading>
+    <Card variant="mainCards">
+      <Card variant="layout.columns">
+        <Flex sx={{
+            width: "100%",
+            gap: 1,
+            pb: "1em",
+            borderBottom: 1, 
+            borderColor: "border"
+        }}>
+          Redeem
+        </Flex>
 
-      <Box sx={{ p: [2, 3] }}>
-        <EditableRow
-          label="Redeem"
-          inputId="redeem-lusd"
-          amount={lusdAmount.prettify()}
-          maxAmount={lusdBalance.toString()}
-          maxedOut={lusdAmount.eq(lusdBalance)}
-          unit={COIN}
-          {...{ editingState }}
-          editedAmount={lusdAmount.toString(2)}
-          setEditedAmount={amount => setLUSDAmount(Decimal.from(amount))}
-        />
-
-        <StaticRow
-          label="Redemption Fee"
-          inputId="redeem-fee"
-          amount={ethFee.toString(4)}
-          pendingAmount={feePct.toString(2)}
-          unit="ETH"
-          infoIcon={
-            <InfoIcon
-              tooltip={
-                <Card variant="tooltip" sx={{ minWidth: "240px" }}>
-                  The Redemption Fee is charged as a percentage of the redeemed Ether. The Redemption
-                  Fee depends on LUSD redemption volumes and is 0.5% at minimum.
-                </Card>
+        <Flex sx={{
+          width: "100%",
+          flexDirection: "column",
+          px: ["1em", 0, "1.6em"],
+        }}>
+          <EditableRow
+            label="Redeem"
+            inputId="redeem-lusd"
+            amount={lusdAmount.prettify()}
+            maxAmount={lusdBalance.toString()}
+            maxedOut={lusdAmount.eq(lusdBalance)}
+            unit={COIN}
+            {...{ editingState }}
+            editedAmount={lusdAmount.toString(2)}
+            setEditedAmount={amount => setLUSDAmount(Decimal.from(amount))}
+          />
+          <Box sx={{ mt: -3 }}>
+            <StaticRow
+              label="Redemption Fee"
+              inputId="redeem-fee"
+              amount={ethFee.toString(4)}
+              pendingAmount={feePct.toString(2)}
+              unit="ETH"
+              infoIcon={
+                <InfoIcon
+                  tooltip={
+                    <Card variant="tooltip" sx={{ minWidth: "240px" }}>
+                      The Redemption Fee is charged as a percentage of the redeemed Ether. The Redemption
+                      Fee depends on LUSD redemption volumes and is 0.5% at minimum.
+                    </Card>
+                  }
+                />
               }
             />
-          }
-        />
+          </Box>
 
-        {((dirty || !canRedeem) && description) || (
-          <ActionDescription>Enter the amount of {COIN} you'd like to redeem.</ActionDescription>
-        )}
+          {((dirty || !canRedeem) && description) || (
+            <ActionDescription>Enter the amount of {COIN} you'd like to redeem.</ActionDescription>
+          )}
 
-        <Flex variant="layout.actions">
-          <RedemptionAction
-            transactionId={transactionId}
-            disabled={!dirty || !canRedeem}
-            lusdAmount={lusdAmount}
-            maxRedemptionRate={maxRedemptionRate}
-          />
+          <Flex variant="layout.actions">
+            <RedemptionAction
+              transactionId={transactionId}
+              disabled={!dirty || !canRedeem}
+              lusdAmount={lusdAmount}
+              maxRedemptionRate={maxRedemptionRate}
+            />
+          </Flex>
+          <Flex sx={{ 
+            alignSelf: "center",
+            fontSize: 11,
+            fontWeight: "body",
+            mt: 3
+          }}>
+            <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+            in the documentation
+          </Flex>
         </Flex>
-      </Box>
-
-      {changePending && <LoadingOverlay />}
+        {changePending && <LoadingOverlay />}
+      </Card>
     </Card>
   );
 };

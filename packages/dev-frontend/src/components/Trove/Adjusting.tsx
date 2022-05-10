@@ -162,8 +162,9 @@ export const Adjusting: React.FC = () => {
           pb: "1em",
           borderBottom: 1, 
           borderColor: "border",
+
         }}>
-          Open a Vault
+          Adjusting Vault
           <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral (ETH) to it.</Card>} />
         </Flex>
 

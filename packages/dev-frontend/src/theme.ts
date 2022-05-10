@@ -8,7 +8,8 @@ const baseColors = {
   yellow: "#fd9d28",
   red: "#dc2c10",
   lightRed: "#ff755f",
-  grey: "#e8eef3",
+  lightgrey: "#e8eef3",
+  grey: "#959EB1",
   lightBlue: "#F6F7FA",
 };
 
@@ -23,7 +24,8 @@ const colors = {
   danger: baseColors.red,
   dangerHover: baseColors.lightRed,
   info: baseColors.blue,
-  border: baseColors.grey,
+  border: baseColors.lightgrey,
+  greytext: baseColors.grey,
   invalid: "pink",
 
   menu: "#939393",
