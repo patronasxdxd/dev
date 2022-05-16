@@ -20,7 +20,7 @@ export const RedemptionPage: React.FC = () => {
               Most of the time you will get a better rate for converting thUSD to tBTC on Uniswap  or other exchanges.
             </Paragraph>
             <Paragraph sx={{ mb: "0.5em" }}>
-            Note: Redemption is not for repaying your loan. To repay your loan, adjust your Trove on the Dashboard.
+              Note: Redemption is not for repaying your loan. To repay your loan, adjust your Trove on the Dashboard.
             </Paragraph>
             <Link variant="infoLink" href="https://github.com/Threshold-USD/dev" target="_blank">
               Read more

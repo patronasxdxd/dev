@@ -227,6 +227,7 @@ const theme: Theme = {
 
       bg: "danger",
       borderColor: "danger",
+      borderRadius: 12,
 
       ":enabled:hover": {
         bg: "dangerHover",
@@ -290,7 +291,7 @@ const theme: Theme = {
       color: "heading",
       fontWeight: "medium",
       fontSize: "0.9em",
-      px: "2em",
+      px: ["0.5em", "2em"],
       py: "1.5em",
       backgroundColor: "background",
       borderRadius: "12px",

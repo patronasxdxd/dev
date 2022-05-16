@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import CopyToClipboard from "react-copy-to-clipboard";
-import { Card, Button, Text, Box, Heading, Flex } from "theme-ui";
+import { Card, Button, Image, Text, Box, Flex, Link } from "theme-ui";
 
 import {
   Percent,
@@ -11,6 +10,8 @@ import {
 } from "@liquity/lib-base";
 import { BlockPolledLiquityStoreState } from "@liquity/lib-ethers";
 import { useLiquitySelector } from "@liquity/lib-react";
+import { Web3Provider } from "@ethersproject/providers";
+import { useWeb3React } from "@web3-react/core";
 
 import { shortenAddress } from "../utils/shortenAddress";
 import { useLiquity } from "../hooks/LiquityContext";
@@ -65,6 +66,8 @@ const select = ({
 });
 
 export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
+  const { chainId } = useWeb3React<Web3Provider>();
+  console.log('chainId: ', chainId)
   const {
     blockTag,
     numberOfTroves,
@@ -154,197 +157,198 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
   }, [copied]);
 
   return (
-    <Card sx={{ width: "100%", mr: 4 }}>
-      <Heading>
-        <Abbreviation short="Troves">Risky Troves</Abbreviation>
+    <Card variant="mainCards">
+      <Card variant="layout.columns">
+        <Flex sx={{
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexDirection: "row",
+          width: "100%",
+          pb: "1em",
+          borderBottom: 1, 
+          borderColor: "border"
+        }}>
+          <Box>
+            Risky Vaults
+          </Box>
+          <Flex sx={{ alignItems: "center" }}>
+            {numberOfTroves !== 0 && (
+              <>
+                <Abbreviation
+                  short={`page ${clampedPage + 1} / ${numberOfPages}`}
+                  sx={{ mr: 2, fontWeight: "body", fontSize: 1, letterSpacing: 0 }}
+                >
+                  {clampedPage * pageSize + 1}-{Math.min((clampedPage + 1) * pageSize, numberOfTroves)}{" "}
+                  of {numberOfTroves}
+                </Abbreviation>
 
-        <Flex sx={{ alignItems: "center" }}>
-          {numberOfTroves !== 0 && (
-            <>
-              <Abbreviation
-                short={`page ${clampedPage + 1} / ${numberOfPages}`}
-                sx={{ mr: [0, 3], fontWeight: "body", fontSize: [1, 2], letterSpacing: [-1, 0] }}
-              >
-                {clampedPage * pageSize + 1}-{Math.min((clampedPage + 1) * pageSize, numberOfTroves)}{" "}
-                of {numberOfTroves}
-              </Abbreviation>
+                <Button variant="titleIcon" onClick={previousPage} disabled={clampedPage <= 0}>
+                  <Icon name="chevron-left" size="sm" />
+                </Button>
 
-              <Button variant="titleIcon" onClick={previousPage} disabled={clampedPage <= 0}>
-                <Icon name="chevron-left" size="lg" />
-              </Button>
-
-              <Button
-                variant="titleIcon"
-                onClick={nextPage}
-                disabled={clampedPage >= numberOfPages - 1}
-              >
-                <Icon name="chevron-right" size="lg" />
-              </Button>
-            </>
-          )}
-
-          <Button
-            variant="titleIcon"
-            sx={{ opacity: loading ? 0 : 1, ml: [0, 3] }}
-            onClick={forceReload}
-          >
-            <Icon name="redo" size="lg" />
-          </Button>
+                <Button
+                  variant="titleIcon"
+                  onClick={nextPage}
+                  disabled={clampedPage >= numberOfPages - 1}
+                >
+                  <Icon name="chevron-right" size="sm" />
+                </Button>
+              </>
+            )}
+          </Flex>
         </Flex>
-      </Heading>
 
-      {!troves || troves.length === 0 ? (
-        <Box sx={{ p: [2, 3] }}>
-          <Box sx={{ p: 4, fontSize: 3, textAlign: "center" }}>
-            {!troves ? "Loading..." : "There are no Troves yet"}
+        {!troves || troves.length === 0 ? (
+          <Box sx={{ p: [2, 3] }}>
+            <Box sx={{ p: 4, fontSize: 3, textAlign: "center" }}>
+              {!troves ? "Loading..." : "There are no Troves yet"}
+            </Box>
           </Box>
-        </Box>
-      ) : (
-        <Box sx={{ p: [2, 3] }}>
-          <Box
-            as="table"
-            sx={{
-              mt: 2,
-              pl: [1, 4],
-              width: "100%",
+        ) : (
+          <Box sx={{ width:"100%", p: [2, 3] }}>
+            <Box
+              as="table"
+              sx={{
+                mt: 2,
+                width: "100%",
 
-              textAlign: "center",
-              lineHeight: 1.15
-            }}
-          >
-            <colgroup>
-              <col style={{ width: "50px" }} />
-              <col />
-              <col />
-              <col />
-              <col style={{ width: rowHeight }} />
-            </colgroup>
+                textAlign: "left",
+                lineHeight: 1.15
+              }}
+            >
+              <colgroup>
+                <col style={{ width: "30%" }} />
+                <col />
+                <col />
+                <col />
+                <col style={{ width: rowHeight }} />
+              </colgroup>
 
-            <thead>
-              <tr>
-                <th>Owner</th>
-                <th>
-                  <Abbreviation short="Coll.">Collateral</Abbreviation>
-                  <Box sx={{ fontSize: [0, 1], fontWeight: "body", opacity: 0.5 }}>ETH</Box>
-                </th>
-                <th>
-                  Debt
-                  <Box sx={{ fontSize: [0, 1], fontWeight: "body", opacity: 0.5 }}>{COIN}</Box>
-                </th>
-                <th>
-                  Coll.
-                  <br />
-                  Ratio
-                </th>
-                <th></th>
-              </tr>
-            </thead>
+              <thead>
+                <tr style={{ opacity: 0.6 }}>
+                  <th style={{ verticalAlign: "top" }}>Owner</th>
+                  <th>
+                    <Abbreviation short="Coll.">Collateral</Abbreviation>
+                    <Box sx={{ fontSize: [0, 1], fontWeight: "body" }}>ETH</Box>
+                  </th>
+                  <th>
+                    Debt
+                    <Box sx={{ fontSize: [0, 1], fontWeight: "body" }}>{COIN}</Box>
+                  </th>
+                  <th>
+                    Coll.
+                    <br />
+                    Ratio
+                  </th>
+                  <th></th>
+                </tr>
+              </thead>
 
-            <tbody>
-              {troves.map(
-                trove =>
-                  !trove.isEmpty && ( // making sure the Trove hasn't been liquidated
-                    // (TODO: remove check after we can fetch multiple Troves in one call)
-                    <tr key={trove.ownerAddress}>
-                      <td
+              <tbody>
+                {troves.map(
+                  trove =>
+                    !trove.isEmpty && ( // making sure the Trove hasn't been liquidated
+                      // (TODO: remove check after we can fetch multiple Troves in one call)
+                      <tr key={trove.ownerAddress} 
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          height: rowHeight
-                        }}
-                      >
-                        <Tooltip message={trove.ownerAddress} placement="top">
-                          <Text
-                            variant="address"
-                            sx={{
-                              width: ["73px", "unset"],
-                              overflow: "hidden",
-                              position: "relative"
-                            }}
-                          >
-                            {shortenAddress(trove.ownerAddress)}
-                            <Box
+                          fontWeight: "bold"
+                        }}>
+                        <td
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            height: rowHeight,
+                          }}
+                        >
+                          <Tooltip message={trove.ownerAddress} placement="top">
+                            <Text
+                              variant="address"
                               sx={{
-                                display: ["block", "none"],
-                                position: "absolute",
-                                top: 0,
-                                right: 0,
-                                width: "50px",
-                                height: "100%",
-                                background:
-                                  "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%)"
+                                width: ["73px", "unset"],
+                                overflow: "hidden",
+                                position: "relative"
                               }}
-                            />
-                          </Text>
-                        </Tooltip>
-
-                        <CopyToClipboard
-                          text={trove.ownerAddress}
-                          onCopy={() => setCopied(trove.ownerAddress)}
-                        >
-                          <Button variant="icon" sx={{ width: "24px", height: "24px" }}>
-                            <Icon
-                              name={copied === trove.ownerAddress ? "clipboard-check" : "clipboard"}
-                              size="sm"
-                            />
-                          </Button>
-                        </CopyToClipboard>
-                      </td>
-                      <td>
-                        <Abbreviation short={trove.collateral.shorten()}>
-                          {trove.collateral.prettify(4)}
-                        </Abbreviation>
-                      </td>
-                      <td>
-                        <Abbreviation short={trove.debt.shorten()}>
-                          {trove.debt.prettify()}
-                        </Abbreviation>
-                      </td>
-                      <td>
-                        {(collateralRatio => (
-                          <Text
-                            color={
-                              collateralRatio.gt(CRITICAL_COLLATERAL_RATIO)
-                                ? "success"
-                                : collateralRatio.gt(1.2)
-                                ? "warning"
-                                : "danger"
-                            }
+                            >
+                              {shortenAddress(trove.ownerAddress)}
+                              <Box
+                                sx={{
+                                  display: ["block", "none"],
+                                  position: "absolute",
+                                  top: 0,
+                                  right: 0,
+                                  width: "50px",
+                                  height: "100%",
+                                  background:
+                                    "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%)"
+                                }}
+                              />
+                            </Text>
+                          </Tooltip>
+                          <Link 
+                            variant="socialIcons" 
+                            href={(chainId === 3 && `https://ropsten.etherscan.io/address/${trove.ownerAddress}`) ||
+                              `https://etherscan.io/address/${trove.ownerAddress})`} 
+                            target="_blank"
                           >
-                            {new Percent(collateralRatio).prettify()}
-                          </Text>
-                        ))(trove.collateralRatio(price))}
-                      </td>
-                      <td>
-                        <Transaction
-                          id={`liquidate-${trove.ownerAddress}`}
-                          tooltip="Liquidate"
-                          requires={[
-                            recoveryMode
-                              ? liquidatableInRecoveryMode(
-                                  trove,
-                                  price,
-                                  totalCollateralRatio,
-                                  lusdInStabilityPool
-                                )
-                              : liquidatableInNormalMode(trove, price)
-                          ]}
-                          send={liquity.send.liquidate.bind(liquity.send, trove.ownerAddress)}
-                        >
-                          <Button variant="dangerIcon">
-                            <Icon name="trash" />
-                          </Button>
-                        </Transaction>
-                      </td>
-                    </tr>
-                  )
-              )}
-            </tbody>
+                            <Image src="./icons/external-link.svg" />
+                          </Link>
+                        </td>
+                        <td>
+                          <Abbreviation short={trove.collateral.shorten()}>
+                            {trove.collateral.prettify(4)}
+                          </Abbreviation>
+                        </td>
+                        <td>
+                          <Abbreviation short={trove.debt.shorten()}>
+                            {trove.debt.prettify()}
+                          </Abbreviation>
+                        </td>
+                        <td>
+                          {(collateralRatio => (
+                            <Text
+                              color={
+                                collateralRatio.gt(CRITICAL_COLLATERAL_RATIO)
+                                  ? "success"
+                                  : collateralRatio.gt(1.2)
+                                  ? "warning"
+                                  : "danger"
+                              }
+                            >
+                              {new Percent(collateralRatio).prettify()}
+                            </Text>
+                          ))(trove.collateralRatio(price))}
+                        </td>
+                        <td>
+                          <Transaction
+                            id={`liquidate-${trove.ownerAddress}`}
+                            tooltip="Liquidate"
+                            requires={[
+                              recoveryMode
+                                ? liquidatableInRecoveryMode(
+                                    trove,
+                                    price,
+                                    totalCollateralRatio,
+                                    lusdInStabilityPool
+                                  )
+                                : liquidatableInNormalMode(trove, price)
+                            ]}
+                            send={liquity.send.liquidate.bind(liquity.send, trove.ownerAddress)}
+                          >
+                            <Button variant="dangerIcon">
+                              <Icon name="trash" />
+                            </Button>
+                          </Transaction>
+                        </td>
+                      </tr>
+                    )
+                )}
+              </tbody>
+            </Box>
           </Box>
-        </Box>
-      )}
+        )}
 
-      {loading && <LoadingOverlay />}
+        {loading && <LoadingOverlay />}
+      </Card>
     </Card>
   );
 };
