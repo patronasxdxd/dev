@@ -165,7 +165,14 @@ export const useTransactionFunction = (
     } catch (error) {
       if (hasMessage(error) && error.message.includes("User denied transaction signature")) {
         setTransactionState({ type: "cancelled", id });
-      } else {
+      } 
+      else if (hasMessage(error) && error.message.includes("nothing to liquidate")) {
+        setTransactionState({ 
+          type: "failed", 
+          id, 
+          error: new Error("There are no vaults under-collateralized to liquidate") });
+      } 
+      else {
         console.error(error);
 
         setTransactionState({
