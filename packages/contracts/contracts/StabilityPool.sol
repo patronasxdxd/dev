@@ -675,6 +675,6 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
     receive() external payable {
         _requireCallerIsActivePool();
         collateral = collateral.add(msg.value);
-        StabilityPoolCollateralBalanceUpdated(collateral);
+        emit StabilityPoolCollateralBalanceUpdated(collateral);
     }
 }
