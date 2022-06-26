@@ -12,7 +12,7 @@ import {
 } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 
-import { COIN } from "../../strings";
+import { COIN, ERC20 } from "../../strings";
 
 import { StaticRow } from "./Editor";
 import { LoadingOverlay } from "../LoadingOverlay";
@@ -59,7 +59,7 @@ export const TroveEditor: React.FC<TroveEditorProps> = ({
           borderColor: "border",
         }}>
           Opened Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral (ETH) to it.</Card>} />
+          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ ERC20 }) to it.</Card>} />
         </Flex>
 
         <Flex sx={{
@@ -72,7 +72,7 @@ export const TroveEditor: React.FC<TroveEditorProps> = ({
             label="Collateral"
             inputId="trove-collateral"
             amount={edited.collateral.prettify(4)}
-            unit="ETH"
+            unit={ ERC20 }
           />
 
           <StaticRow label="Debt" inputId="trove-debt" amount={edited.debt.prettify()} unit={COIN} />

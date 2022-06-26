@@ -179,6 +179,14 @@ export class SendableEthersLiquity
     return this._populate.redeemLUSD(amount, maxRedemptionRate, overrides).then(sendTransaction);
   }
 
+  /** {@inheritDoc @liquity/lib-base#SendableLiquity.approveErc20} */
+  approveErc20(
+    allowance?: Decimalish,
+    overrides?: EthersTransactionOverrides
+  ): Promise<SentEthersLiquityTransaction<void>> {
+    return this._populate.approveErc20(allowance, overrides).then(sendTransaction);
+  }
+
   /** {@inheritDoc @liquity/lib-base#SendableLiquity.claimCollateralSurplus} */
   claimCollateralSurplus(
     overrides?: EthersTransactionOverrides

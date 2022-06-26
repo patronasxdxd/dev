@@ -3,7 +3,7 @@ import { Box, Button, Card, Flex, Input, ThemeUICSSProperties } from "theme-ui";
 import { Decimal, Percent, LiquityStoreState } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 import { useLocation } from 'react-router-dom';
-
+import { COIN, ERC20 } from '../strings';
 import { useLiquity } from "../hooks/LiquityContext";
 
 import { SystemStat } from "./SystemStat";
@@ -105,25 +105,25 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
           )}
           <SystemStat 
             info="TVL" 
-            tooltip="The Total Value Locked (TVL) is the total value of Ether locked as collateral in the system, given in ETH and USD." 
+            tooltip={`The Total Value Locked (TVL) is the total value of Ether locked as collateral in the system, given in ${ ERC20 } and USD.`} 
           >
-            {total.collateral.shorten()} ETH
+            {total.collateral.shorten()} { ERC20 }
           </SystemStat>
           <SystemStat 
-            info="LUSD in Stability Pool" 
-            tooltip="The total LUSD currently held in the Stability Pool, expressed as an amount and a fraction of the LUSD supply." 
+            info={`${ COIN } in Stability Pool`}
+            tooltip={`The total ${ COIN } currently held in the Stability Pool, expressed as an amount and a fraction of the ${ COIN } supply.`}
           >
             {lusdInStabilityPool.shorten()}
           </SystemStat>
           <SystemStat 
-            info="LUSD Supply" 
-            tooltip="The total LUSD minted by the Liquity Protocol." 
+            info={`${ COIN } Supply`} 
+            tooltip={`The total ${ COIN } minted by the ThresholdUSD Protocol.`} 
           >
             {total.debt.shorten()}
           </SystemStat>
           <SystemStat 
             info="Recovery Mode" 
-            tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Trove can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Trove's debt. Operations are also restricted that would negatively impact the TCR." 
+            tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Trove's debt. Operations are also restricted that would negatively impact the TCR." 
           >
             {total.collateralRatioIsBelowCritical(price) ? <Box color="danger">Yes</Box> : "No"}
           </SystemStat>
@@ -136,7 +136,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
           borderBottom: 1, 
           borderColor: "border"
         }}>
-          ETH Price
+          { ERC20 } Price
         </Flex>
         <Flex sx={{
           width: "100%",

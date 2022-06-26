@@ -24,6 +24,7 @@ Implemented by [PopulatableEthersLiquity](./lib-ethers.populatableethersliquity.
 |  Method | Description |
 |  --- | --- |
 |  [adjustTrove(params, maxBorrowingRate)](./lib-base.populatableliquity.adjusttrove.md) | Adjust existing Trove by changing its collateral, debt, or both. |
+|  [approveErc20(allowance)](./lib-base.populatableliquity.approveerc20.md) | Allow the borrower operations contract to use user's erc20 tokens for [adjustTrove](./lib-base.transactableliquity.opentrove.md)<!-- -->. |
 |  [borrowLUSD(amount, maxBorrowingRate)](./lib-base.populatableliquity.borrowlusd.md) | Adjust existing Trove by borrowing more LUSD. |
 |  [claimCollateralSurplus()](./lib-base.populatableliquity.claimcollateralsurplus.md) | Claim leftover collateral after a liquidation or redemption. |
 |  [closeTrove()](./lib-base.populatableliquity.closetrove.md) | Close existing Trove by repaying all debt and withdrawing all collateral. |

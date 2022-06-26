@@ -21,6 +21,8 @@ Implemented by [EthersLiquity](./lib-ethers.ethersliquity.md)<!-- -->.
 |  Method | Description |
 |  --- | --- |
 |  [getCollateralSurplusBalance(address)](./lib-base.readableliquity.getcollateralsurplusbalance.md) | Get the amount of leftover collateral available for withdrawal by an address. |
+|  [getErc20TokenAllowance(address)](./lib-base.readableliquity.geterc20tokenallowance.md) | Get the Borrowers Operations contract's allowance of a holder's Erc20 tokens. |
+|  [getErc20TokenBalance(address)](./lib-base.readableliquity.geterc20tokenbalance.md) | Get the amount of Erc20 tokens held by an address. |
 |  [getFees()](./lib-base.readableliquity.getfees.md) | Get a calculator for current fees. |
 |  [getLUSDBalance(address)](./lib-base.readableliquity.getlusdbalance.md) | Get the amount of LUSD held by an address. |
 |  [getLUSDInStabilityPool()](./lib-base.readableliquity.getlusdinstabilitypool.md) | Get the total amount of LUSD currently deposited in the Stability Pool. |

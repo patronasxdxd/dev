@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Decimal, TroveChange } from "@liquity/lib-base";
 
-type ValidTroveChange = Exclude<TroveChange<Decimal>, { type: "invalidCreation" }>;
+export type ValidTroveChange = Exclude<TroveChange<Decimal>, { type: "invalidCreation" }>;
 
 const paramsEq = (a?: Decimal, b?: Decimal) => (a && b ? a.eq(b) : !a && !b);
 

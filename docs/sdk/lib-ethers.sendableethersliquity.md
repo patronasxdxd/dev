@@ -24,6 +24,7 @@ export declare class SendableEthersLiquity implements SendableLiquity<EthersTran
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
 |  [adjustTrove(params, maxBorrowingRateOrOptionalParams, overrides)](./lib-ethers.sendableethersliquity.adjusttrove.md) |  | Adjust existing Trove by changing its collateral, debt, or both. |
+|  [approveErc20(allowance, overrides)](./lib-ethers.sendableethersliquity.approveerc20.md) |  | Allow the borrower operations contract to use user's erc20 tokens for [adjustTrove](./lib-base.transactableliquity.opentrove.md)<!-- -->. |
 |  [borrowLUSD(amount, maxBorrowingRate, overrides)](./lib-ethers.sendableethersliquity.borrowlusd.md) |  | Adjust existing Trove by borrowing more LUSD. |
 |  [claimCollateralSurplus(overrides)](./lib-ethers.sendableethersliquity.claimcollateralsurplus.md) |  | Claim leftover collateral after a liquidation or redemption. |
 |  [closeTrove(overrides)](./lib-ethers.sendableethersliquity.closetrove.md) |  | Close existing Trove by repaying all debt and withdrawing all collateral. |

@@ -11,11 +11,13 @@ import {
 import { useLiquitySelector } from "@liquity/lib-react";
 
 import { useStableTroveChange } from "../../hooks/useStableTroveChange";
+import { useValidationState } from "./validation/useValidationState";
 import { ActionDescription } from "../ActionDescription";
-import { useMyTransactionState } from "../Transaction";
+import { Transaction, useMyTransactionState } from "../Transaction";
+import { useLiquity } from "../../hooks/LiquityContext";
 import { TroveAction } from "./TroveAction";
 import { useTroveView } from "./context/TroveViewContext";
-import { COIN } from "../../strings";
+import { COIN, ERC20 } from "../../strings";
 import { InfoIcon } from "../InfoIcon";
 import { LoadingOverlay } from "../LoadingOverlay";
 import { CollateralRatio } from "./CollateralRatio";
@@ -27,18 +29,18 @@ import {
 } from "./validation/validateTroveChange";
 
 const selector = (state: LiquityStoreState) => {
-  const { trove, fees, price, accountBalance } = state;
+  const { trove, fees, price, erc20TokenBalance } = state;
   return {
     trove,
     fees,
     price,
-    accountBalance,
+    erc20TokenBalance,
     validationContext: selectForTroveChangeValidation(state)
   };
 };
 
 const TRANSACTION_ID = "trove-adjustment";
-const GAS_ROOM_ETH = Decimal.from(0.1);
+const APPROVE_TRANSACTION_ID = "trove-approve";
 
 const feeFrom = (original: Trove, edited: Trove, borrowingRate: Decimal): Decimal => {
   const change = original.whatChanged(edited, borrowingRate);
@@ -81,8 +83,11 @@ const applyUnsavedNetDebtChanges = (unsavedChanges: Difference, trove: Trove) =>
 };
 
 export const Adjusting: React.FC = () => {
+  const {
+    liquity: { send: liquity }
+  } = useLiquity();
   const { dispatchEvent } = useTroveView();
-  const { trove, fees, price, accountBalance, validationContext } = useLiquitySelector(selector);
+  const { trove, fees, price, erc20TokenBalance, validationContext } = useLiquitySelector(selector);
   const editingState = useState<string>();
   const previousTrove = useRef<Trove>(trove);
   const [collateral, setCollateral] = useState<Decimal>(trove.collateral);
@@ -126,10 +131,8 @@ export const Adjusting: React.FC = () => {
   const maxBorrowingRate = borrowingRate.add(0.005);
   const updatedTrove = isDirty ? new Trove(collateral, totalDebt) : trove;
   const feePct = new Percent(borrowingRate);
-  const availableEth = accountBalance.gt(GAS_ROOM_ETH)
-    ? accountBalance.sub(GAS_ROOM_ETH)
-    : Decimal.ZERO;
-  const maxCollateral = trove.collateral.add(availableEth);
+  const availableErc20 = erc20TokenBalance;
+  const maxCollateral = trove.collateral.add(availableErc20);
   const collateralMaxedOut = collateral.eq(maxCollateral);
   const collateralRatio =
     !collateral.isZero && !netDebt.isZero ? updatedTrove.collateralRatio(price) : undefined;
@@ -143,6 +146,8 @@ export const Adjusting: React.FC = () => {
   );
 
   const stableTroveChange = useStableTroveChange(troveChange);
+  const { hasApproved, amountToApprove } = useValidationState(stableTroveChange);
+
   const [gasEstimationState, setGasEstimationState] = useState<GasEstimationState>({ type: "idle" });
 
   const isTransactionPending =
@@ -165,7 +170,7 @@ export const Adjusting: React.FC = () => {
 
         }}>
           Adjusting Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral (ETH) to it.</Card>} />
+          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ ERC20 }) to it.</Card>} />
         </Flex>
 
         <Flex sx={{
@@ -181,7 +186,7 @@ export const Adjusting: React.FC = () => {
             maxAmount={maxCollateral.toString()}
             maxedOut={collateralMaxedOut}
             editingState={editingState}
-            unit="ETH"
+            unit={ ERC20 }
             editedAmount={collateral.toString(4)}
             setEditedAmount={(amount: string) => setCollateral(Decimal.from(amount))}
           />
@@ -241,11 +246,11 @@ export const Adjusting: React.FC = () => {
               <InfoIcon
                 tooltip={
                   <Card variant="tooltip" sx={{ width: "240px" }}>
-                    The total amount of LUSD your Trove will hold.{" "}
+                    The total amount of { COIN } your Trove will hold.{" "}
                     {isDirty && (
                       <>
                         You will need to repay {totalDebt.sub(LUSD_LIQUIDATION_RESERVE).prettify(2)}{" "}
-                        LUSD to reclaim your collateral ({LUSD_LIQUIDATION_RESERVE.toString()} LUSD
+                        { COIN } to reclaim your collateral ({LUSD_LIQUIDATION_RESERVE.toString()} { COIN }
                         Liquidation Reserve excluded).
                       </>
                     )}
@@ -263,16 +268,26 @@ export const Adjusting: React.FC = () => {
             </ActionDescription>
           )}
 
-          <ExpensiveTroveChangeWarning
+          {hasApproved &&
+          (<ExpensiveTroveChangeWarning
             troveChange={stableTroveChange}
             maxBorrowingRate={maxBorrowingRate}
             borrowingFeeDecayToleranceMinutes={60}
             gasEstimationState={gasEstimationState}
             setGasEstimationState={setGasEstimationState}
-          />
+          />)}
 
           <Flex variant="layout.actions" sx={{ flexDirection: "column" }}>
-            {stableTroveChange ? (
+            {!hasApproved && amountToApprove ?
+              <Transaction
+                id={APPROVE_TRANSACTION_ID}
+                send={liquity.approveErc20.bind(liquity, amountToApprove)}
+                showFailure="asTooltip"
+                tooltipPlacement="bottom"
+              >
+                <Button>Approve { ERC20 }</Button>
+              </Transaction>
+            : stableTroveChange ? (
               <TroveAction
                 transactionId={TRANSACTION_ID}
                 change={stableTroveChange}

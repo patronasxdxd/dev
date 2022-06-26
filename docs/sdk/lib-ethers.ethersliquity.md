@@ -30,6 +30,7 @@ The constructor for this class is marked as internal. Third-party code should no
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
 |  [adjustTrove(params, maxBorrowingRateOrOptionalParams, overrides)](./lib-ethers.ethersliquity.adjusttrove.md) |  | Adjust existing Trove by changing its collateral, debt, or both. |
+|  [approveErc20(allowance, overrides)](./lib-ethers.ethersliquity.approveerc20.md) |  | Allow the borrower operations contract to use user's erc20 tokens for [adjustTrove](./lib-base.transactableliquity.opentrove.md)<!-- -->. |
 |  [borrowLUSD(amount, maxBorrowingRate, overrides)](./lib-ethers.ethersliquity.borrowlusd.md) |  | Adjust existing Trove by borrowing more LUSD. |
 |  [claimCollateralSurplus(overrides)](./lib-ethers.ethersliquity.claimcollateralsurplus.md) |  | Claim leftover collateral after a liquidation or redemption. |
 |  [closeTrove(overrides)](./lib-ethers.ethersliquity.closetrove.md) |  | Close existing Trove by repaying all debt and withdrawing all collateral. |
@@ -37,6 +38,8 @@ The constructor for this class is marked as internal. Third-party code should no
 |  [depositCollateral(amount, overrides)](./lib-ethers.ethersliquity.depositcollateral.md) |  | Adjust existing Trove by depositing more collateral. |
 |  [depositLUSDInStabilityPool(amount, overrides)](./lib-ethers.ethersliquity.depositlusdinstabilitypool.md) |  | Make a new Stability Deposit, or top up existing one. |
 |  [getCollateralSurplusBalance(address, overrides)](./lib-ethers.ethersliquity.getcollateralsurplusbalance.md) |  | Get the amount of leftover collateral available for withdrawal by an address. |
+|  [getErc20TokenAllowance(address, overrides)](./lib-ethers.ethersliquity.geterc20tokenallowance.md) |  | Get the Borrowers Operations contract's allowance of a holder's Erc20 tokens. |
+|  [getErc20TokenBalance(address, overrides)](./lib-ethers.ethersliquity.geterc20tokenbalance.md) |  | Get the amount of Erc20 tokens held by an address. |
 |  [getFees(overrides)](./lib-ethers.ethersliquity.getfees.md) |  | Get a calculator for current fees. |
 |  [getLUSDBalance(address, overrides)](./lib-ethers.ethersliquity.getlusdbalance.md) |  | Get the amount of LUSD held by an address. |
 |  [getLUSDInStabilityPool(overrides)](./lib-ethers.ethersliquity.getlusdinstabilitypool.md) |  | Get the total amount of LUSD currently deposited in the Stability Pool. |

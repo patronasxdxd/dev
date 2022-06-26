@@ -29,6 +29,8 @@ The constructor for this class is marked as internal. Third-party code should no
 |  --- | --- | --- |
 |  [connect(signerOrProvider, optionalParams)](./lib-ethers.readableethersliquity.connect_1.md) | <code>static</code> |  |
 |  [getCollateralSurplusBalance(address, overrides)](./lib-ethers.readableethersliquity.getcollateralsurplusbalance.md) |  | Get the amount of leftover collateral available for withdrawal by an address. |
+|  [getErc20TokenAllowance(address, overrides)](./lib-ethers.readableethersliquity.geterc20tokenallowance.md) |  | Get the Borrowers Operations contract's allowance of a holder's Erc20 tokens. |
+|  [getErc20TokenBalance(address, overrides)](./lib-ethers.readableethersliquity.geterc20tokenbalance.md) |  | Get the amount of Erc20 tokens held by an address. |
 |  [getFees(overrides)](./lib-ethers.readableethersliquity.getfees.md) |  | Get a calculator for current fees. |
 |  [getLUSDBalance(address, overrides)](./lib-ethers.readableethersliquity.getlusdbalance.md) |  | Get the amount of LUSD held by an address. |
 |  [getLUSDInStabilityPool(overrides)](./lib-ethers.readableethersliquity.getlusdinstabilitypool.md) |  | Get the total amount of LUSD currently deposited in the Stability Pool. |
