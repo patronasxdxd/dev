@@ -23,6 +23,7 @@ Implemented by [EthersLiquity](./lib-ethers.ethersliquity.md)<!-- -->.
 |  Method | Description |
 |  --- | --- |
 |  [adjustTrove(params, maxBorrowingRate)](./lib-base.transactableliquity.adjusttrove.md) | Adjust existing Trove by changing its collateral, debt, or both. |
+|  [approveErc20(allowance)](./lib-base.transactableliquity.approveerc20.md) | Allow the borrower operations contract to use user's erc20 tokens for [adjustTrove](./lib-base.transactableliquity.opentrove.md)<!-- -->. |
 |  [borrowLUSD(amount, maxBorrowingRate)](./lib-base.transactableliquity.borrowlusd.md) | Adjust existing Trove by borrowing more LUSD. |
 |  [claimCollateralSurplus()](./lib-base.transactableliquity.claimcollateralsurplus.md) | Claim leftover collateral after a liquidation or redemption. |
 |  [closeTrove()](./lib-base.transactableliquity.closetrove.md) | Close existing Trove by repaying all debt and withdrawing all collateral. |

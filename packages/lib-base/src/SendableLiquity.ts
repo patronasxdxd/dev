@@ -228,4 +228,9 @@ export interface SendableLiquity<R = unknown, S = unknown>
   /** {@inheritDoc TransactableLiquity.claimCollateralSurplus} */
   claimCollateralSurplus(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
 
+  /** {@inheritDoc TransactableLiquity.approveErc20} */
+  approveErc20(
+    allowance?: Decimalish
+  ): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
+
 }

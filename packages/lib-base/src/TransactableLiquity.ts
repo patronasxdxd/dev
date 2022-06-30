@@ -393,4 +393,20 @@ export interface TransactableLiquity {
    * Throws {@link TransactionFailedError} in case of transaction failure.
    */
   claimCollateralSurplus(): Promise<void>;
+
+    /**
+   * Allow the borrower operations contract to use user's erc20 tokens for
+   * {@link @liquity/lib-base#TransactableLiquity.openTrove | adjustTrove}.
+   *
+   * @param allowance - Maximum amount of LP tokens that will be transferrable to liquidity mining
+   *                    (`2^256 - 1` by default).
+   *
+   * @remarks
+   * Must be performed before calling
+   * {@link @liquity/lib-base#TransactableLiquity.openTrove | adjustTrove()}.
+   *
+   * @throws
+   * Throws {@link TransactionFailedError} in case of transaction failure.
+   */
+     approveErc20(allowance?: Decimalish): Promise<void>;
 }

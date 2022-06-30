@@ -934,7 +934,6 @@ export class PopulatableEthersLiquity
   ): Promise<PopulatedEthersLiquityTransaction<TroveAdjustmentDetails>> {
     const address = _requireAddress(this._readable.connection, overrides);
     const { borrowerOperations } = _getContracts(this._readable.connection);
-
     const normalizedParams = _normalizeTroveAdjustment(params);
     const { depositCollateral, withdrawCollateral, borrowLUSD, repayLUSD } = normalizedParams;
 
@@ -1247,5 +1246,20 @@ export class PopulatableEthersLiquity
 
     return populateRedemption(attemptedLUSDAmount, maxRedemptionRate, truncatedAmount, partialHints);
   }
-
+  
+  /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.approveErc20} */
+  async approveErc20(
+    allowance?: Decimalish,
+    overrides?: EthersTransactionOverrides
+  ): Promise<PopulatedEthersLiquityTransaction<void>> {
+    const { erc20, borrowerOperations } = _getContracts(this._readable.connection);
+    return this._wrapSimpleTransaction(
+      await erc20.estimateAndPopulate.approve(
+        { ...overrides },
+        id,
+        borrowerOperations.address,
+        Decimal.from(allowance ?? Decimal.INFINITY).hex
+      )
+    );
+  }
 }

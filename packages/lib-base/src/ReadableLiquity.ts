@@ -99,6 +99,20 @@ export interface ReadableLiquity {
   getLUSDBalance(address?: string): Promise<Decimal>;
 
   /**
+   * Get the amount of Erc20 tokens held by an address.
+   *
+   * @param address - Address whose balance should be retrieved.
+   */
+  getErc20TokenBalance(address?: string): Promise<Decimal>;
+
+  /**
+   * Get the Borrowers Operations contract's allowance of a holder's Erc20 tokens.
+   *
+   * @param address - Address holding the Erc20 tokens.
+   */
+  getErc20TokenAllowance(address?: string): Promise<Decimal>;
+
+  /**
    * Get the amount of leftover collateral available for withdrawal by an address.
    *
    * @remarks

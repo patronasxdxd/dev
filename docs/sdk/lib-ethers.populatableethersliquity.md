@@ -24,6 +24,7 @@ export declare class PopulatableEthersLiquity implements PopulatableLiquity<Ethe
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
 |  [adjustTrove(params, maxBorrowingRateOrOptionalParams, overrides)](./lib-ethers.populatableethersliquity.adjusttrove.md) |  | Adjust existing Trove by changing its collateral, debt, or both. |
+|  [approveErc20(allowance, overrides)](./lib-ethers.populatableethersliquity.approveerc20.md) |  | Allow the borrower operations contract to use user's erc20 tokens for [adjustTrove](./lib-base.transactableliquity.opentrove.md)<!-- -->. |
 |  [borrowLUSD(amount, maxBorrowingRate, overrides)](./lib-ethers.populatableethersliquity.borrowlusd.md) |  | Adjust existing Trove by borrowing more LUSD. |
 |  [claimCollateralSurplus(overrides)](./lib-ethers.populatableethersliquity.claimcollateralsurplus.md) |  | Claim leftover collateral after a liquidation or redemption. |
 |  [closeTrove(overrides)](./lib-ethers.populatableethersliquity.closetrove.md) |  | Close existing Trove by repaying all debt and withdrawing all collateral. |

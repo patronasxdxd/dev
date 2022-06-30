@@ -114,6 +114,20 @@ export class _CachedReadableLiquity<T extends unknown[]>
     );
   }
 
+  async getErc20TokenBalance(address?: string, ...extraParams: T): Promise<Decimal> {
+    return (
+      this._cache.getErc20TokenBalance(address, ...extraParams) ??
+      this._readable.getErc20TokenBalance(address, ...extraParams)
+    );
+  }
+
+  async getErc20TokenAllowance(address?: string, ...extraParams: T): Promise<Decimal> {
+    return (
+      this._cache.getErc20TokenAllowance(address, ...extraParams) ??
+      this._readable.getErc20TokenAllowance(address, ...extraParams)
+    );
+  }
+
   async getCollateralSurplusBalance(address?: string, ...extraParams: T): Promise<Decimal> {
     return (
       this._cache.getCollateralSurplusBalance(address, ...extraParams) ??

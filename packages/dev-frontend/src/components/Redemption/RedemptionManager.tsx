@@ -97,7 +97,7 @@ export const RedemptionManager: React.FC = () => {
         }}>
           Redeem
         </Flex>
-
+        
         <Flex sx={{
           width: "100%",
           flexDirection: "column",

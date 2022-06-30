@@ -213,6 +213,16 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     return this._readable.getLUSDBalance(address, overrides);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getErc20TokenBalance} */
+  getErc20TokenBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+    return this._readable.getErc20TokenBalance(address, overrides);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getErc20TokenAllowance} */
+  getErc20TokenAllowance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+    return this._readable.getErc20TokenAllowance(address, overrides);
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getCollateralSurplusBalance} */
   getCollateralSurplusBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     return this._readable.getCollateralSurplusBalance(address, overrides);
@@ -465,6 +475,17 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     overrides?: EthersTransactionOverrides
   ): Promise<RedemptionDetails> {
     return this.send.redeemLUSD(amount, maxRedemptionRate, overrides).then(waitForSuccess);
+  }
+
+  /**
+   * {@inheritDoc @liquity/lib-base#TransactableLiquity.approveErc20}
+   *
+   * @throws
+   * Throws {@link EthersTransactionFailedError} in case of transaction failure.
+   * Throws {@link EthersTransactionCancelledError} if the transaction is cancelled or replaced.
+   */
+  approveErc20(allowance?: Decimalish, overrides?: EthersTransactionOverrides): Promise<void> {
+    return this.send.approveErc20(allowance, overrides).then(waitForSuccess);
   }
 
   /**

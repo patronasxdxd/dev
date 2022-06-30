@@ -251,4 +251,9 @@ export interface PopulatableLiquity<R = unknown, S = unknown, P = unknown>
     PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>
   >;
 
+   /** {@inheritDoc TransactableLiquity.approveErc20} */
+   approveErc20(
+    allowance?: Decimalish
+  ): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
+
 }

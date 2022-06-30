@@ -4,6 +4,8 @@ import { CollateralSurplusAction } from "../CollateralSurplusAction";
 import { LiquityStoreState } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 import { useTroveView } from "./context/TroveViewContext";
+import { COIN } from "../../strings";
+
 import { InfoMessage } from "../InfoMessage";
 
 const select = ({ collateralSurplusBalance }: LiquityStoreState) => ({
@@ -39,7 +41,7 @@ export const LiquidatedTrove: React.FC = () => {
           <InfoMessage title="Your Trove has been liquidated.">
             {hasSurplusCollateral
               ? "Please reclaim your remaining collateral before opening a new Trove."
-              : "You can borrow LUSD by opening a Trove."}
+              : `You can borrow ${ COIN } by opening a Trove.`}
           </InfoMessage>
 
           <Flex variant="layout.actions">

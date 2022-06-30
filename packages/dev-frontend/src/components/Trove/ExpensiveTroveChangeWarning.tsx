@@ -26,7 +26,6 @@ export const ExpensiveTroveChangeWarning: React.FC<ExpensiveTroveChangeWarningPa
   setGasEstimationState
 }) => {
   const { liquity } = useLiquity();
-
   useEffect(() => {
     if (troveChange && troveChange.type !== "closure") {
       setGasEstimationState({ type: "inProgress" });

@@ -6,7 +6,7 @@ import { DisabledEditableRow } from "./Editor";
 import { useTroveView } from "./context/TroveViewContext";
 import { Icon } from "../Icon";
 import { InfoIcon } from "../InfoIcon";
-import { COIN } from "../../strings";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
 import { CollateralRatio } from "./CollateralRatio";
 
 const select = ({ trove, price }: LiquityStoreState) => ({ trove, price });
@@ -34,7 +34,7 @@ export const ReadOnlyTrove: React.FC = () => {
           borderColor: "border",
         }}>
           Opened Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral (ETH) to it.</Card>} />
+          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ FIRST_ERC20_COLLATERAL }) to it.</Card>} />
         </Flex>
         <Flex sx={{
           width: "100%",
@@ -47,14 +47,14 @@ export const ReadOnlyTrove: React.FC = () => {
               label="Collateral"
               inputId="trove-collateral"
               amount={trove.collateral.prettify(4)}
-              unit="ETH"
+              unit={ FIRST_ERC20_COLLATERAL }
             />
 
             <DisabledEditableRow
               label="Debt"
               inputId="trove-debt"
               amount={trove.debt.prettify()}
-              unit={COIN}
+              unit={ COIN }
             />
 
             <CollateralRatio value={trove.collateralRatio(price)} sx={{ mt: -3 }} />

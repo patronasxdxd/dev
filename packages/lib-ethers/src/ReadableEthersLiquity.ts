@@ -284,6 +284,22 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return lusdToken.balanceOf(address, { ...overrides }).then(decimalify);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getErc20TokenBalance} */
+  getErc20TokenBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+    address ??= _requireAddress(this.connection);
+    const { erc20 } = _getContracts(this.connection);
+
+    return erc20.balanceOf(address, { ...overrides }).then(decimalify);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getErc20TokenAllowance} */
+  getErc20TokenAllowance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+    address ??= _requireAddress(this.connection);
+    const { erc20, borrowerOperations } = _getContracts(this.connection);
+
+    return erc20.allowance(address, borrowerOperations.address, { ...overrides }).then(decimalify);
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getCollateralSurplusBalance} */
   getCollateralSurplusBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     address ??= _requireAddress(this.connection);
@@ -491,6 +507,18 @@ class _BlockPolledReadableEthersLiquity
     return this._userHit(address, overrides)
       ? this.store.state.lusdBalance
       : this._readable.getLUSDBalance(address, overrides);
+  }
+  
+  async getErc20TokenBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+    return this._userHit(address, overrides)
+      ? this.store.state.erc20TokenBalance
+      : this._readable.getErc20TokenBalance(address, overrides);
+  }
+
+  async getErc20TokenAllowance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+    return this._userHit(address, overrides)
+      ? this.store.state.erc20TokenAllowance
+      : this._readable.getErc20TokenAllowance(address, overrides);
   }
 
   async getCollateralSurplusBalance(

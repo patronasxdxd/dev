@@ -17,9 +17,8 @@ const select = ({
   total
 });
 
-
 export const ColRatio: React.FC<SystemStatsProps> = ({ variant = "mainCards" }) => {
-  
+
   const {
     price,
     total

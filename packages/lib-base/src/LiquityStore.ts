@@ -20,6 +20,12 @@ export interface LiquityStoreBaseState {
   /** User's LUSD token balance. */
   lusdBalance: Decimal;
 
+  /** User's Uniswap ETH/LUSD LP token balance. */
+  erc20TokenBalance: Decimal;
+
+  /** The liquidity mining contract's allowance of user's Uniswap ETH/LUSD LP tokens. */
+  erc20TokenAllowance: Decimal;
+
   /**
    * Amount of leftover collateral available for withdrawal to the user.
    *
@@ -293,6 +299,20 @@ export abstract class LiquityStore<T = unknown> {
         "lusdBalance",
         baseState.lusdBalance,
         baseStateUpdate.lusdBalance
+      ),
+
+      erc20TokenBalance: this._updateIfChanged(
+        eq,
+        "erc20TokenBalance",
+        baseState.erc20TokenBalance,
+        baseStateUpdate.erc20TokenBalance
+      ),
+
+      erc20TokenAllowance: this._updateIfChanged(
+        eq,
+        "erc20TokenAllowance",
+        baseState. erc20TokenAllowance,
+        baseStateUpdate.erc20TokenAllowance
       ),
 
       collateralSurplusBalance: this._updateIfChanged(

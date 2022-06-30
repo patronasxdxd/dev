@@ -3,6 +3,7 @@ import { Box, Card, Container, Heading, Link, Paragraph } from "theme-ui";
 import { SystemStatsCard } from "../components/SystemStatsCard";
 import { Redemption } from "../components/Redemption/Redemption";
 import { InfoMessage } from "../components/InfoMessage";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../strings";
 
 export const RedemptionPage: React.FC = () => {
   return (
@@ -17,7 +18,7 @@ export const RedemptionPage: React.FC = () => {
               Redemptions are expected to be carried out by bots when arbitrage opportunities emerge.
             </Paragraph>
             <Paragraph sx={{ mb: "0.5em" }}>
-              Most of the time you will get a better rate for converting thUSD to tBTC on Uniswap  or other exchanges.
+              Most of the time you will get a better rate for converting { COIN } to { FIRST_ERC20_COLLATERAL } on Uniswap  or other exchanges.
             </Paragraph>
             <Paragraph sx={{ mb: "0.5em" }}>
               Note: Redemption is not for repaying your loan. To repay your loan, adjust your Trove on the Dashboard.

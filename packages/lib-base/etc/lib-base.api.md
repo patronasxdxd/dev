@@ -10,6 +10,10 @@ export class _CachedReadableLiquity<T extends unknown[]> implements _ReadableLiq
     // (undocumented)
     getCollateralSurplusBalance(address?: string, ...extraParams: T): Promise<Decimal>;
     // (undocumented)
+    getErc20TokenAllowance(address?: string, ...extraParams: T): Promise<Decimal>;
+    // (undocumented)
+    getErc20TokenBalance(address?: string, ...extraParams: T): Promise<Decimal>;
+    // (undocumented)
     getFees(...extraParams: T): Promise<Fees>;
     // (undocumented)
     getLUSDBalance(address?: string, ...extraParams: T): Promise<Decimal>;
@@ -230,6 +234,8 @@ export abstract class LiquityStore<T = unknown> {
 export interface LiquityStoreBaseState {
     accountBalance: Decimal;
     collateralSurplusBalance: Decimal;
+    erc20TokenAllowance: Decimal;
+    erc20TokenBalance: Decimal;
     // @internal (undocumented)
     _feesInNormalMode: Fees;
     lusdBalance: Decimal;
@@ -377,6 +383,7 @@ export type _PopulatableFrom<T, P> = {
 // @public
 export interface PopulatableLiquity<R = unknown, S = unknown, P = unknown> extends _PopulatableFrom<SendableLiquity<R, S>, P> {
     adjustTrove(params: TroveAdjustmentParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
+    approveErc20(allowance?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
     borrowLUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
     claimCollateralSurplus(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
     closeTrove(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveClosureDetails>>>>;
@@ -413,6 +420,8 @@ export interface PopulatedRedemption<P = unknown, S = unknown, R = unknown> exte
 // @public
 export interface ReadableLiquity {
     getCollateralSurplusBalance(address?: string): Promise<Decimal>;
+    getErc20TokenAllowance(address?: string): Promise<Decimal>;
+    getErc20TokenBalance(address?: string): Promise<Decimal>;
     getFees(): Promise<Fees>;
     getLUSDBalance(address?: string): Promise<Decimal>;
     getLUSDInStabilityPool(): Promise<Decimal>;
@@ -463,6 +472,7 @@ export type _SendableFrom<T, R, S> = {
 // @public
 export interface SendableLiquity<R = unknown, S = unknown> extends _SendableFrom<TransactableLiquity, R, S> {
     adjustTrove(params: TroveAdjustmentParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>;
+    approveErc20(allowance?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
     borrowLUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>;
     claimCollateralSurplus(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
     closeTrove(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveClosureDetails>>>;
@@ -540,6 +550,7 @@ export const _successfulReceipt: <R, D>(rawReceipt: R, details: D, toString?: ((
 // @public
 export interface TransactableLiquity {
     adjustTrove(params: TroveAdjustmentParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<TroveAdjustmentDetails>;
+    approveErc20(allowance?: Decimalish): Promise<void>;
     borrowLUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<TroveAdjustmentDetails>;
     claimCollateralSurplus(): Promise<void>;
     closeTrove(): Promise<TroveClosureDetails>;

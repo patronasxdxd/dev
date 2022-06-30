@@ -13,7 +13,7 @@ import {
   TroveCreationParams
 } from "@liquity/lib-base";
 
-import { COIN } from "../../../strings";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../../../strings";
 
 import { ActionDescription, Amount } from "../../ActionDescription";
 import { ErrorDescription } from "../../ErrorDescription";
@@ -29,7 +29,7 @@ const TroveChangeDescription: React.FC<TroveAdjustmentDescriptionParams> = ({ pa
   <ActionDescription>
     {params.depositCollateral && params.borrowLUSD ? (
       <>
-        You will deposit <Amount>{params.depositCollateral.prettify()} ETH</Amount> and receive{" "}
+        You will deposit <Amount>{params.depositCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount> and receive{" "}
         <Amount>
           {params.borrowLUSD.prettify()} {COIN}
         </Amount>
@@ -40,29 +40,29 @@ const TroveChangeDescription: React.FC<TroveAdjustmentDescriptionParams> = ({ pa
         <Amount>
           {params.repayLUSD.prettify()} {COIN}
         </Amount>{" "}
-        and receive <Amount>{params.withdrawCollateral.prettify()} ETH</Amount>
+        and receive <Amount>{params.withdrawCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount>
       </>
     ) : params.depositCollateral && params.repayLUSD ? (
       <>
-        You will deposit <Amount>{params.depositCollateral.prettify()} ETH</Amount> and pay{" "}
+        You will deposit <Amount>{params.depositCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount> and pay{" "}
         <Amount>
           {params.repayLUSD.prettify()} {COIN}
         </Amount>
       </>
     ) : params.borrowLUSD && params.withdrawCollateral ? (
       <>
-        You will receive <Amount>{params.withdrawCollateral.prettify()} ETH</Amount> and{" "}
+        You will receive <Amount>{params.withdrawCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount> and{" "}
         <Amount>
           {params.borrowLUSD.prettify()} {COIN}
         </Amount>
       </>
     ) : params.depositCollateral ? (
       <>
-        You will deposit <Amount>{params.depositCollateral.prettify()} ETH</Amount>
+        You will deposit <Amount>{params.depositCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount>
       </>
     ) : params.withdrawCollateral ? (
       <>
-        You will receive <Amount>{params.withdrawCollateral.prettify()} ETH</Amount>
+        You will receive <Amount>{params.withdrawCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount>
       </>
     ) : params.borrowLUSD ? (
       <>
@@ -86,10 +86,10 @@ const TroveChangeDescription: React.FC<TroveAdjustmentDescriptionParams> = ({ pa
 export const selectForTroveChangeValidation = ({
   price,
   total,
-  accountBalance,
+  erc20TokenBalance,
   lusdBalance,
   numberOfTroves
-}: LiquityStoreState) => ({ price, total, accountBalance, lusdBalance, numberOfTroves });
+}: LiquityStoreState) => ({ price, total, erc20TokenBalance, lusdBalance, numberOfTroves });
 
 type TroveChangeValidationSelectedState = ReturnType<typeof selectForTroveChangeValidation>;
 
@@ -111,7 +111,6 @@ export const validateTroveChange = (
 ] => {
   const { total, price } = selectedState;
   const change = originalTrove.whatChanged(adjustedTrove, borrowingRate);
-
   if (!change) {
     return [undefined, undefined];
   }
@@ -167,7 +166,7 @@ const validateTroveCreation = (
     resultingTrove,
     recoveryMode,
     wouldTriggerRecoveryMode,
-    accountBalance,
+    erc20TokenBalance,
     price
   }: TroveChangeValidationContext
 ): JSX.Element | null => {
@@ -211,11 +210,11 @@ const validateTroveCreation = (
     }
   }
 
-  if (depositCollateral.gt(accountBalance)) {
+  if (depositCollateral.gt(erc20TokenBalance)) {
     return (
       <ErrorDescription>
         The amount you're trying to deposit exceeds your balance by{" "}
-        <Amount>{depositCollateral.sub(accountBalance).prettify()} ETH</Amount>.
+        <Amount>{depositCollateral.sub(erc20TokenBalance).prettify()} { FIRST_ERC20_COLLATERAL }</Amount>.
       </ErrorDescription>
     );
   }
@@ -231,7 +230,7 @@ const validateTroveAdjustment = (
     recoveryMode,
     wouldTriggerRecoveryMode,
     price,
-    accountBalance,
+    erc20TokenBalance,
     lusdBalance
   }: TroveChangeValidationContext
 ): JSX.Element | null => {
@@ -307,11 +306,11 @@ const validateTroveAdjustment = (
     }
   }
 
-  if (depositCollateral?.gt(accountBalance)) {
+  if (depositCollateral?.gt(erc20TokenBalance)) {
     return (
       <ErrorDescription>
         The amount you're trying to deposit exceeds your balance by{" "}
-        <Amount>{depositCollateral.sub(accountBalance).prettify()} ETH</Amount>.
+        <Amount>{depositCollateral.sub(erc20TokenBalance).prettify()} {}</Amount>.
       </ErrorDescription>
     );
   }
