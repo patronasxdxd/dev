@@ -37,12 +37,12 @@ export const BottomCard: React.FC<BottomCardProps> = ({
           width: "100%",
           flexDirection: "column",
           pt: "2.8em",
-          px: ["1em", 0, "1.6em"],
+          px: ["1em", 0, 0, "1.6em"],
           gap: "1em"
         }}>
           {token} available 
           <Flex variant="layout.balanceRow">
-            <GenericIcon imgSrc="./icons/threshold-icon.svg" height={"18px"} />
+            <GenericIcon imgSrc={"./icons/threshold-icon.svg"} height={"18px"} />
             <Box sx={{ fontSize: 3 }}>
               {children}
             </Box>

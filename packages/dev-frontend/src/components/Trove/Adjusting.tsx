@@ -17,7 +17,7 @@ import { Transaction, useMyTransactionState } from "../Transaction";
 import { useLiquity } from "../../hooks/LiquityContext";
 import { TroveAction } from "./TroveAction";
 import { useTroveView } from "./context/TroveViewContext";
-import { COIN, ERC20 } from "../../strings";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
 import { InfoIcon } from "../InfoIcon";
 import { LoadingOverlay } from "../LoadingOverlay";
 import { CollateralRatio } from "./CollateralRatio";
@@ -170,7 +170,7 @@ export const Adjusting: React.FC = () => {
 
         }}>
           Adjusting Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ ERC20 }) to it.</Card>} />
+          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ FIRST_ERC20_COLLATERAL }) to it.</Card>} />
         </Flex>
 
         <Flex sx={{
@@ -186,7 +186,7 @@ export const Adjusting: React.FC = () => {
             maxAmount={maxCollateral.toString()}
             maxedOut={collateralMaxedOut}
             editingState={editingState}
-            unit={ ERC20 }
+            unit={ FIRST_ERC20_COLLATERAL }
             editedAmount={collateral.toString(4)}
             setEditedAmount={(amount: string) => setCollateral(Decimal.from(amount))}
           />
@@ -285,7 +285,7 @@ export const Adjusting: React.FC = () => {
                 showFailure="asTooltip"
                 tooltipPlacement="bottom"
               >
-                <Button>Approve { ERC20 }</Button>
+                <Button>Approve { FIRST_ERC20_COLLATERAL }</Button>
               </Transaction>
             : stableTroveChange ? (
               <TroveAction

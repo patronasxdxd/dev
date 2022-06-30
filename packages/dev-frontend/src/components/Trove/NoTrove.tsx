@@ -5,7 +5,7 @@ import { useTroveView } from "./context/TroveViewContext";
 import { LiquityStoreState } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 
-import { COIN, ERC20 } from "../../strings";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
 import { ActionDescription } from "../ActionDescription";
 import { GenericIcon } from "../GenericIcon";
 import { InfoIcon } from "../InfoIcon";
@@ -34,7 +34,7 @@ export const NoTrove: React.FC = props => {
           borderColor: "border"
         }}>
           Open a Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral { ERC20 } to it.</Card>} />
+          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral { FIRST_ERC20_COLLATERAL } to it.</Card>} />
         </Flex>
         <Flex sx={{
           width: "100%",
@@ -45,14 +45,14 @@ export const NoTrove: React.FC = props => {
           <ActionDescription title={`You haven't borrowed ${COIN} any yet`}>
             You can borrow { COIN } by opening a vault.
           </ActionDescription>
-          { ERC20 } available 
+          { FIRST_ERC20_COLLATERAL } available 
           <Flex variant="layout.balanceRow">
             <GenericIcon imgSrc="./icons/threshold-icon.svg" height={"18px"} />
             <Box sx={{ fontSize: 3 }}>
               {!erc20TokenBalance.eq(0) ? erc20TokenBalance.prettify() : '--'}
             </Box>
             <Box sx={{ fontSize: 14, pt: 1 }}>
-              { ERC20 }
+              { FIRST_ERC20_COLLATERAL }
             </Box>
           </Flex>
           <Button onClick={handleOpenTrove} sx={{ mt: 2, width: "100%" }}>Open a Vault</Button>

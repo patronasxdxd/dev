@@ -3,7 +3,7 @@ import { Box, Button, Card, Flex, Input, ThemeUICSSProperties } from "theme-ui";
 import { Decimal, Percent, LiquityStoreState } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 import { useLocation } from 'react-router-dom';
-import { COIN, ERC20 } from '../strings';
+import { COIN, FIRST_ERC20_COLLATERAL } from '../strings';
 import { useLiquity } from "../hooks/LiquityContext";
 
 import { SystemStat } from "./SystemStat";
@@ -105,9 +105,9 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
           )}
           <SystemStat 
             info="TVL" 
-            tooltip={`The Total Value Locked (TVL) is the total value of Ether locked as collateral in the system, given in ${ ERC20 } and USD.`} 
+            tooltip={`The Total Value Locked (TVL) is the total value of Ether locked as collateral in the system, given in ${ FIRST_ERC20_COLLATERAL } and USD.`} 
           >
-            {total.collateral.shorten()} { ERC20 }
+            {total.collateral.shorten()} { FIRST_ERC20_COLLATERAL }
           </SystemStat>
           <SystemStat 
             info={`${ COIN } in Stability Pool`}
@@ -136,7 +136,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
           borderBottom: 1, 
           borderColor: "border"
         }}>
-          { ERC20 } Price
+          { FIRST_ERC20_COLLATERAL } Price
         </Flex>
         <Flex sx={{
           width: "100%",
