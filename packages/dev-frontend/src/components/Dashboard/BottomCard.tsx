@@ -11,6 +11,7 @@ type BottomCardProps = {
   action: string;
   token: string;
   path: string;
+  disabled?: boolean;
 };
 
 export const BottomCard: React.FC<BottomCardProps> = ({ 
@@ -19,6 +20,7 @@ export const BottomCard: React.FC<BottomCardProps> = ({
   action, 
   token, 
   path, 
+  disabled,
   children
 }) => {
     return (
@@ -51,7 +53,7 @@ export const BottomCard: React.FC<BottomCardProps> = ({
             </Box>
           </Flex>
           <NavLink to={path} style={{ textDecoration: 'none' }}>
-            <Button sx={{ mt: 2, width: "100%" }}>
+            <Button sx={{ mt: 2, width: "100%" }} disabled={disabled}>
               {action}
             </Button>
           </NavLink>
