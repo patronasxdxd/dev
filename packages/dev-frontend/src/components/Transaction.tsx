@@ -422,6 +422,7 @@ export const TransactionMonitor: React.FC = () => {
             : "primary",
         p: 3,
         pl: 4,
+        left: 0,
         position: "fixed",
         width: "100vw",
         bottom: 0,
