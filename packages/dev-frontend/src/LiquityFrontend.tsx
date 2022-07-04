@@ -95,9 +95,9 @@ export const LiquityFrontend: React.FC<LiquityFrontendProps> = ({ loader }) => {
                       <Route path="/borrow" exact>
                         <VaultPage />
                       </Route>
-                      <Route path="/earn" exact>
+                      {/*<Route path="/earn" exact>
                         <StabilityPoolPage />
-                      </Route>
+                      </Route>*/}
                       <Route path="/redemption">
                         <RedemptionPage />
                       </Route>

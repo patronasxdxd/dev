@@ -213,11 +213,7 @@ export const Opening: React.FC = () => {
           )}
 
           <Flex variant="layout.actions" sx={{ flexDirection: "column" }}>
-            {gasEstimationState.type === "inProgress" ? (
-              <Button disabled>
-                <Spinner size="24px" sx={{ color: "background" }} />
-              </Button>
-            ) : !hasApproved && amountToApprove ? (
+            {!hasApproved && amountToApprove ? (
               <Transaction
                 id={APPROVE_TRANSACTION_ID}
                 send={liquity.approveErc20.bind(liquity, amountToApprove)}
@@ -226,6 +222,10 @@ export const Opening: React.FC = () => {
               >
                 <Button>Approve { FIRST_ERC20_COLLATERAL }</Button>
               </Transaction>
+              ) : gasEstimationState.type === "inProgress" ? (
+                <Button disabled>
+                  <Spinner size="24px" sx={{ color: "background" }} />
+                </Button>
               ) : stableTroveChange ? (
               <TroveAction
                 transactionId={TRANSACTION_ID}
