@@ -41,6 +41,9 @@ export interface LiquityStoreBaseState {
   /** Total amount of LUSD currently deposited in the Stability Pool. */
   lusdInStabilityPool: Decimal;
 
+  /** Total amount of LUSD currently deposited in the PCV Pool. */
+  pcvBalance: Decimal;
+
   /** Total collateral and debt in the Liquity system. */
   total: Trove;
 
@@ -299,6 +302,13 @@ export abstract class LiquityStore<T = unknown> {
         "lusdBalance",
         baseState.lusdBalance,
         baseStateUpdate.lusdBalance
+      ),
+
+      pcvBalance: this._updateIfChanged(
+        eq,
+        "pcvBalance",
+        baseState.pcvBalance,
+        baseStateUpdate.pcvBalance
       ),
 
       erc20TokenBalance: this._updateIfChanged(

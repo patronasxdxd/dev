@@ -107,6 +107,13 @@ export class _CachedReadableLiquity<T extends unknown[]>
     );
   }
 
+  async getPCVBalance(...extraParams: T): Promise<Decimal> {
+    return (
+      this._cache.getPCVBalance(...extraParams) ??
+      this._readable.getPCVBalance(...extraParams)
+    );
+  }
+
   async getLUSDBalance(address?: string, ...extraParams: T): Promise<Decimal> {
     return (
       this._cache.getLUSDBalance(address, ...extraParams) ??

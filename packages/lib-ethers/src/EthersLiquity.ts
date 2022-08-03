@@ -208,6 +208,11 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     return this._readable.getLUSDInStabilityPool(overrides);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getPCVBalance} */
+  getPCVBalance(overrides?: EthersCallOverrides): Promise<Decimal> {
+    return this._readable.getPCVBalance(overrides);
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getLUSDBalance} */
   getLUSDBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     return this._readable.getLUSDBalance(address, overrides);

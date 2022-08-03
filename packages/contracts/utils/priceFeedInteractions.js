@@ -135,6 +135,6 @@
 //     Therefore, expected gas cost of a getLatestPrice() call is within a Trove function is (35k - 27.5k) 
 //     = 7500 gas upper bound.
     
-//     To check, deploy an instance of FunctionCaller contract to ropsten and mainnet, 
+//     To check, deploy an instance of FunctionCaller contract to rinkeby and mainnet, 
 //     with a wrapped getLatestPrice() call. */
 // })();
