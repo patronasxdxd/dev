@@ -77,7 +77,6 @@ contract('HintHelpers', async accounts => {
       contracts.stabilityPool.address,
       contracts.borrowerOperations.address
     )
-    const LQTYContracts = await deploymentHelper.deployLQTYContracts()
 
     sortedTroves = contracts.sortedTroves
     troveManager = contracts.troveManager
@@ -85,8 +84,7 @@ contract('HintHelpers', async accounts => {
     hintHelpers = contracts.hintHelpers
     priceFeed = contracts.priceFeedTestnet
 
-    await deploymentHelper.connectCoreContracts(contracts, LQTYContracts)
-    await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
+    await deploymentHelper.connectCoreContracts(contracts)
 
     numAccounts = 10
 

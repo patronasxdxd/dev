@@ -43,7 +43,6 @@ contract('TroveManager - Redistribution reward calculations', async accounts => 
       contracts.stabilityPool.address,
       contracts.borrowerOperations.address
     )
-    const LQTYContracts = await deploymentHelper.deployLQTYContracts()
 
     priceFeed = contracts.priceFeedTestnet
     lusdToken = contracts.lusdToken
@@ -56,8 +55,7 @@ contract('TroveManager - Redistribution reward calculations', async accounts => 
     functionCaller = contracts.functionCaller
     borrowerOperations = contracts.borrowerOperations
 
-    await deploymentHelper.connectCoreContracts(contracts, LQTYContracts)
-    await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
+    await deploymentHelper.connectCoreContracts(contracts)
   })
 
   it("redistribution: A, B Open. B Liquidated. C, D Open. D Liquidated. Distributes correct rewards", async () => {

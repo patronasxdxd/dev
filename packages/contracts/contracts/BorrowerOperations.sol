@@ -374,7 +374,7 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOpe
 
         _requireUserAcceptsFee(LUSDFee, _LUSDAmount, _maxFeePercentage);
 
-        // Send fee to LQTY staking contract
+        // Send fee to PCV contract
         pcv.increaseF_LUSD(LUSDFee);
         _lusdToken.mint(pcvAddress, LUSDFee);
         return LUSDFee;

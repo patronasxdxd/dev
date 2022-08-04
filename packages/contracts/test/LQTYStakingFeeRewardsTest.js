@@ -46,10 +46,8 @@ contract('PCV receives fees tests', async accounts => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
     contracts.troveManager = await TroveManagerTester.new()
     contracts = await deploymentHelper.deployLUSDTokenTester(contracts)
-    const LQTYContracts = await deploymentHelper.deployLQTYTesterContractsHardhat()
 
-    await deploymentHelper.connectCoreContracts(contracts, LQTYContracts)
-    await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
+    await deploymentHelper.connectCoreContracts(contracts)
 
     nonPayable = await NonPayable.new()
     priceFeed = contracts.priceFeedTestnet
@@ -61,8 +59,7 @@ contract('PCV receives fees tests', async accounts => {
     defaultPool = contracts.defaultPool
     borrowerOperations = contracts.borrowerOperations
     hintHelpers = contracts.hintHelpers
-
-    pcv = LQTYContracts.pcv
+    pcv = contracts.pcv
   })
 
   it("LQTY Staking: PCV start at zero", async () => {

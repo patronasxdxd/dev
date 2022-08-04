@@ -37,7 +37,6 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
     contracts = await deploymentHelper.deployLiquityCore(accounts)
     contracts.troveManager = await TroveManagerTester.new()
     contracts = await deploymentHelper.deployLUSDTokenTester(contracts)
-    const LQTYContracts = await deploymentHelper.deployLQTYTesterContractsHardhat()
 
     priceFeed = contracts.priceFeed
     lusdToken = contracts.lusdToken
@@ -49,11 +48,9 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
     defaultPool = contracts.defaultPool
     functionCaller = contracts.functionCaller
     borrowerOperations = contracts.borrowerOperations
+    pcv = contracts.pcv
 
-    pcv = LQTYContracts.pcv
-
-    await deploymentHelper.connectCoreContracts(contracts, LQTYContracts)
-    await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
+    await deploymentHelper.connectCoreContracts(contracts)
 
     for (account of accounts.slice(0, 10)) {
       await th.openTrove(contracts, { extraLUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: account } })

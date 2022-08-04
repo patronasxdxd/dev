@@ -10,7 +10,6 @@ const CollSurplusPool = artifacts.require("./CollSurplusPool.sol")
 const FunctionCaller = artifacts.require("./TestContracts/FunctionCaller.sol")
 const BorrowerOperations = artifacts.require("./BorrowerOperations.sol")
 const HintHelpers = artifacts.require("./HintHelpers.sol")
-
 const PCV = artifacts.require("./PCV.sol")
 
 const StabilityPoolTester = artifacts.require("./StabilityPoolTester.sol")
@@ -40,10 +39,6 @@ const {
   PCVProxy
 } = require('../utils/proxyHelpers.js')
 
-/*
- * "Liquity core" consists of all contracts in the core Liquity system.
- */
-
 const ZERO_ADDRESS = '0x' + '0'.repeat(40)
 const maxBytes32 = '0x' + 'f'.repeat(64)
 
@@ -55,25 +50,13 @@ class DeploymentHelper {
     // console.log(`Framework used:  ${frameworkPath}`)
 
     if (frameworkPath.includes("hardhat")) {
-      return this.deployLiquityCoreHardhat(accounts)
+      return this.deployHardhat(accounts)
     } else if (frameworkPath.includes("truffle")) {
-      return this.deployLiquityCoreTruffle(accounts)
+      return this.deployTruffle(accounts)
     }
   }
 
-  static async deployLQTYContracts() {
-    const cmdLineArgs = process.argv
-    const frameworkPath = cmdLineArgs[1]
-    // console.log(`Framework used:  ${frameworkPath}`)
-
-    if (frameworkPath.includes("hardhat")) {
-      return this.deployLQTYContractsHardhat()
-    } else if (frameworkPath.includes("truffle")) {
-      return this.deployLQTYContractsTruffle()
-    }
-  }
-
-  static async deployLiquityCoreHardhat(accounts) {
+  static async deployHardhat(accounts) {
     const priceFeedTestnet = await PriceFeedTestnet.new()
     const sortedTroves = await SortedTroves.new()
     const troveManager = await TroveManager.new()
@@ -91,7 +74,9 @@ class DeploymentHelper {
       stabilityPool.address,
       borrowerOperations.address
     )
+    const pcv = await PCV.new()
 
+    PCV.setAsDeployed(pcv)
     LUSDToken.setAsDeployed(lusdToken)
     DefaultPool.setAsDeployed(defaultPool)
     PriceFeedTestnet.setAsDeployed(priceFeedTestnet)
@@ -129,6 +114,7 @@ class DeploymentHelper {
       functionCaller,
       borrowerOperations,
       hintHelpers,
+      pcv
     }
     return coreContracts
   }
@@ -159,29 +145,7 @@ class DeploymentHelper {
     return testerContracts
   }
 
-  static async deployLQTYContractsHardhat() {
-    const pcv = await PCV.new()
-
-    PCV.setAsDeployed(pcv)
-
-    const LQTYContracts = {
-      pcv
-    }
-    return LQTYContracts
-  }
-
-  static async deployLQTYTesterContractsHardhat() {
-    const pcv = await PCV.new()
-
-    PCV.setAsDeployed(pcv)
-
-    const LQTYContracts = {
-      pcv
-    }
-    return LQTYContracts
-  }
-
-  static async deployLiquityCoreTruffle() {
+  static async deployTruffle() {
     const priceFeedTestnet = await PriceFeedTestnet.new()
     const sortedTroves = await SortedTroves.new()
     const troveManager = await TroveManager.new()
@@ -199,6 +163,9 @@ class DeploymentHelper {
       stabilityPool.address,
       borrowerOperations.address
     )
+    const pcv = await PCV.new()
+
+    PCV.setAsDeployed(pcv)
 
     let index = 0;
     for (const account of accounts) {
@@ -209,7 +176,7 @@ class DeploymentHelper {
         break;
     }
 
-    const coreContracts = {
+    const contracts = {
       priceFeedTestnet,
       lusdToken,
       sortedTroves,
@@ -222,18 +189,10 @@ class DeploymentHelper {
       collSurplusPool,
       functionCaller,
       borrowerOperations,
-      hintHelpers
-    }
-    return coreContracts
-  }
-
-  static async deployLQTYContractsTruffle() {
-    const pcv = await pcv.new()
-
-    const LQTYContracts = {
+      hintHelpers,
       pcv
     }
-    return LQTYContracts
+    return contracts
   }
 
   static async deployLUSDToken(contracts) {
@@ -254,13 +213,13 @@ class DeploymentHelper {
     return contracts
   }
 
-  static async deployProxyScripts(contracts, LQTYContracts, owner, users) {
+  static async deployProxyScripts(contracts, owner, users) {
     const proxies = await buildUserProxies(users)
 
     const borrowerWrappersScript = await BorrowerWrappersScript.new(
       contracts.borrowerOperations.address,
       contracts.troveManager.address,
-      LQTYContracts.pcv.address
+      contracts.pcv.address
     )
     contracts.borrowerWrappers = new BorrowerWrappersProxy(owner, proxies, borrowerWrappersScript.address)
 
@@ -278,13 +237,13 @@ class DeploymentHelper {
     const lusdTokenScript = await TokenScript.new(contracts.lusdToken.address)
     contracts.lusdToken = new TokenProxy(owner, proxies, lusdTokenScript.address, contracts.lusdToken)
 
-    const pcvScript = await PCVScript.new(LQTYContracts.pcv.address)
-    LQTYContracts.pcv = new PCVProxy(owner, proxies, pcvScript.address, LQTYContracts.pcv)
+    const pcvScript = await PCVScript.new(contracts.pcv.address)
+    contracts.pcv = new PCVProxy(owner, proxies, pcvScript.address, contracts.pcv)
 
   }
 
   // Connect contracts to their dependencies
-  static async connectCoreContracts(contracts, LQTYContracts) {
+  static async connectCoreContracts(contracts) {
 
     // set TroveManager addr in SortedTroves
     await contracts.sortedTroves.setParams(
@@ -308,7 +267,7 @@ class DeploymentHelper {
       contracts.priceFeedTestnet.address,
       contracts.lusdToken.address,
       contracts.sortedTroves.address,
-      LQTYContracts.pcv.address
+      contracts.pcv.address
     )
 
     // set contracts in BorrowerOperations
@@ -322,7 +281,7 @@ class DeploymentHelper {
       contracts.priceFeedTestnet.address,
       contracts.sortedTroves.address,
       contracts.lusdToken.address,
-      LQTYContracts.pcv.address,
+      contracts.pcv.address,
       contracts.erc20.address
     )
 
@@ -364,14 +323,12 @@ class DeploymentHelper {
       contracts.sortedTroves.address,
       contracts.troveManager.address
     )
-  }
 
-  static async connectLQTYContractsToCore(LQTYContracts, coreContracts) {
-    await LQTYContracts.pcv.setAddresses(
-      coreContracts.lusdToken.address,
-      coreContracts.troveManager.address,
-      coreContracts.borrowerOperations.address,
-      coreContracts.activePool.address
+    await contracts.pcv.setAddresses(
+      contracts.lusdToken.address,
+      contracts.troveManager.address,
+      contracts.borrowerOperations.address,
+      contracts.activePool.address
     )
 
   }

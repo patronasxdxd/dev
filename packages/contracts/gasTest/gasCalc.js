@@ -45,7 +45,6 @@ contract('Gas cost tests', async accounts => {
 
   beforeEach(async () => {
     contracts = await deploymentHelper.deployTesterContractsHardhat()
-    const LQTYContracts = await deploymentHelper.deployLQTYContracts()
 
     priceFeed = contracts.priceFeedTestnet
     lusdToken = contracts.lusdToken
@@ -56,14 +55,10 @@ contract('Gas cost tests', async accounts => {
     defaultPool = contracts.defaultPool
     borrowerOperations = contracts.borrowerOperations
     hintHelpers = contracts.hintHelpers
-
     functionCaller = contracts.functionCaller
+    pcv = contracts.pcv
 
-    pcv = LQTYContracts.pcv
-    lockupContractFactory = LQTYContracts.lockupContractFactory
-
-    await deploymentHelper.connectCoreContracts(contracts, LQTYContracts)
-    await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
+    await deploymentHelper.connectCoreContracts(contracts)
   })
 
   // ---TESTS ---

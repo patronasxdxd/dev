@@ -57,7 +57,6 @@ contract('TroveManager - in Recovery Mode', async accounts => {
       contracts.stabilityPool.address,
       contracts.borrowerOperations.address
     )
-    const LQTYContracts = await deploymentHelper.deployLQTYContracts()
 
     priceFeed = contracts.priceFeedTestnet
     lusdToken = contracts.lusdToken
@@ -70,8 +69,7 @@ contract('TroveManager - in Recovery Mode', async accounts => {
     borrowerOperations = contracts.borrowerOperations
     collSurplusPool = contracts.collSurplusPool
 
-    await deploymentHelper.connectCoreContracts(contracts, LQTYContracts)
-    await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
+    await deploymentHelper.connectCoreContracts(contracts)
   })
 
   it("checkRecoveryMode(): Returns true if TCR falls below CCR", async () => {

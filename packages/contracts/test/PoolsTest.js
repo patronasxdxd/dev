@@ -22,9 +22,7 @@ contract('StabilityPool', async accounts => {
 
   beforeEach(async () => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
-    const LQTYContracts = await deploymentHelper.deployLQTYTesterContractsHardhat()
-    await deploymentHelper.connectCoreContracts(contracts, LQTYContracts)
-    await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
+    await deploymentHelper.connectCoreContracts(contracts)
 
     stabilityPool = await StabilityPool.new()
     const mockActivePoolAddress = (await NonPayable.new()).address

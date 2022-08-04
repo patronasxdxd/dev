@@ -54,7 +54,6 @@ contract('StabilityPool', async accounts => {
         contracts.stabilityPool.address,
         contracts.borrowerOperations.address
       )
-      const LQTYContracts = await deploymentHelper.deployLQTYContracts()
 
       priceFeed = contracts.priceFeedTestnet
       lusdToken = contracts.lusdToken
@@ -66,8 +65,7 @@ contract('StabilityPool', async accounts => {
       borrowerOperations = contracts.borrowerOperations
       hintHelpers = contracts.hintHelpers
 
-      await deploymentHelper.connectCoreContracts(contracts, LQTYContracts)
-      await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
+      await deploymentHelper.connectCoreContracts(contracts)
 
     })
 

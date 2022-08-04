@@ -54,7 +54,6 @@ contract('TroveManager', async accounts => {
       contracts.stabilityPool.address,
       contracts.borrowerOperations.address
     )
-    const LQTYContracts = await deploymentHelper.deployLQTYContracts()
 
     priceFeed = contracts.priceFeedTestnet
     lusdToken = contracts.lusdToken
@@ -66,12 +65,9 @@ contract('TroveManager', async accounts => {
     collSurplusPool = contracts.collSurplusPool
     borrowerOperations = contracts.borrowerOperations
     hintHelpers = contracts.hintHelpers
+    pcv = contracts.pcv
 
-    pcv = LQTYContracts.pcv
-    lockupContractFactory = LQTYContracts.lockupContractFactory
-
-    await deploymentHelper.connectCoreContracts(contracts, LQTYContracts)
-    await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
+    await deploymentHelper.connectCoreContracts(contracts)
   })
 
   it("A given trove's stake decline is negligible with adjustments and tiny liquidations", async () => {

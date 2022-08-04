@@ -35,9 +35,6 @@ const coreContractABIs = [
   DefaultPool,
   FunctionCaller,
   HintHelpers,
-]
-
-const LQTYContractABIs = [
   PCV
 ]
 
@@ -101,19 +98,9 @@ const logContractBytecodeLengths = (contractABIs) => {
 // Run script: log deployment gas costs and bytecode lengths for all contracts
 async function main() {
   const coreContracts = await dh.deployLiquityCoreHardhat()
-  const LQTYContracts = await dh.deployLQTYContractsHardhat()
   const testerContracts = await dh.deployTesterContractsHardhat()
 
-  await dh.connectCoreContracts(coreContracts, LQTYContracts)
-  await dh.connectLQTYContractsToCore(LQTYContracts, coreContracts)
-
-
-  console.log(`\n`)
-  console.log(`LQTY CONTRACTS`)
-  await logContractDeploymentCosts(LQTYContracts)
-  console.log(`\n`)
-  logContractBytecodeLengths(LQTYContractABIs)
-  console.log(`\n`)
+  await dh.connectCoreContracts(coreContracts)
 
   console.log(`CORE CONTRACTS`)
   await logContractDeploymentCosts(coreContracts)

@@ -140,23 +140,6 @@ class MainnetDeploymentHelper {
     return coreContracts
   }
 
-  async deployLQTYContractsMainnet(deploymentState) {
-    const pcvFactory = await this.getFactory("PCV")
-
-    const pcv = await this.loadOrDeploy(pcvFactory, 'pcv', deploymentState)
-
-    if (!this.configParams.ETHERSCAN_BASE_URL) {
-      console.log('No Etherscan Url defined, skipping verification')
-    } else {
-      await this.verifyContract('pcv', deploymentState)
-    }
-
-    const LQTYContracts = {
-      pcv
-    }
-    return LQTYContracts
-  }
-
   async deployMultiTroveGetterMainnet(liquityCore, deploymentState) {
     const multiTroveGetterFactory = await this.getFactory("MultiTroveGetter")
     const multiTroveGetterParams = [
@@ -185,7 +168,7 @@ class MainnetDeploymentHelper {
     return owner == ZERO_ADDRESS
   }
   // Connect contracts to their dependencies
-  async connectCoreContractsMainnet(contracts, LQTYContracts, chainlinkProxyAddress) {
+  async connectCoreContractsMainnet(contracts, chainlinkProxyAddress) {
     const gasPrice = this.configParams.GAS_PRICE
     // Set ChainlinkAggregatorProxy and TellorCaller in the PriceFeed
     await this.isOwnershipRenounced(contracts.priceFeed) ||
@@ -212,7 +195,7 @@ class MainnetDeploymentHelper {
         contracts.priceFeed.address,
         contracts.lusdToken.address,
         contracts.sortedTroves.address,
-        LQTYContracts.pcv.address,
+        contracts.pcv.address,
 	{gasPrice}
       ))
 
@@ -228,7 +211,7 @@ class MainnetDeploymentHelper {
         contracts.priceFeed.address,
         contracts.sortedTroves.address,
         contracts.lusdToken.address,
-        LQTYContracts.pcv.address,
+        contracts.pcv.address,
         contracts.erc20.address,
 	{gasPrice}
       ))
@@ -281,19 +264,15 @@ class MainnetDeploymentHelper {
         contracts.troveManager.address,
 	{gasPrice}
       ))
-  }
 
-  async connectLQTYContractsToCoreMainnet(LQTYContracts, coreContracts) {
-    const gasPrice = this.configParams.GAS_PRICE
-    await this.isOwnershipRenounced(LQTYContracts.pcv) ||
-      await this.sendAndWaitForTransaction(LQTYContracts.pcv.setAddresses(
+    await this.isOwnershipRenounced(contracts.pcv) ||
+      await this.sendAndWaitForTransaction(contracts.pcv.setAddresses(
         coreContracts.lusdToken.address,
         coreContracts.troveManager.address,
         coreContracts.borrowerOperations.address,
         coreContracts.activePool.address,
 	{gasPrice}
       ))
-
   }
 
   // --- Verify on Ethrescan ---

@@ -16,24 +16,20 @@ contract('Deployment script - Sets correct contract addresses dependencies after
   let lockupContractFactory
 
   before(async () => {
-    const coreContracts = await deploymentHelper.deployLiquityCore(accounts)
-    const LQTYContracts = await deploymentHelper.deployLQTYContracts()
+    const contracts = await deploymentHelper.deployLiquityCore(accounts)
 
-    priceFeed = coreContracts.priceFeedTestnet
-    lusdToken = coreContracts.lusdToken
-    sortedTroves = coreContracts.sortedTroves
-    troveManager = coreContracts.troveManager
-    activePool = coreContracts.activePool
-    stabilityPool = coreContracts.stabilityPool
-    defaultPool = coreContracts.defaultPool
-    functionCaller = coreContracts.functionCaller
-    borrowerOperations = coreContracts.borrowerOperations
+    priceFeed = contracts.priceFeedTestnet
+    lusdToken = contracts.lusdToken
+    sortedTroves = contracts.sortedTroves
+    troveManager = contracts.troveManager
+    activePool = contracts.activePool
+    stabilityPool = contracts.stabilityPool
+    defaultPool = contracts.defaultPool
+    functionCaller = contracts.functionCaller
+    borrowerOperations = contracts.borrowerOperations
+    pcv = contracts.pcv
 
-    pcv = LQTYContracts.pcv
-    lockupContractFactory = LQTYContracts.lockupContractFactory
-
-    await deploymentHelper.connectCoreContracts(coreContracts, LQTYContracts)
-    await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, coreContracts)
+    await deploymentHelper.connectCoreContracts(contracts)
   })
 
   it('Sets the correct PriceFeed address in TroveManager', async () => {

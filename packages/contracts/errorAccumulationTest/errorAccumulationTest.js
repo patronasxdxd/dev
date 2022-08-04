@@ -20,7 +20,6 @@ contract('TroveManager', async accounts => {
 
   beforeEach(async () => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
-    const LQTYContracts = await deploymentHelper.deployLQTYContracts()
 
     lusdToken = contracts.lusdToken
     priceFeed = contracts.priceFeedTestnet
@@ -30,12 +29,9 @@ contract('TroveManager', async accounts => {
     stabilityPool = contracts.stabilityPool
     defaultPool = contracts.defaultPool
     borrowerOperations = contracts.borrowerOperations
+    pcv = contracts.pcv
 
-    pcv = LQTYContracts.pcv
-    lockupContractFactory = LQTYContracts.lockupContractFactory
-
-    await deploymentHelper.connectCoreContracts(contracts, LQTYContracts)
-    await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
+    await deploymentHelper.connectCoreContracts(contracts)
   })
 
   // --- Check accumulation from repeatedly applying rewards ---

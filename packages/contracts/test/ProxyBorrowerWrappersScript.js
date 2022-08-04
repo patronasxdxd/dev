@@ -42,15 +42,12 @@ contract('BorrowerWrappers', async accounts => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
     contracts.troveManager = await TroveManagerTester.new()
     contracts = await deploymentHelper.deployLUSDToken(contracts)
-    const LQTYContracts = await deploymentHelper.deployLQTYTesterContractsHardhat()
-
-    await deploymentHelper.connectCoreContracts(contracts, LQTYContracts)
-    await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
+    await deploymentHelper.connectCoreContracts(contracts)
 
     troveManagerOriginal = contracts.troveManager
 
     const users = [ alice, bob, carol, dennis, whale, A, B, C, D, E, defaulter_1, defaulter_2 ]
-    await deploymentHelper.deployProxyScripts(contracts, LQTYContracts, owner, users)
+    await deploymentHelper.deployProxyScripts(contracts, owner, users)
 
     priceFeed = contracts.priceFeedTestnet
     lusdToken = contracts.lusdToken
@@ -59,7 +56,7 @@ contract('BorrowerWrappers', async accounts => {
     collSurplusPool = contracts.collSurplusPool
     borrowerOperations = contracts.borrowerOperations
     borrowerWrappers = contracts.borrowerWrappers
-    pcv = LQTYContracts.pcv
+    pcv = contracts.pcv
     erc20 = contracts.erc20
 
     LUSD_GAS_COMPENSATION = await borrowerOperations.LUSD_GAS_COMPENSATION()

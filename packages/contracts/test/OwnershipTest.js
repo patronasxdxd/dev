@@ -24,7 +24,6 @@ contract('All Liquity functions with onlyOwner modifier', async accounts => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
     contracts.borrowerOperations = await BorrowerOperationsTester.new()
     contracts = await deploymentHelper.deployLUSDToken(contracts)
-    const LQTYContracts = await deploymentHelper.deployLQTYContracts()
 
     lusdToken = contracts.lusdToken
     sortedTroves = contracts.sortedTroves
@@ -33,9 +32,7 @@ contract('All Liquity functions with onlyOwner modifier', async accounts => {
     stabilityPool = contracts.stabilityPool
     defaultPool = contracts.defaultPool
     borrowerOperations = contracts.borrowerOperations
-
-    pcv = LQTYContracts.pcv
-    lockupContractFactory = LQTYContracts.lockupContractFactory
+    pcv = contracts.pcv
   })
 
   const testZeroAddress = async (contract, params, method = 'setAddresses', skip = 0) => {
