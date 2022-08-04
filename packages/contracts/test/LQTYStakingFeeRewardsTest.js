@@ -62,7 +62,7 @@ contract('PCV receives fees tests', async accounts => {
     pcv = contracts.pcv
   })
 
-  it("LQTY Staking: PCV start at zero", async () => {
+  it("PCV: PCV start at zero", async () => {
     // Check LUSD fees are initialised as zero
     const LUSD_Fees = await pcv.F_LUSD()
     assert.equal(LUSD_Fees, '0')
@@ -73,7 +73,7 @@ contract('PCV receives fees tests', async accounts => {
 
   })
 
-  it("LQTY Staking: PCV LUSD increases when opening troves", async() => {
+  it("PCV: PCV LUSD increases when opening troves", async() => {
     let error = 100000000 // note values stored in wei
 
     let troveWhale = await openTrove({ extraLUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
@@ -111,7 +111,7 @@ contract('PCV receives fees tests', async accounts => {
     th.assertIsApproximatelyEqual(LUSD_Fees, pcvBalance)
   })
 
-  it("LQTY Staking: PCV ETH increase when a redemption fee occurs", async() => {
+  it("PCV: PCV ETH increase when a redemption fee occurs", async() => {
     await openTrove({ extraLUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
     await openTrove({ extraLUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: A } })
     await openTrove({ extraLUSDAmount: toBN(dec(30000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: B } })
@@ -140,7 +140,7 @@ contract('PCV receives fees tests', async accounts => {
     assert.isTrue(emittedETHFee.eq(F_ETH_After))
   })
 
-  it("LQTY Staking: PCV LUSD increase when drawing debt from a trove", async () => {
+  it("PCV: PCV LUSD increase when drawing debt from a trove", async () => {
     // setup troves
     await openTrove({ extraLUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
     await openTrove({ extraLUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: A } })

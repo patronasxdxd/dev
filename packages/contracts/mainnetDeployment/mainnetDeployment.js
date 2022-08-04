@@ -19,20 +19,8 @@ async function mainnetDeploy(configParams) {
 
   console.log(`deployer address: ${deployerWallet.address}`)
   assert.equal(deployerWallet.address, configParams.liquityAddrs.DEPLOYER)
-  // assert.equal(account2Wallet.address, configParams.beneficiaries.ACCOUNT_2)
   let deployerETHBalance = await ethers.provider.getBalance(deployerWallet.address)
   console.log(`deployerETHBalance before: ${deployerETHBalance}`)
-
-  // Get UniswapV2Factory instance at its deployed address
-  const uniswapV2Factory = new ethers.Contract(
-    configParams.externalAddrs.UNISWAP_V2_FACTORY,
-    UniswapV2Factory.abi,
-    deployerWallet
-  )
-
-  console.log(`Uniswp addr: ${uniswapV2Factory.address}`)
-  const uniAllPairsLength = await uniswapV2Factory.allPairsLength()
-  console.log(`Uniswap Factory number of pairs: ${uniAllPairsLength}`)
 
   deployerETHBalance = await ethers.provider.getBalance(deployerWallet.address)
   console.log(`deployer's ETH balance before deployments: ${deployerETHBalance}`)
@@ -40,11 +28,6 @@ async function mainnetDeploy(configParams) {
   // Deploy core logic contracts
   const contracts = await mdh.deployLiquityCoreMainnet(configParams.externalAddrs.TELLOR_MASTER, deploymentState)
   await mdh.logContractObjects(contracts)
-
-  // Check Uniswap Pair LUSD-ETH pair before pair creation
-  let LUSDWETHPairAddr = await uniswapV2Factory.getPair(contracts.lusdToken.address, configParams.externalAddrs.WETH_ERC20)
-  let WETHLUSDPairAddr = await uniswapV2Factory.getPair(configParams.externalAddrs.WETH_ERC20, contracts.lusdToken.address)
-  assert.equal(LUSDWETHPairAddr, WETHLUSDPairAddr)
 
   // Connect all core contracts up
   await mdh.connectCoreContractsMainnet(contracts, configParams.externalAddrs.CHAINLINK_ETHUSD_PROXY)
@@ -149,12 +132,6 @@ async function mainnetDeploy(configParams) {
   // let deployerLUSDBal = await contracts.lusdToken.balanceOf(deployerWallet.address)
   // th.logBN("deployer's LUSD balance", deployerLUSDBal)
 
-  // // Check Uniswap pool has LUSD and WETH tokens
-  const LUSDETHPair = await new ethers.Contract(
-    LUSDWETHPairAddr,
-    UniswapV2Pair.abi,
-    deployerWallet
-  )
 
   // const token0Addr = await LUSDETHPair.token0()
   // const token1Addr = await LUSDETHPair.token1()
@@ -258,11 +235,6 @@ async function mainnetDeploy(configParams) {
 
 
   // // --- System stats  ---
-
-  // Uniswap LUSD-ETH pool size
-  reserves = await LUSDETHPair.getReserves()
-  th.logBN("LUSD-ETH Pair's current LUSD reserves", reserves[0])
-  th.logBN("LUSD-ETH Pair's current ETH reserves", reserves[1])
 
   // Number of troves
   const numTroves = await contracts.troveManager.getTroveOwnersCount()

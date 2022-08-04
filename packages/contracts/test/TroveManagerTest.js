@@ -3573,7 +3573,7 @@ contract('TroveManager', async accounts => {
     assert.isTrue(lastFeeOpTime_3.gt(lastFeeOpTime_1))
   })
 
-  it("redeemCollateral(): a redemption made at zero base rate send a non-zero ETHFee to LQTY staking contract", async () => {
+  it("redeemCollateral(): a redemption made at zero base rate send a non-zero ETHFee to PCV contract", async () => {
     // time fast-forwards 1 year
     await th.fastForwardTime(timeValues.SECONDS_IN_ONE_YEAR, web3.currentProvider)
 
@@ -3586,7 +3586,7 @@ contract('TroveManager', async accounts => {
     // Check baseRate == 0
     assert.equal(await troveManager.baseRate(), '0')
 
-    // Check LQTY Staking contract balance before is zero
+    // Check PCV contract balance before is zero
     const pcvBalance_Before = await contracts.erc20.balanceOf(pcv.address)
     assert.equal(pcvBalance_Before, '0')
 
@@ -3602,12 +3602,12 @@ contract('TroveManager', async accounts => {
     const baseRate_1 = await troveManager.baseRate()
     assert.isTrue(baseRate_1.gt(toBN('0')))
 
-    // Check LQTY Staking contract balance after is non-zero
+    // Check PCV contract balance after is non-zero
     const pcvBalance_After = toBN(await contracts.erc20.balanceOf(pcv.address))
     assert.isTrue(pcvBalance_After.gt(toBN('0')))
   })
 
-  it("redeemCollateral(): a redemption made at zero base increases the ETH-fees in LQTY Staking contract", async () => {
+  it("redeemCollateral(): a redemption made at zero base increases the ETH-fees in PCV contract", async () => {
     // time fast-forwards 1 year
     await th.fastForwardTime(timeValues.SECONDS_IN_ONE_YEAR, web3.currentProvider)
 
@@ -3620,7 +3620,7 @@ contract('TroveManager', async accounts => {
     // Check baseRate == 0
     assert.equal(await troveManager.baseRate(), '0')
 
-    // Check LQTY Staking ETH-fees before is zero
+    // Check PCV ETH-fees before is zero
     const F_ETH_Before = await pcv.F_ETH()
     assert.equal(F_ETH_Before, '0')
 
@@ -3636,12 +3636,12 @@ contract('TroveManager', async accounts => {
     const baseRate_1 = await troveManager.baseRate()
     assert.isTrue(baseRate_1.gt(toBN('0')))
 
-    // Check LQTY Staking ETH-fees after is non-zero
+    // Check PCV ETH-fees after is non-zero
     const F_ETH_After = await pcv.F_ETH()
     assert.isTrue(F_ETH_After.gt('0'))
   })
 
-  it("redeemCollateral(): a redemption made at a non-zero base rate send a non-zero ETHFee to LQTY staking contract", async () => {
+  it("redeemCollateral(): a redemption made at a non-zero base rate send a non-zero ETHFee to PCV contract", async () => {
     // time fast-forwards 1 year
     await th.fastForwardTime(timeValues.SECONDS_IN_ONE_YEAR, web3.currentProvider)
 
@@ -3677,12 +3677,12 @@ contract('TroveManager', async accounts => {
 
     const pcvBalance_After = toBN(await contracts.erc20.balanceOf(pcv.address))
 
-    // check LQTY Staking balance has increased
+    // check PCV balance has increased
     assert.isTrue(pcvBalance_After.gt(pcvBalance_Before))
   })
 
   it("redeemCollateral(): a redemption made at a non-zero base rate increases ETH in the staking contract", async () => {
-    // time fast-forwards 1 year, and multisig stakes 1 LQTY
+    // time fast-forwards 1 year
     await th.fastForwardTime(timeValues.SECONDS_IN_ONE_YEAR, web3.currentProvider)
 
     await openTrove({ ICR: toBN(dec(20, 18)), extraParams: { from: whale } })
@@ -3707,7 +3707,7 @@ contract('TroveManager', async accounts => {
     const baseRate_1 = await troveManager.baseRate()
     assert.isTrue(baseRate_1.gt(toBN('0')))
 
-    // Check LQTY Staking ETH-fees before is zero
+    // Check PCV ETH-fees before is zero
     const F_ETH_Before = await pcv.F_ETH()
 
     // B redeems 10 LUSD
@@ -3718,7 +3718,7 @@ contract('TroveManager', async accounts => {
 
     const F_ETH_After = await pcv.F_ETH()
 
-    // check LQTY Staking balance has increased
+    // check PCV balance has increased
     assert.isTrue(F_ETH_After.gt(F_ETH_Before))
   })
 

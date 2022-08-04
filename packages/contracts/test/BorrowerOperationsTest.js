@@ -901,9 +901,9 @@ contract('BorrowerOperations', async accounts => {
     assert.isTrue(baseRate_2.lt(baseRate_1))
   })
 
-  it("withdrawLUSD(): borrowing at non-zero base rate sends LUSD fee to LQTY staking contract", async () => {
+  it("withdrawLUSD(): borrowing at non-zero base rate sends LUSD fee to PCV contract", async () => {
 
-    // Check LQTY LUSD balance before == 0
+    // Check LUSD balance before == 0
     const pcv_LUSDBalance_Before = await lusdToken.balanceOf(pcv.address)
     assert.equal(pcv_LUSDBalance_Before, '0')
 
@@ -927,7 +927,7 @@ contract('BorrowerOperations', async accounts => {
     // D withdraws LUSD
     await borrowerOperations.withdrawLUSD(th._100pct, dec(37, 18), C, C, { from: D })
 
-    // Check LQTY LUSD balance after has increased
+    // Check LUSD balance after has increased
     const pcv_LUSDBalance_After = await lusdToken.balanceOf(pcv.address)
     assert.isTrue(pcv_LUSDBalance_After.gt(pcv_LUSDBalance_Before))
   })
@@ -967,7 +967,7 @@ contract('BorrowerOperations', async accounts => {
 
   it("withdrawLUSD(): borrowing at non-zero base rate sends requested amount to the user", async () => {
 
-    // Check LQTY Staking contract balance before == 0
+    // Check PCV contract balance before == 0
     const pcv_LUSDBalance_Before = await lusdToken.balanceOf(pcv.address)
     assert.equal(pcv_LUSDBalance_Before, '0')
 
@@ -994,7 +994,7 @@ contract('BorrowerOperations', async accounts => {
     const D_LUSDRequest = toBN(dec(37, 18))
     await borrowerOperations.withdrawLUSD(th._100pct, D_LUSDRequest, D, D, { from: D })
 
-    // Check LQTY staking LUSD balance has increased
+    // Check PCV LUSD balance has increased
     const pcv_LUSDBalance_After = await lusdToken.balanceOf(pcv.address)
     assert.isTrue(pcv_LUSDBalance_After.gt(pcv_LUSDBalance_Before))
 
@@ -1019,7 +1019,7 @@ contract('BorrowerOperations', async accounts => {
     // D withdraws LUSD
     await borrowerOperations.withdrawLUSD(th._100pct, dec(37, 18), D, D, { from: D })
 
-    // Check LQTY LUSD balance after > 0
+    // Check LUSD balance after > 0
     const F_LUSD_After = await pcv.F_LUSD()
     assert.isTrue(F_LUSD_After.gt('0'))
   })
@@ -1589,9 +1589,9 @@ contract('BorrowerOperations', async accounts => {
     assert.isTrue(baseRate_2.lt(baseRate_1))
   })
 
-  it("adjustTrove(): borrowing at non-zero base rate sends LUSD fee to LQTY staking contract", async () => {
+  it("adjustTrove(): borrowing at non-zero base rate sends LUSD fee to PCV contract", async () => {
 
-    // Check LQTY LUSD balance before == 0
+    // Check LUSD balance before == 0
     const pcv_LUSDBalance_Before = await lusdToken.balanceOf(pcv.address)
     assert.equal(pcv_LUSDBalance_Before, '0')
 
@@ -1614,7 +1614,7 @@ contract('BorrowerOperations', async accounts => {
     // D adjusts trove
     await openTrove({ extraLUSDAmount: toBN(dec(37, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: D } })
 
-    // Check LQTY LUSD balance after has increased
+    // Check LUSD balance after has increased
     const pcv_LUSDBalance_After = await lusdToken.balanceOf(pcv.address)
     assert.isTrue(pcv_LUSDBalance_After.gt(pcv_LUSDBalance_Before))
   })
@@ -1653,7 +1653,7 @@ contract('BorrowerOperations', async accounts => {
   })
 
   it("adjustTrove(): Borrowing at non-zero base rate sends requested amount to the user", async () => {
-    // Check LQTY Staking contract balance before == 0
+    // Check PCV contract balance before == 0
     const pcv_LUSDBalance_Before = await lusdToken.balanceOf(pcv.address)
     assert.equal(pcv_LUSDBalance_Before, '0')
 
@@ -1680,7 +1680,7 @@ contract('BorrowerOperations', async accounts => {
     const LUSDRequest_D = toBN(dec(40, 18))
     await borrowerOperations.adjustTrove(th._100pct, 0, LUSDRequest_D, true, 0, D, D, { from: D })
 
-    // Check LQTY staking LUSD balance has increased
+    // Check PCV LUSD balance has increased
     const pcv_LUSDBalance_After = await lusdToken.balanceOf(pcv.address)
     assert.isTrue(pcv_LUSDBalance_After.gt(pcv_LUSDBalance_Before))
 
@@ -1689,7 +1689,7 @@ contract('BorrowerOperations', async accounts => {
     assert.isTrue(D_LUSDBalanceAfter.eq(D_LUSDBalanceBefore.add(LUSDRequest_D)))
   })
 
-  it("adjustTrove(): Borrowing at zero base rate changes LUSD balance of LQTY staking contract", async () => {
+  it("adjustTrove(): Borrowing at zero base rate changes LUSD balance of PCV contract", async () => {
     await openTrove({ ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
     await openTrove({ extraLUSDAmount: toBN(dec(30, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: A } })
     await openTrove({ extraLUSDAmount: toBN(dec(40, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: B } })
@@ -1715,7 +1715,7 @@ contract('BorrowerOperations', async accounts => {
     assert.isTrue(pcv_LUSDBalance_After.gt(pcv_LUSDBalance_Before))
   })
 
-  it("adjustTrove(): Borrowing at zero base rate changes LQTY staking contract LUSD fees-per-unit-staked", async () => {
+  it("adjustTrove(): Borrowing at zero base rate changes PCV contract LUSD fees-per-unit-staked", async () => {
     await openTrove({ extraLUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: whale } })
     await openTrove({ extraLUSDAmount: toBN(dec(40000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: A } })
     await openTrove({ extraLUSDAmount: toBN(dec(40000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: B } })
@@ -3113,8 +3113,8 @@ contract('BorrowerOperations', async accounts => {
     assert.isTrue(baseRate_2.lt(baseRate_1))
   })
 
-  it("openTrove(): borrowing at non-zero base rate sends LUSD fee to LQTY staking contract", async () => {
-    // Check LQTY LUSD balance before == 0
+  it("openTrove(): borrowing at non-zero base rate sends LUSD fee to PCV contract", async () => {
+    // Check LUSD balance before == 0
     const pcv_LUSDBalance_Before = await lusdToken.balanceOf(pcv.address)
     assert.equal(pcv_LUSDBalance_Before, '0')
 
@@ -3137,7 +3137,7 @@ contract('BorrowerOperations', async accounts => {
     // D opens trove
     await openTrove({ extraLUSDAmount: toBN(dec(40000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: D } })
 
-    // Check LQTY LUSD balance after has increased
+    // Check LUSD balance after has increased
     const pcv_LUSDBalance_After = await lusdToken.balanceOf(pcv.address)
     assert.isTrue(pcv_LUSDBalance_After.gt(pcv_LUSDBalance_Before))
   })
@@ -3173,8 +3173,8 @@ contract('BorrowerOperations', async accounts => {
     th.assertIsApproximatelyEqual(newDebt, D_LUSDRequest.add(emittedFee).add(LUSD_GAS_COMPENSATION), 100000)
   })
 
-  it("openTrove(): Borrowing at non-zero base rate increases the LQTY staking contract LUSD fees", async () => {
-    // Check LQTY contract LUSD fees-per-unit-staked is zero
+  it("openTrove(): Borrowing at non-zero base rate increases the PCV contract LUSD fees", async () => {
+    // Check contract LUSD fees-per-unit-staked is zero
     const F_LUSD_Before = await pcv.F_LUSD()
     assert.equal(F_LUSD_Before, '0')
 
@@ -3197,13 +3197,13 @@ contract('BorrowerOperations', async accounts => {
     // D opens trove
     await openTrove({ extraLUSDAmount: toBN(dec(37, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: D } })
 
-    // Check LQTY contract LUSD fees-per-unit-staked has increased
+    // Check contract LUSD fees has increased
     const F_LUSD_After = await pcv.F_LUSD()
     assert.isTrue(F_LUSD_After.gt(F_LUSD_Before))
   })
 
   it("openTrove(): Borrowing at non-zero base rate sends requested amount to the user", async () => {
-    // Check LQTY Staking contract balance before == 0
+    // Check PCV contract balance before == 0
     const pcv_LUSDBalance_Before = await lusdToken.balanceOf(pcv.address)
     assert.equal(pcv_LUSDBalance_Before, '0')
 
@@ -3227,7 +3227,7 @@ contract('BorrowerOperations', async accounts => {
     const LUSDRequest_D = toBN(dec(40000, 18))
     await borrowerOperations.openTrove(th._100pct, LUSDRequest_D, dec(500, 'ether'), D, D, { from: D, value: dec(500, 'ether') })
 
-    // Check LQTY staking LUSD balance has increased
+    // Check PCV LUSD balance has increased
     const pcv_LUSDBalance_After = await lusdToken.balanceOf(pcv.address)
     assert.isTrue(pcv_LUSDBalance_After.gt(pcv_LUSDBalance_Before))
 
@@ -3236,7 +3236,7 @@ contract('BorrowerOperations', async accounts => {
     assert.isTrue(LUSDRequest_D.eq(LUSDBalance_D))
   })
 
-  it("openTrove(): Borrowing at zero base rate changes the LQTY staking contract LUSD fees collected", async () => {
+  it("openTrove(): Borrowing at zero base rate changes the PCV contract LUSD fees collected", async () => {
     await openTrove({ extraLUSDAmount: toBN(dec(5000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: A } })
     await openTrove({ extraLUSDAmount: toBN(dec(5000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: B } })
     await openTrove({ extraLUSDAmount: toBN(dec(5000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: C } })
@@ -3248,13 +3248,13 @@ contract('BorrowerOperations', async accounts => {
     // 2 hours pass
     th.fastForwardTime(7200, web3.currentProvider)
 
-    // Check LUSD reward per LQTY staked == 0
+    // Check LUSD reward
     const F_LUSD_Before = await pcv.F_LUSD()
 
     // D opens trove
     await openTrove({ extraLUSDAmount: toBN(dec(37, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: D } })
 
-    // Check LUSD reward per LQTY staked > 0
+    // Check LUSD reward
     const F_LUSD_After = await pcv.F_LUSD()
     assert.isTrue(F_LUSD_After.gt(F_LUSD_Before))
   })

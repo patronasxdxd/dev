@@ -586,7 +586,7 @@ contract('StabilityPool', async accounts => {
       await th.assertRevert(txPromise_B)
     })
 
-    // --- LQTY functionality ---
+    // --- PCV functionality ---
     it("provideToSP(), new deposit: depositor does not receive ETH gains", async () => {
       await openTrove({ extraLUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
 
@@ -1702,7 +1702,7 @@ contract('StabilityPool', async accounts => {
       assert.equal(bob_ETHGain_1, bob_ETHGain_3)
     })
 
-    // --- LQTY functionality ---
+    // --- PCV functionality ---
     it("withdrawFromSP(), full withdrawal: zero's depositor's snapshots", async () => {
       await openTrove({ extraLUSDAmount: toBN(dec(1000000, 18)), ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
 

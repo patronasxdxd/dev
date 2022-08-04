@@ -979,7 +979,7 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
 
         _requireUserAcceptsFee(totals.ETHFee, totals.totalETHDrawn, _maxFeePercentage);
 
-        // Send the ETH fee to the LQTY staking contract
+        // Send the ETH fee to the PCV contract
         contractsCache.activePool.sendCollateral(address(contractsCache.pcv), totals.ETHFee);
         contractsCache.pcv.increaseF_ETH(totals.ETHFee);
 

@@ -91,7 +91,7 @@ contract('Deployment script - Sets correct contract addresses dependencies after
     assert.equal(stabilityPoolAddress, recordedStabilityPoolAddresss)
   })
 
-  // LQTY Staking in TroveM
+  // PCV in TroveM
   it('Sets the correct PCV address in TroveManager', async () => {
     const pcvAddress = pcv.address
 
@@ -236,7 +236,7 @@ contract('Deployment script - Sets correct contract addresses dependencies after
     assert.equal(defaultPoolAddress, recordedDefaultPoolAddress)
   })
 
-  // LQTY Staking in BO
+  // PCV in BO
   it('Sets the correct PCV address in BorrowerOperations', async () => {
     const pcvAddress = pcv.address
 
@@ -245,7 +245,7 @@ contract('Deployment script - Sets correct contract addresses dependencies after
   })
 
 
-  // --- LQTY Staking ---
+  // --- PCV ---
 
   // Sets ActivePool in PCV
   it('Sets the correct ActivePool address in PCV', async () => {

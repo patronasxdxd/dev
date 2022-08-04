@@ -80,7 +80,7 @@ const addGasForBaseRateUpdate = (maxMinutesSinceLastUpdate = 10) => (gas: BigNum
 // 80K should be enough for 3 steps, plus some extra to be safe.
 const addGasForPotentialListTraversal = (gas: BigNumber) => gas.add(80000);
 
-const addGasForLQTYIssuance = (gas: BigNumber) => gas.add(50000);
+const addGasForIssuance = (gas: BigNumber) => gas.add(50000);
 
 // To get the best entropy available, we'd do something like:
 //
@@ -1056,7 +1056,7 @@ export class PopulatableEthersLiquity
       return this._wrapLiquidation(
         await troveManager.estimateAndPopulate.batchLiquidateTroves(
           { ...overrides },
-          addGasForLQTYIssuance,
+          addGasForIssuance,
           address
         )
       );
@@ -1064,7 +1064,7 @@ export class PopulatableEthersLiquity
       return this._wrapLiquidation(
         await troveManager.estimateAndPopulate.liquidate(
           { ...overrides },
-          addGasForLQTYIssuance,
+          addGasForIssuance,
           address
         )
       );
@@ -1081,7 +1081,7 @@ export class PopulatableEthersLiquity
     return this._wrapLiquidation(
       await troveManager.estimateAndPopulate.liquidateTroves(
         { ...overrides },
-        addGasForLQTYIssuance,
+        addGasForIssuance,
         maximumNumberOfTrovesToLiquidate
       )
     );
@@ -1099,7 +1099,7 @@ export class PopulatableEthersLiquity
       { depositLUSD },
       await stabilityPool.estimateAndPopulate.provideToSP(
         { ...overrides },
-        addGasForLQTYIssuance,
+        addGasForIssuance,
         depositLUSD.hex
       )
     );
@@ -1115,7 +1115,7 @@ export class PopulatableEthersLiquity
     return this._wrapStabilityDepositWithdrawal(
       await stabilityPool.estimateAndPopulate.withdrawFromSP(
         { ...overrides },
-        addGasForLQTYIssuance,
+        addGasForIssuance,
         Decimal.from(amount).hex
       )
     );
@@ -1130,7 +1130,7 @@ export class PopulatableEthersLiquity
     return this._wrapStabilityPoolGainsWithdrawal(
       await stabilityPool.estimateAndPopulate.withdrawFromSP(
         { ...overrides },
-        addGasForLQTYIssuance,
+        addGasForIssuance,
         Decimal.ZERO.hex
       )
     );
@@ -1153,7 +1153,7 @@ export class PopulatableEthersLiquity
     return this._wrapCollateralGainTransfer(
       await stabilityPool.estimateAndPopulate.withdrawCollateralGainToTrove(
         { ...overrides },
-        compose(addGasForPotentialListTraversal, addGasForLQTYIssuance),
+        compose(addGasForPotentialListTraversal, addGasForIssuance),
         ...(await this._findHints(finalTrove, address))
       )
     );
@@ -1246,7 +1246,7 @@ export class PopulatableEthersLiquity
 
     return populateRedemption(attemptedLUSDAmount, maxRedemptionRate, truncatedAmount, partialHints);
   }
-  
+
   /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.approveErc20} */
   async approveErc20(
     allowance?: Decimalish,
