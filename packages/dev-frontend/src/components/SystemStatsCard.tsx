@@ -126,7 +126,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
           </SystemStat>
           <SystemStat 
             info={`${ COIN } Supply`} 
-            tooltip={`The total ${ COIN } minted by the ThresholdUSD Protocol.`} 
+            tooltip={`The total ${ COIN } minted by the Threshold USD Protocol.`} 
           >
             {total.debt.shorten()}
           </SystemStat>
