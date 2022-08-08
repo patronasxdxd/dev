@@ -84,15 +84,18 @@ export const LiquityProvider: React.FC<LiquityProviderProps> = ({
     }
   }, [config, connection]);
 
+
   if (!config || !provider || !account || !chainId) {
     return <>{loader}</>;
   }
 
+  //This conditional should be habilitated only in test-net version
   if (chainId === 1) {
     return <>{unsupportedMainnetFallback}</>;
   }
   
-  if (!connection) {
+  //Forcing goerli connection
+  if (!connection || chainId !== 5) {
     return unsupportedNetworkFallback ? <>{unsupportedNetworkFallback(chainId)}</> : null;
   }
 

@@ -31,14 +31,16 @@ const select = ({
   total,
   lusdInStabilityPool,
   borrowingRate,
-  redemptionRate
+  redemptionRate,
+  pcvBalance
 }: LiquityStoreState) => ({
   numberOfTroves,
   price,
   total,
   lusdInStabilityPool,
   borrowingRate,
-  redemptionRate
+  redemptionRate,
+  pcvBalance
 });
 
 export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "info" }) => {
@@ -57,7 +59,8 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
     price,
     total,
     borrowingRate,
-    lusdInStabilityPool
+    lusdInStabilityPool,
+    pcvBalance
   } = useLiquitySelector(select);
 
   const [editedPrice, setEditedPrice] = useState(price.toString(2));
@@ -116,17 +119,25 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
             {lusdInStabilityPool.shorten()}
           </SystemStat>
           <SystemStat 
+            info={`${ COIN } in PCV`}
+            tooltip={`The total ${ COIN } currently held in the PCV, expressed as an amount and a fraction of the ${ COIN } supply.`}
+          >
+            {pcvBalance.prettify()}
+          </SystemStat>
+          <SystemStat 
             info={`${ COIN } Supply`} 
-            tooltip={`The total ${ COIN } minted by the ThresholdUSD Protocol.`} 
+            tooltip={`The total ${ COIN } minted by the Threshold USD Protocol.`} 
           >
             {total.debt.shorten()}
           </SystemStat>
-          <SystemStat 
-            info="Recovery Mode" 
-            tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Trove's debt. Operations are also restricted that would negatively impact the TCR." 
-          >
-            {total.collateralRatioIsBelowCritical(price) ? <Box color="danger">Yes</Box> : "No"}
-          </SystemStat>
+          {total.collateralRatioIsBelowCritical(price) && 
+            (<SystemStat 
+              info="Recovery Mode" 
+              tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Trove's debt. Operations are also restricted that would negatively impact the TCR." 
+            >
+              {total.collateralRatioIsBelowCritical(price) ? <Box color="danger">Yes</Box> : "No"}
+            </SystemStat>)
+          }
         </Flex>
         <Flex sx={{
           width: "100%",

@@ -23,6 +23,7 @@ export interface LiquityStoreBaseState
 |  [lusdBalance](./lib-base.liquitystorebasestate.lusdbalance.md) | [Decimal](./lib-base.decimal.md) | User's LUSD token balance. |
 |  [lusdInStabilityPool](./lib-base.liquitystorebasestate.lusdinstabilitypool.md) | [Decimal](./lib-base.decimal.md) | Total amount of LUSD currently deposited in the Stability Pool. |
 |  [numberOfTroves](./lib-base.liquitystorebasestate.numberoftroves.md) | number | Number of Troves that are currently open. |
+|  [pcvBalance](./lib-base.liquitystorebasestate.pcvbalance.md) | [Decimal](./lib-base.decimal.md) | Total amount of LUSD currently deposited in the PCV Pool. |
 |  [price](./lib-base.liquitystorebasestate.price.md) | [Decimal](./lib-base.decimal.md) | Current price of the native currency (e.g. Ether) in USD. |
 |  [stabilityDeposit](./lib-base.liquitystorebasestate.stabilitydeposit.md) | [StabilityDeposit](./lib-base.stabilitydeposit.md) | User's stability deposit. |
 |  [total](./lib-base.liquitystorebasestate.total.md) | [Trove](./lib-base.trove.md) | Total collateral and debt in the Liquity system. |

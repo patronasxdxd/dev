@@ -20,10 +20,10 @@ export interface LiquityStoreBaseState {
   /** User's LUSD token balance. */
   lusdBalance: Decimal;
 
-  /** User's Uniswap ETH/LUSD LP token balance. */
+  /** User's collateral erc20 token balance. */
   erc20TokenBalance: Decimal;
 
-  /** The liquidity mining contract's allowance of user's Uniswap ETH/LUSD LP tokens. */
+  /** The borrower operation's allowance of user's collateral erc20 tokens. */
   erc20TokenAllowance: Decimal;
 
   /**
@@ -40,6 +40,9 @@ export interface LiquityStoreBaseState {
 
   /** Total amount of LUSD currently deposited in the Stability Pool. */
   lusdInStabilityPool: Decimal;
+
+  /** Total amount of LUSD currently deposited in the PCV Pool. */
+  pcvBalance: Decimal;
 
   /** Total collateral and debt in the Liquity system. */
   total: Trove;
@@ -299,6 +302,13 @@ export abstract class LiquityStore<T = unknown> {
         "lusdBalance",
         baseState.lusdBalance,
         baseStateUpdate.lusdBalance
+      ),
+
+      pcvBalance: this._updateIfChanged(
+        eq,
+        "pcvBalance",
+        baseState.pcvBalance,
+        baseStateUpdate.pcvBalance
       ),
 
       erc20TokenBalance: this._updateIfChanged(

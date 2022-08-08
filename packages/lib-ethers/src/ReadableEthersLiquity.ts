@@ -276,6 +276,14 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return stabilityPool.getTotalLUSDDeposits({ ...overrides }).then(decimalify);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getPCVBalance} */
+  getPCVBalance(overrides?: EthersCallOverrides): Promise<Decimal> {
+    const { pcv } = _getContracts(this.connection);
+    const { lusdToken } = _getContracts(this.connection);
+
+    return lusdToken.balanceOf(pcv.address, { ...overrides }).then(decimalify);
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getLUSDBalance} */
   getLUSDBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     address ??= _requireAddress(this.connection);
@@ -501,6 +509,12 @@ class _BlockPolledReadableEthersLiquity
     return this._blockHit(overrides)
       ? this.store.state.lusdInStabilityPool
       : this._readable.getLUSDInStabilityPool(overrides);
+  }
+
+  async getPCVBalance(overrides?: EthersCallOverrides): Promise<Decimal> {
+    return this._blockHit(overrides)
+      ? this.store.state.pcvBalance
+      : this._readable.getPCVBalance(overrides);
   }
 
   async getLUSDBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
