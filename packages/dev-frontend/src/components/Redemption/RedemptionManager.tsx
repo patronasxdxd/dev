@@ -59,7 +59,7 @@ export const RedemptionManager: React.FC = () => {
     ? [
         false,
         <ErrorDescription>
-          You can't redeem THUSD when the total collateral ratio is less than{" "}
+          You can't redeem thUSD when the total collateral ratio is less than{" "}
           <Amount>{mcrPercent}</Amount>. Please try again later.
         </ErrorDescription>
       ]
@@ -126,7 +126,7 @@ export const RedemptionManager: React.FC = () => {
                   tooltip={
                     <Card variant="tooltip" sx={{ minWidth: "240px" }}>
                       The Redemption Fee is charged as a percentage of the redeemed Ether. The Redemption
-                      Fee depends on THUSD redemption volumes and is 0.5% at minimum.
+                      Fee depends on thUSD redemption volumes and is 0.5% at minimum.
                     </Card>
                   }
                 />
