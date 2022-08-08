@@ -4,7 +4,7 @@ import { Signer } from "@ethersproject/abstract-signer";
 import { ethers } from "hardhat";
 import { _LiquityDeploymentJSON } from "../src/contracts";
 import erc20Abi from "../abi/ERC20Test.json";
-import thusdAbi from "../abi/LUSDToken.json";
+import thusdAbi from "../abi/THUSDToken.json";
 
 export const printBalances = async(deployment: _LiquityDeploymentJSON, deployer: Signer, users: Signer[]) => {
   let erc20: Contract;
@@ -40,7 +40,7 @@ export const printBalances = async(deployment: _LiquityDeploymentJSON, deployer:
       if (erc20Balance.gt(0) || thusdBalance.gt(0) || ethBalance.gt(0)) {
         console.log(userAddress);
         console.log("\tERC20 : \t", erc20Balance / scale);
-        console.log("\tLUSD : \t\t", thusdBalance / scale);
+        console.log("\tTHUSD : \t\t", thusdBalance / scale);
         console.log("\tETH : \t\t", ethers.utils.formatEther(ethBalance));
         console.log("")
       }
@@ -60,7 +60,7 @@ export const printBalances = async(deployment: _LiquityDeploymentJSON, deployer:
       if (erc20Balance.gt(0) || thusdBalance.gt(0) || ethBalance.gt(0)) {
         console.log(address, " : ", name);
         console.log("\tERC20 : \t", erc20Balance / scale);
-        console.log("\tLUSD : \t\t", thusdBalance / scale);
+        console.log("\tTHUSD : \t\t", thusdBalance / scale);
         console.log("\tETH : \t\t", ethers.utils.formatEther(ethBalance));
         console.log("")
       }

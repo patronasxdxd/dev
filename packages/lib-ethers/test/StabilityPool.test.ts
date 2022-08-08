@@ -10,9 +10,9 @@ import {
   Decimal,
   Trove,
   StabilityDeposit,
-  LUSD_LIQUIDATION_RESERVE,
-  LUSD_MINIMUM_DEBT,
-  LUSD_MINIMUM_NET_DEBT
+  THUSD_LIQUIDATION_RESERVE,
+  THUSD_MINIMUM_DEBT,
+  THUSD_MINIMUM_NET_DEBT
 } from "@liquity/lib-base";
 
 // project imports
@@ -38,12 +38,12 @@ describe("EthersLiquity - StabilityPool", () => {
 
   // test troves
   const initialTroveOfDepositor = Trove.create({
-    depositCollateral: LUSD_MINIMUM_DEBT.div(100),
-    borrowLUSD: LUSD_MINIMUM_NET_DEBT
+    depositCollateral: THUSD_MINIMUM_DEBT.div(100),
+    borrowTHUSD: THUSD_MINIMUM_NET_DEBT
   });
   const troveWithVeryLowICR = Trove.create({
-    depositCollateral: LUSD_MINIMUM_DEBT.div(180),
-    borrowLUSD: LUSD_MINIMUM_NET_DEBT
+    depositCollateral: THUSD_MINIMUM_DEBT.div(180),
+    borrowTHUSD: THUSD_MINIMUM_NET_DEBT
   });
   // test params
   const smallStabilityDeposit = Decimal.from(10);
@@ -74,7 +74,7 @@ describe("EthersLiquity - StabilityPool", () => {
     for (var i=0;i<otherUsersSubset.length;i++) {
       await funder.sendTransaction({
         to: otherUsers[i].getAddress(),
-        value: LUSD_MINIMUM_DEBT.div(170).hex
+        value: THUSD_MINIMUM_DEBT.div(170).hex
       });
     }
 
@@ -96,14 +96,14 @@ describe("EthersLiquity - StabilityPool", () => {
     expect(newTrove).to.deep.equal(initialTroveOfDepositor);
 
     // test
-    const details = await liquity.depositLUSDInStabilityPool(smallStabilityDeposit);
+    const details = await liquity.depositTHUSDInStabilityPool(smallStabilityDeposit);
     expect(details).to.deep.equal({
       thusdLoss: Decimal.from(0),
-      newLUSDDeposit: smallStabilityDeposit,
+      newTHUSDDeposit: smallStabilityDeposit,
       collateralGain: Decimal.from(0),
 
       change: {
-        depositLUSD: smallStabilityDeposit
+        depositTHUSD: smallStabilityDeposit
       }
     });
   });
@@ -138,7 +138,7 @@ describe("EthersLiquity - StabilityPool", () => {
       liquidatedAddresses: [await otherUsers[0].getAddress()],
 
       collateralGasCompensation: troveWithVeryLowICR.collateral.mul(0.005), // 0.5%
-      thusdGasCompensation: LUSD_LIQUIDATION_RESERVE,
+      thusdGasCompensation: THUSD_LIQUIDATION_RESERVE,
 
       totalLiquidated: new Trove(
         troveWithVeryLowICR.collateral
@@ -154,7 +154,7 @@ describe("EthersLiquity - StabilityPool", () => {
   it("should have a depleted stability deposit and some collateral gain", async () => {
     // setup
     await liquity.openTrove(Trove.recreate(initialTroveOfDepositor));
-    await liquity.depositLUSDInStabilityPool(smallStabilityDeposit);
+    await liquity.depositTHUSDInStabilityPool(smallStabilityDeposit);
     await otherLiquities[0].openTrove(Trove.recreate(troveWithVeryLowICR));
     await deployerLiquity.setPrice(dippedPrice);
     const stabilityDepositTest = await liquity.getStabilityDeposit();
@@ -180,7 +180,7 @@ describe("EthersLiquity - StabilityPool", () => {
   it("the Trove should have received some liquidation shares", async () => {
     // setup
     await liquity.openTrove(Trove.recreate(initialTroveOfDepositor));
-    await liquity.depositLUSDInStabilityPool(smallStabilityDeposit);
+    await liquity.depositTHUSDInStabilityPool(smallStabilityDeposit);
     await otherLiquities[0].openTrove(Trove.recreate(troveWithVeryLowICR));
     await deployerLiquity.setPrice(dippedPrice);
     const stabilityDepositTest = await liquity.getStabilityDeposit();
@@ -207,7 +207,7 @@ describe("EthersLiquity - StabilityPool", () => {
   it("total should equal the Trove", async () => {
     // setup
     await liquity.openTrove(Trove.recreate(initialTroveOfDepositor));
-    await liquity.depositLUSDInStabilityPool(smallStabilityDeposit);
+    await liquity.depositTHUSDInStabilityPool(smallStabilityDeposit);
     await otherLiquities[0].openTrove(Trove.recreate(troveWithVeryLowICR));
     await deployerLiquity.setPrice(dippedPrice);
     const stabilityDepositTest = await liquity.getStabilityDeposit();
@@ -228,7 +228,7 @@ describe("EthersLiquity - StabilityPool", () => {
   it("should transfer the gains to the Trove", async () => {
     // setup
     await liquity.openTrove(Trove.recreate(initialTroveOfDepositor));
-    await liquity.depositLUSDInStabilityPool(smallStabilityDeposit);
+    await liquity.depositTHUSDInStabilityPool(smallStabilityDeposit);
     await otherLiquities[0].openTrove(Trove.recreate(troveWithVeryLowICR));
     await deployerLiquity.setPrice(dippedPrice);
     const stabilityDepositTest = await liquity.getStabilityDeposit();
@@ -239,7 +239,7 @@ describe("EthersLiquity - StabilityPool", () => {
 
     expect(details).to.deep.equal({
       thusdLoss: smallStabilityDeposit,
-      newLUSDDeposit: Decimal.ZERO,
+      newTHUSDDeposit: Decimal.ZERO,
 
       collateralGain: troveWithVeryLowICR.collateral
         .mul(0.995) // -0.5% gas compensation
@@ -263,20 +263,20 @@ describe("EthersLiquity - StabilityPool", () => {
     let price = Decimal.from(200);
     await deployerLiquity.setPrice(price);
 
-    // Use this account to print LUSD
-    await liquity.openTrove({ depositCollateral: 50, borrowLUSD: 5000 });
+    // Use this account to print THUSD
+    await liquity.openTrove({ depositCollateral: 50, borrowTHUSD: 5000 });
 
     // otherLiquities[0-2] will be independent stability depositors
-    await liquity.sendLUSD(await otherUsers[0].getAddress(), 3000);
-    await liquity.sendLUSD(await otherUsers[1].getAddress(), 1000);
-    await liquity.sendLUSD(await otherUsers[2].getAddress(), 1000);
+    await liquity.sendTHUSD(await otherUsers[0].getAddress(), 3000);
+    await liquity.sendTHUSD(await otherUsers[1].getAddress(), 1000);
+    await liquity.sendTHUSD(await otherUsers[2].getAddress(), 1000);
 
     // otherLiquities[3-4] will be Trove owners whose Troves get liquidated
-    await otherLiquities[3].openTrove({ depositCollateral: 21, borrowLUSD: 2900 });
-    await otherLiquities[4].openTrove({ depositCollateral: 21, borrowLUSD: 2900 });
+    await otherLiquities[3].openTrove({ depositCollateral: 21, borrowTHUSD: 2900 });
+    await otherLiquities[4].openTrove({ depositCollateral: 21, borrowTHUSD: 2900 });
 
-    await otherLiquities[0].depositLUSDInStabilityPool(3000);
-    await otherLiquities[1].depositLUSDInStabilityPool(1000);
+    await otherLiquities[0].depositTHUSDInStabilityPool(3000);
+    await otherLiquities[1].depositTHUSDInStabilityPool(1000);
     // otherLiquities[2] doesn't deposit yet
 
     // Tank the price so we can liquidate
@@ -288,18 +288,18 @@ describe("EthersLiquity - StabilityPool", () => {
     expect((await otherLiquities[3].getTrove()).isEmpty).to.be.true;
 
     // Now otherLiquities[2] makes their deposit too
-    await otherLiquities[2].depositLUSDInStabilityPool(1000);
+    await otherLiquities[2].depositTHUSDInStabilityPool(1000);
 
     // Liquidate second victim
     await liquity.liquidate(await otherUsers[4].getAddress());
     expect((await otherLiquities[4].getTrove()).isEmpty).to.be.true;
 
     // Stability Pool is now empty
-    expect(`${await liquity.getLUSDInStabilityPool()}`).to.equal("0");
+    expect(`${await liquity.getTHUSDInStabilityPool()}`).to.equal("0");
 
     for (const l of [otherLiquities[0], otherLiquities[1], otherLiquities[2]]) {
       const stabilityDeposit = await l.getStabilityDeposit();
-      await l.withdrawLUSDFromStabilityPool(stabilityDeposit.currentLUSD);
+      await l.withdrawTHUSDFromStabilityPool(stabilityDeposit.currentTHUSD);
     }
   });
 

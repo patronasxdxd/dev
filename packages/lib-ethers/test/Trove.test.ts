@@ -10,8 +10,8 @@ import {
   Decimal,
   Trove,
   MINIMUM_BORROWING_RATE,
-  LUSD_MINIMUM_DEBT,
-  LUSD_MINIMUM_NET_DEBT
+  THUSD_MINIMUM_DEBT,
+  THUSD_MINIMUM_NET_DEBT
 } from "@liquity/lib-base";
 
 // project imports
@@ -32,12 +32,12 @@ describe("EthersLiquity - Trove", () => {
   let userAddress: string;
 
   // params for borrower operations.
-  const withSomeBorrowing = { depositCollateral: 50, borrowLUSD: LUSD_MINIMUM_NET_DEBT.add(100) };
-  const repaySomeDebt = { repayLUSD: 10 };
-  const borrowSomeMore = { borrowLUSD: 20 };
+  const withSomeBorrowing = { depositCollateral: 50, borrowTHUSD: THUSD_MINIMUM_NET_DEBT.add(100) };
+  const repaySomeDebt = { repayTHUSD: 10 };
+  const borrowSomeMore = { borrowTHUSD: 20 };
   const depositMoreCollateral = { depositCollateral: 1 };
-  const repayAndWithdraw = { repayLUSD: 60, withdrawCollateral: 0.5 };
-  const borrowAndDeposit = { borrowLUSD: 60, depositCollateral: 0.5 };
+  const repayAndWithdraw = { repayTHUSD: 60, withdrawCollateral: 0.5 };
+  const borrowAndDeposit = { borrowTHUSD: 60, depositCollateral: 0.5 };
 
   // Always setup same initial conditions for the user wallets
   beforeEach(async () => {
@@ -72,19 +72,19 @@ describe("EthersLiquity - Trove", () => {
 
   it("should fail to create an undercollateralized Trove", async () => {
     const price = await liquity.getPrice();
-    const undercollateralized = new Trove(LUSD_MINIMUM_DEBT.div(price), LUSD_MINIMUM_DEBT);
+    const undercollateralized = new Trove(THUSD_MINIMUM_DEBT.div(price), THUSD_MINIMUM_DEBT);
     await expect(liquity.openTrove(Trove.recreate(undercollateralized))).to.eventually.be.rejected;
   });
 
   it("should fail to create a Trove with too little debt", async () => {
-    const withTooLittleDebt = new Trove(Decimal.from(50), LUSD_MINIMUM_DEBT.sub(1));
+    const withTooLittleDebt = new Trove(Decimal.from(50), THUSD_MINIMUM_DEBT.sub(1));
     await expect(liquity.openTrove(Trove.recreate(withTooLittleDebt))).to.eventually.be.rejected;
   });
 
   it("should create a Trove with some borrowing", async () => {
     const { newTrove, fee } = await liquity.openTrove(withSomeBorrowing);
     expect(newTrove).to.deep.equal(Trove.create(withSomeBorrowing));
-    expect(`${fee}`).to.equal(`${MINIMUM_BORROWING_RATE.mul(withSomeBorrowing.borrowLUSD)}`);
+    expect(`${fee}`).to.equal(`${MINIMUM_BORROWING_RATE.mul(withSomeBorrowing.borrowTHUSD)}`);
   });
 
   it("should fail to withdraw all the collateral while the Trove has debt", async () => {
@@ -104,7 +104,7 @@ describe("EthersLiquity - Trove", () => {
     await liquity.openTrove(withSomeBorrowing);
 
     // test
-    const { newTrove, fee } = await liquity.repayLUSD(repaySomeDebt.repayLUSD);
+    const { newTrove, fee } = await liquity.repayTHUSD(repaySomeDebt.repayTHUSD);
     expect(newTrove).to.deep.equal(Trove.create(withSomeBorrowing).adjust(repaySomeDebt));
     expect(`${fee}`).to.equal("0");
   });
@@ -112,23 +112,23 @@ describe("EthersLiquity - Trove", () => {
   it("should borrow some more", async () => {
     // setup
     await liquity.openTrove(withSomeBorrowing);
-    await liquity.repayLUSD(repaySomeDebt.repayLUSD);
+    await liquity.repayTHUSD(repaySomeDebt.repayTHUSD);
 
     // test
-    const { newTrove, fee } = await liquity.borrowLUSD(borrowSomeMore.borrowLUSD);
+    const { newTrove, fee } = await liquity.borrowTHUSD(borrowSomeMore.borrowTHUSD);
     expect(newTrove).to.deep.equal(
       Trove.create(withSomeBorrowing)
         .adjust(repaySomeDebt)
         .adjust(borrowSomeMore)
     );
-    expect(`${fee}`).to.equal(`${MINIMUM_BORROWING_RATE.mul(borrowSomeMore.borrowLUSD)}`);
+    expect(`${fee}`).to.equal(`${MINIMUM_BORROWING_RATE.mul(borrowSomeMore.borrowTHUSD)}`);
   });
 
   it("should deposit more collateral", async () => {
     // setup
     await liquity.openTrove(withSomeBorrowing);
-    await liquity.repayLUSD(repaySomeDebt.repayLUSD);
-    await liquity.borrowLUSD(borrowSomeMore.borrowLUSD);
+    await liquity.repayTHUSD(repaySomeDebt.repayTHUSD);
+    await liquity.borrowTHUSD(borrowSomeMore.borrowTHUSD);
 
     // test
     const { newTrove } = await liquity.depositCollateral(depositMoreCollateral.depositCollateral);
@@ -180,7 +180,7 @@ describe("EthersLiquity - Trove", () => {
     );
 
     // check fee
-    expect(`${fee}`).to.equal(`${MINIMUM_BORROWING_RATE.mul(borrowAndDeposit.borrowLUSD)}`);
+    expect(`${fee}`).to.equal(`${MINIMUM_BORROWING_RATE.mul(borrowAndDeposit.borrowTHUSD)}`);
 
     // check user balance
     const userBalance = await erc20.balanceOf(userAddress);
@@ -191,10 +191,10 @@ describe("EthersLiquity - Trove", () => {
     expect(`${userBalance}`).to.equal(`${expectedBalance}`);
   });
 
-  it("should close the Trove with some LUSD from another user", async () => {
+  it("should close the Trove with some THUSD from another user", async () => {
     // setup
     const { newTrove, fee } = await liquity.openTrove(withSomeBorrowing);
-    const thusdBalance = await liquity.getLUSDBalance();
+    const thusdBalance = await liquity.getTHUSDBalance();
     const thusdShortage = newTrove.netDebt.sub(thusdBalance); // there is a shortage due to fees
 
     // initialise the funder with tokens
@@ -204,19 +204,19 @@ describe("EthersLiquity - Trove", () => {
     // create seperate connection to lib-ethers for the funder and open a trove
     const funderLiquity = await th.connectToDeployment(deployment, funder);
     const price = await liquity.getPrice();
-    let funderTrove = Trove.create({ depositCollateral: 1, borrowLUSD: thusdShortage });
-    funderTrove = funderTrove.setDebt(Decimal.max(funderTrove.debt, LUSD_MINIMUM_DEBT));
+    let funderTrove = Trove.create({ depositCollateral: 1, borrowTHUSD: thusdShortage });
+    funderTrove = funderTrove.setDebt(Decimal.max(funderTrove.debt, THUSD_MINIMUM_DEBT));
     funderTrove = funderTrove.setCollateral(funderTrove.debt.mulDiv(1.51, price));
     await funderLiquity.openTrove(Trove.recreate(funderTrove));
 
     // send the shortfall to the user
-    await funderLiquity.sendLUSD(userAddress, thusdShortage);
+    await funderLiquity.sendTHUSD(userAddress, thusdShortage);
 
     // user closes their trove
     const { params } = await liquity.closeTrove();
     expect(params).to.deep.equal({
       withdrawCollateral: newTrove.collateral,
-      repayLUSD: newTrove.netDebt
+      repayTHUSD: newTrove.netDebt
     });
 
     // get the users trove and check its empty

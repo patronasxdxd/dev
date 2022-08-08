@@ -260,15 +260,15 @@ export class SubgraphLiquity implements ReadableLiquity, ObservableLiquity {
     throw new Error("Method not implemented.");
   }
 
-  getLUSDInStabilityPool() {
+  getTHUSDInStabilityPool() {
     return tokensInStabilityPool.get(this.client, undefined);
   }
 
-  watchLUSDInStabilityPool(onLUSDInStabilityPoolChanged: (thusdInStabilityPool: Decimal) => void) {
-    return tokensInStabilityPool.watch(this.client, onLUSDInStabilityPoolChanged, undefined);
+  watchTHUSDInStabilityPool(onTHUSDInStabilityPoolChanged: (thusdInStabilityPool: Decimal) => void) {
+    return tokensInStabilityPool.watch(this.client, onTHUSDInStabilityPoolChanged, undefined);
   }
 
-  getLUSDBalance(address?: string): Promise<Decimal> {
+  getTHUSDBalance(address?: string): Promise<Decimal> {
     throw new Error("Method not implemented.");
   }
 
@@ -280,7 +280,7 @@ export class SubgraphLiquity implements ReadableLiquity, ObservableLiquity {
     throw new Error("Method not implemented.");
   }
 
-  watchLUSDBalance(onLUSDBalanceChanged: (balance: Decimal) => void, address?: string): () => void {
+  watchTHUSDBalance(onTHUSDBalanceChanged: (balance: Decimal) => void, address?: string): () => void {
     throw new Error("Method not implemented.");
   }
 

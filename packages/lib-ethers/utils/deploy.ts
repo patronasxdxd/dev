@@ -103,7 +103,7 @@ const deployContracts = async (
       thusdToken: await deployContract(
         deployer,
         getContractFactory,
-        "LUSDToken",
+        "THUSDToken",
         addresses.troveManager,
         addresses.stabilityPool,
         addresses.borrowerOperations,

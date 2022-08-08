@@ -163,41 +163,41 @@ export class ObservableEthersLiquity implements ObservableLiquity {
     };
   }
 
-  watchLUSDInStabilityPool(
-    onLUSDInStabilityPoolChanged: (thusdInStabilityPool: Decimal) => void
+  watchTHUSDInStabilityPool(
+    onTHUSDInStabilityPoolChanged: (thusdInStabilityPool: Decimal) => void
   ): () => void {
     const { thusdToken, stabilityPool } = _getContracts(this._readable.connection);
     const { Transfer } = thusdToken.filters;
 
-    const transferLUSDFromStabilityPool = Transfer(stabilityPool.address);
-    const transferLUSDToStabilityPool = Transfer(null, stabilityPool.address);
+    const transferTHUSDFromStabilityPool = Transfer(stabilityPool.address);
+    const transferTHUSDToStabilityPool = Transfer(null, stabilityPool.address);
 
-    const stabilityPoolLUSDFilters = [transferLUSDFromStabilityPool, transferLUSDToStabilityPool];
+    const stabilityPoolTHUSDFilters = [transferTHUSDFromStabilityPool, transferTHUSDToStabilityPool];
 
-    const stabilityPoolLUSDListener = debounce((blockTag: number) => {
-      this._readable.getLUSDInStabilityPool({ blockTag }).then(onLUSDInStabilityPoolChanged);
+    const stabilityPoolTHUSDListener = debounce((blockTag: number) => {
+      this._readable.getTHUSDInStabilityPool({ blockTag }).then(onTHUSDInStabilityPoolChanged);
     });
 
-    stabilityPoolLUSDFilters.forEach(filter => thusdToken.on(filter, stabilityPoolLUSDListener));
+    stabilityPoolTHUSDFilters.forEach(filter => thusdToken.on(filter, stabilityPoolTHUSDListener));
 
     return () =>
-      stabilityPoolLUSDFilters.forEach(filter =>
-        thusdToken.removeListener(filter, stabilityPoolLUSDListener)
+      stabilityPoolTHUSDFilters.forEach(filter =>
+        thusdToken.removeListener(filter, stabilityPoolTHUSDListener)
       );
   }
 
-  watchLUSDBalance(onLUSDBalanceChanged: (balance: Decimal) => void, address?: string): () => void {
+  watchTHUSDBalance(onTHUSDBalanceChanged: (balance: Decimal) => void, address?: string): () => void {
     address ??= _requireAddress(this._readable.connection);
 
     const { thusdToken } = _getContracts(this._readable.connection);
     const { Transfer } = thusdToken.filters;
-    const transferLUSDFromUser = Transfer(address);
-    const transferLUSDToUser = Transfer(null, address);
+    const transferTHUSDFromUser = Transfer(address);
+    const transferTHUSDToUser = Transfer(null, address);
 
-    const thusdTransferFilters = [transferLUSDFromUser, transferLUSDToUser];
+    const thusdTransferFilters = [transferTHUSDFromUser, transferTHUSDToUser];
 
     const thusdTransferListener = debounce((blockTag: number) => {
-      this._readable.getLUSDBalance(address, { blockTag }).then(onLUSDBalanceChanged);
+      this._readable.getTHUSDBalance(address, { blockTag }).then(onTHUSDBalanceChanged);
     });
 
     thusdTransferFilters.forEach(filter => thusdToken.on(filter, thusdTransferListener));

@@ -12,8 +12,8 @@ import {
   Fees,
   Trove,
   MINIMUM_BORROWING_RATE,
-  LUSD_MINIMUM_DEBT,
-  LUSD_MINIMUM_NET_DEBT
+  THUSD_MINIMUM_DEBT,
+  THUSD_MINIMUM_NET_DEBT
 } from "@liquity/lib-base";
 
 import { _LiquityDeploymentJSON } from "../src/contracts";
@@ -60,7 +60,7 @@ describe("findHintForCollateralRatio", () => {
     for (var i=0;i<otherUsersSubset.length;i++) {
       await funder.sendTransaction({
         to: otherUsers[i].getAddress(),
-        value: LUSD_MINIMUM_DEBT.div(170).hex
+        value: THUSD_MINIMUM_DEBT.div(170).hex
       });
     }
 
@@ -123,7 +123,7 @@ describe("findHintForCollateralRatio", () => {
 
     const nominalCollateralRatio = Decimal.from(0.05);
 
-    const params = Trove.recreate(new Trove(Decimal.from(1), LUSD_MINIMUM_DEBT));
+    const params = Trove.recreate(new Trove(Decimal.from(1), THUSD_MINIMUM_DEBT));
     const trove = Trove.create(params);
     expect(`${trove._nominalCollateralRatio}`).to.equal(`${nominalCollateralRatio}`);
 
@@ -150,20 +150,20 @@ describe("findHintForCollateralRatio", () => {
   // Test 1
   it("Hints (adjustTrove): should not use extra gas when a Trove's position doesn't change", async () => {
     await th.openTroves(deployment, liquity, otherUsersSubset, funder, [
-      { depositCollateral: 30, borrowLUSD: 2000 }, // 0
-      { depositCollateral: 30, borrowLUSD: 2100 }, // 1
-      { depositCollateral: 30, borrowLUSD: 2200 }, // 2
-      { depositCollateral: 30, borrowLUSD: 2300 }, // 3
+      { depositCollateral: 30, borrowTHUSD: 2000 }, // 0
+      { depositCollateral: 30, borrowTHUSD: 2100 }, // 1
+      { depositCollateral: 30, borrowTHUSD: 2200 }, // 2
+      { depositCollateral: 30, borrowTHUSD: 2300 }, // 3
       // Test 1:           30,             2400
-      { depositCollateral: 30, borrowLUSD: 2500 }, // 4
-      { depositCollateral: 30, borrowLUSD: 2600 }, // 5
-      { depositCollateral: 30, borrowLUSD: 2700 }, // 6
-      { depositCollateral: 30, borrowLUSD: 2800 } //  7
+      { depositCollateral: 30, borrowTHUSD: 2500 }, // 4
+      { depositCollateral: 30, borrowTHUSD: 2600 }, // 5
+      { depositCollateral: 30, borrowTHUSD: 2700 }, // 6
+      { depositCollateral: 30, borrowTHUSD: 2800 } //  7
     ]);
 
     const { newTrove: initialTrove } = await liquity.openTrove({
       depositCollateral: 30,
-      borrowLUSD: 2400
+      borrowTHUSD: 2400
     });
 
     // Maintain the same ICR / position in the list
@@ -181,29 +181,29 @@ describe("findHintForCollateralRatio", () => {
   it("Hints (adjustTrove): should not traverse the whole list when bottom Trove moves", async () => {
     // setup
     await th.openTroves(deployment, liquity, otherUsersSubset, funder, [
-      { depositCollateral: 30, borrowLUSD: 2000 }, // 0
-      { depositCollateral: 30, borrowLUSD: 2100 }, // 1
-      { depositCollateral: 30, borrowLUSD: 2200 }, // 2
-      { depositCollateral: 30, borrowLUSD: 2300 }, // 3
-      // { depositCollateral: 30, borrowLUSD: 2400 }, // Test 1
-      { depositCollateral: 30, borrowLUSD: 2500 }, // 4
-      { depositCollateral: 30, borrowLUSD: 2600 }, // 5
-      { depositCollateral: 30, borrowLUSD: 2700 }, // 6
-      { depositCollateral: 30, borrowLUSD: 2800 } //  7
+      { depositCollateral: 30, borrowTHUSD: 2000 }, // 0
+      { depositCollateral: 30, borrowTHUSD: 2100 }, // 1
+      { depositCollateral: 30, borrowTHUSD: 2200 }, // 2
+      { depositCollateral: 30, borrowTHUSD: 2300 }, // 3
+      // { depositCollateral: 30, borrowTHUSD: 2400 }, // Test 1
+      { depositCollateral: 30, borrowTHUSD: 2500 }, // 4
+      { depositCollateral: 30, borrowTHUSD: 2600 }, // 5
+      { depositCollateral: 30, borrowTHUSD: 2700 }, // 6
+      { depositCollateral: 30, borrowTHUSD: 2800 } //  7
       // Test 2:           30,             2900
       // Test 2 (other):   30,             3000
     ]);
 
     const { newTrove: initialTrove } = await liquity.openTrove({
       depositCollateral: 30,
-      borrowLUSD: 2400
+      borrowTHUSD: 2400
     });
 
     // test
     const bottomLiquity = await th.connectToDeployment(deployment, otherUsersSubset[7]);
     const bottomTrove = await bottomLiquity.getTrove();
-    const targetTrove = Trove.create({ depositCollateral: 30, borrowLUSD: 2900 });
-    const interferingTrove = Trove.create({ depositCollateral: 30, borrowLUSD: 3000 });
+    const targetTrove = Trove.create({ depositCollateral: 30, borrowTHUSD: 2900 });
+    const interferingTrove = Trove.create({ depositCollateral: 30, borrowTHUSD: 3000 });
     const tx = await liquity.populate.adjustTrove(initialTrove.adjustTo(targetTrove));
 
     // Suddenly: interference!
@@ -217,29 +217,29 @@ describe("findHintForCollateralRatio", () => {
   it("Hints (adjustTrove): should not traverse the whole list when lowering ICR of bottom Trove", async () => {
     // setup
     await th.openTroves(deployment, liquity, otherUsersSubset, funder, [
-      { depositCollateral: 30, borrowLUSD: 2000 }, // 0
-      { depositCollateral: 30, borrowLUSD: 2100 }, // 1
-      { depositCollateral: 30, borrowLUSD: 2200 }, // 2
-      { depositCollateral: 30, borrowLUSD: 2300 }, // 3
-      // { depositCollateral: 30, borrowLUSD: 2400 }, // Test 1
-      { depositCollateral: 30, borrowLUSD: 2500 }, // 4
-      { depositCollateral: 30, borrowLUSD: 2600 }, // 5
-      { depositCollateral: 30, borrowLUSD: 2700 }, // 6
-      { depositCollateral: 30, borrowLUSD: 2800 }, //  7
-      { depositCollateral: 30, borrowLUSD: 2900 }, // Test 2:
-      { depositCollateral: 30, borrowLUSD: 3000 }  // Test 2 (other):
+      { depositCollateral: 30, borrowTHUSD: 2000 }, // 0
+      { depositCollateral: 30, borrowTHUSD: 2100 }, // 1
+      { depositCollateral: 30, borrowTHUSD: 2200 }, // 2
+      { depositCollateral: 30, borrowTHUSD: 2300 }, // 3
+      // { depositCollateral: 30, borrowTHUSD: 2400 }, // Test 1
+      { depositCollateral: 30, borrowTHUSD: 2500 }, // 4
+      { depositCollateral: 30, borrowTHUSD: 2600 }, // 5
+      { depositCollateral: 30, borrowTHUSD: 2700 }, // 6
+      { depositCollateral: 30, borrowTHUSD: 2800 }, //  7
+      { depositCollateral: 30, borrowTHUSD: 2900 }, // Test 2:
+      { depositCollateral: 30, borrowTHUSD: 3000 }  // Test 2 (other):
       // Test 3:           30,             3100 -> 3200
     ]);
 
     const { newTrove: initialTrove } = await liquity.openTrove({
       depositCollateral: 30,
-      borrowLUSD: 2400
+      borrowTHUSD: 2400
     });
 
     // test
     const targetTrove = [
-      Trove.create({ depositCollateral: 30, borrowLUSD: 3100 }),
-      Trove.create({ depositCollateral: 30, borrowLUSD: 3200 })
+      Trove.create({ depositCollateral: 30, borrowTHUSD: 3100 }),
+      Trove.create({ depositCollateral: 30, borrowTHUSD: 3200 })
     ];
 
     await liquity.adjustTrove(initialTrove.adjustTo(targetTrove[0]));

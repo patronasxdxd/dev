@@ -46,7 +46,7 @@ export function handleCollateralGainWithdrawn(event: CollateralGainWithdrawn): v
     event,
     event.params._depositor,
     event.params._collateral,
-    event.params._LUSDLoss
+    event.params._THUSDLoss
   );
 
   if (depositUpdate != null) {

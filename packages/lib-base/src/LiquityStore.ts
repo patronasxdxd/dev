@@ -17,13 +17,13 @@ export interface LiquityStoreBaseState {
   /** User's native currency balance (e.g. Ether). */
   accountBalance: Decimal;
 
-  /** User's LUSD token balance. */
+  /** User's THUSD token balance. */
   thusdBalance: Decimal;
 
-  /** User's Uniswap ETH/LUSD LP token balance. */
+  /** User's Uniswap ETH/THUSD LP token balance. */
   erc20TokenBalance: Decimal;
 
-  /** The liquidity mining contract's allowance of user's Uniswap ETH/LUSD LP tokens. */
+  /** The liquidity mining contract's allowance of user's Uniswap ETH/THUSD LP tokens. */
   erc20TokenAllowance: Decimal;
 
   /**
@@ -38,7 +38,7 @@ export interface LiquityStoreBaseState {
   /** Current price of the native currency (e.g. Ether) in USD. */
   price: Decimal;
 
-  /** Total amount of LUSD currently deposited in the Stability Pool. */
+  /** Total amount of THUSD currently deposited in the Stability Pool. */
   thusdInStabilityPool: Decimal;
 
   /** Total collateral and debt in the Liquity system. */
@@ -98,7 +98,7 @@ export interface LiquityStoreDerivedState {
    * Current redemption rate.
    *
    * @remarks
-   * Note that the actual rate paid by a redemption transaction will depend on the amount of LUSD
+   * Note that the actual rate paid by a redemption transaction will depend on the amount of THUSD
    * being redeemed.
    *
    * Use {@link Fees.redemptionRate} to calculate a precise redemption rate.
