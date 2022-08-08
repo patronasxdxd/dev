@@ -9,7 +9,7 @@ import "./Dependencies/CheckContract.sol";
 import "./Dependencies/console.sol";
 import "./Interfaces/IPCV.sol";
 import "./Dependencies/LiquityMath.sol";
-import "./Interfaces/ILUSDToken.sol";
+import "./Interfaces/ITHUSDToken.sol";
 import "./Dependencies/IERC20.sol";
 
 contract PCV is IPCV, Ownable, CheckContract, BaseMath {
@@ -21,9 +21,9 @@ contract PCV is IPCV, Ownable, CheckContract, BaseMath {
     mapping( address => uint) public stakes;
 
     uint public F_ETH;  // Running sum of ETH fees
-    uint public F_LUSD; // Running sum of LUSD fees
+    uint public F_THUSD; // Running sum of THUSD fees
 
-    ILUSDToken public lusdToken;
+    ITHUSDToken public thusdToken;
 
     address public troveManagerAddress;
     address public borrowerOperationsAddress;
@@ -33,7 +33,7 @@ contract PCV is IPCV, Ownable, CheckContract, BaseMath {
 
     function setAddresses
     (
-        address _lusdTokenAddress,
+        address _thusdTokenAddress,
         address _troveManagerAddress,
         address _borrowerOperationsAddress,
         address _activePoolAddress
@@ -42,17 +42,17 @@ contract PCV is IPCV, Ownable, CheckContract, BaseMath {
         onlyOwner
         override
     {
-        checkContract(_lusdTokenAddress);
+        checkContract(_thusdTokenAddress);
         checkContract(_troveManagerAddress);
         checkContract(_borrowerOperationsAddress);
         checkContract(_activePoolAddress);
 
-        lusdToken = ILUSDToken(_lusdTokenAddress);
+        thusdToken = ITHUSDToken(_thusdTokenAddress);
         troveManagerAddress = _troveManagerAddress;
         borrowerOperationsAddress = _borrowerOperationsAddress;
         activePoolAddress = _activePoolAddress;
 
-        emit LUSDTokenAddressSet(_lusdTokenAddress);
+        emit THUSDTokenAddressSet(_thusdTokenAddress);
         emit TroveManagerAddressSet(_troveManagerAddress);
         emit BorrowerOperationsAddressSet(_borrowerOperationsAddress);
         emit ActivePoolAddressSet(_activePoolAddress);
@@ -69,11 +69,11 @@ contract PCV is IPCV, Ownable, CheckContract, BaseMath {
         emit F_ETHUpdated(F_ETH);
     }
 
-    function increaseF_LUSD(uint _LUSDFee) external override {
+    function increaseF_THUSD(uint _THUSDFee) external override {
         _requireCallerIsBorrowerOperations();
 
-        F_LUSD = F_LUSD.add(_LUSDFee);
-        emit F_LUSDUpdated(F_LUSD);
+        F_THUSD = F_THUSD.add(_THUSDFee);
+        emit F_THUSDUpdated(F_THUSD);
     }
 
     // --- 'require' functions ---

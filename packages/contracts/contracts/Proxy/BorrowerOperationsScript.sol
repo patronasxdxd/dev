@@ -14,8 +14,8 @@ contract BorrowerOperationsScript is CheckContract {
         borrowerOperations = _borrowerOperations;
     }
 
-    function openTrove(uint _maxFee, uint _LUSDAmount, uint _assetAmount, address _upperHint, address _lowerHint) external payable {
-        borrowerOperations.openTrove(_maxFee, _LUSDAmount, _assetAmount, _upperHint, _lowerHint);
+    function openTrove(uint _maxFee, uint _THUSDAmount, uint _assetAmount, address _upperHint, address _lowerHint) external payable {
+        borrowerOperations.openTrove(_maxFee, _THUSDAmount, _assetAmount, _upperHint, _lowerHint);
     }
 
     function addColl(uint _assetAmount, address _upperHint, address _lowerHint) external payable {
@@ -26,12 +26,12 @@ contract BorrowerOperationsScript is CheckContract {
         borrowerOperations.withdrawColl(_amount, _upperHint, _lowerHint);
     }
 
-    function withdrawLUSD(uint _maxFee, uint _amount, address _upperHint, address _lowerHint) external {
-        borrowerOperations.withdrawLUSD(_maxFee, _amount, _upperHint, _lowerHint);
+    function withdrawTHUSD(uint _maxFee, uint _amount, address _upperHint, address _lowerHint) external {
+        borrowerOperations.withdrawTHUSD(_maxFee, _amount, _upperHint, _lowerHint);
     }
 
-    function repayLUSD(uint _amount, address _upperHint, address _lowerHint) external {
-        borrowerOperations.repayLUSD(_amount, _upperHint, _lowerHint);
+    function repayTHUSD(uint _amount, address _upperHint, address _lowerHint) external {
+        borrowerOperations.repayTHUSD(_amount, _upperHint, _lowerHint);
     }
 
     function closeTrove() external {

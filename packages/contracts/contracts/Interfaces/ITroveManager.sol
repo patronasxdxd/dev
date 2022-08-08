@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 
 import "./ILiquityBase.sol";
 import "./IStabilityPool.sol";
-import "./ILUSDToken.sol";
+import "./ITHUSDToken.sol";
 import "./IPCV.sol";
 
 
@@ -15,7 +15,7 @@ interface ITroveManager is ILiquityBase {
 
     event BorrowerOperationsAddressChanged(address _newBorrowerOperationsAddress);
     event PriceFeedAddressChanged(address _newPriceFeedAddress);
-    event LUSDTokenAddressChanged(address _newLUSDTokenAddress);
+    event THUSDTokenAddressChanged(address _newTHUSDTokenAddress);
     event ActivePoolAddressChanged(address _activePoolAddress);
     event DefaultPoolAddressChanged(address _defaultPoolAddress);
     event StabilityPoolAddressChanged(address _stabilityPoolAddress);
@@ -24,16 +24,16 @@ interface ITroveManager is ILiquityBase {
     event SortedTrovesAddressChanged(address _sortedTrovesAddress);
     event PCVAddressChanged(address _pcvAddress);
 
-    event Liquidation(uint _liquidatedDebt, uint _liquidatedColl, uint _collGasCompensation, uint _LUSDGasCompensation);
-    event Redemption(uint _attemptedLUSDAmount, uint _actualLUSDAmount, uint _ETHSent, uint _ETHFee);
+    event Liquidation(uint _liquidatedDebt, uint _liquidatedColl, uint _collGasCompensation, uint _THUSDGasCompensation);
+    event Redemption(uint _attemptedTHUSDAmount, uint _actualTHUSDAmount, uint _ETHSent, uint _ETHFee);
     event TroveUpdated(address indexed _borrower, uint _debt, uint _coll, uint stake, uint8 operation);
     event TroveLiquidated(address indexed _borrower, uint _debt, uint _coll, uint8 operation);
     event BaseRateUpdated(uint _baseRate);
     event LastFeeOpTimeUpdated(uint _lastFeeOpTime);
     event TotalStakesUpdated(uint _newTotalStakes);
     event SystemSnapshotsUpdated(uint _totalStakesSnapshot, uint _totalCollateralSnapshot);
-    event LTermsUpdated(uint _L_ETH, uint _L_LUSDDebt);
-    event TroveSnapshotsUpdated(uint _L_ETH, uint _L_LUSDDebt);
+    event LTermsUpdated(uint _L_ETH, uint _L_THUSDDebt);
+    event TroveSnapshotsUpdated(uint _L_ETH, uint _L_THUSDDebt);
     event TroveIndexUpdated(address _borrower, uint _newIndex);
 
     // --- Functions ---
@@ -46,13 +46,13 @@ interface ITroveManager is ILiquityBase {
         address _gasPoolAddress,
         address _collSurplusPoolAddress,
         address _priceFeedAddress,
-        address _lusdTokenAddress,
+        address _thusdTokenAddress,
         address _sortedTrovesAddress,
         address _pcvAddress
     ) external;
 
     function stabilityPool() external view returns (IStabilityPool);
-    function lusdToken() external view returns (ILUSDToken);
+    function thusdToken() external view returns (ITHUSDToken);
     function pcv() external view returns (IPCV);
 
     function getTroveOwnersCount() external view returns (uint);
@@ -69,7 +69,7 @@ interface ITroveManager is ILiquityBase {
     function batchLiquidateTroves(address[] calldata _troveArray) external;
 
     function redeemCollateral(
-        uint _LUSDAmount,
+        uint _THUSDAmount,
         address _firstRedemptionHint,
         address _upperPartialRedemptionHint,
         address _lowerPartialRedemptionHint,
@@ -88,14 +88,14 @@ interface ITroveManager is ILiquityBase {
 
     function getPendingETHReward(address _borrower) external view returns (uint);
 
-    function getPendingLUSDDebtReward(address _borrower) external view returns (uint);
+    function getPendingTHUSDDebtReward(address _borrower) external view returns (uint);
 
      function hasPendingRewards(address _borrower) external view returns (bool);
 
     function getEntireDebtAndColl(address _borrower) external view returns (
         uint debt,
         uint coll,
-        uint pendingLUSDDebtReward,
+        uint pendingTHUSDDebtReward,
         uint pendingETHReward
     );
 
@@ -111,8 +111,8 @@ interface ITroveManager is ILiquityBase {
     function getBorrowingRate() external view returns (uint);
     function getBorrowingRateWithDecay() external view returns (uint);
 
-    function getBorrowingFee(uint LUSDDebt) external view returns (uint);
-    function getBorrowingFeeWithDecay(uint _LUSDDebt) external view returns (uint);
+    function getBorrowingFee(uint THUSDDebt) external view returns (uint);
+    function getBorrowingFeeWithDecay(uint _THUSDDebt) external view returns (uint);
 
     function decayBaseRateFromBorrowing() external;
 

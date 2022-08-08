@@ -5,24 +5,24 @@ pragma solidity ^0.8.10;
 import "../TroveManager.sol";
 import "../BorrowerOperations.sol";
 import "../StabilityPool.sol";
-import "../LUSDToken.sol";
+import "../THUSDToken.sol";
 
 contract EchidnaProxy {
     TroveManager troveManager;
     BorrowerOperations borrowerOperations;
     StabilityPool stabilityPool;
-    LUSDToken lusdToken;
+    THUSDToken thusdToken;
 
     constructor(
         TroveManager _troveManager,
         BorrowerOperations _borrowerOperations,
         StabilityPool _stabilityPool,
-        LUSDToken _lusdToken
+        THUSDToken _thusdToken
     ) {
         troveManager = _troveManager;
         borrowerOperations = _borrowerOperations;
         stabilityPool = _stabilityPool;
-        lusdToken = _lusdToken;
+        thusdToken = _thusdToken;
     }
 
     receive() external payable {
@@ -44,7 +44,7 @@ contract EchidnaProxy {
     }
 
     function redeemCollateralPrx(
-        uint _LUSDAmount,
+        uint _THUSDAmount,
         address _firstRedemptionHint,
         address _upperPartialRedemptionHint,
         address _lowerPartialRedemptionHint,
@@ -52,15 +52,15 @@ contract EchidnaProxy {
         uint _maxIterations,
         uint _maxFee
     ) external {
-        troveManager.redeemCollateral(_LUSDAmount, _firstRedemptionHint, _upperPartialRedemptionHint, _lowerPartialRedemptionHint, _partialRedemptionHintNICR, _maxIterations, _maxFee);
+        troveManager.redeemCollateral(_THUSDAmount, _firstRedemptionHint, _upperPartialRedemptionHint, _lowerPartialRedemptionHint, _partialRedemptionHintNICR, _maxIterations, _maxFee);
     }
 
     // Borrower Operations
-    function openTrovePrx(uint _ETH, uint _LUSDAmount, address _upperHint, address _lowerHint, uint _maxFee) external payable {
+    function openTrovePrx(uint _ETH, uint _THUSDAmount, address _upperHint, address _lowerHint, uint _maxFee) external payable {
         if (borrowerOperations.collateralAddress() == address(0)) {
-          borrowerOperations.openTrove{value: _ETH}(_maxFee, _LUSDAmount, 0, _upperHint, _lowerHint);
+          borrowerOperations.openTrove{value: _ETH}(_maxFee, _THUSDAmount, 0, _upperHint, _lowerHint);
         } else {
-          borrowerOperations.openTrove{value: 0}(_maxFee, _LUSDAmount, _ETH, _upperHint, _lowerHint);
+          borrowerOperations.openTrove{value: 0}(_maxFee, _THUSDAmount, _ETH, _upperHint, _lowerHint);
         }
     }
 
@@ -76,12 +76,12 @@ contract EchidnaProxy {
         borrowerOperations.withdrawColl(_amount, _upperHint, _lowerHint);
     }
 
-    function withdrawLUSDPrx(uint _amount, address _upperHint, address _lowerHint, uint _maxFee) external {
-        borrowerOperations.withdrawLUSD(_maxFee, _amount, _upperHint, _lowerHint);
+    function withdrawTHUSDPrx(uint _amount, address _upperHint, address _lowerHint, uint _maxFee) external {
+        borrowerOperations.withdrawTHUSD(_maxFee, _amount, _upperHint, _lowerHint);
     }
 
-    function repayLUSDPrx(uint _amount, address _upperHint, address _lowerHint) external {
-        borrowerOperations.repayLUSD(_amount, _upperHint, _lowerHint);
+    function repayTHUSDPrx(uint _amount, address _upperHint, address _lowerHint) external {
+        borrowerOperations.repayTHUSD(_amount, _upperHint, _lowerHint);
     }
 
     function closeTrovePrx() external {
@@ -105,25 +105,25 @@ contract EchidnaProxy {
         stabilityPool.withdrawFromSP(_amount);
     }
 
-    // LUSD Token
+    // THUSD Token
 
     function transferPrx(address recipient, uint256 amount) external returns (bool) {
-        return lusdToken.transfer(recipient, amount);
+        return thusdToken.transfer(recipient, amount);
     }
 
     function approvePrx(address spender, uint256 amount) external returns (bool) {
-        return lusdToken.approve(spender, amount);
+        return thusdToken.approve(spender, amount);
     }
 
     function transferFromPrx(address sender, address recipient, uint256 amount) external returns (bool) {
-        return lusdToken.transferFrom(sender, recipient, amount);
+        return thusdToken.transferFrom(sender, recipient, amount);
     }
 
     function increaseAllowancePrx(address spender, uint256 addedValue) external returns (bool) {
-        return lusdToken.increaseAllowance(spender, addedValue);
+        return thusdToken.increaseAllowance(spender, addedValue);
     }
 
     function decreaseAllowancePrx(address spender, uint256 subtractedValue) external returns (bool) {
-        return lusdToken.decreaseAllowance(spender, subtractedValue);
+        return thusdToken.decreaseAllowance(spender, subtractedValue);
     }
 }
