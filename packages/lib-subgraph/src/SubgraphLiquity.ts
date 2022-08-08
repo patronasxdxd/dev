@@ -264,7 +264,7 @@ export class SubgraphLiquity implements ReadableLiquity, ObservableLiquity {
     return tokensInStabilityPool.get(this.client, undefined);
   }
 
-  watchLUSDInStabilityPool(onLUSDInStabilityPoolChanged: (lusdInStabilityPool: Decimal) => void) {
+  watchLUSDInStabilityPool(onLUSDInStabilityPoolChanged: (thusdInStabilityPool: Decimal) => void) {
     return tokensInStabilityPool.watch(this.client, onLUSDInStabilityPoolChanged, undefined);
   }
 

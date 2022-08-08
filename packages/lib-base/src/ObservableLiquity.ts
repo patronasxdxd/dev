@@ -25,7 +25,7 @@ export interface ObservableLiquity {
   ): () => void;
 
   watchLUSDInStabilityPool(
-    onLUSDInStabilityPoolChanged: (lusdInStabilityPool: Decimal) => void
+    onLUSDInStabilityPoolChanged: (thusdInStabilityPool: Decimal) => void
   ): () => void;
 
   watchLUSDBalance(onLUSDBalanceChanged: (balance: Decimal) => void, address?: string): () => void;

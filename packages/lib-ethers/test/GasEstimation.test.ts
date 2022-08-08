@@ -150,9 +150,9 @@ describe("Gas estimation", () => {
     expect(gasIncrease).to.be.within(10000, 25000);
 
     th.assertDefined(rudeCreation.borrowLUSD);
-    const lusdShortage = rudeTrove.debt.sub(rudeCreation.borrowLUSD);
+    const thusdShortage = rudeTrove.debt.sub(rudeCreation.borrowLUSD);
 
-    await liquity.sendLUSD(await rudeUser.getAddress(), lusdShortage);
+    await liquity.sendLUSD(await rudeUser.getAddress(), thusdShortage);
     await rudeLiquity.closeTrove();
   });
 

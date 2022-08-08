@@ -98,7 +98,7 @@ describe("EthersLiquity - StabilityPool", () => {
     // test
     const details = await liquity.depositLUSDInStabilityPool(smallStabilityDeposit);
     expect(details).to.deep.equal({
-      lusdLoss: Decimal.from(0),
+      thusdLoss: Decimal.from(0),
       newLUSDDeposit: smallStabilityDeposit,
       collateralGain: Decimal.from(0),
 
@@ -138,7 +138,7 @@ describe("EthersLiquity - StabilityPool", () => {
       liquidatedAddresses: [await otherUsers[0].getAddress()],
 
       collateralGasCompensation: troveWithVeryLowICR.collateral.mul(0.005), // 0.5%
-      lusdGasCompensation: LUSD_LIQUIDATION_RESERVE,
+      thusdGasCompensation: LUSD_LIQUIDATION_RESERVE,
 
       totalLiquidated: new Trove(
         troveWithVeryLowICR.collateral
@@ -238,7 +238,7 @@ describe("EthersLiquity - StabilityPool", () => {
     const details = await liquity.transferCollateralGainToTrove();
 
     expect(details).to.deep.equal({
-      lusdLoss: smallStabilityDeposit,
+      thusdLoss: smallStabilityDeposit,
       newLUSDDeposit: Decimal.ZERO,
 
       collateralGain: troveWithVeryLowICR.collateral

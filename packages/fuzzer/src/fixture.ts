@@ -102,9 +102,9 @@ export class Fixture {
   private async sendLUSDFromFunder(toAddress: string, amount: Decimalish) {
     amount = Decimal.from(amount);
 
-    const lusdBalance = await this.funderLiquity.getLUSDBalance();
+    const thusdBalance = await this.funderLiquity.getLUSDBalance();
 
-    if (lusdBalance.lt(amount)) {
+    if (thusdBalance.lt(amount)) {
       const trove = await this.funderLiquity.getTrove();
       const total = await this.funderLiquity.getTotal();
       const fees = await this.funderLiquity.getFees();
@@ -115,7 +115,7 @@ export class Fixture {
           : Decimal.max(trove.collateralRatio(this.price).add(0.00001), 1.11);
 
       let newTrove = trove.isEmpty ? Trove.create({ depositCollateral: 1, borrowLUSD: 0 }) : trove;
-      newTrove = newTrove.adjust({ borrowLUSD: amount.sub(lusdBalance).mul(2) });
+      newTrove = newTrove.adjust({ borrowLUSD: amount.sub(thusdBalance).mul(2) });
 
       if (newTrove.debt.lt(LUSD_MINIMUM_DEBT)) {
         newTrove = newTrove.setDebt(LUSD_MINIMUM_DEBT);
@@ -156,8 +156,8 @@ export class Fixture {
   }
 
   async liquidateRandomNumberOfTroves(price: Decimal) {
-    const lusdInStabilityPoolBefore = await this.deployerLiquity.getLUSDInStabilityPool();
-    console.log(`// Stability Pool balance: ${lusdInStabilityPoolBefore}`);
+    const thusdInStabilityPoolBefore = await this.deployerLiquity.getLUSDInStabilityPool();
+    console.log(`// Stability Pool balance: ${thusdInStabilityPoolBefore}`);
 
     const trovesBefore = await getListOfTroves(this.deployerLiquity);
 
@@ -189,8 +189,8 @@ export class Fixture {
 
     this.totalNumberOfLiquidations += liquidatedTroves.length;
 
-    const lusdInStabilityPoolAfter = await this.deployerLiquity.getLUSDInStabilityPool();
-    console.log(`// Stability Pool balance: ${lusdInStabilityPoolAfter}`);
+    const thusdInStabilityPoolAfter = await this.deployerLiquity.getLUSDInStabilityPool();
+    console.log(`// Stability Pool balance: ${thusdInStabilityPoolAfter}`);
   }
 
   async openRandomTrove(userAddress: string, liquity: Liquity) {
@@ -385,10 +385,10 @@ export class Fixture {
   }
 
   async sweepLUSD(liquity: Liquity) {
-    const lusdBalance = await liquity.getLUSDBalance();
+    const thusdBalance = await liquity.getLUSDBalance();
 
-    if (lusdBalance.nonZero) {
-      await liquity.sendLUSD(this.funderAddress, lusdBalance, { gasPrice: 0 });
+    if (thusdBalance.nonZero) {
+      await liquity.sendLUSD(this.funderAddress, thusdBalance, { gasPrice: 0 });
     }
   }
 

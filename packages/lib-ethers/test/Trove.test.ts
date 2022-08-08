@@ -194,8 +194,8 @@ describe("EthersLiquity - Trove", () => {
   it("should close the Trove with some LUSD from another user", async () => {
     // setup
     const { newTrove, fee } = await liquity.openTrove(withSomeBorrowing);
-    const lusdBalance = await liquity.getLUSDBalance();
-    const lusdShortage = newTrove.netDebt.sub(lusdBalance); // there is a shortage due to fees
+    const thusdBalance = await liquity.getLUSDBalance();
+    const thusdShortage = newTrove.netDebt.sub(thusdBalance); // there is a shortage due to fees
 
     // initialise the funder with tokens
     const startingTokens = BigNumber.from(STARTING_BALANCE.hex);
@@ -204,13 +204,13 @@ describe("EthersLiquity - Trove", () => {
     // create seperate connection to lib-ethers for the funder and open a trove
     const funderLiquity = await th.connectToDeployment(deployment, funder);
     const price = await liquity.getPrice();
-    let funderTrove = Trove.create({ depositCollateral: 1, borrowLUSD: lusdShortage });
+    let funderTrove = Trove.create({ depositCollateral: 1, borrowLUSD: thusdShortage });
     funderTrove = funderTrove.setDebt(Decimal.max(funderTrove.debt, LUSD_MINIMUM_DEBT));
     funderTrove = funderTrove.setCollateral(funderTrove.debt.mulDiv(1.51, price));
     await funderLiquity.openTrove(Trove.recreate(funderTrove));
 
     // send the shortfall to the user
-    await funderLiquity.sendLUSD(userAddress, lusdShortage);
+    await funderLiquity.sendLUSD(userAddress, thusdShortage);
 
     // user closes their trove
     const { params } = await liquity.closeTrove();

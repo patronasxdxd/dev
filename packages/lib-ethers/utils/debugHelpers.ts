@@ -4,11 +4,11 @@ import { Signer } from "@ethersproject/abstract-signer";
 import { ethers } from "hardhat";
 import { _LiquityDeploymentJSON } from "../src/contracts";
 import erc20Abi from "../abi/ERC20Test.json";
-import lusdAbi from "../abi/LUSDToken.json";
+import thusdAbi from "../abi/LUSDToken.json";
 
 export const printBalances = async(deployment: _LiquityDeploymentJSON, deployer: Signer, users: Signer[]) => {
   let erc20: Contract;
-  let lusd: Contract;
+  let thusd: Contract;
   let contractAddresses: Record<string, string> = {
     activePool: deployment.addresses.activePool,
     borrowerOperations: deployment.addresses.borrowerOperations,
@@ -24,7 +24,7 @@ export const printBalances = async(deployment: _LiquityDeploymentJSON, deployer:
   };
 
   erc20 = new ethers.Contract(deployment.addresses.erc20, erc20Abi, deployer);
-  lusd = new ethers.Contract(deployment.addresses.lusdToken, lusdAbi, deployer);
+  thusd = new ethers.Contract(deployment.addresses.thusdToken, thusdAbi, deployer);
   let scale = 1000000000000000000;
 
   if (users.length >0) {
@@ -35,12 +35,12 @@ export const printBalances = async(deployment: _LiquityDeploymentJSON, deployer:
     {
       let userAddress = await users[i].getAddress();
       const erc20Balance = await erc20.balanceOf(userAddress);
-      const lusdBalance = await lusd.balanceOf(userAddress);
+      const thusdBalance = await thusd.balanceOf(userAddress);
       const ethBalance = await users[i].getBalance();
-      if (erc20Balance.gt(0) || lusdBalance.gt(0) || ethBalance.gt(0)) {
+      if (erc20Balance.gt(0) || thusdBalance.gt(0) || ethBalance.gt(0)) {
         console.log(userAddress);
         console.log("\tERC20 : \t", erc20Balance / scale);
-        console.log("\tLUSD : \t\t", lusdBalance / scale);
+        console.log("\tLUSD : \t\t", thusdBalance / scale);
         console.log("\tETH : \t\t", ethers.utils.formatEther(ethBalance));
         console.log("")
       }
@@ -55,12 +55,12 @@ export const printBalances = async(deployment: _LiquityDeploymentJSON, deployer:
     if (contractAddresses.hasOwnProperty(name)) {
       let address = contractAddresses[name];
       const erc20Balance = await erc20.balanceOf(address);
-      const lusdBalance = await lusd.balanceOf(address);
+      const thusdBalance = await thusd.balanceOf(address);
       const ethBalance = await ethers.provider.getBalance(address);
-      if (erc20Balance.gt(0) || lusdBalance.gt(0) || ethBalance.gt(0)) {
+      if (erc20Balance.gt(0) || thusdBalance.gt(0) || ethBalance.gt(0)) {
         console.log(address, " : ", name);
         console.log("\tERC20 : \t", erc20Balance / scale);
-        console.log("\tLUSD : \t\t", lusdBalance / scale);
+        console.log("\tLUSD : \t\t", thusdBalance / scale);
         console.log("\tETH : \t\t", ethers.utils.formatEther(ethBalance));
         console.log("")
       }

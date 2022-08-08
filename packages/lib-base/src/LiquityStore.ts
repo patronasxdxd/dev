@@ -18,7 +18,7 @@ export interface LiquityStoreBaseState {
   accountBalance: Decimal;
 
   /** User's LUSD token balance. */
-  lusdBalance: Decimal;
+  thusdBalance: Decimal;
 
   /** User's Uniswap ETH/LUSD LP token balance. */
   erc20TokenBalance: Decimal;
@@ -39,7 +39,7 @@ export interface LiquityStoreBaseState {
   price: Decimal;
 
   /** Total amount of LUSD currently deposited in the Stability Pool. */
-  lusdInStabilityPool: Decimal;
+  thusdInStabilityPool: Decimal;
 
   /** Total collateral and debt in the Liquity system. */
   total: Trove;
@@ -294,11 +294,11 @@ export abstract class LiquityStore<T = unknown> {
         baseStateUpdate.accountBalance
       ),
 
-      lusdBalance: this._updateIfChanged(
+      thusdBalance: this._updateIfChanged(
         eq,
-        "lusdBalance",
-        baseState.lusdBalance,
-        baseStateUpdate.lusdBalance
+        "thusdBalance",
+        baseState.thusdBalance,
+        baseStateUpdate.thusdBalance
       ),
 
       erc20TokenBalance: this._updateIfChanged(
@@ -324,11 +324,11 @@ export abstract class LiquityStore<T = unknown> {
 
       price: this._updateIfChanged(eq, "price", baseState.price, baseStateUpdate.price),
 
-      lusdInStabilityPool: this._updateIfChanged(
+      thusdInStabilityPool: this._updateIfChanged(
         eq,
-        "lusdInStabilityPool",
-        baseState.lusdInStabilityPool,
-        baseStateUpdate.lusdInStabilityPool
+        "thusdInStabilityPool",
+        baseState.thusdInStabilityPool,
+        baseStateUpdate.thusdInStabilityPool
       ),
 
       total: this._updateIfChanged(equals, "total", baseState.total, baseStateUpdate.total),

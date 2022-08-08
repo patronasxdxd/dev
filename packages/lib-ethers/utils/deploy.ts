@@ -100,7 +100,7 @@ const deployContracts = async (
   return [
     {
       ...addresses,
-      lusdToken: await deployContract(
+      thusdToken: await deployContract(
         deployer,
         getContractFactory,
         "LUSDToken",
@@ -137,7 +137,7 @@ const connectContracts = async (
     activePool,
     borrowerOperations,
     troveManager,
-    lusdToken,
+    thusdToken,
     collSurplusPool,
     defaultPool,
     hintHelpers,
@@ -173,7 +173,7 @@ const connectContracts = async (
         gasPool.address,
         collSurplusPool.address,
         priceFeed.address,
-        lusdToken.address,
+        thusdToken.address,
         sortedTroves.address,
         pcv.address,
         { ...overrides, nonce }
@@ -189,7 +189,7 @@ const connectContracts = async (
         collSurplusPool.address,
         priceFeed.address,
         sortedTroves.address,
-        lusdToken.address,
+        thusdToken.address,
         pcv.address,
         erc20.address,
         { ...overrides, nonce }
@@ -200,7 +200,7 @@ const connectContracts = async (
         borrowerOperations.address,
         troveManager.address,
         activePool.address,
-        lusdToken.address,
+        thusdToken.address,
         sortedTroves.address,
         priceFeed.address,
         erc20.address,
@@ -241,7 +241,7 @@ const connectContracts = async (
 
     nonce =>
       pcv.setAddresses(
-        lusdToken.address,
+        thusdToken.address,
         troveManager.address,
         borrowerOperations.address,
         activePool.address,

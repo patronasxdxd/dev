@@ -75,7 +75,7 @@ export interface LiquidationDetails {
   totalLiquidated: Trove;
 
   /** Amount of LUSD paid to the liquidator as gas compensation. */
-  lusdGasCompensation: Decimal;
+  thusdGasCompensation: Decimal;
 
   /** Amount of native currency (e.g. Ether) paid to the liquidator as gas compensation. */
   collateralGasCompensation: Decimal;
@@ -117,7 +117,7 @@ export interface RedemptionDetails {
  */
 export interface StabilityPoolGainsWithdrawalDetails {
   /** Amount of LUSD burned from the deposit by liquidations since the last modification. */
-  lusdLoss: Decimal;
+  thusdLoss: Decimal;
 
   /** Amount of LUSD in the deposit directly after this transaction. */
   newLUSDDeposit: Decimal;

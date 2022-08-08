@@ -36,8 +36,8 @@ export const warzone = async ({ troves: numberOfTroves }: WarzoneParams) => {
     );
 
     if (i % 4 === 0) {
-      const lusdBalance = await liquity.getLUSDBalance();
-      await liquity.depositLUSDInStabilityPool(lusdBalance);
+      const thusdBalance = await liquity.getLUSDBalance();
+      await liquity.depositLUSDInStabilityPool(thusdBalance);
     }
 
     if (i % 10 === 0) {
