@@ -27,7 +27,7 @@ contract('Gas costs for math functions', async accounts => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
 
     priceFeed = contracts.priceFeedTestnet
-    lusdToken = contracts.lusdToken
+    thusdToken = contracts.thusdToken
     sortedTroves = contracts.sortedTroves
     troveManager = contracts.troveManager
     activePool = contracts.activePool

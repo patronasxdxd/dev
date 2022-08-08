@@ -75,7 +75,7 @@ class MainnetDeploymentHelper {
     const collSurplusPoolFactory = await this.getFactory("CollSurplusPool")
     const borrowerOperationsFactory = await this.getFactory("BorrowerOperations")
     const hintHelpersFactory = await this.getFactory("HintHelpers")
-    const lusdTokenFactory = await this.getFactory("LUSDToken")
+    const thusdTokenFactory = await this.getFactory("THUSDToken")
     const tellorCallerFactory = await this.getFactory("TellorCaller")
 
     // Deploy txs
@@ -92,16 +92,16 @@ class MainnetDeploymentHelper {
     const hintHelpers = await this.loadOrDeploy(hintHelpersFactory, 'hintHelpers', deploymentState)
     const tellorCaller = await this.loadOrDeploy(tellorCallerFactory, 'tellorCaller', deploymentState, [tellorMasterAddr])
 
-    const lusdTokenParams = [
+    const thusdTokenParams = [
       troveManager.address,
       stabilityPool.address,
       borrowerOperations.address
     ]
-    const lusdToken = await this.loadOrDeploy(
-      lusdTokenFactory,
-      'lusdToken',
+    const thusdToken = await this.loadOrDeploy(
+      thusdTokenFactory,
+      'thusdToken',
       deploymentState,
-      lusdTokenParams
+      thusdTokenParams
     )
 
     if (!this.configParams.ETHERSCAN_BASE_URL) {
@@ -119,12 +119,12 @@ class MainnetDeploymentHelper {
       await this.verifyContract('borrowerOperations', deploymentState)
       await this.verifyContract('hintHelpers', deploymentState)
       await this.verifyContract('tellorCaller', deploymentState, [tellorMasterAddr])
-      await this.verifyContract('lusdToken', deploymentState, lusdTokenParams)
+      await this.verifyContract('thusdToken', deploymentState, thusdTokenParams)
     }
 
     const coreContracts = {
       priceFeed,
-      lusdToken,
+      thusdToken,
       sortedTroves,
       troveManager,
       activePool,
@@ -193,7 +193,7 @@ class MainnetDeploymentHelper {
         contracts.gasPool.address,
         contracts.collSurplusPool.address,
         contracts.priceFeed.address,
-        contracts.lusdToken.address,
+        contracts.thusdToken.address,
         contracts.sortedTroves.address,
         contracts.pcv.address,
 	{gasPrice}
@@ -210,7 +210,7 @@ class MainnetDeploymentHelper {
         contracts.collSurplusPool.address,
         contracts.priceFeed.address,
         contracts.sortedTroves.address,
-        contracts.lusdToken.address,
+        contracts.thusdToken.address,
         contracts.pcv.address,
         contracts.erc20.address,
 	{gasPrice}
@@ -222,7 +222,7 @@ class MainnetDeploymentHelper {
         contracts.borrowerOperations.address,
         contracts.troveManager.address,
         contracts.activePool.address,
-        contracts.lusdToken.address,
+        contracts.thusdToken.address,
         contracts.sortedTroves.address,
         contracts.priceFeed.address,
         contracts.erc20.address,
@@ -267,7 +267,7 @@ class MainnetDeploymentHelper {
 
     await this.isOwnershipRenounced(contracts.pcv) ||
       await this.sendAndWaitForTransaction(contracts.pcv.setAddresses(
-        coreContracts.lusdToken.address,
+        coreContracts.thusdToken.address,
         coreContracts.troveManager.address,
         coreContracts.borrowerOperations.address,
         coreContracts.activePool.address,

@@ -35,9 +35,9 @@ async function mainnetDeploy(configParams) {
 
   // // --- TESTS AND CHECKS  ---
 
-  // Deployer repay LUSD
+  // Deployer repay THUSD
   // console.log(`deployer trove debt before repaying: ${await contracts.troveManager.getTroveDebt(deployerWallet.address)}`)
- // await mdh.sendAndWaitForTransaction(contracts.borrowerOperations.repayLUSD(dec(800, 18), th.ZERO_ADDRESS, th.ZERO_ADDRESS, {gasPrice, gasLimit: 1000000}))
+ // await mdh.sendAndWaitForTransaction(contracts.borrowerOperations.repayTHUSD(dec(800, 18), th.ZERO_ADDRESS, th.ZERO_ADDRESS, {gasPrice, gasLimit: 1000000}))
   // console.log(`deployer trove debt after repaying: ${await contracts.troveManager.getTroveDebt(deployerWallet.address)}`)
 
   // Deployer add coll
@@ -89,24 +89,24 @@ async function mainnetDeploy(configParams) {
 
   // // --- TroveManager ---
 
-  // const liqReserve = await contracts.troveManager.LUSD_GAS_COMPENSATION()
+  // const liqReserve = await contracts.troveManager.THUSD_GAS_COMPENSATION()
   // const minNetDebt = await contracts.troveManager.MIN_NET_DEBT()
 
   // th.logBN('system liquidation reserve', liqReserve)
   // th.logBN('system min net debt      ', minNetDebt)
 
-  // // --- Make first LUSD-ETH liquidity provision ---
+  // // --- Make first THUSD-ETH liquidity provision ---
 
   // // Open trove if not yet opened
   // const troveStatus = await contracts.troveManager.getTroveStatus(deployerWallet.address)
   // if (troveStatus.toString() != '1') {
-  //   let _3kLUSDWithdrawal = th.dec(3000, 18) // 3000 LUSD
+  //   let _3kTHUSDWithdrawal = th.dec(3000, 18) // 3000 THUSD
   //   let _3ETHcoll = th.dec(3, 'ether') // 3 ETH
   //   console.log('Opening trove...')
   //   await mdh.sendAndWaitForTransaction(
   //     contracts.borrowerOperations.openTrove(
   //       th._100pct,
-  //       _3kLUSDWithdrawal,
+  //       _3kTHUSDWithdrawal,
   //       th.ZERO_ADDRESS,
   //       th.ZERO_ADDRESS,
   //       { value: _3ETHcoll, gasPrice }
@@ -125,20 +125,20 @@ async function mainnetDeploy(configParams) {
   // th.logBN('deployer stake', deployerTrove[2])
   // console.log(`deployer's trove status: ${deployerTrove[3]}`)
 
-  // // Check deployer has LUSD
-  // let deployerLUSDBal = await contracts.lusdToken.balanceOf(deployerWallet.address)
-  // th.logBN("deployer's LUSD balance", deployerLUSDBal)
+  // // Check deployer has THUSD
+  // let deployerTHUSDBal = await contracts.thusdToken.balanceOf(deployerWallet.address)
+  // th.logBN("deployer's THUSD balance", deployerTHUSDBal)
 
   // // --- 2nd Account opens trove ---
   // const trove2Status = await contracts.troveManager.getTroveStatus(account2Wallet.address)
   // if (trove2Status.toString() != '1') {
   //   console.log("Acct 2 opens a trove ...")
-  //   let _2kLUSDWithdrawal = th.dec(2000, 18) // 2000 LUSD
+  //   let _2kTHUSDWithdrawal = th.dec(2000, 18) // 2000 THUSD
   //   let _1pt5_ETHcoll = th.dec(15, 17) // 1.5 ETH
   //   const borrowerOpsEthersFactory = await ethers.getContractFactory("BorrowerOperations", account2Wallet)
   //   const borrowerOpsAcct2 = await new ethers.Contract(contracts.borrowerOperations.address, borrowerOpsEthersFactory.interface, account2Wallet)
 
-  //   await mdh.sendAndWaitForTransaction(borrowerOpsAcct2.openTrove(th._100pct, _2kLUSDWithdrawal, th.ZERO_ADDRESS, th.ZERO_ADDRESS, { value: _1pt5_ETHcoll, gasPrice, gasLimit: 1000000 }))
+  //   await mdh.sendAndWaitForTransaction(borrowerOpsAcct2.openTrove(th._100pct, _2kTHUSDWithdrawal, th.ZERO_ADDRESS, th.ZERO_ADDRESS, { value: _1pt5_ETHcoll, gasPrice, gasLimit: 1000000 }))
   // } else {
   //   console.log('Acct 2 already has an active trove')
   // }
@@ -152,13 +152,13 @@ async function mainnetDeploy(configParams) {
   // //  --- deployer withdraws staking gains ---
   // console.log("CHECK DEPLOYER WITHDRAWING STAKING GAINS")
 
-  // // check deployer's LUSD balance before withdrawing staking gains
-  // deployerLUSDBal = await contracts.lusdToken.balanceOf(deployerWallet.address)
-  // th.logBN('deployer LUSD bal before withdrawing staking gains', deployerLUSDBal)
+  // // check deployer's THUSD balance before withdrawing staking gains
+  // deployerTHUSDBal = await contracts.thusdToken.balanceOf(deployerWallet.address)
+  // th.logBN('deployer THUSD bal before withdrawing staking gains', deployerTHUSDBal)
 
-  // // check deployer's LUSD balance after withdrawing staking gains
-  // deployerLUSDBal = await contracts.lusdToken.balanceOf(deployerWallet.address)
-  // th.logBN('deployer LUSD bal after withdrawing staking gains', deployerLUSDBal)
+  // // check deployer's THUSD balance after withdrawing staking gains
+  // deployerTHUSDBal = await contracts.thusdToken.balanceOf(deployerWallet.address)
+  // th.logBN('deployer THUSD bal after withdrawing staking gains', deployerTHUSDBal)
 
 
   // // --- System stats  ---
@@ -187,8 +187,8 @@ async function mainnetDeploy(configParams) {
   th.logBN("Current borrowing rate", currentBorrowingRate)
 
   // total SP deposits
-  const totalSPDeposits = await contracts.stabilityPool.getTotalLUSDDeposits()
-  th.logBN("Total LUSD SP deposits", totalSPDeposits)
+  const totalSPDeposits = await contracts.stabilityPool.getTotalTHUSDDeposits()
+  th.logBN("Total THUSD SP deposits", totalSPDeposits)
 
   // --- State variables ---
 
@@ -202,9 +202,9 @@ async function mainnetDeploy(configParams) {
   th.logBN("Snapshot of total trove collateral before last liq. ", totalCollateralSnapshot)
 
   const L_ETH = await contracts.troveManager.L_ETH()
-  const L_LUSDDebt = await contracts.troveManager.L_LUSDDebt()
+  const L_THUSDDebt = await contracts.troveManager.L_THUSDDebt()
   th.logBN("L_ETH", L_ETH)
-  th.logBN("L_LUSDDebt", L_LUSDDebt)
+  th.logBN("L_THUSDDebt", L_THUSDDebt)
 
   // StabilityPool
   console.log("StabilityPool state variables:")
@@ -219,9 +219,9 @@ async function mainnetDeploy(configParams) {
 
   // PCV
   console.log("PCV state variables:")
-  const F_LUSD = await contracts.pcv.F_LUSD()
+  const F_THUSD = await contracts.pcv.F_THUSD()
   const F_ETH = await contracts.pcv.F_ETH()
-  th.logBN("F_LUSD", F_LUSD)
+  th.logBN("F_THUSD", F_THUSD)
   th.logBN("F_ETH", F_ETH)
 
 }

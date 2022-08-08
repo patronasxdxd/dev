@@ -78,8 +78,8 @@ dataSources:
       eventHandlers:
         - event: TroveUpdated(indexed address,uint256,uint256,uint256,uint8)
           handler: handleTroveUpdated
-        - event: LUSDBorrowingFeePaid(indexed address,uint256)
-          handler: handleLUSDBorrowingFeePaid
+        - event: THUSDBorrowingFeePaid(indexed address,uint256)
+          handler: handleTHUSDBorrowingFeePaid
   - name: PriceFeed
     kind: ethereum/contract
     network: mainnet
@@ -157,7 +157,7 @@ dataSources:
         - event: CollBalanceUpdated(indexed address,uint256)
           handler: handleCollSurplusBalanceUpdated
 ${[
-  ["LUSDToken", addresses.lusdToken]
+  ["THUSDToken", addresses.thusdToken]
 ].map(
   ([name, address]) => yaml`
   - name: ${name}

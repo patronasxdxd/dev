@@ -104,12 +104,12 @@ class BorrowerOperationsProxy extends Proxy {
     return this.forwardFunction(params, 'withdrawColl(uint256,address,address)')
   }
 
-  async withdrawLUSD(...params) {
-    return this.forwardFunction(params, 'withdrawLUSD(uint256,uint256,address,address)')
+  async withdrawTHUSD(...params) {
+    return this.forwardFunction(params, 'withdrawTHUSD(uint256,uint256,address,address)')
   }
 
-  async repayLUSD(...params) {
-    return this.forwardFunction(params, 'repayLUSD(uint256,address,address)')
+  async repayTHUSD(...params) {
+    return this.forwardFunction(params, 'repayTHUSD(uint256,address,address)')
   }
 
   async closeTrove(...params) {
@@ -136,8 +136,8 @@ class BorrowerOperationsProxy extends Proxy {
     return this.proxyFunction('getCompositeDebt', params)
   }
 
-  async LUSD_GAS_COMPENSATION(...params) {
-    return this.proxyFunction('LUSD_GAS_COMPENSATION', params)
+  async THUSD_GAS_COMPENSATION(...params) {
+    return this.proxyFunction('THUSD_GAS_COMPENSATION', params)
   }
 
   async MIN_NET_DEBT(...params) {
@@ -204,8 +204,8 @@ class TroveManagerProxy extends Proxy {
     return this.proxyFunction('getPendingETHReward', params)
   }
 
-  async getPendingLUSDDebtReward(...params) {
-    return this.proxyFunction('getPendingLUSDDebtReward', params)
+  async getPendingTHUSDDebtReward(...params) {
+    return this.proxyFunction('getPendingTHUSDDebtReward', params)
   }
 
   async liquidate(user) {
@@ -236,8 +236,8 @@ class TroveManagerProxy extends Proxy {
     return this.proxyFunction('L_ETH', [])
   }
 
-  async L_LUSDDebt() {
-    return this.proxyFunction('L_LUSDDebt', [])
+  async L_THUSDDebt() {
+    return this.proxyFunction('L_THUSDDebt', [])
   }
 
   async rewardSnapshots(user) {
@@ -290,8 +290,8 @@ class StabilityPoolProxy extends Proxy {
     return this.forwardFunction(params, 'provideToSP(uint256)')
   }
 
-  async getCompoundedLUSDDeposit(user) {
-    return this.proxyFunctionWithUser('getCompoundedLUSDDeposit', user)
+  async getCompoundedTHUSDDeposit(user) {
+    return this.proxyFunctionWithUser('getCompoundedTHUSDDeposit', user)
   }
 
   async deposits(user) {
@@ -399,8 +399,8 @@ class PCVProxy extends Proxy {
     return this.proxyFunctionWithUser('stakes', user)
   }
 
-  async F_LUSD(user) {
-    return this.proxyFunctionWithUser('F_LUSD', user)
+  async F_THUSD(user) {
+    return this.proxyFunctionWithUser('F_THUSD', user)
   }
 }
 
