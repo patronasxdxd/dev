@@ -191,7 +191,7 @@ describe("EthersLiquity - Trove", () => {
     expect(`${userBalance}`).to.equal(`${expectedBalance}`);
   });
 
-  it("should close the Trove with some THUSD from another user", async () => {
+  it("should close the Trove with some thUSD from another user", async () => {
     // setup
     const { newTrove, fee } = await liquity.openTrove(withSomeBorrowing);
     const thusdBalance = await liquity.getTHUSDBalance();

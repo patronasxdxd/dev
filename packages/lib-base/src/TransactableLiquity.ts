@@ -31,7 +31,7 @@ export interface TroveCreationDetails {
   /** The Trove that was created by the transaction. */
   newTrove: Trove;
 
-  /** Amount of THUSD added to the Trove's debt as borrowing fee. */
+  /** Amount of thUSD added to the Trove's debt as borrowing fee. */
   fee: Decimal;
 }
 
@@ -47,7 +47,7 @@ export interface TroveAdjustmentDetails {
   /** New state of the adjusted Trove directly after the transaction. */
   newTrove: Trove;
 
-  /** Amount of THUSD added to the Trove's debt as borrowing fee. */
+  /** Amount of thUSD added to the Trove's debt as borrowing fee. */
   fee: Decimal;
 }
 
@@ -74,7 +74,7 @@ export interface LiquidationDetails {
   /** Total collateral liquidated and debt cleared by the transaction. */
   totalLiquidated: Trove;
 
-  /** Amount of THUSD paid to the liquidator as gas compensation. */
+  /** Amount of thUSD paid to the liquidator as gas compensation. */
   thusdGasCompensation: Decimal;
 
   /** Amount of native currency (e.g. Ether) paid to the liquidator as gas compensation. */
@@ -87,11 +87,11 @@ export interface LiquidationDetails {
  * @public
  */
 export interface RedemptionDetails {
-  /** Amount of THUSD the redeemer tried to redeem. */
+  /** Amount of thUSD the redeemer tried to redeem. */
   attemptedTHUSDAmount: Decimal;
 
   /**
-   * Amount of THUSD that was actually redeemed by the transaction.
+   * Amount of thUSD that was actually redeemed by the transaction.
    *
    * @remarks
    * This can end up being lower than `attemptedTHUSDAmount` due to interference from another
@@ -116,10 +116,10 @@ export interface RedemptionDetails {
  * @public
  */
 export interface StabilityPoolGainsWithdrawalDetails {
-  /** Amount of THUSD burned from the deposit by liquidations since the last modification. */
+  /** Amount of thUSD burned from the deposit by liquidations since the last modification. */
   thusdLoss: Decimal;
 
-  /** Amount of THUSD in the deposit directly after this transaction. */
+  /** Amount of thUSD in the deposit directly after this transaction. */
   newTHUSDDeposit: Decimal;
 
   /** Amount of native currency (e.g. Ether) paid out to the depositor in this transaction. */
@@ -164,7 +164,7 @@ export interface CollateralGainTransferDetails extends StabilityPoolGainsWithdra
  */
 export interface TransactableLiquity {
   /**
-   * Open a new Trove by depositing collateral and borrowing THUSD.
+   * Open a new Trove by depositing collateral and borrowing thUSD. 
    *
    * @param params - How much to deposit and borrow.
    * @param maxBorrowingRate - Maximum acceptable
@@ -248,9 +248,9 @@ export interface TransactableLiquity {
   withdrawCollateral(amount: Decimalish): Promise<TroveAdjustmentDetails>;
 
   /**
-   * Adjust existing Trove by borrowing more THUSD.
+   * Adjust existing Trove by borrowing more thUSD. 
    *
-   * @param amount - The amount of THUSD to borrow.
+   * @param amount - The amount of thUSD to borrow.
    * @param maxBorrowingRate - Maximum acceptable
    *                           {@link @liquity/lib-base#Fees.borrowingRate | borrowing rate}.
    *
@@ -269,7 +269,7 @@ export interface TransactableLiquity {
   /**
    * Adjust existing Trove by repaying some of its debt.
    *
-   * @param amount - The amount of THUSD to repay.
+   * @param amount - The amount of thUSD to repay.
    *
    * @throws
    * Throws {@link TransactionFailedError} in case of transaction failure.
@@ -309,7 +309,7 @@ export interface TransactableLiquity {
   /**
    * Make a new Stability Deposit, or top up existing one.
    *
-   * @param amount - Amount of THUSD to add to new or existing deposit.
+   * @param amount - Amount of thUSD to add to new or existing deposit.
    *
    * @throws
    * Throws {@link TransactionFailedError} in case of transaction failure.
@@ -322,9 +322,9 @@ export interface TransactableLiquity {
   ): Promise<StabilityDepositChangeDetails>;
 
   /**
-   * Withdraw THUSD from Stability Deposit.
+   * Withdraw thUSD from Stability Deposit.
    *
-   * @param amount - Amount of THUSD to withdraw.
+   * @param amount - Amount of thUSD to withdraw.
    *
    * @throws
    * Throws {@link TransactionFailedError} in case of transaction failure.
@@ -356,10 +356,10 @@ export interface TransactableLiquity {
   transferCollateralGainToTrove(): Promise<CollateralGainTransferDetails>;
 
   /**
-   * Send THUSD tokens to an address.
+   * Send thUSD tokens to an address.
    *
    * @param toAddress - Address of receipient.
-   * @param amount - Amount of THUSD to send.
+   * @param amount - Amount of thUSD to send.
    *
    * @throws
    * Throws {@link TransactionFailedError} in case of transaction failure.
@@ -367,9 +367,9 @@ export interface TransactableLiquity {
   sendTHUSD(toAddress: string, amount: Decimalish): Promise<void>;
 
   /**
-   * Redeem THUSD to native currency (e.g. Ether) at face value.
+   * Redeem thUSD to native currency (e.g. Ether) at face value.
    *
-   * @param amount - Amount of THUSD to be redeemed.
+   * @param amount - Amount of thUSD to be redeemed.
    * @param maxRedemptionRate - Maximum acceptable
    *                            {@link @liquity/lib-base#Fees.redemptionRate | redemption rate}.
    *

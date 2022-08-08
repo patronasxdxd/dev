@@ -101,7 +101,7 @@ export class Fees {
    * By default, the fee is calculated at the time of the latest block. This can be overridden using
    * the `when` parameter.
    *
-   * To calculate the borrowing fee in THUSD, multiply the borrowed THUSD amount by the borrowing rate.
+   * To calculate the borrowing fee in thUSD, multiply the borrowed thUSD amount by the borrowing rate.
    *
    * @example
    * ```typescript
@@ -121,7 +121,7 @@ export class Fees {
   /**
    * Calculate the current redemption rate.
    *
-   * @param redeemedFractionOfSupply - The amount of THUSD being redeemed divided by the total supply.
+   * @param redeemedFractionOfSupply - The amount of thUSD being redeemed divided by the total supply.
    * @param when - Optional timestamp that can be used to calculate what the redemption rate would
    *               decay to at a point of time in the future.
    *
@@ -130,10 +130,10 @@ export class Fees {
    * the `when` parameter.
 
    * Unlike the borrowing rate, the redemption rate depends on the amount being redeemed. To be more
-   * precise, it depends on the fraction of the redeemed amount compared to the total THUSD supply,
+   * precise, it depends on the fraction of the redeemed amount compared to the total thUSD supply,
    * which must be passed as a parameter.
    *
-   * To calculate the redemption fee in THUSD, multiply the redeemed THUSD amount with the redemption
+   * To calculate the redemption fee in thUSD, multiply the redeemed thUSD amount with the redemption
    * rate.
    *
    * @example

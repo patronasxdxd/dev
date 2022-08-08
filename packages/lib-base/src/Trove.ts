@@ -61,7 +61,7 @@ export type _NoDebtChange = _NoTHUSDBorrowing & _NoTHUSDRepayment;
  *   <tr>
  *     <td> borrowTHUSD </td>
  *     <td> T </td>
- *     <td> The amount of THUSD that's borrowed. </td>
+ *     <td> The amount of thUSD that's borrowed. </td>
  *   </tr>
  *
  * </table>
@@ -99,7 +99,7 @@ export type TroveCreationParams<T = unknown> = _CollateralDeposit<T> &
  *   <tr>
  *     <td> repayTHUSD? </td>
  *     <td> T </td>
- *     <td> <i>(Optional)</i> The amount of THUSD that's repaid. </td>
+ *     <td> <i>(Optional)</i> The amount of thUSD that's repaid. </td>
  *   </tr>
  *
  * </table>
@@ -149,13 +149,13 @@ export type TroveClosureParams<T> = _CollateralWithdrawal<T> &
  *   <tr>
  *     <td> borrowTHUSD? </td>
  *     <td> T </td>
- *     <td> <i>(Optional)</i> The amount of THUSD that's borrowed. </td>
+ *     <td> <i>(Optional)</i> The amount of thUSD that's borrowed. </td>
  *   </tr>
  *
  *   <tr>
  *     <td> repayTHUSD? </td>
  *     <td> T </td>
- *     <td> <i>(Optional)</i> The amount of THUSD that's repaid. </td>
+ *     <td> <i>(Optional)</i> The amount of thUSD that's repaid. </td>
  *   </tr>
  *
  * </table>
@@ -410,7 +410,7 @@ export class Trove {
   /** Amount of native currency (e.g. Ether) collateralized. */
   readonly collateral: Decimal;
 
-  /** Amount of THUSD owed. */
+  /** Amount of thUSD owed. */
   readonly debt: Decimal;
 
   /** @internal */
@@ -424,7 +424,7 @@ export class Trove {
   }
 
   /**
-   * Amount of THUSD that must be repaid to close this Trove.
+   * Amount of thUSD that must be repaid to close this Trove.
    *
    * @remarks
    * This doesn't include the liquidation reserve, which is refunded in case of normal closure.

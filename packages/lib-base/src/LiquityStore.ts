@@ -17,7 +17,7 @@ export interface LiquityStoreBaseState {
   /** User's native currency balance (e.g. Ether). */
   accountBalance: Decimal;
 
-  /** User's THUSD token balance. */
+  /** User's thUSD token balance. */
   thusdBalance: Decimal;
 
   /** User's Uniswap ETH/THUSD LP token balance. */
@@ -38,7 +38,7 @@ export interface LiquityStoreBaseState {
   /** Current price of the native currency (e.g. Ether) in USD. */
   price: Decimal;
 
-  /** Total amount of THUSD currently deposited in the Stability Pool. */
+  /** Total amount of thUSD currently deposited in the Stability Pool. */
   thusdInStabilityPool: Decimal;
 
   /** Total collateral and debt in the Liquity system. */

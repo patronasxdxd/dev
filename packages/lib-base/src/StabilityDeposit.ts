@@ -15,13 +15,13 @@ export type StabilityDepositChange<T> =
  * @public
  */
 export class StabilityDeposit {
-  /** Amount of THUSD in the Stability Deposit at the time of the last direct modification. */
+  /** Amount of thUSD in the Stability Deposit at the time of the last direct modification. */
   readonly initialTHUSD: Decimal;
 
-  /** Amount of THUSD left in the Stability Deposit. */
+  /** Amount of thUSD left in the Stability Deposit. */
   readonly currentTHUSD: Decimal;
 
-  /** Amount of native currency (e.g. Ether) received in exchange for the used-up THUSD. */
+  /** Amount of native currency (e.g. Ether) received in exchange for the used-up thUSD.  */
   readonly collateralGain: Decimal;
 
   /** @internal */
@@ -87,7 +87,7 @@ export class StabilityDeposit {
   /**
    * Apply a {@link StabilityDepositChange} to this Stability Deposit.
    *
-   * @returns The new deposited THUSD amount.
+   * @returns The new deposited thUSD amount.
    */
   apply(change: StabilityDepositChange<Decimalish> | undefined): Decimal {
     if (!change) {

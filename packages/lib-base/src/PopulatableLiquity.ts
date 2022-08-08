@@ -43,7 +43,7 @@ export interface PopulatedLiquityTransaction<
  * The Liquity protocol fulfills redemptions by repaying the debt of Troves in ascending order of
  * their collateralization ratio, and taking a portion of their collateral in exchange. Due to the
  * {@link @liquity/lib-base#THUSD_MINIMUM_DEBT | minimum debt} requirement that Troves must fulfill,
- * some THUSD amounts are not possible to redeem exactly.
+ * some thUSD amounts are not possible to redeem exactly.
  *
  * When {@link @liquity/lib-base#PopulatableLiquity.redeemTHUSD | redeemTHUSD()} is called with an
  * amount that can't be fully redeemed, the amount will be truncated (see the `redeemableTHUSDAmount`
@@ -60,10 +60,10 @@ export interface PopulatedRedemption<P = unknown, S = unknown, R = unknown>
     P,
     SentLiquityTransaction<S, LiquityReceipt<R, RedemptionDetails>>
   > {
-  /** Amount of THUSD the redeemer is trying to redeem. */
+  /** Amount of thUSD the redeemer is trying to redeem. */
   readonly attemptedTHUSDAmount: Decimal;
 
-  /** Maximum amount of THUSD that is currently redeemable from `attemptedTHUSDAmount`. */
+  /** Maximum amount of thUSD that is currently redeemable from `attemptedTHUSDAmount`. */
   readonly redeemableTHUSDAmount: Decimal;
 
   /** Whether `redeemableTHUSDAmount` is less than `attemptedTHUSDAmount`. */

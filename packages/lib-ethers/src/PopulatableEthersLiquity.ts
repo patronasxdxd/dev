@@ -265,7 +265,7 @@ export class SentEthersLiquityTransaction<T = unknown>
 }
 
 /**
- * Optional parameters of a transaction that borrows THUSD.
+ * Optional parameters of a transaction that borrows thUSD. 
  *
  * @public
  */
@@ -280,7 +280,7 @@ export interface BorrowingOperationOptionalParams {
    * Control the amount of extra gas included attached to the transaction.
    *
    * @remarks
-   * Transactions that borrow THUSD must pay a variable borrowing fee, which is added to the Trove's
+   * Transactions that borrow thUSD must pay a variable borrowing fee, which is added to the Trove's
    * debt. This fee increases whenever a redemption occurs, and otherwise decays exponentially.
    * Due to this decay, a Trove's collateral ratio can end up being higher than initially calculated
    * if the transaction is pending for a long time. When this happens, the backend has to iterate

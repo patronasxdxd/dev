@@ -87,12 +87,12 @@ export interface ReadableLiquity {
   getStabilityDeposit(address?: string): Promise<StabilityDeposit>;
 
   /**
-   * Get the total amount of THUSD currently deposited in the Stability Pool.
+   * Get the total amount of thUSD currently deposited in the Stability Pool.
    */
   getTHUSDInStabilityPool(): Promise<Decimal>;
 
   /**
-   * Get the amount of THUSD held by an address.
+   * Get the amount of thUSD held by an address.
    *
    * @param address - Address whose balance should be retrieved.
    */

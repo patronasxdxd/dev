@@ -15,7 +15,7 @@ export const CRITICAL_COLLATERAL_RATIO = Decimal.from(1.5);
 export const MINIMUM_COLLATERAL_RATIO = Decimal.from(1.1);
 
 /**
- * Amount of THUSD that's reserved for compensating the liquidator of a Trove.
+ * Amount of thUSD that's reserved for compensating the liquidator of a Trove.
  *
  * @public
  */
