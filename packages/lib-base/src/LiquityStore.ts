@@ -20,10 +20,10 @@ export interface LiquityStoreBaseState {
   /** User's LUSD token balance. */
   lusdBalance: Decimal;
 
-  /** User's Uniswap ETH/LUSD LP token balance. */
+  /** User's collateral erc20 token balance. */
   erc20TokenBalance: Decimal;
 
-  /** The liquidity mining contract's allowance of user's Uniswap ETH/LUSD LP tokens. */
+  /** The borrower operation's allowance of user's collateral erc20 tokens. */
   erc20TokenAllowance: Decimal;
 
   /**
