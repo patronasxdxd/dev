@@ -1,11 +1,11 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react";
 
-import { Decimal, LUSD_MINIMUM_NET_DEBT, Trove } from "@liquity/lib-base";
+import { Decimal, THUSD_MINIMUM_NET_DEBT, Trove } from "@liquity/lib-base";
 
 import App from "./App";
 
-const params = { depositCollateral: Decimal.from(20), borrowLUSD: LUSD_MINIMUM_NET_DEBT };
+const params = { depositCollateral: Decimal.from(20), borrowTHUSD: THUSD_MINIMUM_NET_DEBT };
 const trove = Trove.create(params);
 
 console.log(`${trove}`);

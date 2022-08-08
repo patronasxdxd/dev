@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { Button, Flex, Link } from "theme-ui";
 
-import { LiquityStoreState, Decimal, Trove, Decimalish, LUSD_MINIMUM_DEBT } from "@liquity/lib-base";
+import { LiquityStoreState, Decimal, Trove, Decimalish, THUSD_MINIMUM_DEBT } from "@liquity/lib-base";
 
 import { LiquityStoreUpdate, useLiquityReducer, useLiquitySelector } from "@liquity/lib-react";
 
@@ -85,7 +85,7 @@ const reduce = (state: TroveManagerState, action: TroveManagerAction): TroveMana
     case "addMinimumDebt":
       return {
         ...state,
-        edited: edited.setDebt(LUSD_MINIMUM_DEBT),
+        edited: edited.setDebt(THUSD_MINIMUM_DEBT),
         addedMinimumDebt: true
       };
 
@@ -136,8 +136,8 @@ const reduce = (state: TroveManagerState, action: TroveManagerAction): TroveMana
 const feeFrom = (original: Trove, edited: Trove, borrowingRate: Decimal): Decimal => {
   const change = original.whatChanged(edited, borrowingRate);
 
-  if (change && change.type !== "invalidCreation" && change.params.borrowLUSD) {
-    return change.params.borrowLUSD.mul(borrowingRate);
+  if (change && change.type !== "invalidCreation" && change.params.borrowTHUSD) {
+    return change.params.borrowTHUSD.mul(borrowingRate);
   } else {
     return Decimal.ZERO;
   }

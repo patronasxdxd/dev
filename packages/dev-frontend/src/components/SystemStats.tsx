@@ -84,7 +84,7 @@ export const SystemStats: React.FC<SystemStatsProps> = ({ variant = "info", show
 
       <Statistic
         name="Borrowing Fee"
-        tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount (in LUSD) and is part of a Trove's debt. The fee varies between 0.5% and 5% depending on LUSD redemption volumes."
+        tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount (in THUSD) and is part of a Trove's debt. The fee varies between 0.5% and 5% depending on THUSD redemption volumes."
       >
         {borrowingFeePct.toString(2)}
       </Statistic>
@@ -101,13 +101,13 @@ export const SystemStats: React.FC<SystemStatsProps> = ({ variant = "info", show
       <Statistic name="Troves" tooltip="The total number of active Troves in the system.">
         {Decimal.from(numberOfTroves).prettify(0)}
       </Statistic>
-      <Statistic name="LUSD supply" tooltip="The total LUSD minted by the Liquity Protocol.">
+      <Statistic name="THUSD supply" tooltip="The total THUSD minted by the Liquity Protocol.">
         {total.debt.shorten()}
       </Statistic>
       {thusdInStabilityPoolPct && (
         <Statistic
-          name="LUSD in Stability Pool"
-          tooltip="The total LUSD currently held in the Stability Pool, expressed as an amount and a fraction of the LUSD supply.
+          name="THUSD in Stability Pool"
+          tooltip="The total THUSD currently held in the Stability Pool, expressed as an amount and a fraction of the THUSD supply.
         "
         >
           {thusdInStabilityPool.shorten()}

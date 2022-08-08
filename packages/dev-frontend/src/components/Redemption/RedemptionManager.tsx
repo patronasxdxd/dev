@@ -28,7 +28,7 @@ const transactionId = "redemption";
 
 export const RedemptionManager: React.FC = () => {
   const { price, fees, total, thusdBalance } = useLiquitySelector(select);
-  const [thusdAmount, setLUSDAmount] = useState(Decimal.ZERO);
+  const [thusdAmount, setTHUSDAmount] = useState(Decimal.ZERO);
   const [changePending, setChangePending] = useState(false);
   const editingState = useState<string>();
 
@@ -50,16 +50,16 @@ export const RedemptionManager: React.FC = () => {
     } else if (myTransactionState.type === "failed" || myTransactionState.type === "cancelled") {
       setChangePending(false);
     } else if (myTransactionState.type === "confirmed") {
-      setLUSDAmount(Decimal.ZERO);
+      setTHUSDAmount(Decimal.ZERO);
       setChangePending(false);
     }
-  }, [myTransactionState.type, setChangePending, setLUSDAmount]);
+  }, [myTransactionState.type, setChangePending, setTHUSDAmount]);
 
   const [canRedeem, description] = total.collateralRatioIsBelowMinimum(price)
     ? [
         false,
         <ErrorDescription>
-          You can't redeem LUSD when the total collateral ratio is less than{" "}
+          You can't redeem THUSD when the total collateral ratio is less than{" "}
           <Amount>{mcrPercent}</Amount>. Please try again later.
         </ErrorDescription>
       ]
@@ -112,7 +112,7 @@ export const RedemptionManager: React.FC = () => {
             unit={COIN}
             {...{ editingState }}
             editedAmount={thusdAmount.toString(2)}
-            setEditedAmount={amount => setLUSDAmount(Decimal.from(amount))}
+            setEditedAmount={amount => setTHUSDAmount(Decimal.from(amount))}
           />
           <Box sx={{ mt: -3 }}>
             <StaticRow
@@ -126,7 +126,7 @@ export const RedemptionManager: React.FC = () => {
                   tooltip={
                     <Card variant="tooltip" sx={{ minWidth: "240px" }}>
                       The Redemption Fee is charged as a percentage of the redeemed Ether. The Redemption
-                      Fee depends on LUSD redemption volumes and is 0.5% at minimum.
+                      Fee depends on THUSD redemption volumes and is 0.5% at minimum.
                     </Card>
                   }
                 />
