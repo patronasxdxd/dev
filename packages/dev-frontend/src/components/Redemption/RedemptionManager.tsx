@@ -17,24 +17,24 @@ import { InfoIcon } from "../InfoIcon";
 
 const mcrPercent = new Percent(MINIMUM_COLLATERAL_RATIO).toString(0);
 
-const select = ({ price, fees, total, lusdBalance }: LiquityStoreState) => ({
+const select = ({ price, fees, total, thusdBalance }: LiquityStoreState) => ({
   price,
   fees,
   total,
-  lusdBalance
+  thusdBalance
 });
 
 const transactionId = "redemption";
 
 export const RedemptionManager: React.FC = () => {
-  const { price, fees, total, lusdBalance } = useLiquitySelector(select);
-  const [lusdAmount, setLUSDAmount] = useState(Decimal.ZERO);
+  const { price, fees, total, thusdBalance } = useLiquitySelector(select);
+  const [thusdAmount, setLUSDAmount] = useState(Decimal.ZERO);
   const [changePending, setChangePending] = useState(false);
   const editingState = useState<string>();
 
-  const dirty = !lusdAmount.isZero;
-  const ethAmount = lusdAmount.div(price);
-  const redemptionRate = fees.redemptionRate(lusdAmount.div(total.debt));
+  const dirty = !thusdAmount.isZero;
+  const ethAmount = thusdAmount.div(price);
+  const redemptionRate = fees.redemptionRate(thusdAmount.div(total.debt));
   const feePct = new Percent(redemptionRate);
   const ethFee = ethAmount.mul(redemptionRate);
   const maxRedemptionRate = redemptionRate.add(0.001); // TODO slippage tolerance
@@ -63,13 +63,13 @@ export const RedemptionManager: React.FC = () => {
           <Amount>{mcrPercent}</Amount>. Please try again later.
         </ErrorDescription>
       ]
-    : lusdAmount.gt(lusdBalance)
+    : thusdAmount.gt(thusdBalance)
     ? [
         false,
         <ErrorDescription>
           The amount you're trying to redeem exceeds your balance by{" "}
           <Amount>
-            {lusdAmount.sub(lusdBalance).prettify()} {COIN}
+            {thusdAmount.sub(thusdBalance).prettify()} {COIN}
           </Amount>
           .
         </ErrorDescription>
@@ -79,7 +79,7 @@ export const RedemptionManager: React.FC = () => {
         <ActionDescription>
           You will receive <Amount>{ethAmount.sub(ethFee).prettify(4)} ETH</Amount> in exchange for{" "}
           <Amount>
-            {lusdAmount.prettify()} {COIN}
+            {thusdAmount.prettify()} {COIN}
           </Amount>
           .
         </ActionDescription>
@@ -105,13 +105,13 @@ export const RedemptionManager: React.FC = () => {
         }}>
           <EditableRow
             label="Redeem"
-            inputId="redeem-lusd"
-            amount={lusdAmount.prettify()}
-            maxAmount={lusdBalance.toString()}
-            maxedOut={lusdAmount.eq(lusdBalance)}
+            inputId="redeem-thusd"
+            amount={thusdAmount.prettify()}
+            maxAmount={thusdBalance.toString()}
+            maxedOut={thusdAmount.eq(thusdBalance)}
             unit={COIN}
             {...{ editingState }}
-            editedAmount={lusdAmount.toString(2)}
+            editedAmount={thusdAmount.toString(2)}
             setEditedAmount={amount => setLUSDAmount(Decimal.from(amount))}
           />
           <Box sx={{ mt: -3 }}>
@@ -142,7 +142,7 @@ export const RedemptionManager: React.FC = () => {
             <RedemptionAction
               transactionId={transactionId}
               disabled={!dirty || !canRedeem}
-              lusdAmount={lusdAmount}
+              thusdAmount={thusdAmount}
               maxRedemptionRate={maxRedemptionRate}
             />
           </Flex>

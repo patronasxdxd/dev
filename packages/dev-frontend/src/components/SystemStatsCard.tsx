@@ -29,14 +29,14 @@ const select = ({
   numberOfTroves,
   price,
   total,
-  lusdInStabilityPool,
+  thusdInStabilityPool,
   borrowingRate,
   redemptionRate
 }: LiquityStoreState) => ({
   numberOfTroves,
   price,
   total,
-  lusdInStabilityPool,
+  thusdInStabilityPool,
   borrowingRate,
   redemptionRate
 });
@@ -57,7 +57,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
     price,
     total,
     borrowingRate,
-    lusdInStabilityPool
+    thusdInStabilityPool
   } = useLiquitySelector(select);
 
   const [editedPrice, setEditedPrice] = useState(price.toString(2));
@@ -113,7 +113,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
             info={`${ COIN } in Stability Pool`}
             tooltip={`The total ${ COIN } currently held in the Stability Pool, expressed as an amount and a fraction of the ${ COIN } supply.`}
           >
-            {lusdInStabilityPool.shorten()}
+            {thusdInStabilityPool.shorten()}
           </SystemStat>
           <SystemStat 
             info={`${ COIN } Supply`} 

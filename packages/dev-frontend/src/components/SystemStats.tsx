@@ -7,19 +7,19 @@ import { useLiquity } from "../hooks/LiquityContext";
 import { COIN } from "../strings";
 import { Statistic } from "./Statistic";
 
-const selectBalances = ({ accountBalance, lusdBalance }: LiquityStoreState) => ({
+const selectBalances = ({ accountBalance, thusdBalance }: LiquityStoreState) => ({
   accountBalance,
-  lusdBalance
+  thusdBalance
 });
 
 const Balances: React.FC = () => {
-  const { accountBalance, lusdBalance } = useLiquitySelector(selectBalances);
+  const { accountBalance, thusdBalance } = useLiquitySelector(selectBalances);
 
   return (
     <Box sx={{ mb: 3 }}>
       <Heading>My Account Balances</Heading>
       <Statistic name="ETH"> {accountBalance.prettify(4)}</Statistic>
-      <Statistic name={COIN}> {lusdBalance.prettify()}</Statistic>
+      <Statistic name={COIN}> {thusdBalance.prettify()}</Statistic>
     </Box>
   );
 };
@@ -40,14 +40,14 @@ const select = ({
   numberOfTroves,
   price,
   total,
-  lusdInStabilityPool,
+  thusdInStabilityPool,
   borrowingRate,
   redemptionRate
 }: LiquityStoreState) => ({
   numberOfTroves,
   price,
   total,
-  lusdInStabilityPool,
+  thusdInStabilityPool,
   borrowingRate,
   redemptionRate
 });
@@ -62,13 +62,13 @@ export const SystemStats: React.FC<SystemStatsProps> = ({ variant = "info", show
   const {
     numberOfTroves,
     price,
-    lusdInStabilityPool,
+    thusdInStabilityPool,
     total,
     borrowingRate
   } = useLiquitySelector(select);
 
-  const lusdInStabilityPoolPct =
-    total.debt.nonZero && new Percent(lusdInStabilityPool.div(total.debt));
+  const thusdInStabilityPoolPct =
+    total.debt.nonZero && new Percent(thusdInStabilityPool.div(total.debt));
   const totalCollateralRatioPct = new Percent(total.collateralRatio(price));
   const borrowingFeePct = new Percent(borrowingRate);
 
@@ -104,14 +104,14 @@ export const SystemStats: React.FC<SystemStatsProps> = ({ variant = "info", show
       <Statistic name="LUSD supply" tooltip="The total LUSD minted by the Liquity Protocol.">
         {total.debt.shorten()}
       </Statistic>
-      {lusdInStabilityPoolPct && (
+      {thusdInStabilityPoolPct && (
         <Statistic
           name="LUSD in Stability Pool"
           tooltip="The total LUSD currently held in the Stability Pool, expressed as an amount and a fraction of the LUSD supply.
         "
         >
-          {lusdInStabilityPool.shorten()}
-          <Text sx={{ fontSize: 1 }}>&nbsp;({lusdInStabilityPoolPct.toString(1)})</Text>
+          {thusdInStabilityPool.shorten()}
+          <Text sx={{ fontSize: 1 }}>&nbsp;({thusdInStabilityPoolPct.toString(1)})</Text>
         </Statistic>
       )}
       <Statistic

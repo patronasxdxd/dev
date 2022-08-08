@@ -87,9 +87,9 @@ export const selectForTroveChangeValidation = ({
   price,
   total,
   erc20TokenBalance,
-  lusdBalance,
+  thusdBalance,
   numberOfTroves
-}: LiquityStoreState) => ({ price, total, erc20TokenBalance, lusdBalance, numberOfTroves });
+}: LiquityStoreState) => ({ price, total, erc20TokenBalance, thusdBalance, numberOfTroves });
 
 type TroveChangeValidationSelectedState = ReturnType<typeof selectForTroveChangeValidation>;
 
@@ -231,7 +231,7 @@ const validateTroveAdjustment = (
     wouldTriggerRecoveryMode,
     price,
     erc20TokenBalance,
-    lusdBalance
+    thusdBalance
   }: TroveChangeValidationContext
 ): JSX.Element | null => {
   if (recoveryMode) {
@@ -293,12 +293,12 @@ const validateTroveAdjustment = (
       );
     }
 
-    if (repayLUSD.gt(lusdBalance)) {
+    if (repayLUSD.gt(thusdBalance)) {
       return (
         <ErrorDescription>
           The amount you're trying to repay exceeds your balance by{" "}
           <Amount>
-            {repayLUSD.sub(lusdBalance).prettify()} {COIN}
+            {repayLUSD.sub(thusdBalance).prettify()} {COIN}
           </Amount>
           .
         </ErrorDescription>
@@ -324,7 +324,7 @@ const validateTroveClosure = (
     recoveryMode,
     wouldTriggerRecoveryMode,
     numberOfTroves,
-    lusdBalance
+    thusdBalance
   }: TroveChangeValidationContext
 ): JSX.Element | null => {
   if (numberOfTroves === 1) {
@@ -343,12 +343,12 @@ const validateTroveClosure = (
     );
   }
 
-  if (repayLUSD?.gt(lusdBalance)) {
+  if (repayLUSD?.gt(thusdBalance)) {
     return (
       <ErrorDescription>
         You need{" "}
         <Amount>
-          {repayLUSD.sub(lusdBalance).prettify()} {COIN}
+          {repayLUSD.sub(thusdBalance).prettify()} {COIN}
         </Amount>{" "}
         more to close your Trove.
       </ErrorDescription>
