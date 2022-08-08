@@ -1,6 +1,3 @@
-const { UniswapV2Factory } = require("./ABIs/UniswapV2Factory.js")
-const { UniswapV2Pair } = require("./ABIs/UniswapV2Pair.js")
-const { UniswapV2Router02 } = require("./ABIs/UniswapV2Router02.js")
 const { ChainlinkAggregatorV3Interface } = require("./ABIs/ChainlinkAggregatorV3Interface.js")
 const { TestHelper: th, TimeValues: timeVals } = require("../utils/testHelpers.js")
 const { dec } = th
@@ -131,76 +128,6 @@ async function mainnetDeploy(configParams) {
   // // Check deployer has LUSD
   // let deployerLUSDBal = await contracts.lusdToken.balanceOf(deployerWallet.address)
   // th.logBN("deployer's LUSD balance", deployerLUSDBal)
-
-
-  // const token0Addr = await LUSDETHPair.token0()
-  // const token1Addr = await LUSDETHPair.token1()
-  // console.log(`LUSD-ETH Pair token 0: ${th.squeezeAddr(token0Addr)},
-  //       LUSDToken contract addr: ${th.squeezeAddr(contracts.lusdToken.address)}`)
-  // console.log(`LUSD-ETH Pair token 1: ${th.squeezeAddr(token1Addr)},
-  //       WETH ERC20 contract addr: ${th.squeezeAddr(configParams.externalAddrs.WETH_ERC20)}`)
-
-  // // Check initial LUSD-ETH pair reserves before provision
-  // let reserves = await LUSDETHPair.getReserves()
-  // th.logBN("LUSD-ETH Pair's LUSD reserves before provision", reserves[0])
-  // th.logBN("LUSD-ETH Pair's ETH reserves before provision", reserves[1])
-
-  // // Get the UniswapV2Router contract
-  // const uniswapV2Router02 = new ethers.Contract(
-  //   configParams.externalAddrs.UNISWAP_V2_ROUTER02,
-  //   UniswapV2Router02.abi,
-  //   deployerWallet
-  // )
-
-  // // --- Provide liquidity to LUSD-ETH pair if not yet done so ---
-  // let deployerLPTokenBal = await LUSDETHPair.balanceOf(deployerWallet.address)
-  // if (deployerLPTokenBal.toString() == '0') {
-  //   console.log('Providing liquidity to Uniswap...')
-  //   // Give router an allowance for LUSD
-  //   await contracts.lusdToken.increaseAllowance(uniswapV2Router02.address, dec(10000, 18))
-
-  //   // Check Router's spending allowance
-  //   const routerLUSDAllowanceFromDeployer = await contracts.lusdToken.allowance(deployerWallet.address, uniswapV2Router02.address)
-  //   th.logBN("router's spending allowance for deployer's LUSD", routerLUSDAllowanceFromDeployer)
-
-  //   // Get amounts for liquidity provision
-  //   const LP_ETH = dec(1, 'ether')
-
-  //   // Convert 8-digit CL price to 18 and multiply by ETH amount
-  //   const LUSDAmount = toBigNum(chainlinkPrice)
-  //     .mul(toBigNum(dec(1, 10)))
-  //     .mul(toBigNum(LP_ETH))
-  //     .div(toBigNum(dec(1, 18)))
-
-  //   const minLUSDAmount = LUSDAmount.sub(toBigNum(dec(100, 18)))
-
-  //   latestBlock = await ethers.provider.getBlockNumber()
-  //   now = (await ethers.provider.getBlock(latestBlock)).timestamp
-  //   let tenMinsFromNow = now + (60 * 60 * 10)
-
-  //   // Provide liquidity to LUSD-ETH pair
-  //   await mdh.sendAndWaitForTransaction(
-  //     uniswapV2Router02.addLiquidityETH(
-  //       contracts.lusdToken.address, // address of LUSD token
-  //       LUSDAmount, // LUSD provision
-  //       minLUSDAmount, // minimum LUSD provision
-  //       LP_ETH, // minimum ETH provision
-  //       deployerWallet.address, // address to send LP tokens to
-  //       tenMinsFromNow, // deadline for this tx
-  //       {
-  //         value: dec(1, 'ether'),
-  //         gasPrice,
-  //         gasLimit: 5000000 // For some reason, ethers can't estimate gas for this tx
-  //       }
-  //     )
-  //   )
-  // } else {
-  //   console.log('Liquidity already provided to Uniswap')
-  // }
-  // // Check LUSD-ETH reserves after liquidity provision:
-  // reserves = await LUSDETHPair.getReserves()
-  // th.logBN("LUSD-ETH Pair's LUSD reserves after provision", reserves[0])
-  // th.logBN("LUSD-ETH Pair's ETH reserves after provision", reserves[1])
 
   // // --- 2nd Account opens trove ---
   // const trove2Status = await contracts.troveManager.getTroveStatus(account2Wallet.address)

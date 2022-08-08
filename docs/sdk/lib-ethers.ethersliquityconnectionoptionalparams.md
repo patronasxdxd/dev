@@ -16,6 +16,6 @@ export interface EthersLiquityConnectionOptionalParams
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [userAddress?](./lib-ethers.ethersliquityconnectionoptionalparams.useraddress.md) | string | <i>(Optional)</i> Address whose Trove, Stability Deposit, LQTY Stake and balances will be read by default. |
+|  [userAddress?](./lib-ethers.ethersliquityconnectionoptionalparams.useraddress.md) | string | <i>(Optional)</i> Address whose Trove, Stability Deposit and balances will be read by default. |
 |  [useStore?](./lib-ethers.ethersliquityconnectionoptionalparams.usestore.md) | [EthersLiquityStoreOption](./lib-ethers.ethersliquitystoreoption.md) | <i>(Optional)</i> Create a [LiquityStore](./lib-base.liquitystore.md) and expose it as the <code>store</code> property. |
 
