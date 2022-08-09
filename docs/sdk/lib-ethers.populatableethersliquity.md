@@ -25,19 +25,19 @@ export declare class PopulatableEthersLiquity implements PopulatableLiquity<Ethe
 |  --- | --- | --- |
 |  [adjustTrove(params, maxBorrowingRateOrOptionalParams, overrides)](./lib-ethers.populatableethersliquity.adjusttrove.md) |  | Adjust existing Trove by changing its collateral, debt, or both. |
 |  [approveErc20(allowance, overrides)](./lib-ethers.populatableethersliquity.approveerc20.md) |  | Allow the borrower operations contract to use user's erc20 tokens for [adjustTrove](./lib-base.transactableliquity.opentrove.md)<!-- -->. |
-|  [borrowLUSD(amount, maxBorrowingRate, overrides)](./lib-ethers.populatableethersliquity.borrowlusd.md) |  | Adjust existing Trove by borrowing more LUSD. |
+|  [borrowTHUSD(amount, maxBorrowingRate, overrides)](./lib-ethers.populatableethersliquity.borrowthusd.md) |  | Adjust existing Trove by borrowing more thUSD. |
 |  [claimCollateralSurplus(overrides)](./lib-ethers.populatableethersliquity.claimcollateralsurplus.md) |  | Claim leftover collateral after a liquidation or redemption. |
 |  [closeTrove(overrides)](./lib-ethers.populatableethersliquity.closetrove.md) |  | Close existing Trove by repaying all debt and withdrawing all collateral. |
 |  [depositCollateral(amount, overrides)](./lib-ethers.populatableethersliquity.depositcollateral.md) |  | Adjust existing Trove by depositing more collateral. |
-|  [depositLUSDInStabilityPool(amount, overrides)](./lib-ethers.populatableethersliquity.depositlusdinstabilitypool.md) |  | Make a new Stability Deposit, or top up existing one. |
+|  [depositTHUSDInStabilityPool(amount, overrides)](./lib-ethers.populatableethersliquity.depositthusdinstabilitypool.md) |  | Make a new Stability Deposit, or top up existing one. |
 |  [liquidate(address, overrides)](./lib-ethers.populatableethersliquity.liquidate.md) |  | Liquidate one or more undercollateralized Troves. |
 |  [liquidateUpTo(maximumNumberOfTrovesToLiquidate, overrides)](./lib-ethers.populatableethersliquity.liquidateupto.md) |  | Liquidate the least collateralized Troves up to a maximum number. |
-|  [openTrove(params, maxBorrowingRateOrOptionalParams, overrides)](./lib-ethers.populatableethersliquity.opentrove.md) |  | Open a new Trove by depositing collateral and borrowing LUSD. |
-|  [redeemLUSD(amount, maxRedemptionRate, overrides)](./lib-ethers.populatableethersliquity.redeemlusd.md) |  | Redeem LUSD to native currency (e.g. Ether) at face value. |
-|  [repayLUSD(amount, overrides)](./lib-ethers.populatableethersliquity.repaylusd.md) |  | Adjust existing Trove by repaying some of its debt. |
-|  [sendLUSD(toAddress, amount, overrides)](./lib-ethers.populatableethersliquity.sendlusd.md) |  | Send LUSD tokens to an address. |
+|  [openTrove(params, maxBorrowingRateOrOptionalParams, overrides)](./lib-ethers.populatableethersliquity.opentrove.md) |  | Open a new Trove by depositing collateral and borrowing thUSD. |
+|  [redeemTHUSD(amount, maxRedemptionRate, overrides)](./lib-ethers.populatableethersliquity.redeemthusd.md) |  | Redeem thUSD to native currency (e.g. Ether) at face value. |
+|  [repayTHUSD(amount, overrides)](./lib-ethers.populatableethersliquity.repaythusd.md) |  | Adjust existing Trove by repaying some of its debt. |
+|  [sendTHUSD(toAddress, amount, overrides)](./lib-ethers.populatableethersliquity.sendthusd.md) |  | Send thUSD tokens to an address. |
 |  [transferCollateralGainToTrove(overrides)](./lib-ethers.populatableethersliquity.transfercollateralgaintotrove.md) |  | Transfer [collateral gain](./lib-base.stabilitydeposit.collateralgain.md) from Stability Deposit to Trove. |
 |  [withdrawCollateral(amount, overrides)](./lib-ethers.populatableethersliquity.withdrawcollateral.md) |  | Adjust existing Trove by withdrawing some of its collateral. |
 |  [withdrawGainsFromStabilityPool(overrides)](./lib-ethers.populatableethersliquity.withdrawgainsfromstabilitypool.md) |  | Withdraw [collateral gain](./lib-base.stabilitydeposit.collateralgain.md) from Stability Deposit. |
-|  [withdrawLUSDFromStabilityPool(amount, overrides)](./lib-ethers.populatableethersliquity.withdrawlusdfromstabilitypool.md) |  | Withdraw LUSD from Stability Deposit. |
+|  [withdrawTHUSDFromStabilityPool(amount, overrides)](./lib-ethers.populatableethersliquity.withdrawthusdfromstabilitypool.md) |  | Withdraw thUSD from Stability Deposit. |
 

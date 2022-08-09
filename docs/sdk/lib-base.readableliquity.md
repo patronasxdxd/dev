@@ -24,11 +24,11 @@ Implemented by [EthersLiquity](./lib-ethers.ethersliquity.md)<!-- -->.
 |  [getErc20TokenAllowance(address)](./lib-base.readableliquity.geterc20tokenallowance.md) | Get the Borrowers Operations contract's allowance of a holder's Erc20 tokens. |
 |  [getErc20TokenBalance(address)](./lib-base.readableliquity.geterc20tokenbalance.md) | Get the amount of Erc20 tokens held by an address. |
 |  [getFees()](./lib-base.readableliquity.getfees.md) | Get a calculator for current fees. |
-|  [getLUSDBalance(address)](./lib-base.readableliquity.getlusdbalance.md) | Get the amount of LUSD held by an address. |
-|  [getLUSDInStabilityPool()](./lib-base.readableliquity.getlusdinstabilitypool.md) | Get the total amount of LUSD currently deposited in the Stability Pool. |
 |  [getNumberOfTroves()](./lib-base.readableliquity.getnumberoftroves.md) | Get number of Troves that are currently open. |
 |  [getPrice()](./lib-base.readableliquity.getprice.md) | Get the current price of the native currency (e.g. Ether) in USD. |
 |  [getStabilityDeposit(address)](./lib-base.readableliquity.getstabilitydeposit.md) | Get the current state of a Stability Deposit. |
+|  [getTHUSDBalance(address)](./lib-base.readableliquity.getthusdbalance.md) | Get the amount of thUSD held by an address. |
+|  [getTHUSDInStabilityPool()](./lib-base.readableliquity.getthusdinstabilitypool.md) | Get the total amount of thUSD currently deposited in the Stability Pool. |
 |  [getTotal()](./lib-base.readableliquity.gettotal.md) | Get the total amount of collateral and debt in the Liquity system. |
 |  [getTotalRedistributed()](./lib-base.readableliquity.gettotalredistributed.md) | Get the total collateral and debt per stake that has been liquidated through redistribution. |
 |  [getTrove(address)](./lib-base.readableliquity.gettrove.md) | Get the current state of a Trove. |

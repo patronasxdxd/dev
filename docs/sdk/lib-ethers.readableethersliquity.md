@@ -32,11 +32,11 @@ The constructor for this class is marked as internal. Third-party code should no
 |  [getErc20TokenAllowance(address, overrides)](./lib-ethers.readableethersliquity.geterc20tokenallowance.md) |  | Get the Borrowers Operations contract's allowance of a holder's Erc20 tokens. |
 |  [getErc20TokenBalance(address, overrides)](./lib-ethers.readableethersliquity.geterc20tokenbalance.md) |  | Get the amount of Erc20 tokens held by an address. |
 |  [getFees(overrides)](./lib-ethers.readableethersliquity.getfees.md) |  | Get a calculator for current fees. |
-|  [getLUSDBalance(address, overrides)](./lib-ethers.readableethersliquity.getlusdbalance.md) |  | Get the amount of LUSD held by an address. |
-|  [getLUSDInStabilityPool(overrides)](./lib-ethers.readableethersliquity.getlusdinstabilitypool.md) |  | Get the total amount of LUSD currently deposited in the Stability Pool. |
 |  [getNumberOfTroves(overrides)](./lib-ethers.readableethersliquity.getnumberoftroves.md) |  | Get number of Troves that are currently open. |
 |  [getPrice(overrides)](./lib-ethers.readableethersliquity.getprice.md) |  | Get the current price of the native currency (e.g. Ether) in USD. |
 |  [getStabilityDeposit(address, overrides)](./lib-ethers.readableethersliquity.getstabilitydeposit.md) |  | Get the current state of a Stability Deposit. |
+|  [getTHUSDBalance(address, overrides)](./lib-ethers.readableethersliquity.getthusdbalance.md) |  | Get the amount of thUSD held by an address. |
+|  [getTHUSDInStabilityPool(overrides)](./lib-ethers.readableethersliquity.getthusdinstabilitypool.md) |  | Get the total amount of thUSD currently deposited in the Stability Pool. |
 |  [getTotal(overrides)](./lib-ethers.readableethersliquity.gettotal.md) |  | Get the total amount of collateral and debt in the Liquity system. |
 |  [getTotalRedistributed(overrides)](./lib-ethers.readableethersliquity.gettotalredistributed.md) |  | Get the total collateral and debt per stake that has been liquidated through redistribution. |
 |  [getTrove(address, overrides)](./lib-ethers.readableethersliquity.gettrove.md) |  | Get the current state of a Trove. |

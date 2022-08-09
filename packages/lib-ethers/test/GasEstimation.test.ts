@@ -276,7 +276,7 @@ describe("Gas estimation (fee decay)", () => {
         borrowingFeeDecayToleranceMinutes
       });
 
-      expect(tx.gasHeadroom).to.be.within(roughGasHeadroom - 10000, roughGasHeadroom + 10000);
+      expect(tx.gasHeadroom).to.be.within(roughGasHeadroom - 11000, roughGasHeadroom + 11000);
     }
   });
 

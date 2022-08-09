@@ -16,15 +16,15 @@ export class _CachedReadableLiquity<T extends unknown[]> implements _ReadableLiq
     // (undocumented)
     getFees(...extraParams: T): Promise<Fees>;
     // (undocumented)
-    getLUSDBalance(address?: string, ...extraParams: T): Promise<Decimal>;
-    // (undocumented)
-    getLUSDInStabilityPool(...extraParams: T): Promise<Decimal>;
-    // (undocumented)
     getNumberOfTroves(...extraParams: T): Promise<number>;
     // (undocumented)
     getPrice(...extraParams: T): Promise<Decimal>;
     // (undocumented)
     getStabilityDeposit(address?: string, ...extraParams: T): Promise<StabilityDeposit>;
+    // (undocumented)
+    getTHUSDBalance(address?: string, ...extraParams: T): Promise<Decimal>;
+    // (undocumented)
+    getTHUSDInStabilityPool(...extraParams: T): Promise<Decimal>;
     // (undocumented)
     getTotal(...extraParams: T): Promise<Trove>;
     // (undocumented)
@@ -63,7 +63,7 @@ export type _CollateralWithdrawal<T> = {
 export const CRITICAL_COLLATERAL_RATIO: Decimal;
 
 // @internal (undocumented)
-export type _DebtChange<T> = (_LUSDBorrowing<T> & _NoLUSDRepayment) | (_LUSDRepayment<T> & _NoLUSDBorrowing);
+export type _DebtChange<T> = (_THUSDBorrowing<T> & _NoTHUSDRepayment) | (_THUSDRepayment<T> & _NoTHUSDBorrowing);
 
 // @public
 export class Decimal {
@@ -189,7 +189,7 @@ export class Fees {
 export interface LiquidationDetails {
     collateralGasCompensation: Decimal;
     liquidatedAddresses: string[];
-    lusdGasCompensation: Decimal;
+    thusdGasCompensation: Decimal;
     totalLiquidated: Trove;
 }
 
@@ -238,13 +238,13 @@ export interface LiquityStoreBaseState {
     erc20TokenBalance: Decimal;
     // @internal (undocumented)
     _feesInNormalMode: Fees;
-    lusdBalance: Decimal;
-    lusdInStabilityPool: Decimal;
     numberOfTroves: number;
     price: Decimal;
     // @internal (undocumented)
     _riskiestTroveBeforeRedistribution: TroveWithPendingRedistribution;
     stabilityDeposit: StabilityDeposit;
+    thusdBalance: Decimal;
+    thusdInStabilityPool: Decimal;
     total: Trove;
     totalRedistributed: Trove;
     troveBeforeRedistribution: TroveWithPendingRedistribution;
@@ -268,25 +268,6 @@ export interface LiquityStoreListenerParams<T = unknown> {
 
 // @public
 export type LiquityStoreState<T = unknown> = LiquityStoreBaseState & LiquityStoreDerivedState & T;
-
-// @public
-export const LUSD_LIQUIDATION_RESERVE: Decimal;
-
-// @public
-export const LUSD_MINIMUM_DEBT: Decimal;
-
-// @public
-export const LUSD_MINIMUM_NET_DEBT: Decimal;
-
-// @internal (undocumented)
-export type _LUSDBorrowing<T> = {
-    borrowLUSD: T;
-};
-
-// @internal (undocumented)
-export type _LUSDRepayment<T> = {
-    repayLUSD: T;
-};
 
 // @public
 export const MAXIMUM_BORROWING_RATE: Decimal;
@@ -313,13 +294,7 @@ export type _NoCollateralDeposit = Partial<_CollateralDeposit<undefined>>;
 export type _NoCollateralWithdrawal = Partial<_CollateralWithdrawal<undefined>>;
 
 // @internal (undocumented)
-export type _NoDebtChange = _NoLUSDBorrowing & _NoLUSDRepayment;
-
-// @internal (undocumented)
-export type _NoLUSDBorrowing = Partial<_LUSDBorrowing<undefined>>;
-
-// @internal (undocumented)
-export type _NoLUSDRepayment = Partial<_LUSDRepayment<undefined>>;
+export type _NoDebtChange = _NoTHUSDBorrowing & _NoTHUSDRepayment;
 
 // @internal (undocumented)
 export const _normalizeTroveAdjustment: (params: Record<string, Decimalish | undefined>) => TroveAdjustmentParams<Decimal>;
@@ -327,18 +302,24 @@ export const _normalizeTroveAdjustment: (params: Record<string, Decimalish | und
 // @internal (undocumented)
 export const _normalizeTroveCreation: (params: Record<string, Decimalish | undefined>) => TroveCreationParams<Decimal>;
 
+// @internal (undocumented)
+export type _NoTHUSDBorrowing = Partial<_THUSDBorrowing<undefined>>;
+
+// @internal (undocumented)
+export type _NoTHUSDRepayment = Partial<_THUSDRepayment<undefined>>;
+
 // @alpha (undocumented)
 export interface ObservableLiquity {
-    // (undocumented)
-    watchLUSDBalance(onLUSDBalanceChanged: (balance: Decimal) => void, address?: string): () => void;
-    // (undocumented)
-    watchLUSDInStabilityPool(onLUSDInStabilityPoolChanged: (lusdInStabilityPool: Decimal) => void): () => void;
     // (undocumented)
     watchNumberOfTroves(onNumberOfTrovesChanged: (numberOfTroves: number) => void): () => void;
     // (undocumented)
     watchPrice(onPriceChanged: (price: Decimal) => void): () => void;
     // (undocumented)
     watchStabilityDeposit(onStabilityDepositChanged: (stabilityDeposit: StabilityDeposit) => void, address?: string): () => void;
+    // (undocumented)
+    watchTHUSDBalance(onTHUSDBalanceChanged: (balance: Decimal) => void, address?: string): () => void;
+    // (undocumented)
+    watchTHUSDInStabilityPool(onTHUSDInStabilityPoolChanged: (thusdInStabilityPool: Decimal) => void): () => void;
     // (undocumented)
     watchTotal(onTotalChanged: (total: Trove) => void): () => void;
     // (undocumented)
@@ -384,23 +365,23 @@ export type _PopulatableFrom<T, P> = {
 export interface PopulatableLiquity<R = unknown, S = unknown, P = unknown> extends _PopulatableFrom<SendableLiquity<R, S>, P> {
     adjustTrove(params: TroveAdjustmentParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
     approveErc20(allowance?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
-    borrowLUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
+    borrowTHUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
     claimCollateralSurplus(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
     closeTrove(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveClosureDetails>>>>;
     depositCollateral(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
-    depositLUSDInStabilityPool(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>>;
+    depositTHUSDInStabilityPool(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>>;
     liquidate(address: string | string[]): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, LiquidationDetails>>>>;
     liquidateUpTo(maximumNumberOfTrovesToLiquidate: number): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, LiquidationDetails>>>>;
     openTrove(params: TroveCreationParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveCreationDetails>>>>;
-    redeemLUSD(amount: Decimalish, maxRedemptionRate?: Decimalish): Promise<PopulatedRedemption<P, S, R>>;
-    repayLUSD(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
-    sendLUSD(toAddress: string, amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
+    redeemTHUSD(amount: Decimalish, maxRedemptionRate?: Decimalish): Promise<PopulatedRedemption<P, S, R>>;
+    repayTHUSD(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
+    sendTHUSD(toAddress: string, amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
     // @internal (undocumented)
     setPrice(price: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
     transferCollateralGainToTrove(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, CollateralGainTransferDetails>>>>;
     withdrawCollateral(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
     withdrawGainsFromStabilityPool(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, StabilityPoolGainsWithdrawalDetails>>>>;
-    withdrawLUSDFromStabilityPool(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>>;
+    withdrawTHUSDFromStabilityPool(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>>;
 }
 
 // @public
@@ -411,10 +392,10 @@ export interface PopulatedLiquityTransaction<P = unknown, T extends SentLiquityT
 
 // @public
 export interface PopulatedRedemption<P = unknown, S = unknown, R = unknown> extends PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, RedemptionDetails>>> {
-    readonly attemptedLUSDAmount: Decimal;
+    readonly attemptedTHUSDAmount: Decimal;
     increaseAmountByMinimumNetDebt(maxRedemptionRate?: Decimalish): Promise<PopulatedRedemption<P, S, R>>;
     readonly isTruncated: boolean;
-    readonly redeemableLUSDAmount: Decimal;
+    readonly redeemableTHUSDAmount: Decimal;
 }
 
 // @public
@@ -423,11 +404,11 @@ export interface ReadableLiquity {
     getErc20TokenAllowance(address?: string): Promise<Decimal>;
     getErc20TokenBalance(address?: string): Promise<Decimal>;
     getFees(): Promise<Fees>;
-    getLUSDBalance(address?: string): Promise<Decimal>;
-    getLUSDInStabilityPool(): Promise<Decimal>;
     getNumberOfTroves(): Promise<number>;
     getPrice(): Promise<Decimal>;
     getStabilityDeposit(address?: string): Promise<StabilityDeposit>;
+    getTHUSDBalance(address?: string): Promise<Decimal>;
+    getTHUSDInStabilityPool(): Promise<Decimal>;
     getTotal(): Promise<Trove>;
     getTotalRedistributed(): Promise<Trove>;
     getTrove(address?: string): Promise<UserTrove>;
@@ -456,8 +437,8 @@ export type _ReadableLiquityWithExtraParamsBase<T extends unknown[]> = {
 
 // @public
 export interface RedemptionDetails {
-    actualLUSDAmount: Decimal;
-    attemptedLUSDAmount: Decimal;
+    actualTHUSDAmount: Decimal;
+    attemptedTHUSDAmount: Decimal;
     collateralTaken: Decimal;
     fee: Decimal;
 }
@@ -473,23 +454,23 @@ export type _SendableFrom<T, R, S> = {
 export interface SendableLiquity<R = unknown, S = unknown> extends _SendableFrom<TransactableLiquity, R, S> {
     adjustTrove(params: TroveAdjustmentParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>;
     approveErc20(allowance?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
-    borrowLUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>;
+    borrowTHUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>;
     claimCollateralSurplus(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
     closeTrove(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveClosureDetails>>>;
     depositCollateral(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>;
-    depositLUSDInStabilityPool(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>;
+    depositTHUSDInStabilityPool(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>;
     liquidate(address: string | string[]): Promise<SentLiquityTransaction<S, LiquityReceipt<R, LiquidationDetails>>>;
     liquidateUpTo(maximumNumberOfTrovesToLiquidate: number): Promise<SentLiquityTransaction<S, LiquityReceipt<R, LiquidationDetails>>>;
     openTrove(params: TroveCreationParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveCreationDetails>>>;
-    redeemLUSD(amount: Decimalish, maxRedemptionRate?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, RedemptionDetails>>>;
-    repayLUSD(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>;
-    sendLUSD(toAddress: string, amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
+    redeemTHUSD(amount: Decimalish, maxRedemptionRate?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, RedemptionDetails>>>;
+    repayTHUSD(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>;
+    sendTHUSD(toAddress: string, amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
     // @internal (undocumented)
     setPrice(price: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
     transferCollateralGainToTrove(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, CollateralGainTransferDetails>>>;
     withdrawCollateral(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>;
     withdrawGainsFromStabilityPool(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, StabilityPoolGainsWithdrawalDetails>>>;
-    withdrawLUSDFromStabilityPool(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>;
+    withdrawTHUSDFromStabilityPool(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>;
 }
 
 // @public
@@ -502,27 +483,27 @@ export interface SentLiquityTransaction<S = unknown, T extends LiquityReceipt = 
 // @public
 export class StabilityDeposit {
     // @internal
-    constructor(initialLUSD: Decimal, currentLUSD: Decimal, collateralGain: Decimal);
+    constructor(initialTHUSD: Decimal, currentTHUSD: Decimal, collateralGain: Decimal);
     apply(change: StabilityDepositChange<Decimalish> | undefined): Decimal;
     readonly collateralGain: Decimal;
-    readonly currentLUSD: Decimal;
+    readonly currentTHUSD: Decimal;
     equals(that: StabilityDeposit): boolean;
-    readonly initialLUSD: Decimal;
+    readonly initialTHUSD: Decimal;
     // (undocumented)
     get isEmpty(): boolean;
     // @internal (undocumented)
     toString(): string;
-    whatChanged(thatLUSD: Decimalish): StabilityDepositChange<Decimal> | undefined;
+    whatChanged(thatTHUSD: Decimalish): StabilityDepositChange<Decimal> | undefined;
 }
 
 // @public
 export type StabilityDepositChange<T> = {
-    depositLUSD: T;
-    withdrawLUSD?: undefined;
+    depositTHUSD: T;
+    withdrawTHUSD?: undefined;
 } | {
-    depositLUSD?: undefined;
-    withdrawLUSD: T;
-    withdrawAllLUSD: boolean;
+    depositTHUSD?: undefined;
+    withdrawTHUSD: T;
+    withdrawAllTHUSD: boolean;
 };
 
 // @public
@@ -533,8 +514,8 @@ export interface StabilityDepositChangeDetails extends StabilityPoolGainsWithdra
 // @public
 export interface StabilityPoolGainsWithdrawalDetails {
     collateralGain: Decimal;
-    lusdLoss: Decimal;
-    newLUSDDeposit: Decimal;
+    newTHUSDDeposit: Decimal;
+    thusdLoss: Decimal;
 }
 
 // @public
@@ -548,26 +529,45 @@ export type SuccessfulReceipt<R = unknown, D = unknown> = {
 export const _successfulReceipt: <R, D>(rawReceipt: R, details: D, toString?: (() => string) | undefined) => SuccessfulReceipt<R, D>;
 
 // @public
+export const THUSD_LIQUIDATION_RESERVE: Decimal;
+
+// @public
+export const THUSD_MINIMUM_DEBT: Decimal;
+
+// @public
+export const THUSD_MINIMUM_NET_DEBT: Decimal;
+
+// @internal (undocumented)
+export type _THUSDBorrowing<T> = {
+    borrowTHUSD: T;
+};
+
+// @internal (undocumented)
+export type _THUSDRepayment<T> = {
+    repayTHUSD: T;
+};
+
+// @public
 export interface TransactableLiquity {
     adjustTrove(params: TroveAdjustmentParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<TroveAdjustmentDetails>;
     approveErc20(allowance?: Decimalish): Promise<void>;
-    borrowLUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<TroveAdjustmentDetails>;
+    borrowTHUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<TroveAdjustmentDetails>;
     claimCollateralSurplus(): Promise<void>;
     closeTrove(): Promise<TroveClosureDetails>;
     depositCollateral(amount: Decimalish): Promise<TroveAdjustmentDetails>;
-    depositLUSDInStabilityPool(amount: Decimalish): Promise<StabilityDepositChangeDetails>;
+    depositTHUSDInStabilityPool(amount: Decimalish): Promise<StabilityDepositChangeDetails>;
     liquidate(address: string | string[]): Promise<LiquidationDetails>;
     liquidateUpTo(maximumNumberOfTrovesToLiquidate: number): Promise<LiquidationDetails>;
     openTrove(params: TroveCreationParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<TroveCreationDetails>;
-    redeemLUSD(amount: Decimalish, maxRedemptionRate?: Decimalish): Promise<RedemptionDetails>;
-    repayLUSD(amount: Decimalish): Promise<TroveAdjustmentDetails>;
-    sendLUSD(toAddress: string, amount: Decimalish): Promise<void>;
+    redeemTHUSD(amount: Decimalish, maxRedemptionRate?: Decimalish): Promise<RedemptionDetails>;
+    repayTHUSD(amount: Decimalish): Promise<TroveAdjustmentDetails>;
+    sendTHUSD(toAddress: string, amount: Decimalish): Promise<void>;
     // @internal (undocumented)
     setPrice(price: Decimalish): Promise<void>;
     transferCollateralGainToTrove(): Promise<CollateralGainTransferDetails>;
     withdrawCollateral(amount: Decimalish): Promise<TroveAdjustmentDetails>;
     withdrawGainsFromStabilityPool(): Promise<StabilityPoolGainsWithdrawalDetails>;
-    withdrawLUSDFromStabilityPool(amount: Decimalish): Promise<StabilityDepositChangeDetails>;
+    withdrawTHUSDFromStabilityPool(amount: Decimalish): Promise<StabilityDepositChangeDetails>;
 }
 
 // @public
@@ -662,11 +662,11 @@ export interface TroveClosureDetails {
 
 // Warning: (ae-incompatible-release-tags) The symbol "TroveClosureParams" is marked as @public, but its signature references "_CollateralWithdrawal" which is marked as @internal
 // Warning: (ae-incompatible-release-tags) The symbol "TroveClosureParams" is marked as @public, but its signature references "_NoCollateralDeposit" which is marked as @internal
-// Warning: (ae-incompatible-release-tags) The symbol "TroveClosureParams" is marked as @public, but its signature references "_LUSDRepayment" which is marked as @internal
-// Warning: (ae-incompatible-release-tags) The symbol "TroveClosureParams" is marked as @public, but its signature references "_NoLUSDBorrowing" which is marked as @internal
+// Warning: (ae-incompatible-release-tags) The symbol "TroveClosureParams" is marked as @public, but its signature references "_THUSDRepayment" which is marked as @internal
+// Warning: (ae-incompatible-release-tags) The symbol "TroveClosureParams" is marked as @public, but its signature references "_NoTHUSDBorrowing" which is marked as @internal
 //
 // @public
-export type TroveClosureParams<T> = _CollateralWithdrawal<T> & _NoCollateralDeposit & Partial<_LUSDRepayment<T>> & _NoLUSDBorrowing;
+export type TroveClosureParams<T> = _CollateralWithdrawal<T> & _NoCollateralDeposit & Partial<_THUSDRepayment<T>> & _NoTHUSDBorrowing;
 
 // @public
 export interface TroveCreationDetails {
@@ -680,11 +680,11 @@ export type TroveCreationError = "missingLiquidationReserve";
 
 // Warning: (ae-incompatible-release-tags) The symbol "TroveCreationParams" is marked as @public, but its signature references "_CollateralDeposit" which is marked as @internal
 // Warning: (ae-incompatible-release-tags) The symbol "TroveCreationParams" is marked as @public, but its signature references "_NoCollateralWithdrawal" which is marked as @internal
-// Warning: (ae-incompatible-release-tags) The symbol "TroveCreationParams" is marked as @public, but its signature references "_LUSDBorrowing" which is marked as @internal
-// Warning: (ae-incompatible-release-tags) The symbol "TroveCreationParams" is marked as @public, but its signature references "_NoLUSDRepayment" which is marked as @internal
+// Warning: (ae-incompatible-release-tags) The symbol "TroveCreationParams" is marked as @public, but its signature references "_THUSDBorrowing" which is marked as @internal
+// Warning: (ae-incompatible-release-tags) The symbol "TroveCreationParams" is marked as @public, but its signature references "_NoTHUSDRepayment" which is marked as @internal
 //
 // @public
-export type TroveCreationParams<T = unknown> = _CollateralDeposit<T> & _NoCollateralWithdrawal & _LUSDBorrowing<T> & _NoLUSDRepayment;
+export type TroveCreationParams<T = unknown> = _CollateralDeposit<T> & _NoCollateralWithdrawal & _THUSDBorrowing<T> & _NoTHUSDRepayment;
 
 // @public
 export interface TroveListingParams {

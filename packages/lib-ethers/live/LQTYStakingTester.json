@@ -93,11 +93,11 @@
         {
           "indexed": false,
           "internalType": "address",
-          "name": "_lusdTokenAddress",
+          "name": "_thusdTokenAddress",
           "type": "address"
         }
       ],
-      "name": "LUSDTokenAddressSet",
+      "name": "THUSDTokenAddressSet",
       "type": "event"
     },
     {
@@ -384,10 +384,10 @@
     },
     {
       "inputs": [],
-      "name": "lusdToken",
+      "name": "thusdToken",
       "outputs": [
         {
-          "internalType": "contract ILUSDToken",
+          "internalType": "contract ITHUSDToken",
           "name": "",
           "type": "address"
         }
@@ -424,7 +424,7 @@
         },
         {
           "internalType": "address",
-          "name": "_lusdTokenAddress",
+          "name": "_thusdTokenAddress",
           "type": "address"
         },
         {
