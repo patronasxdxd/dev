@@ -20,6 +20,7 @@ const BorrowerOperationsTester = artifacts.require("./BorrowerOperationsTester.s
 const TroveManagerTester = artifacts.require("./TroveManagerTester.sol")
 const THUSDTokenTester = artifacts.require("./THUSDTokenTester.sol")
 const ERC20Test = artifacts.require("./ERC20Test.sol")
+const PCVTester = artifacts.require("./PCVTester.sol")
 
 // Proxy scripts
 const BorrowerOperationsScript = artifacts.require('BorrowerOperationsScript')
@@ -142,6 +143,7 @@ class DeploymentHelper {
       testerContracts.stabilityPool.address,
       testerContracts.borrowerOperations.address
     )
+    testerContracts.pcv = await PCVTester.new()
     return testerContracts
   }
 

@@ -114,12 +114,12 @@ contract('THUSDToken', async accounts => {
 
     it("name(): returns the token's name", async () => {
       const name = await thusdTokenTester.name()
-      assert.equal(name, "THUSD Stablecoin")
+      assert.equal(name, "thUSD Stablecoin")
     })
 
     it("symbol(): returns the token's symbol", async () => {
       const symbol = await thusdTokenTester.symbol()
-      assert.equal(symbol, "THUSD")
+      assert.equal(symbol, "thUSD")
     })
 
     it("decimal(): returns the number of decimal digits used", async () => {
