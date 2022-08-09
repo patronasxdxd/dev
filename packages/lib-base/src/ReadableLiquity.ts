@@ -92,6 +92,11 @@ export interface ReadableLiquity {
   getTHUSDInStabilityPool(): Promise<Decimal>;
 
   /**
+   * Get the total amount of thUSD currently deposited in the PCV Pool.
+   */
+  getPCVBalance(): Promise<Decimal>;
+
+  /**
    * Get the amount of thUSD held by an address.
    *
    * @param address - Address whose balance should be retrieved.

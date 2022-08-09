@@ -276,6 +276,14 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return stabilityPool.getTotalTHUSDDeposits({ ...overrides }).then(decimalify);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getPCVBalance} */
+  getPCVBalance(overrides?: EthersCallOverrides): Promise<Decimal> {
+    const { pcv } = _getContracts(this.connection);
+    const { thusdToken } = _getContracts(this.connection);
+
+    return thusdToken.balanceOf(pcv.address, { ...overrides }).then(decimalify);
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getTHUSDBalance} */
   getTHUSDBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     address ??= _requireAddress(this.connection);
@@ -503,12 +511,18 @@ class _BlockPolledReadableEthersLiquity
       : this._readable.getTHUSDInStabilityPool(overrides);
   }
 
+  async getPCVBalance(overrides?: EthersCallOverrides): Promise<Decimal> {
+    return this._blockHit(overrides)
+      ? this.store.state.pcvBalance
+      : this._readable.getPCVBalance(overrides);
+  }
+
   async getTHUSDBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     return this._userHit(address, overrides)
       ? this.store.state.thusdBalance
       : this._readable.getTHUSDBalance(address, overrides);
   }
-  
+
   async getErc20TokenBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     return this._userHit(address, overrides)
       ? this.store.state.erc20TokenBalance

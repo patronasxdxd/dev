@@ -33,6 +33,7 @@ The constructor for this class is marked as internal. Third-party code should no
 |  [getErc20TokenBalance(address, overrides)](./lib-ethers.readableethersliquity.geterc20tokenbalance.md) |  | Get the amount of Erc20 tokens held by an address. |
 |  [getFees(overrides)](./lib-ethers.readableethersliquity.getfees.md) |  | Get a calculator for current fees. |
 |  [getNumberOfTroves(overrides)](./lib-ethers.readableethersliquity.getnumberoftroves.md) |  | Get number of Troves that are currently open. |
+|  [getPCVBalance(overrides)](./lib-ethers.readableethersliquity.getpcvbalance.md) |  | Get the total amount of LUSD currently deposited in the PCV Pool. |
 |  [getPrice(overrides)](./lib-ethers.readableethersliquity.getprice.md) |  | Get the current price of the native currency (e.g. Ether) in USD. |
 |  [getStabilityDeposit(address, overrides)](./lib-ethers.readableethersliquity.getstabilitydeposit.md) |  | Get the current state of a Stability Deposit. |
 |  [getTHUSDBalance(address, overrides)](./lib-ethers.readableethersliquity.getthusdbalance.md) |  | Get the amount of thUSD held by an address. |

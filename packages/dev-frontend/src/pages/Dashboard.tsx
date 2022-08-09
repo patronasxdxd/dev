@@ -3,7 +3,7 @@ import { Container, Heading } from "theme-ui";
 import { BorrowingFee } from "../components/Dashboard/BorrowingFee";
 import { OpenedVaults } from "../components/Dashboard/OpenedVaults";
 import { ColRatio } from "../components/Dashboard/ColRatio";
-import { OpenVaultCard } from "../components/Dashboard/OpenVaultCard";
+import { VaultCard } from "../components/Dashboard/VaultCard";
 import { StabilityPoolCard } from "../components/Dashboard/StabilityPoolCard";
 import { SystemStatsCard } from "../components/SystemStatsCard";
 
@@ -15,7 +15,7 @@ export const Dashboard: React.FC = () => (
     <Container variant="mainRow">
       <Container variant="left">
         <BorrowingFee />
-        <OpenVaultCard />
+        <VaultCard />
       </Container>
       <Container variant="middle">
         <OpenedVaults />

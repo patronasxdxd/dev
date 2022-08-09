@@ -14,7 +14,7 @@ import { FunctionalPanel } from "./components/FunctionalPanel";
 import { PageSwitcher } from "./pages/PageSwitcher";
 import { RedemptionPage } from "./pages/RedemptionPage";
 import { RiskyVaultsPage } from "./pages/RiskyVaultsPage";
-import { StabilityPoolPage } from "./pages/StabilityPoolPage";
+
 import { VaultPage } from "./pages/VaultPage";
 
 import { LiquityProvider } from "./hooks/LiquityContext";
@@ -38,7 +38,7 @@ const UnsupportedMainnetFallback: React.FC = () => (
     </Heading>
 
     <Paragraph sx={{ mb: 3 }}>
-      Please change your network to Ropsten.
+      Please change your network to Goerli.
     </Paragraph>
   </Flex>
 );
@@ -58,7 +58,7 @@ export const LiquityFrontend: React.FC<LiquityFrontendProps> = ({ loader }) => {
         <Icon name="exclamation-triangle" /> Threshold USD is not yet deployed to{" "}
         {chainId === 1 ? "mainnet" : "this network"}.
       </Heading>
-      Please switch to Rinkeby.
+      Please switch to Goerli.
     </Flex>
   );
 
