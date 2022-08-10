@@ -75,7 +75,7 @@ class MainnetDeploymentHelper {
     const collSurplusPoolFactory = await this.getFactory("CollSurplusPool")
     const borrowerOperationsFactory = await this.getFactory("BorrowerOperations")
     const hintHelpersFactory = await this.getFactory("HintHelpers")
-    const lusdTokenFactory = await this.getFactory("LUSDToken")
+    const thusdTokenFactory = await this.getFactory("THUSDToken")
     const tellorCallerFactory = await this.getFactory("TellorCaller")
 
     // Deploy txs
@@ -92,16 +92,16 @@ class MainnetDeploymentHelper {
     const hintHelpers = await this.loadOrDeploy(hintHelpersFactory, 'hintHelpers', deploymentState)
     const tellorCaller = await this.loadOrDeploy(tellorCallerFactory, 'tellorCaller', deploymentState, [tellorMasterAddr])
 
-    const lusdTokenParams = [
+    const thusdTokenParams = [
       troveManager.address,
       stabilityPool.address,
       borrowerOperations.address
     ]
-    const lusdToken = await this.loadOrDeploy(
-      lusdTokenFactory,
-      'lusdToken',
+    const thusdToken = await this.loadOrDeploy(
+      thusdTokenFactory,
+      'thusdToken',
       deploymentState,
-      lusdTokenParams
+      thusdTokenParams
     )
 
     if (!this.configParams.ETHERSCAN_BASE_URL) {
@@ -119,12 +119,12 @@ class MainnetDeploymentHelper {
       await this.verifyContract('borrowerOperations', deploymentState)
       await this.verifyContract('hintHelpers', deploymentState)
       await this.verifyContract('tellorCaller', deploymentState, [tellorMasterAddr])
-      await this.verifyContract('lusdToken', deploymentState, lusdTokenParams)
+      await this.verifyContract('thusdToken', deploymentState, thusdTokenParams)
     }
 
     const coreContracts = {
       priceFeed,
-      lusdToken,
+      thusdToken,
       sortedTroves,
       troveManager,
       activePool,
@@ -138,23 +138,6 @@ class MainnetDeploymentHelper {
       tellorCaller
     }
     return coreContracts
-  }
-
-  async deployLQTYContractsMainnet(deploymentState) {
-    const pcvFactory = await this.getFactory("PCV")
-
-    const pcv = await this.loadOrDeploy(pcvFactory, 'pcv', deploymentState)
-
-    if (!this.configParams.ETHERSCAN_BASE_URL) {
-      console.log('No Etherscan Url defined, skipping verification')
-    } else {
-      await this.verifyContract('pcv', deploymentState)
-    }
-
-    const LQTYContracts = {
-      pcv
-    }
-    return LQTYContracts
   }
 
   async deployMultiTroveGetterMainnet(liquityCore, deploymentState) {
@@ -185,7 +168,7 @@ class MainnetDeploymentHelper {
     return owner == ZERO_ADDRESS
   }
   // Connect contracts to their dependencies
-  async connectCoreContractsMainnet(contracts, LQTYContracts, chainlinkProxyAddress) {
+  async connectCoreContractsMainnet(contracts, chainlinkProxyAddress) {
     const gasPrice = this.configParams.GAS_PRICE
     // Set ChainlinkAggregatorProxy and TellorCaller in the PriceFeed
     await this.isOwnershipRenounced(contracts.priceFeed) ||
@@ -210,9 +193,9 @@ class MainnetDeploymentHelper {
         contracts.gasPool.address,
         contracts.collSurplusPool.address,
         contracts.priceFeed.address,
-        contracts.lusdToken.address,
+        contracts.thusdToken.address,
         contracts.sortedTroves.address,
-        LQTYContracts.pcv.address,
+        contracts.pcv.address,
 	{gasPrice}
       ))
 
@@ -227,8 +210,8 @@ class MainnetDeploymentHelper {
         contracts.collSurplusPool.address,
         contracts.priceFeed.address,
         contracts.sortedTroves.address,
-        contracts.lusdToken.address,
-        LQTYContracts.pcv.address,
+        contracts.thusdToken.address,
+        contracts.pcv.address,
         contracts.erc20.address,
 	{gasPrice}
       ))
@@ -239,7 +222,7 @@ class MainnetDeploymentHelper {
         contracts.borrowerOperations.address,
         contracts.troveManager.address,
         contracts.activePool.address,
-        contracts.lusdToken.address,
+        contracts.thusdToken.address,
         contracts.sortedTroves.address,
         contracts.priceFeed.address,
         contracts.erc20.address,
@@ -281,19 +264,15 @@ class MainnetDeploymentHelper {
         contracts.troveManager.address,
 	{gasPrice}
       ))
-  }
 
-  async connectLQTYContractsToCoreMainnet(LQTYContracts, coreContracts) {
-    const gasPrice = this.configParams.GAS_PRICE
-    await this.isOwnershipRenounced(LQTYContracts.pcv) ||
-      await this.sendAndWaitForTransaction(LQTYContracts.pcv.setAddresses(
-        coreContracts.lusdToken.address,
+    await this.isOwnershipRenounced(contracts.pcv) ||
+      await this.sendAndWaitForTransaction(contracts.pcv.setAddresses(
+        coreContracts.thusdToken.address,
         coreContracts.troveManager.address,
         coreContracts.borrowerOperations.address,
         coreContracts.activePool.address,
 	{gasPrice}
       ))
-
   }
 
   // --- Verify on Ethrescan ---

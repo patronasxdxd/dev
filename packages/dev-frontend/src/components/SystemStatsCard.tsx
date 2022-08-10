@@ -29,7 +29,7 @@ const select = ({
   numberOfTroves,
   price,
   total,
-  lusdInStabilityPool,
+  thusdInStabilityPool,
   borrowingRate,
   redemptionRate,
   pcvBalance
@@ -37,7 +37,7 @@ const select = ({
   numberOfTroves,
   price,
   total,
-  lusdInStabilityPool,
+  thusdInStabilityPool,
   borrowingRate,
   redemptionRate,
   pcvBalance
@@ -51,7 +51,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
       connection: { _priceFeedIsTestnet: canSetPrice }
     }
   } = useLiquity();
-  
+
   const location = useLocation();
 
   const {
@@ -59,7 +59,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
     price,
     total,
     borrowingRate,
-    lusdInStabilityPool,
+    thusdInStabilityPool,
     pcvBalance
   } = useLiquitySelector(select);
 
@@ -77,7 +77,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
           width: "100%",
           gap: 1,
           pb: 3,
-          borderBottom: 1, 
+          borderBottom: 1,
           borderColor: "border"
         }}>
           Network Stats
@@ -92,48 +92,48 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
         }}>
           {location.pathname !== '/' && (
             <>
-              <SystemStat 
-                info="Borrowing Fee" 
-                tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount, and is part of a Vault's debt." 
+              <SystemStat
+                info="Borrowing Fee"
+                tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount, and is part of a Vault's debt."
               >
                 {borrowingFeePct.toString(2)}
               </SystemStat>
-              <SystemStat 
-                info="Vaults" 
-                tooltip="The total number of active Vaults in the system." 
+              <SystemStat
+                info="Vaults"
+                tooltip="The total number of active Vaults in the system."
               >
                  {Decimal.from(numberOfTroves).prettify(0)}
               </SystemStat>
             </>
           )}
-          <SystemStat 
-            info="TVL" 
-            tooltip={`The Total Value Locked (TVL) is the total value of Ether locked as collateral in the system, given in ${ FIRST_ERC20_COLLATERAL } and USD.`} 
+          <SystemStat
+            info="TVL"
+            tooltip={`The Total Value Locked (TVL) is the total value of Ether locked as collateral in the system, given in ${ FIRST_ERC20_COLLATERAL } and USD.`}
           >
             {total.collateral.shorten()} { FIRST_ERC20_COLLATERAL }
           </SystemStat>
-          <SystemStat 
+          <SystemStat
             info={`${ COIN } in Stability Pool`}
             tooltip={`The total ${ COIN } currently held in the Stability Pool, expressed as an amount and a fraction of the ${ COIN } supply.`}
           >
-            {lusdInStabilityPool.shorten()}
+            {thusdInStabilityPool.shorten()}
           </SystemStat>
-          <SystemStat 
+          <SystemStat
             info={`${ COIN } in PCV`}
             tooltip={`The total ${ COIN } currently held in the PCV, expressed as an amount and a fraction of the ${ COIN } supply.`}
           >
             {pcvBalance.prettify()}
           </SystemStat>
-          <SystemStat 
-            info={`${ COIN } Supply`} 
-            tooltip={`The total ${ COIN } minted by the Threshold USD Protocol.`} 
+          <SystemStat
+            info={`${ COIN } Supply`}
+            tooltip={`The total ${ COIN } minted by the Threshold USD Protocol.`}
           >
             {total.debt.shorten()}
           </SystemStat>
-          {total.collateralRatioIsBelowCritical(price) && 
-            (<SystemStat 
-              info="Recovery Mode" 
-              tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Trove's debt. Operations are also restricted that would negatively impact the TCR." 
+          {total.collateralRatioIsBelowCritical(price) &&
+            (<SystemStat
+              info="Recovery Mode"
+              tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Trove's debt. Operations are also restricted that would negatively impact the TCR."
             >
               {total.collateralRatioIsBelowCritical(price) ? <Box color="danger">Yes</Box> : "No"}
             </SystemStat>)
@@ -144,7 +144,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
           gap: 1,
           pt: 4,
           pb: 2,
-          borderBottom: 1, 
+          borderBottom: 1,
           borderColor: "border"
         }}>
           { FIRST_ERC20_COLLATERAL } Price
@@ -179,12 +179,12 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
                     return liquity.setPrice(Decimal.from(editedPrice), overrides);
                   }}
                 >
-                  <Button sx={{ 
-                    ml: 3, 
+                  <Button sx={{
+                    ml: 3,
                     width: "1rem",
                     height: "1rem",
                     borderRadius: 6,
-                    top: 0 
+                    top: 0
                   }}>
                     Set
                   </Button>

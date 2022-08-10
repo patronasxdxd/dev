@@ -13,9 +13,9 @@ import "./Dependencies/CheckContract.sol";
 // import "./Dependencies/console.sol";
 
 /*
- * The Active Pool holds the collateral and LUSD debt (but not LUSD tokens) for all active troves.
+ * The Active Pool holds the collateral and THUSD debt (but not THUSD tokens) for all active troves.
  *
- * When a trove is liquidated, it's collateral and LUSD debt are transferred from the Active Pool, to either the
+ * When a trove is liquidated, it's collateral and THUSD debt are transferred from the Active Pool, to either the
  * Stability Pool, the Default Pool, or both, depending on the liquidation conditions.
  *
  */
@@ -31,7 +31,7 @@ contract ActivePool is Ownable, CheckContract, IActivePool {
     address public stabilityPoolAddress;
     address public troveManagerAddress;
     uint256 internal collateral;  // deposited collateral tracker
-    uint256 internal LUSDDebt;
+    uint256 internal THUSDDebt;
 
     // --- Contract setters ---
 
@@ -81,8 +81,8 @@ contract ActivePool is Ownable, CheckContract, IActivePool {
         return collateral;
     }
 
-    function getLUSDDebt() external view override returns (uint) {
-        return LUSDDebt;
+    function getTHUSDDebt() external view override returns (uint) {
+        return THUSDDebt;
     }
 
     // --- Pool functionality ---
@@ -112,16 +112,16 @@ contract ActivePool is Ownable, CheckContract, IActivePool {
         }
     }
 
-    function increaseLUSDDebt(uint _amount) external override {
+    function increaseTHUSDDebt(uint _amount) external override {
         _requireCallerIsBOorTroveM();
-        LUSDDebt  = LUSDDebt.add(_amount);
-        emit ActivePoolLUSDDebtUpdated(LUSDDebt);
+        THUSDDebt  = THUSDDebt.add(_amount);
+        emit ActivePoolTHUSDDebtUpdated(THUSDDebt);
     }
 
-    function decreaseLUSDDebt(uint _amount) external override {
+    function decreaseTHUSDDebt(uint _amount) external override {
         _requireCallerIsBOorTroveMorSP();
-        LUSDDebt = LUSDDebt.sub(_amount);
-        emit ActivePoolLUSDDebtUpdated(LUSDDebt);
+        THUSDDebt = THUSDDebt.sub(_amount);
+        emit ActivePoolTHUSDDebtUpdated(THUSDDebt);
     }
 
     // --- 'require' functions ---

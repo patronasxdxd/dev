@@ -70,38 +70,6 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "_borrower",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_LUSDFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "LUSDBorrowingFeePaid",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_lusdTokenAddress",
-        "type": "address"
-      }
-    ],
-    "name": "LUSDTokenAddressChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
         "name": "previousOwner",
         "type": "address"
       },
@@ -165,6 +133,38 @@
       }
     ],
     "name": "StabilityPoolAddressChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_borrower",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_THUSDFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "THUSDBorrowingFeePaid",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_thusdTokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "THUSDTokenAddressChanged",
     "type": "event"
   },
   {
@@ -277,19 +277,6 @@
   },
   {
     "inputs": [],
-    "name": "LUSD_GAS_COMPENSATION",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "MCR",
     "outputs": [
       {
@@ -330,6 +317,19 @@
   {
     "inputs": [],
     "name": "PERCENT_DIVISOR",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "THUSD_GAS_COMPENSATION",
     "outputs": [
       {
         "internalType": "uint256",
@@ -403,7 +403,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_LUSDChange",
+        "name": "_THUSDChange",
         "type": "uint256"
       },
       {
@@ -544,19 +544,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "lusdToken",
-    "outputs": [
-      {
-        "internalType": "contract ILUSDToken",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -593,7 +580,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_LUSDAmount",
+        "name": "_THUSDAmount",
         "type": "uint256"
       },
       {
@@ -673,7 +660,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_LUSDAmount",
+        "name": "_THUSDAmount",
         "type": "uint256"
       },
       {
@@ -687,7 +674,7 @@
         "type": "address"
       }
     ],
-    "name": "repayLUSD",
+    "name": "repayTHUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -736,7 +723,7 @@
       },
       {
         "internalType": "address",
-        "name": "_lusdTokenAddress",
+        "name": "_thusdTokenAddress",
         "type": "address"
       },
       {
@@ -774,6 +761,19 @@
     "outputs": [
       {
         "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "thusdToken",
+    "outputs": [
+      {
+        "internalType": "contract ITHUSDToken",
         "name": "",
         "type": "address"
       }
@@ -826,7 +826,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_LUSDAmount",
+        "name": "_THUSDAmount",
         "type": "uint256"
       },
       {
@@ -840,7 +840,7 @@
         "type": "address"
       }
     ],
-    "name": "withdrawLUSD",
+    "name": "withdrawTHUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

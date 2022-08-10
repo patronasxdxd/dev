@@ -24,19 +24,19 @@ Implemented by [EthersLiquity](./lib-ethers.ethersliquity.md)<!-- -->.
 |  --- | --- |
 |  [adjustTrove(params, maxBorrowingRate)](./lib-base.transactableliquity.adjusttrove.md) | Adjust existing Trove by changing its collateral, debt, or both. |
 |  [approveErc20(allowance)](./lib-base.transactableliquity.approveerc20.md) | Allow the borrower operations contract to use user's erc20 tokens for [adjustTrove](./lib-base.transactableliquity.opentrove.md)<!-- -->. |
-|  [borrowLUSD(amount, maxBorrowingRate)](./lib-base.transactableliquity.borrowlusd.md) | Adjust existing Trove by borrowing more LUSD. |
+|  [borrowTHUSD(amount, maxBorrowingRate)](./lib-base.transactableliquity.borrowthusd.md) | Adjust existing Trove by borrowing more thUSD. |
 |  [claimCollateralSurplus()](./lib-base.transactableliquity.claimcollateralsurplus.md) | Claim leftover collateral after a liquidation or redemption. |
 |  [closeTrove()](./lib-base.transactableliquity.closetrove.md) | Close existing Trove by repaying all debt and withdrawing all collateral. |
 |  [depositCollateral(amount)](./lib-base.transactableliquity.depositcollateral.md) | Adjust existing Trove by depositing more collateral. |
-|  [depositLUSDInStabilityPool(amount)](./lib-base.transactableliquity.depositlusdinstabilitypool.md) | Make a new Stability Deposit, or top up existing one. |
+|  [depositTHUSDInStabilityPool(amount)](./lib-base.transactableliquity.depositthusdinstabilitypool.md) | Make a new Stability Deposit, or top up existing one. |
 |  [liquidate(address)](./lib-base.transactableliquity.liquidate.md) | Liquidate one or more undercollateralized Troves. |
 |  [liquidateUpTo(maximumNumberOfTrovesToLiquidate)](./lib-base.transactableliquity.liquidateupto.md) | Liquidate the least collateralized Troves up to a maximum number. |
-|  [openTrove(params, maxBorrowingRate)](./lib-base.transactableliquity.opentrove.md) | Open a new Trove by depositing collateral and borrowing LUSD. |
-|  [redeemLUSD(amount, maxRedemptionRate)](./lib-base.transactableliquity.redeemlusd.md) | Redeem LUSD to native currency (e.g. Ether) at face value. |
-|  [repayLUSD(amount)](./lib-base.transactableliquity.repaylusd.md) | Adjust existing Trove by repaying some of its debt. |
-|  [sendLUSD(toAddress, amount)](./lib-base.transactableliquity.sendlusd.md) | Send LUSD tokens to an address. |
+|  [openTrove(params, maxBorrowingRate)](./lib-base.transactableliquity.opentrove.md) | Open a new Trove by depositing collateral and borrowing thUSD. |
+|  [redeemTHUSD(amount, maxRedemptionRate)](./lib-base.transactableliquity.redeemthusd.md) | Redeem thUSD to native currency (e.g. Ether) at face value. |
+|  [repayTHUSD(amount)](./lib-base.transactableliquity.repaythusd.md) | Adjust existing Trove by repaying some of its debt. |
+|  [sendTHUSD(toAddress, amount)](./lib-base.transactableliquity.sendthusd.md) | Send thUSD tokens to an address. |
 |  [transferCollateralGainToTrove()](./lib-base.transactableliquity.transfercollateralgaintotrove.md) | Transfer [collateral gain](./lib-base.stabilitydeposit.collateralgain.md) from Stability Deposit to Trove. |
 |  [withdrawCollateral(amount)](./lib-base.transactableliquity.withdrawcollateral.md) | Adjust existing Trove by withdrawing some of its collateral. |
 |  [withdrawGainsFromStabilityPool()](./lib-base.transactableliquity.withdrawgainsfromstabilitypool.md) | Withdraw [collateral gain](./lib-base.stabilitydeposit.collateralgain.md) from Stability Deposit. |
-|  [withdrawLUSDFromStabilityPool(amount)](./lib-base.transactableliquity.withdrawlusdfromstabilitypool.md) | Withdraw LUSD from Stability Deposit. |
+|  [withdrawTHUSDFromStabilityPool(amount)](./lib-base.transactableliquity.withdrawthusdfromstabilitypool.md) | Withdraw thUSD from Stability Deposit. |
 

@@ -17,8 +17,8 @@ export interface LiquityStoreBaseState {
   /** User's native currency balance (e.g. Ether). */
   accountBalance: Decimal;
 
-  /** User's LUSD token balance. */
-  lusdBalance: Decimal;
+  /** User's thUSD token balance. */
+  thusdBalance: Decimal;
 
   /** User's collateral erc20 token balance. */
   erc20TokenBalance: Decimal;
@@ -38,8 +38,8 @@ export interface LiquityStoreBaseState {
   /** Current price of the native currency (e.g. Ether) in USD. */
   price: Decimal;
 
-  /** Total amount of LUSD currently deposited in the Stability Pool. */
-  lusdInStabilityPool: Decimal;
+  /** Total amount of thUSD currently deposited in the Stability Pool. */
+  thusdInStabilityPool: Decimal;
 
   /** Total amount of LUSD currently deposited in the PCV Pool. */
   pcvBalance: Decimal;
@@ -101,7 +101,7 @@ export interface LiquityStoreDerivedState {
    * Current redemption rate.
    *
    * @remarks
-   * Note that the actual rate paid by a redemption transaction will depend on the amount of LUSD
+   * Note that the actual rate paid by a redemption transaction will depend on the amount of THUSD
    * being redeemed.
    *
    * Use {@link Fees.redemptionRate} to calculate a precise redemption rate.
@@ -297,11 +297,11 @@ export abstract class LiquityStore<T = unknown> {
         baseStateUpdate.accountBalance
       ),
 
-      lusdBalance: this._updateIfChanged(
+      thusdBalance: this._updateIfChanged(
         eq,
-        "lusdBalance",
-        baseState.lusdBalance,
-        baseStateUpdate.lusdBalance
+        "thusdBalance",
+        baseState.thusdBalance,
+        baseStateUpdate.thusdBalance
       ),
 
       pcvBalance: this._updateIfChanged(
@@ -334,11 +334,11 @@ export abstract class LiquityStore<T = unknown> {
 
       price: this._updateIfChanged(eq, "price", baseState.price, baseStateUpdate.price),
 
-      lusdInStabilityPool: this._updateIfChanged(
+      thusdInStabilityPool: this._updateIfChanged(
         eq,
-        "lusdInStabilityPool",
-        baseState.lusdInStabilityPool,
-        baseStateUpdate.lusdInStabilityPool
+        "thusdInStabilityPool",
+        baseState.thusdInStabilityPool,
+        baseStateUpdate.thusdInStabilityPool
       ),
 
       total: this._updateIfChanged(equals, "total", baseState.total, baseStateUpdate.total),

@@ -4,8 +4,8 @@ import {
   LiquityStoreState,
   Decimal,
   Trove,
-  LUSD_LIQUIDATION_RESERVE,
-  LUSD_MINIMUM_NET_DEBT,
+  THUSD_LIQUIDATION_RESERVE,
+  THUSD_MINIMUM_NET_DEBT,
   Percent
 } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
@@ -58,7 +58,7 @@ export const Opening: React.FC = () => {
 
   const fee = borrowAmount.mul(borrowingRate);
   const feePct = new Percent(borrowingRate);
-  const totalDebt = borrowAmount.add(LUSD_LIQUIDATION_RESERVE).add(fee);
+  const totalDebt = borrowAmount.add(THUSD_LIQUIDATION_RESERVE).add(fee);
   const isDirty = !collateral.isZero || !borrowAmount.isZero;
   const trove = isDirty ? new Trove(collateral, totalDebt) : EMPTY_TROVE;
   const maxCollateral = erc20TokenBalance;
@@ -89,7 +89,7 @@ export const Opening: React.FC = () => {
 
   useEffect(() => {
     if (!collateral.isZero && borrowAmount.isZero) {
-      setBorrowAmount(LUSD_MINIMUM_NET_DEBT);
+      setBorrowAmount(THUSD_MINIMUM_NET_DEBT);
     }
   }, [collateral, borrowAmount]);
 
@@ -138,7 +138,7 @@ export const Opening: React.FC = () => {
           <StaticRow
             label="Liquidation Reserve"
             inputId="trove-liquidation-reserve"
-            amount={`${LUSD_LIQUIDATION_RESERVE}`}
+            amount={`${THUSD_LIQUIDATION_RESERVE}`}
             unit={COIN}
             infoIcon={
               <InfoIcon
@@ -183,8 +183,8 @@ export const Opening: React.FC = () => {
                     The total amount of { COIN } your Trove will hold.{" "}
                     {isDirty && (
                       <>
-                        You will need to repay {totalDebt.sub(LUSD_LIQUIDATION_RESERVE).prettify(2)}{" "}
-                        { COIN } to reclaim your collateral ({LUSD_LIQUIDATION_RESERVE.toString()} { COIN }
+                        You will need to repay {totalDebt.sub(THUSD_LIQUIDATION_RESERVE).prettify(2)}{" "}
+                        { COIN } to reclaim your collateral ({THUSD_LIQUIDATION_RESERVE.toString()} { COIN }
                         Liquidation Reserve excluded).
                       </>
                     )}

@@ -11,12 +11,12 @@ type StabilityPoolCardProps = {
   variant?: string;
 };
 
-const select = ({  lusdBalance }: LiquityStoreState) => ({
-  lusdBalance
+const select = ({  thusdBalance }: LiquityStoreState) => ({
+  thusdBalance
 });
 
 export const StabilityPoolCard: React.FC<StabilityPoolCardProps> = ({ variant = "mainCards" }) => {
-  const { lusdBalance } = useLiquitySelector(select);
+  const { thusdBalance } = useLiquitySelector(select);
 
   return (
     <Card {...{ variant }}>
@@ -28,7 +28,7 @@ export const StabilityPoolCard: React.FC<StabilityPoolCardProps> = ({ variant = 
         path='/earn'
         disabled={ true }
       >
-        {! lusdBalance.eq(0) ?  lusdBalance.prettify() : '--'}
+        {! thusdBalance.eq(0) ?  thusdBalance.prettify() : '--'}
       </BottomCard>
     </Card>
   );

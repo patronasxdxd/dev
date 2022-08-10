@@ -9,7 +9,7 @@ contract('All Liquity functions with onlyOwner modifier', async accounts => {
   const [owner, alice, bob] = accounts;
 
   let contracts
-  let lusdToken
+  let thusdToken
   let sortedTroves
   let troveManager
   let activePool
@@ -23,19 +23,16 @@ contract('All Liquity functions with onlyOwner modifier', async accounts => {
   before(async () => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
     contracts.borrowerOperations = await BorrowerOperationsTester.new()
-    contracts = await deploymentHelper.deployLUSDToken(contracts)
-    const LQTYContracts = await deploymentHelper.deployLQTYContracts()
+    contracts = await deploymentHelper.deployTHUSDToken(contracts)
 
-    lusdToken = contracts.lusdToken
+    thusdToken = contracts.thusdToken
     sortedTroves = contracts.sortedTroves
     troveManager = contracts.troveManager
     activePool = contracts.activePool
     stabilityPool = contracts.stabilityPool
     defaultPool = contracts.defaultPool
     borrowerOperations = contracts.borrowerOperations
-
-    pcv = LQTYContracts.pcv
-    lockupContractFactory = LQTYContracts.lockupContractFactory
+    pcv = contracts.pcv
   })
 
   const testZeroAddress = async (contract, params, method = 'setAddresses', skip = 0) => {

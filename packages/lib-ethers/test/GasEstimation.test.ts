@@ -14,9 +14,9 @@ import {
   SuccessfulReceipt,
   Trove,
   TroveCreationParams,
-  LUSD_LIQUIDATION_RESERVE,
-  LUSD_MINIMUM_DEBT,
-  LUSD_MINIMUM_NET_DEBT,
+  THUSD_LIQUIDATION_RESERVE,
+  THUSD_MINIMUM_DEBT,
+  THUSD_MINIMUM_NET_DEBT,
   MINIMUM_BORROWING_RATE
 } from "@liquity/lib-base";
 
@@ -77,7 +77,7 @@ describe("Gas estimation", () => {
     for (var i=0;i<fiveOtherUsers.length;i++) {
       await funder.sendTransaction({
         to: fiveOtherUsers[i].getAddress(),
-        value: LUSD_MINIMUM_DEBT.div(170).hex
+        value: THUSD_MINIMUM_DEBT.div(170).hex
       });
     }
 
@@ -91,22 +91,22 @@ describe("Gas estimation", () => {
     }
 
     await th.openTroves(deployment, liquity, fiveOtherUsers, funder, [
-      { depositCollateral: 20, borrowLUSD: 2040 },
-      { depositCollateral: 20, borrowLUSD: 2050 },
-      { depositCollateral: 20, borrowLUSD: 2060 },
-      { depositCollateral: 20, borrowLUSD: 2070 },
-      { depositCollateral: 20, borrowLUSD: 2080 }
+      { depositCollateral: 20, borrowTHUSD: 2040 },
+      { depositCollateral: 20, borrowTHUSD: 2050 },
+      { depositCollateral: 20, borrowTHUSD: 2060 },
+      { depositCollateral: 20, borrowTHUSD: 2070 },
+      { depositCollateral: 20, borrowTHUSD: 2080 }
     ]);
 
     // await th.increaseTime(60 * 60 * 24 * 15);
   });
 
   it("should include enough gas for updating lastFeeOperationTime", async () => {
-    await liquity.openTrove({ depositCollateral: 20, borrowLUSD: 2090 });
+    await liquity.openTrove({ depositCollateral: 20, borrowTHUSD: 2090 });
 
     // We just updated lastFeeOperationTime, so this won't anticipate having to update that
     // during estimateGas
-    const tx = await liquity.populate.redeemLUSD(1);
+    const tx = await liquity.populate.redeemTHUSD(1);
     const originalGasEstimate = await provider.estimateGas(tx.rawPopulatedTransaction);
 
     // Fast-forward 2 minutes.
@@ -133,7 +133,7 @@ describe("Gas estimation", () => {
     // First, we want to test a non-borrowing case, to make sure we're not passing due to any
     // extra gas we add to cover a potential lastFeeOperationTime update
     const adjustment = trove.adjustTo(newTrove);
-    expect(adjustment.borrowLUSD).to.be.undefined;
+    expect(adjustment.borrowTHUSD).to.be.undefined;
 
     const tx = await liquity.populate.adjustTrove(adjustment);
     const originalGasEstimate = await provider.estimateGas(tx.rawPopulatedTransaction);
@@ -149,10 +149,10 @@ describe("Gas estimation", () => {
     await th.waitForSuccess(tx.send());
     expect(gasIncrease).to.be.within(10000, 25000);
 
-    th.assertDefined(rudeCreation.borrowLUSD);
-    const lusdShortage = rudeTrove.debt.sub(rudeCreation.borrowLUSD);
+    th.assertDefined(rudeCreation.borrowTHUSD);
+    const thusdShortage = rudeTrove.debt.sub(rudeCreation.borrowTHUSD);
 
-    await liquity.sendLUSD(await rudeUser.getAddress(), lusdShortage);
+    await liquity.sendTHUSD(await rudeUser.getAddress(), thusdShortage);
     await rudeLiquity.closeTrove();
   });
 
@@ -164,7 +164,7 @@ describe("Gas estimation", () => {
 
     // Make sure we're borrowing
     const adjustment = trove.adjustTo(newTrove);
-    expect(adjustment.borrowLUSD).to.not.be.undefined;
+    expect(adjustment.borrowTHUSD).to.not.be.undefined;
 
     const tx = await liquity.populate.adjustTrove(adjustment);
     const originalGasEstimate = await provider.estimateGas(tx.rawPopulatedTransaction);
@@ -205,7 +205,7 @@ describe("Gas estimation (fee decay)", () => {
     for (var i=0;i<someMoreUsers.length;i++) {
       await funder.sendTransaction({
         to: someMoreUsers[i].getAddress(),
-        value: LUSD_MINIMUM_DEBT.div(170).hex
+        value: THUSD_MINIMUM_DEBT.div(170).hex
       });
     }
 
@@ -223,14 +223,14 @@ describe("Gas estimation (fee decay)", () => {
       funder,
       someMoreUsers.map((_, i) => ({
         depositCollateral: 20,
-        borrowLUSD: LUSD_MINIMUM_NET_DEBT.add(i / 10)
+        borrowTHUSD: THUSD_MINIMUM_NET_DEBT.add(i / 10)
       }))
     );
 
-    // Sweep LUSD
+    // Sweep THUSD
     await Promise.all(
       otherLiquities.map(async otherLiquity =>
-        otherLiquity.sendLUSD(await user.getAddress(), await otherLiquity.getLUSDBalance())
+        otherLiquity.sendTHUSD(await user.getAddress(), await otherLiquity.getTHUSDBalance())
       )
     );
 
@@ -238,8 +238,8 @@ describe("Gas estimation (fee decay)", () => {
 
     // Create a "designated victim" Trove that'll be redeemed
     const redeemedTroveDebt = await liquity
-      .getLUSDBalance()
-      .then(x => x.div(10).add(LUSD_LIQUIDATION_RESERVE));
+      .getTHUSDBalance()
+      .then(x => x.div(10).add(THUSD_LIQUIDATION_RESERVE));
     const redeemedTroveCollateral = redeemedTroveDebt.mulDiv(1.1, price);
     const redeemedTrove = new Trove(redeemedTroveCollateral, redeemedTroveDebt);
 
@@ -249,9 +249,9 @@ describe("Gas estimation (fee decay)", () => {
     await th.increaseTime(60 * 60 * 24 * 15);
 
     // Increase the borrowing rate by redeeming
-    const { actualLUSDAmount } = await liquity.redeemLUSD(redeemedTrove.netDebt);
+    const { actualTHUSDAmount } = await liquity.redeemTHUSD(redeemedTrove.netDebt);
 
-    expect(`${actualLUSDAmount}`).to.equal(`${redeemedTrove.netDebt}`);
+    expect(`${actualTHUSDAmount}`).to.equal(`${redeemedTrove.netDebt}`);
 
     const borrowingRate = await liquity.getFees().then(fees => Number(fees.borrowingRate()));
     expect(borrowingRate).to.be.within(0.04, 0.049); // make sure it's high, but not clamped to 5%
@@ -276,7 +276,7 @@ describe("Gas estimation (fee decay)", () => {
         borrowingFeeDecayToleranceMinutes
       });
 
-      expect(tx.gasHeadroom).to.be.within(roughGasHeadroom - 10000, roughGasHeadroom + 10000);
+      expect(tx.gasHeadroom).to.be.within(roughGasHeadroom - 11000, roughGasHeadroom + 11000);
     }
   });
 

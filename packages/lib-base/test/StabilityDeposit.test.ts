@@ -7,13 +7,13 @@ import { StabilityDeposit } from "../src/StabilityDeposit";
 const arbitraryDeposit = () =>
   fc
     .tuple(fc.float(), fc.float(), fc.float(), fc.float())
-    .filter(([initialLUSD, currentLUSD]) => initialLUSD >= currentLUSD)
+    .filter(([initialTHUSD, currentTHUSD]) => initialTHUSD >= currentTHUSD)
     .map(
       ([a, b, c]) =>
         new StabilityDeposit(Decimal.from(a), Decimal.from(b), Decimal.from(c))
     );
 
-const nonZeroDeposit = () => arbitraryDeposit().filter(({ currentLUSD }) => !currentLUSD.isZero);
+const nonZeroDeposit = () => arbitraryDeposit().filter(({ currentTHUSD }) => !currentTHUSD.isZero);
 
 describe("StabilityDeposit", () => {
   it("applying diff of `b` from `a` to `a` should always yield `b`", () => {

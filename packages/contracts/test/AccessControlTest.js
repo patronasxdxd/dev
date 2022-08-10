@@ -21,7 +21,7 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
   let contracts
 
   let priceFeed
-  let lusdToken
+  let thusdToken
   let sortedTroves
   let troveManager
   let nameRegistry
@@ -36,11 +36,10 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
   before(async () => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
     contracts.troveManager = await TroveManagerTester.new()
-    contracts = await deploymentHelper.deployLUSDTokenTester(contracts)
-    const LQTYContracts = await deploymentHelper.deployLQTYTesterContractsHardhat()
+    contracts = await deploymentHelper.deployTHUSDTokenTester(contracts)
 
     priceFeed = contracts.priceFeed
-    lusdToken = contracts.lusdToken
+    thusdToken = contracts.thusdToken
     sortedTroves = contracts.sortedTroves
     troveManager = contracts.troveManager
     nameRegistry = contracts.nameRegistry
@@ -49,14 +48,12 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
     defaultPool = contracts.defaultPool
     functionCaller = contracts.functionCaller
     borrowerOperations = contracts.borrowerOperations
+    pcv = contracts.pcv
 
-    pcv = LQTYContracts.pcv
-
-    await deploymentHelper.connectCoreContracts(contracts, LQTYContracts)
-    await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
+    await deploymentHelper.connectCoreContracts(contracts)
 
     for (account of accounts.slice(0, 10)) {
-      await th.openTrove(contracts, { extraLUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: account } })
+      await th.openTrove(contracts, { extraTHUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: account } })
     }
 
   })
@@ -220,11 +217,11 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
       }
     })
 
-    // increaseLUSD
-    it("increaseLUSDDebt(): reverts when called by an account that is not BO nor TroveM", async () => {
+    // increaseTHUSD
+    it("increaseTHUSDDebt(): reverts when called by an account that is not BO nor TroveM", async () => {
       // Attempt call from alice
       try {
-        const txAlice = await activePool.increaseLUSDDebt(100, { from: alice })
+        const txAlice = await activePool.increaseTHUSDDebt(100, { from: alice })
 
       } catch (err) {
         assert.include(err.message, "revert")
@@ -232,11 +229,11 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
       }
     })
 
-    // decreaseLUSD
-    it("decreaseLUSDDebt(): reverts when called by an account that is not BO nor TroveM nor SP", async () => {
+    // decreaseTHUSD
+    it("decreaseTHUSDDebt(): reverts when called by an account that is not BO nor TroveM nor SP", async () => {
       // Attempt call from alice
       try {
-        const txAlice = await activePool.decreaseLUSDDebt(100, { from: alice })
+        const txAlice = await activePool.decreaseTHUSDDebt(100, { from: alice })
 
       } catch (err) {
         assert.include(err.message, "revert")
@@ -270,11 +267,11 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
       }
     })
 
-    // increaseLUSD
-    it("increaseLUSDDebt(): reverts when called by an account that is not TroveManager", async () => {
+    // increaseTHUSD
+    it("increaseTHUSDDebt(): reverts when called by an account that is not TroveManager", async () => {
       // Attempt call from alice
       try {
-        const txAlice = await defaultPool.increaseLUSDDebt(100, { from: alice })
+        const txAlice = await defaultPool.increaseTHUSDDebt(100, { from: alice })
 
       } catch (err) {
         assert.include(err.message, "revert")
@@ -282,11 +279,11 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
       }
     })
 
-    // decreaseLUSD
-    it("decreaseLUSD(): reverts when called by an account that is not TroveManager", async () => {
+    // decreaseTHUSD
+    it("decreaseTHUSD(): reverts when called by an account that is not TroveManager", async () => {
       // Attempt call from alice
       try {
-        const txAlice = await defaultPool.decreaseLUSDDebt(100, { from: alice })
+        const txAlice = await defaultPool.decreaseTHUSDDebt(100, { from: alice })
 
       } catch (err) {
         assert.include(err.message, "revert")
@@ -337,12 +334,12 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
     })
   })
 
-  describe('LUSDToken', async accounts => {
+  describe('THUSDToken', async accounts => {
 
     //    mint
     it("mint(): reverts when called by an account that is not BorrowerOperations", async () => {
       // Attempt call from alice
-      const txAlice = lusdToken.mint(bob, 100, { from: alice })
+      const txAlice = thusdToken.mint(bob, 100, { from: alice })
       await th.assertRevert(txAlice, "Caller is not BorrowerOperations")
     })
 
@@ -350,7 +347,7 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
     it("burn(): reverts when called by an account that is not BO nor TroveM nor SP", async () => {
       // Attempt call from alice
       try {
-        const txAlice = await lusdToken.burn(bob, 100, { from: alice })
+        const txAlice = await thusdToken.burn(bob, 100, { from: alice })
 
       } catch (err) {
         assert.include(err.message, "revert")
@@ -362,7 +359,7 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
     it("sendToPool(): reverts when called by an account that is not StabilityPool", async () => {
       // Attempt call from alice
       try {
-        const txAlice = await lusdToken.sendToPool(bob, activePool.address, 100, { from: alice })
+        const txAlice = await thusdToken.sendToPool(bob, activePool.address, 100, { from: alice })
 
       } catch (err) {
         assert.include(err.message, "revert")
@@ -374,7 +371,7 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
     it("returnFromPool(): reverts when called by an account that is not TroveManager nor StabilityPool", async () => {
       // Attempt call from alice
       try {
-        const txAlice = await lusdToken.returnFromPool(activePool.address, bob, 100, { from: alice })
+        const txAlice = await thusdToken.returnFromPool(activePool.address, bob, 100, { from: alice })
 
       } catch (err) {
         assert.include(err.message, "revert")
@@ -425,9 +422,9 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
   })
 
   describe('PCV', async accounts => {
-    it("increaseF_LUSD(): reverts when caller is not TroveManager", async () => {
+    it("increaseF_THUSD(): reverts when caller is not TroveManager", async () => {
       try {
-        const txAlice = await pcv.increaseF_LUSD(dec(1, 18), { from: alice })
+        const txAlice = await pcv.increaseF_THUSD(dec(1, 18), { from: alice })
 
       } catch (err) {
         assert.include(err.message, "revert")

@@ -14,7 +14,7 @@ type Global @entity {
   numberOfTrovesClosedByOwner: Int!
   totalNumberOfTroves: Int!
 
-  "Total amount of LUSD paid as borrowing fees"
+  "Total amount of thUSD paid as borrowing fees"
   totalBorrowingFeesPaid: BigDecimal!
   "Total amount of ETH paid as redemption fees"
   totalRedemptionFeesPaid: BigDecimal!

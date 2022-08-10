@@ -44,24 +44,11 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_F_LUSD",
+        "name": "_F_THUSD",
         "type": "uint256"
       }
     ],
-    "name": "F_LUSDUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_lusdTokenAddress",
-        "type": "address"
-      }
-    ],
-    "name": "LUSDTokenAddressSet",
+    "name": "F_THUSDUpdated",
     "type": "event"
   },
   {
@@ -81,6 +68,19 @@
       }
     ],
     "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_thusdTokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "THUSDTokenAddressSet",
     "type": "event"
   },
   {
@@ -124,7 +124,7 @@
   },
   {
     "inputs": [],
-    "name": "F_LUSD",
+    "name": "F_THUSD",
     "outputs": [
       {
         "internalType": "uint256",
@@ -191,11 +191,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_LUSDFee",
+        "name": "_THUSDFee",
         "type": "uint256"
       }
     ],
-    "name": "increaseF_LUSD",
+    "name": "increaseF_THUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -208,19 +208,6 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "lusdToken",
-    "outputs": [
-      {
-        "internalType": "contract ILUSDToken",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -243,7 +230,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_lusdTokenAddress",
+        "name": "_thusdTokenAddress",
         "type": "address"
       },
       {
@@ -281,6 +268,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "thusdToken",
+    "outputs": [
+      {
+        "internalType": "contract ITHUSDToken",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

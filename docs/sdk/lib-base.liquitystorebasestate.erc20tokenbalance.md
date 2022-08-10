@@ -4,7 +4,7 @@
 
 ## LiquityStoreBaseState.erc20TokenBalance property
 
-User's Uniswap ETH/LUSD LP token balance.
+User's Uniswap ETH/THUSD LP token balance.
 
 <b>Signature:</b>
 

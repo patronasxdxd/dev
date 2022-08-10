@@ -18,11 +18,11 @@ import {
   SentLiquityTransaction,
   TroveCreationParams,
   Fees,
-  LUSD_LIQUIDATION_RESERVE,
+  THUSD_LIQUIDATION_RESERVE,
   MAXIMUM_BORROWING_RATE,
   MINIMUM_BORROWING_RATE,
-  LUSD_MINIMUM_DEBT,
-  LUSD_MINIMUM_NET_DEBT
+  THUSD_MINIMUM_DEBT,
+  THUSD_MINIMUM_NET_DEBT
 } from "@liquity/lib-base";
 
 import { HintHelpers } from "../types";
@@ -206,7 +206,7 @@ describe("EthersLiquity", () => {
     it("should parse failed transactions without throwing", async () => {
       // By passing a gasLimit, we avoid automatic use of estimateGas which would throw
       const tx = await liquity.send.openTrove(
-        { depositCollateral: 0.01, borrowLUSD: 0.01 },
+        { depositCollateral: 0.01, borrowTHUSD: 0.01 },
         undefined,
         { gasLimit: 1e6 }
       );

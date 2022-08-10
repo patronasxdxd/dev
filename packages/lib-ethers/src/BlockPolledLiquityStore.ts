@@ -98,14 +98,14 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
       numberOfTroves: this._readable.getNumberOfTroves({ blockTag }),
       totalRedistributed: this._readable.getTotalRedistributed({ blockTag }),
       total: this._readable.getTotal({ blockTag }),
-      lusdInStabilityPool: this._readable.getLUSDInStabilityPool({ blockTag }),
+      thusdInStabilityPool: this._readable.getTHUSDInStabilityPool({ blockTag }),
       pcvBalance: this._readable.getPCVBalance({ blockTag }),
       _riskiestTroveBeforeRedistribution: this._getRiskiestTroveBeforeRedistribution({ blockTag }),
 
       ...(userAddress
         ? {
             accountBalance: this._provider.getBalance(userAddress, blockTag).then(decimalify),
-            lusdBalance: this._readable.getLUSDBalance(userAddress, { blockTag }),
+            thusdBalance: this._readable.getTHUSDBalance(userAddress, { blockTag }),
             erc20TokenBalance: this._readable.getErc20TokenBalance(userAddress, { blockTag }),
             erc20TokenAllowance: this._readable.getErc20TokenAllowance(userAddress, { blockTag }),
             collateralSurplusBalance: this._readable.getCollateralSurplusBalance(userAddress, {
@@ -118,7 +118,7 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
           }
         : {
             accountBalance: Decimal.ZERO,
-            lusdBalance: Decimal.ZERO,
+            thusdBalance: Decimal.ZERO,
             erc20TokenBalance: Decimal.ZERO,
             erc20TokenAllowance: Decimal.ZERO,
             collateralSurplusBalance: Decimal.ZERO,

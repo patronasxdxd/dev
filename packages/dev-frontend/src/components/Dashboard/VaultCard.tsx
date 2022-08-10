@@ -28,9 +28,9 @@ export const VaultCard: React.FC<VaultCardProps> = ({ variant = "mainCards" }) =
 
   return (
     <Card {...{ variant }}>
-      <BottomCard 
+      <BottomCard
         title={vaultStatus(view)}
-        tooltip={`To mint and borrow LUSD you must open a vault and deposit a certain amount of collateral (${ FIRST_ERC20_COLLATERAL }) to it.`}
+        tooltip={`To mint and borrow thUSD you must open a vault and deposit a certain amount of collateral (${ FIRST_ERC20_COLLATERAL }) to it.`}
         action={vaultStatus(view)}
         token={ FIRST_ERC20_COLLATERAL }
         path='/borrow'

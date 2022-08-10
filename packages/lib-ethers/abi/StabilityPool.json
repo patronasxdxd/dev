@@ -56,7 +56,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_LUSDLoss",
+        "name": "_THUSDLoss",
         "type": "uint256"
       }
     ],
@@ -131,19 +131,6 @@
       }
     ],
     "name": "EpochUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_newLUSDTokenAddress",
-        "type": "address"
-      }
-    ],
-    "name": "LUSDTokenAddressChanged",
     "type": "event"
   },
   {
@@ -265,7 +252,20 @@
         "type": "uint256"
       }
     ],
-    "name": "StabilityPoolLUSDBalanceUpdated",
+    "name": "StabilityPoolTHUSDBalanceUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_newTHUSDTokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "THUSDTokenAddressChanged",
     "type": "event"
   },
   {
@@ -329,19 +329,6 @@
   {
     "inputs": [],
     "name": "DECIMAL_PRECISION",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "LUSD_GAS_COMPENSATION",
     "outputs": [
       {
         "internalType": "uint256",
@@ -420,6 +407,19 @@
   {
     "inputs": [],
     "name": "SCALE_FACTOR",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "THUSD_GAS_COMPENSATION",
     "outputs": [
       {
         "internalType": "uint256",
@@ -619,7 +619,7 @@
         "type": "address"
       }
     ],
-    "name": "getCompoundedLUSDDeposit",
+    "name": "getCompoundedTHUSDDeposit",
     "outputs": [
       {
         "internalType": "uint256",
@@ -677,7 +677,7 @@
   },
   {
     "inputs": [],
-    "name": "getTotalLUSDDeposits",
+    "name": "getTotalTHUSDDeposits",
     "outputs": [
       {
         "internalType": "uint256",
@@ -716,25 +716,12 @@
   },
   {
     "inputs": [],
-    "name": "lastLUSDLossError_Offset",
+    "name": "lastTHUSDLossError_Offset",
     "outputs": [
       {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "lusdToken",
-    "outputs": [
-      {
-        "internalType": "contract ILUSDToken",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -816,7 +803,7 @@
       },
       {
         "internalType": "address",
-        "name": "_lusdTokenAddress",
+        "name": "_thusdTokenAddress",
         "type": "address"
       },
       {
@@ -846,6 +833,19 @@
     "outputs": [
       {
         "internalType": "contract ISortedTroves",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "thusdToken",
+    "outputs": [
+      {
+        "internalType": "contract ITHUSDToken",
         "name": "",
         "type": "address"
       }

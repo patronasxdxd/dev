@@ -20,9 +20,9 @@ The constructor for this class is marked as internal. Third-party code should no
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [collateralGain](./lib-base.stabilitydeposit.collateralgain.md) |  | [Decimal](./lib-base.decimal.md) | Amount of native currency (e.g. Ether) received in exchange for the used-up LUSD. |
-|  [currentLUSD](./lib-base.stabilitydeposit.currentlusd.md) |  | [Decimal](./lib-base.decimal.md) | Amount of LUSD left in the Stability Deposit. |
-|  [initialLUSD](./lib-base.stabilitydeposit.initiallusd.md) |  | [Decimal](./lib-base.decimal.md) | Amount of LUSD in the Stability Deposit at the time of the last direct modification. |
+|  [collateralGain](./lib-base.stabilitydeposit.collateralgain.md) |  | [Decimal](./lib-base.decimal.md) | Amount of native currency (e.g. Ether) received in exchange for the used-up thUSD. |
+|  [currentTHUSD](./lib-base.stabilitydeposit.currentthusd.md) |  | [Decimal](./lib-base.decimal.md) | Amount of thUSD left in the Stability Deposit. |
+|  [initialTHUSD](./lib-base.stabilitydeposit.initialthusd.md) |  | [Decimal](./lib-base.decimal.md) | Amount of thUSD in the Stability Deposit at the time of the last direct modification. |
 |  [isEmpty](./lib-base.stabilitydeposit.isempty.md) |  | boolean |  |
 
 ## Methods
@@ -31,5 +31,5 @@ The constructor for this class is marked as internal. Third-party code should no
 |  --- | --- | --- |
 |  [apply(change)](./lib-base.stabilitydeposit.apply.md) |  | Apply a [StabilityDepositChange](./lib-base.stabilitydepositchange.md) to this Stability Deposit. |
 |  [equals(that)](./lib-base.stabilitydeposit.equals.md) |  | Compare to another instance of <code>StabilityDeposit</code>. |
-|  [whatChanged(thatLUSD)](./lib-base.stabilitydeposit.whatchanged.md) |  | Calculate the difference between the <code>currentLUSD</code> in this Stability Deposit and <code>thatLUSD</code>. |
+|  [whatChanged(thatTHUSD)](./lib-base.stabilitydeposit.whatchanged.md) |  | Calculate the difference between the <code>currentTHUSD</code> in this Stability Deposit and <code>thatTHUSD</code>. |
 

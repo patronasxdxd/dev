@@ -15,13 +15,13 @@ interface IBorrowerOperations {
     event CollSurplusPoolAddressChanged(address _collSurplusPoolAddress);
     event PriceFeedAddressChanged(address  _newPriceFeedAddress);
     event SortedTrovesAddressChanged(address _sortedTrovesAddress);
-    event LUSDTokenAddressChanged(address _lusdTokenAddress);
+    event THUSDTokenAddressChanged(address _thusdTokenAddress);
     event PCVAddressChanged(address _pcvAddress);
     event CollateralAddressChanged(address _newCollateralAddress);
 
     event TroveCreated(address indexed _borrower, uint arrayIndex);
     event TroveUpdated(address indexed _borrower, uint _debt, uint _coll, uint stake, uint8 operation);
-    event LUSDBorrowingFeePaid(address indexed _borrower, uint _LUSDFee);
+    event THUSDBorrowingFeePaid(address indexed _borrower, uint _THUSDFee);
 
     // --- Functions ---
 
@@ -34,13 +34,13 @@ interface IBorrowerOperations {
         address _collSurplusPoolAddress,
         address _priceFeedAddress,
         address _sortedTrovesAddress,
-        address _lusdTokenAddress,
+        address _thusdTokenAddress,
         address _pcvAddress,
         address _collateralAddress
 
     ) external;
 
-    function openTrove(uint _maxFee, uint _LUSDAmount, uint _assetAmount, address _upperHint, address _lowerHint) external payable;
+    function openTrove(uint _maxFee, uint _THUSDAmount, uint _assetAmount, address _upperHint, address _lowerHint) external payable;
 
     function addColl(uint _assetAmount, address _upperHint, address _lowerHint) external payable;
 
@@ -48,9 +48,9 @@ interface IBorrowerOperations {
 
     function withdrawColl(uint _amount, address _upperHint, address _lowerHint) external;
 
-    function withdrawLUSD(uint _maxFee, uint _amount, address _upperHint, address _lowerHint) external;
+    function withdrawTHUSD(uint _maxFee, uint _amount, address _upperHint, address _lowerHint) external;
 
-    function repayLUSD(uint _amount, address _upperHint, address _lowerHint) external;
+    function repayTHUSD(uint _amount, address _upperHint, address _lowerHint) external;
 
     function closeTrove() external;
 

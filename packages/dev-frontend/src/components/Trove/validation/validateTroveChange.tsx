@@ -1,7 +1,7 @@
 import {
   Decimal,
-  LUSD_MINIMUM_DEBT,
-  LUSD_MINIMUM_NET_DEBT,
+  THUSD_MINIMUM_DEBT,
+  THUSD_MINIMUM_NET_DEBT,
   Trove,
   TroveAdjustmentParams,
   TroveChange,
@@ -27,33 +27,33 @@ type TroveAdjustmentDescriptionParams = {
 
 const TroveChangeDescription: React.FC<TroveAdjustmentDescriptionParams> = ({ params }) => (
   <ActionDescription>
-    {params.depositCollateral && params.borrowLUSD ? (
+    {params.depositCollateral && params.borrowTHUSD ? (
       <>
         You will deposit <Amount>{params.depositCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount> and receive{" "}
         <Amount>
-          {params.borrowLUSD.prettify()} {COIN}
+          {params.borrowTHUSD.prettify()} {COIN}
         </Amount>
       </>
-    ) : params.repayLUSD && params.withdrawCollateral ? (
+    ) : params.repayTHUSD && params.withdrawCollateral ? (
       <>
         You will pay{" "}
         <Amount>
-          {params.repayLUSD.prettify()} {COIN}
+          {params.repayTHUSD.prettify()} {COIN}
         </Amount>{" "}
         and receive <Amount>{params.withdrawCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount>
       </>
-    ) : params.depositCollateral && params.repayLUSD ? (
+    ) : params.depositCollateral && params.repayTHUSD ? (
       <>
         You will deposit <Amount>{params.depositCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount> and pay{" "}
         <Amount>
-          {params.repayLUSD.prettify()} {COIN}
+          {params.repayTHUSD.prettify()} {COIN}
         </Amount>
       </>
-    ) : params.borrowLUSD && params.withdrawCollateral ? (
+    ) : params.borrowTHUSD && params.withdrawCollateral ? (
       <>
         You will receive <Amount>{params.withdrawCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount> and{" "}
         <Amount>
-          {params.borrowLUSD.prettify()} {COIN}
+          {params.borrowTHUSD.prettify()} {COIN}
         </Amount>
       </>
     ) : params.depositCollateral ? (
@@ -64,18 +64,18 @@ const TroveChangeDescription: React.FC<TroveAdjustmentDescriptionParams> = ({ pa
       <>
         You will receive <Amount>{params.withdrawCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount>
       </>
-    ) : params.borrowLUSD ? (
+    ) : params.borrowTHUSD ? (
       <>
         You will receive{" "}
         <Amount>
-          {params.borrowLUSD.prettify()} {COIN}
+          {params.borrowTHUSD.prettify()} {COIN}
         </Amount>
       </>
     ) : (
       <>
         You will pay{" "}
         <Amount>
-          {params.repayLUSD.prettify()} {COIN}
+          {params.repayTHUSD.prettify()} {COIN}
         </Amount>
       </>
     )}
@@ -87,9 +87,9 @@ export const selectForTroveChangeValidation = ({
   price,
   total,
   erc20TokenBalance,
-  lusdBalance,
+  thusdBalance,
   numberOfTroves
-}: LiquityStoreState) => ({ price, total, erc20TokenBalance, lusdBalance, numberOfTroves });
+}: LiquityStoreState) => ({ price, total, erc20TokenBalance, thusdBalance, numberOfTroves });
 
 type TroveChangeValidationSelectedState = ReturnType<typeof selectForTroveChangeValidation>;
 
@@ -139,7 +139,7 @@ export const validateTroveChange = (
       <ErrorDescription>
         Total debt must be at least{" "}
         <Amount>
-          {LUSD_MINIMUM_DEBT.toString()} {COIN}
+          {THUSD_MINIMUM_DEBT.toString()} {COIN}
         </Amount>
         .
       </ErrorDescription>
@@ -161,7 +161,7 @@ export const validateTroveChange = (
 };
 
 const validateTroveCreation = (
-  { depositCollateral, borrowLUSD }: TroveCreationParams<Decimal>,
+  { depositCollateral, borrowTHUSD }: TroveCreationParams<Decimal>,
   {
     resultingTrove,
     recoveryMode,
@@ -170,12 +170,12 @@ const validateTroveCreation = (
     price
   }: TroveChangeValidationContext
 ): JSX.Element | null => {
-  if (borrowLUSD.lt(LUSD_MINIMUM_NET_DEBT)) {
+  if (borrowTHUSD.lt(THUSD_MINIMUM_NET_DEBT)) {
     return (
       <ErrorDescription>
         You must borrow at least{" "}
         <Amount>
-          {LUSD_MINIMUM_NET_DEBT.toString()} {COIN}
+          {THUSD_MINIMUM_NET_DEBT.toString()} {COIN}
         </Amount>
         .
       </ErrorDescription>
@@ -223,7 +223,7 @@ const validateTroveCreation = (
 };
 
 const validateTroveAdjustment = (
-  { depositCollateral, withdrawCollateral, borrowLUSD, repayLUSD }: TroveAdjustmentParams<Decimal>,
+  { depositCollateral, withdrawCollateral, borrowTHUSD, repayTHUSD }: TroveAdjustmentParams<Decimal>,
   {
     originalTrove,
     resultingTrove,
@@ -231,7 +231,7 @@ const validateTroveAdjustment = (
     wouldTriggerRecoveryMode,
     price,
     erc20TokenBalance,
-    lusdBalance
+    thusdBalance
   }: TroveChangeValidationContext
 ): JSX.Element | null => {
   if (recoveryMode) {
@@ -243,7 +243,7 @@ const validateTroveAdjustment = (
       );
     }
 
-    if (borrowLUSD) {
+    if (borrowTHUSD) {
       if (resultingTrove.collateralRatioIsBelowCritical(price)) {
         return (
           <ErrorDescription>
@@ -280,25 +280,25 @@ const validateTroveAdjustment = (
     }
   }
 
-  if (repayLUSD) {
-    if (resultingTrove.debt.lt(LUSD_MINIMUM_DEBT)) {
+  if (repayTHUSD) {
+    if (resultingTrove.debt.lt(THUSD_MINIMUM_DEBT)) {
       return (
         <ErrorDescription>
           Total debt must be at least{" "}
           <Amount>
-            {LUSD_MINIMUM_DEBT.toString()} {COIN}
+            {THUSD_MINIMUM_DEBT.toString()} {COIN}
           </Amount>
           .
         </ErrorDescription>
       );
     }
 
-    if (repayLUSD.gt(lusdBalance)) {
+    if (repayTHUSD.gt(thusdBalance)) {
       return (
         <ErrorDescription>
           The amount you're trying to repay exceeds your balance by{" "}
           <Amount>
-            {repayLUSD.sub(lusdBalance).prettify()} {COIN}
+            {repayTHUSD.sub(thusdBalance).prettify()} {COIN}
           </Amount>
           .
         </ErrorDescription>
@@ -319,12 +319,12 @@ const validateTroveAdjustment = (
 };
 
 const validateTroveClosure = (
-  { repayLUSD }: TroveClosureParams<Decimal>,
+  { repayTHUSD }: TroveClosureParams<Decimal>,
   {
     recoveryMode,
     wouldTriggerRecoveryMode,
     numberOfTroves,
-    lusdBalance
+    thusdBalance
   }: TroveChangeValidationContext
 ): JSX.Element | null => {
   if (numberOfTroves === 1) {
@@ -343,12 +343,12 @@ const validateTroveClosure = (
     );
   }
 
-  if (repayLUSD?.gt(lusdBalance)) {
+  if (repayTHUSD?.gt(thusdBalance)) {
     return (
       <ErrorDescription>
         You need{" "}
         <Amount>
-          {repayLUSD.sub(lusdBalance).prettify()} {COIN}
+          {repayTHUSD.sub(thusdBalance).prettify()} {COIN}
         </Amount>{" "}
         more to close your Trove.
       </ErrorDescription>

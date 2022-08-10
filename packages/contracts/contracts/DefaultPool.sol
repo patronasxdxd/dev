@@ -11,10 +11,10 @@ import "./Dependencies/CheckContract.sol";
 import "./Dependencies/console.sol";
 
 /*
- * The Default Pool holds the collateral and LUSD debt (but not LUSD tokens) from liquidations that have been redistributed
+ * The Default Pool holds the collateral and THUSD debt (but not THUSD tokens) from liquidations that have been redistributed
  * to active troves but not yet "applied", i.e. not yet recorded on a recipient active trove's struct.
  *
- * When a trove makes an operation that applies its pending collateral and LUSD debt, its pending collateral and LUSD debt is moved
+ * When a trove makes an operation that applies its pending collateral and THUSD debt, its pending collateral and THUSD debt is moved
  * from the Default Pool to the Active Pool.
  */
 contract DefaultPool is Ownable, CheckContract, IDefaultPool {
@@ -26,7 +26,7 @@ contract DefaultPool is Ownable, CheckContract, IDefaultPool {
     address public collateralAddress;
     address public troveManagerAddress;
     uint256 internal collateral;  // deposited collateral tracker
-    uint256 internal LUSDDebt;  // debt
+    uint256 internal THUSDDebt;  // debt
 
     // --- Dependency setters ---
 
@@ -64,8 +64,8 @@ contract DefaultPool is Ownable, CheckContract, IDefaultPool {
         return collateral;
     }
 
-    function getLUSDDebt() external view override returns (uint) {
-        return LUSDDebt;
+    function getTHUSDDebt() external view override returns (uint) {
+        return THUSDDebt;
     }
 
     // --- Pool functionality ---
@@ -88,16 +88,16 @@ contract DefaultPool is Ownable, CheckContract, IDefaultPool {
         }
     }
 
-    function increaseLUSDDebt(uint _amount) external override {
+    function increaseTHUSDDebt(uint _amount) external override {
         _requireCallerIsTroveManager();
-        LUSDDebt = LUSDDebt.add(_amount);
-        emit DefaultPoolLUSDDebtUpdated(LUSDDebt);
+        THUSDDebt = THUSDDebt.add(_amount);
+        emit DefaultPoolTHUSDDebtUpdated(THUSDDebt);
     }
 
-    function decreaseLUSDDebt(uint _amount) external override {
+    function decreaseTHUSDDebt(uint _amount) external override {
         _requireCallerIsTroveManager();
-        LUSDDebt = LUSDDebt.sub(_amount);
-        emit DefaultPoolLUSDDebtUpdated(LUSDDebt);
+        THUSDDebt = THUSDDebt.sub(_amount);
+        emit DefaultPoolTHUSDDebtUpdated(THUSDDebt);
     }
 
     // --- 'require' functions ---

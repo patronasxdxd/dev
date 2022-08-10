@@ -15,10 +15,10 @@ const assertRevert = th.assertRevert
 const toBN = th.toBN
 const ZERO = th.toBN('0')
 
-/* NOTE: These tests do not test for specific ETH and LUSD gain values. They only test that the
+/* NOTE: These tests do not test for specific ETH and THUSD gain values. They only test that the
  * gains are non-zero, occur when they should, and are in correct proportion to the user's stake.
  *
- * Specific ETH/LUSD gain values will depend on the final fee schedule used, and the final choices for
+ * Specific ETH/THUSD gain values will depend on the final fee schedule used, and the final choices for
  * parameters BETA and MINUTE_DECAY_FACTOR in the TroveManager, which are still TBD based on economic
  * modelling.
  *
@@ -29,7 +29,7 @@ contract('PCV receives fees tests', async accounts => {
   const [owner, A, B, C, D, E, F, G, whale] = accounts;
 
   let priceFeed
-  let lusdToken
+  let thusdToken
   let sortedTroves
   let troveManager
   let activePool
@@ -45,15 +45,13 @@ contract('PCV receives fees tests', async accounts => {
   beforeEach(async () => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
     contracts.troveManager = await TroveManagerTester.new()
-    contracts = await deploymentHelper.deployLUSDTokenTester(contracts)
-    const LQTYContracts = await deploymentHelper.deployLQTYTesterContractsHardhat()
+    contracts = await deploymentHelper.deployTHUSDTokenTester(contracts)
 
-    await deploymentHelper.connectCoreContracts(contracts, LQTYContracts)
-    await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
+    await deploymentHelper.connectCoreContracts(contracts)
 
     nonPayable = await NonPayable.new()
     priceFeed = contracts.priceFeedTestnet
-    lusdToken = contracts.lusdToken
+    thusdToken = contracts.thusdToken
     sortedTroves = contracts.sortedTroves
     troveManager = contracts.troveManager
     activePool = contracts.activePool
@@ -61,14 +59,13 @@ contract('PCV receives fees tests', async accounts => {
     defaultPool = contracts.defaultPool
     borrowerOperations = contracts.borrowerOperations
     hintHelpers = contracts.hintHelpers
-
-    pcv = LQTYContracts.pcv
+    pcv = contracts.pcv
   })
 
-  it("LQTY Staking: PCV start at zero", async () => {
-    // Check LUSD fees are initialised as zero
-    const LUSD_Fees = await pcv.F_LUSD()
-    assert.equal(LUSD_Fees, '0')
+  it("PCV: PCV start at zero", async () => {
+    // Check THUSD fees are initialised as zero
+    const THUSD_Fees = await pcv.F_THUSD()
+    assert.equal(THUSD_Fees, '0')
 
     // Check ETH fees are initialised as zero
     const ETH_Fees = await pcv.F_ETH()
@@ -76,49 +73,49 @@ contract('PCV receives fees tests', async accounts => {
 
   })
 
-  it("LQTY Staking: PCV LUSD increases when opening troves", async() => {
+  it("PCV: PCV THUSD increases when opening troves", async() => {
     let error = 100000000 // note values stored in wei
 
-    let troveWhale = await openTrove({ extraLUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
-    let issuanceFeeWhale = troveWhale.netDebt - troveWhale.lusdAmount
-    let pcvBalance = await lusdToken.balanceOf(pcv.address)
+    let troveWhale = await openTrove({ extraTHUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
+    let issuanceFeeWhale = troveWhale.netDebt - troveWhale.thusdAmount
+    let pcvBalance = await thusdToken.balanceOf(pcv.address)
     let fees = issuanceFeeWhale
     assert.isAtMost(Math.abs(fees - pcvBalance), error)
 
-    let troveA = await openTrove({ extraLUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: A } })
-    let issuanceFeeA = troveA.netDebt - troveA.lusdAmount
-    pcvBalance = await lusdToken.balanceOf(pcv.address)
+    let troveA = await openTrove({ extraTHUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: A } })
+    let issuanceFeeA = troveA.netDebt - troveA.thusdAmount
+    pcvBalance = await thusdToken.balanceOf(pcv.address)
     fees += issuanceFeeA
     assert.isAtMost(Math.abs(fees - pcvBalance), error)
 
-    let troveB = await openTrove({ extraLUSDAmount: toBN(dec(30000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: B } })
-    let issuanceFeeB = troveB.netDebt - troveB.lusdAmount
-    pcvBalance = await lusdToken.balanceOf(pcv.address)
+    let troveB = await openTrove({ extraTHUSDAmount: toBN(dec(30000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: B } })
+    let issuanceFeeB = troveB.netDebt - troveB.thusdAmount
+    pcvBalance = await thusdToken.balanceOf(pcv.address)
     fees += issuanceFeeB
     assert.isAtMost(Math.abs(fees - pcvBalance), error)
 
-    let troveC = await openTrove({ extraLUSDAmount: toBN(dec(40000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: C } })
-    let issuanceFeeC = troveC.netDebt - troveC.lusdAmount
-    pcvBalance = await lusdToken.balanceOf(pcv.address)
+    let troveC = await openTrove({ extraTHUSDAmount: toBN(dec(40000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: C } })
+    let issuanceFeeC = troveC.netDebt - troveC.thusdAmount
+    pcvBalance = await thusdToken.balanceOf(pcv.address)
     fees += issuanceFeeC
     assert.isAtMost(Math.abs(fees - pcvBalance), error)
 
-    let troveD = await openTrove({ extraLUSDAmount: toBN(dec(50000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: D } })
-    let issuanceFeeD = troveD.netDebt - troveD.lusdAmount
-    pcvBalance = await lusdToken.balanceOf(pcv.address)
+    let troveD = await openTrove({ extraTHUSDAmount: toBN(dec(50000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: D } })
+    let issuanceFeeD = troveD.netDebt - troveD.thusdAmount
+    pcvBalance = await thusdToken.balanceOf(pcv.address)
     fees += issuanceFeeD
     assert.isAtMost(Math.abs(fees - pcvBalance), error)
 
-    // Check LUSD fees is initialised as zero
-    const LUSD_Fees = await pcv.F_LUSD()
-    th.assertIsApproximatelyEqual(LUSD_Fees, pcvBalance)
+    // Check THUSD fees is initialised as zero
+    const THUSD_Fees = await pcv.F_THUSD()
+    th.assertIsApproximatelyEqual(THUSD_Fees, pcvBalance)
   })
 
-  it("LQTY Staking: PCV ETH increase when a redemption fee occurs", async() => {
-    await openTrove({ extraLUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
-    await openTrove({ extraLUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: A } })
-    await openTrove({ extraLUSDAmount: toBN(dec(30000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: B } })
-    await openTrove({ extraLUSDAmount: toBN(dec(40000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: C } })
+  it("PCV: PCV ETH increase when a redemption fee occurs", async() => {
+    await openTrove({ extraTHUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
+    await openTrove({ extraTHUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: A } })
+    await openTrove({ extraTHUSDAmount: toBN(dec(30000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: B } })
+    await openTrove({ extraTHUSDAmount: toBN(dec(40000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: C } })
 
     // FF time one year redemptions are allowed
     await th.fastForwardTime(timeValues.SECONDS_IN_ONE_YEAR, web3.currentProvider)
@@ -127,11 +124,11 @@ contract('PCV receives fees tests', async accounts => {
     const F_ETH_Before = await pcv.F_ETH()
     assert.equal(F_ETH_Before, '0')
 
-    const B_BalBeforeREdemption = await lusdToken.balanceOf(B)
+    const B_BalBeforeREdemption = await thusdToken.balanceOf(B)
     // B redeems
     const redemptionTx = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18))
 
-    const B_BalAfterRedemption = await lusdToken.balanceOf(B)
+    const B_BalAfterRedemption = await thusdToken.balanceOf(B)
     assert.isTrue(B_BalAfterRedemption.lt(B_BalBeforeREdemption))
 
     // check ETH fee emitted in event is non-zero
@@ -143,32 +140,32 @@ contract('PCV receives fees tests', async accounts => {
     assert.isTrue(emittedETHFee.eq(F_ETH_After))
   })
 
-  it("LQTY Staking: PCV LUSD increase when drawing debt from a trove", async () => {
+  it("PCV: PCV THUSD increase when drawing debt from a trove", async () => {
     // setup troves
-    await openTrove({ extraLUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
-    await openTrove({ extraLUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: A } })
-    await openTrove({ extraLUSDAmount: toBN(dec(30000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: B } })
-    await openTrove({ extraLUSDAmount: toBN(dec(40000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: C } })
-    let troveD = await openTrove({ extraLUSDAmount: toBN(dec(50000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: D } })
-    PCV_LUSD_Fees = await lusdToken.balanceOf(pcv.address)
+    await openTrove({ extraTHUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
+    await openTrove({ extraTHUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: A } })
+    await openTrove({ extraTHUSDAmount: toBN(dec(30000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: B } })
+    await openTrove({ extraTHUSDAmount: toBN(dec(40000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: C } })
+    let troveD = await openTrove({ extraTHUSDAmount: toBN(dec(50000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: D } })
+    PCV_THUSD_Fees = await thusdToken.balanceOf(pcv.address)
 
-    const LUSD_Fees = await pcv.F_LUSD()
-    assert.isTrue(LUSD_Fees.eq(PCV_LUSD_Fees))
+    const THUSD_Fees = await pcv.F_THUSD()
+    assert.isTrue(THUSD_Fees.eq(PCV_THUSD_Fees))
 
     // Check ETH fees is initialised as zero
     const ETH_Fees = await pcv.F_ETH()
     assert.equal(ETH_Fees, '0')
 
     // D draws debt
-    const borrowingTx_1 = await borrowerOperations.withdrawLUSD(th._100pct, dec(100, 18), D, D, {from: D})
+    const borrowingTx_1 = await borrowerOperations.withdrawTHUSD(th._100pct, dec(100, 18), D, D, {from: D})
 
-    // Check LUSD fee value in event is non-zero
-    const emittedLUSDFee_1 = toBN(th.getLUSDFeeFromLUSDBorrowingEvent(borrowingTx_1))
-    assert.isTrue(emittedLUSDFee_1.gt(toBN('0')))
+    // Check THUSD fee value in event is non-zero
+    const emittedTHUSDFee_1 = toBN(th.getTHUSDFeeFromTHUSDBorrowingEvent(borrowingTx_1))
+    assert.isTrue(emittedTHUSDFee_1.gt(toBN('0')))
 
-    // Check LUSD fee of $0.50 for the $100 debt draw is collected in PCV
-    const LUSD_Fees_After = await pcv.F_LUSD()
-    assert.isTrue(LUSD_Fees_After.gt(LUSD_Fees))
+    // Check THUSD fee of $0.50 for the $100 debt draw is collected in PCV
+    const THUSD_Fees_After = await pcv.F_THUSD()
+    assert.isTrue(THUSD_Fees_After.gt(THUSD_Fees))
 
   })
 

@@ -3,17 +3,17 @@
 pragma solidity ^0.8.10;
 
 /*
- * The Stability Pool holds LUSD tokens deposited by Stability Pool depositors.
+ * The Stability Pool holds THUSD tokens deposited by Stability Pool depositors.
  *
- * When a trove is liquidated, then depending on system conditions, some of its LUSD debt gets offset with
- * LUSD in the Stability Pool:  that is, the offset debt evaporates, and an equal amount of LUSD tokens in the Stability Pool is burned.
+ * When a trove is liquidated, then depending on system conditions, some of its THUSD debt gets offset with
+ * THUSD in the Stability Pool:  that is, the offset debt evaporates, and an equal amount of THUSD tokens in the Stability Pool is burned.
  *
- * Thus, a liquidation causes each depositor to receive a LUSD loss, in proportion to their deposit as a share of total deposits.
+ * Thus, a liquidation causes each depositor to receive a THUSD loss, in proportion to their deposit as a share of total deposits.
  * They also receive an ETH gain, as the ETH collateral of the liquidated trove is distributed among Stability depositors,
  * in the same proportion.
  *
  * When a liquidation occurs, it depletes every deposit by the same fraction: for example, a liquidation that depletes 40%
- * of the total LUSD in the Stability Pool, depletes 40% of each deposit.
+ * of the total THUSD in the Stability Pool, depletes 40% of each deposit.
  *
  * A deposit that has experienced a series of liquidations is termed a "compounded deposit": each liquidation depletes the deposit,
  * multiplying it by some factor in range ]0,1[
@@ -27,13 +27,13 @@ interface IStabilityPool {
     // --- Events ---
 
     event StabilityPoolCollateralBalanceUpdated(uint _newBalance);
-    event StabilityPoolLUSDBalanceUpdated(uint _newBalance);
+    event StabilityPoolTHUSDBalanceUpdated(uint _newBalance);
 
     event BorrowerOperationsAddressChanged(address _newBorrowerOperationsAddress);
     event TroveManagerAddressChanged(address _newTroveManagerAddress);
     event ActivePoolAddressChanged(address _newActivePoolAddress);
     event DefaultPoolAddressChanged(address _newDefaultPoolAddress);
-    event LUSDTokenAddressChanged(address _newLUSDTokenAddress);
+    event THUSDTokenAddressChanged(address _newTHUSDTokenAddress);
     event SortedTrovesAddressChanged(address _newSortedTrovesAddress);
     event PriceFeedAddressChanged(address _newPriceFeedAddress);
     event CollateralAddressChanged(address _newCollateralAddress);
@@ -46,7 +46,7 @@ interface IStabilityPool {
     event DepositSnapshotUpdated(address indexed _depositor, uint _P, uint _S);
     event UserDepositChanged(address indexed _depositor, uint _newDeposit);
 
-    event CollateralGainWithdrawn(address indexed _depositor, uint _collateral, uint _LUSDLoss);
+    event CollateralGainWithdrawn(address indexed _depositor, uint _collateral, uint _THUSDLoss);
     event CollateralSent(address _to, uint _amount);
 
     // --- Functions ---
@@ -59,7 +59,7 @@ interface IStabilityPool {
         address _borrowerOperationsAddress,
         address _troveManagerAddress,
         address _activePoolAddress,
-        address _lusdTokenAddress,
+        address _thusdTokenAddress,
         address _sortedTrovesAddress,
         address _priceFeedAddress,
         address _collateralAddress
@@ -101,7 +101,7 @@ interface IStabilityPool {
      * Initial checks:
      * - Caller is TroveManager
      * ---
-     * Cancels out the specified debt against the LUSD contained in the Stability Pool (as far as possible)
+     * Cancels out the specified debt against the THUSD contained in the Stability Pool (as far as possible)
      * and transfers the Trove's collateral from ActivePool to StabilityPool.
      * Only called by liquidation functions in the TroveManager.
      */
@@ -114,9 +114,9 @@ interface IStabilityPool {
     function getCollateralBalance() external view returns (uint);
 
     /*
-     * Returns LUSD held in the pool. Changes when users deposit/withdraw, and when Trove debt is offset.
+     * Returns THUSD held in the pool. Changes when users deposit/withdraw, and when Trove debt is offset.
      */
-    function getTotalLUSDDeposits() external view returns (uint);
+    function getTotalTHUSDDeposits() external view returns (uint);
 
     /*
      * Calculates the collateral gain earned by the deposit since its last snapshots were taken.
@@ -126,7 +126,7 @@ interface IStabilityPool {
     /*
      * Return the user's compounded deposit.
      */
-    function getCompoundedLUSDDeposit(address _depositor) external view returns (uint);
+    function getCompoundedTHUSDDeposit(address _depositor) external view returns (uint);
 
     /*
      * Only callable by Active Pool, updates ERC20 tokens recieved

@@ -163,46 +163,46 @@ export class ObservableEthersLiquity implements ObservableLiquity {
     };
   }
 
-  watchLUSDInStabilityPool(
-    onLUSDInStabilityPoolChanged: (lusdInStabilityPool: Decimal) => void
+  watchTHUSDInStabilityPool(
+    onTHUSDInStabilityPoolChanged: (thusdInStabilityPool: Decimal) => void
   ): () => void {
-    const { lusdToken, stabilityPool } = _getContracts(this._readable.connection);
-    const { Transfer } = lusdToken.filters;
+    const { thusdToken, stabilityPool } = _getContracts(this._readable.connection);
+    const { Transfer } = thusdToken.filters;
 
-    const transferLUSDFromStabilityPool = Transfer(stabilityPool.address);
-    const transferLUSDToStabilityPool = Transfer(null, stabilityPool.address);
+    const transferTHUSDFromStabilityPool = Transfer(stabilityPool.address);
+    const transferTHUSDToStabilityPool = Transfer(null, stabilityPool.address);
 
-    const stabilityPoolLUSDFilters = [transferLUSDFromStabilityPool, transferLUSDToStabilityPool];
+    const stabilityPoolTHUSDFilters = [transferTHUSDFromStabilityPool, transferTHUSDToStabilityPool];
 
-    const stabilityPoolLUSDListener = debounce((blockTag: number) => {
-      this._readable.getLUSDInStabilityPool({ blockTag }).then(onLUSDInStabilityPoolChanged);
+    const stabilityPoolTHUSDListener = debounce((blockTag: number) => {
+      this._readable.getTHUSDInStabilityPool({ blockTag }).then(onTHUSDInStabilityPoolChanged);
     });
 
-    stabilityPoolLUSDFilters.forEach(filter => lusdToken.on(filter, stabilityPoolLUSDListener));
+    stabilityPoolTHUSDFilters.forEach(filter => thusdToken.on(filter, stabilityPoolTHUSDListener));
 
     return () =>
-      stabilityPoolLUSDFilters.forEach(filter =>
-        lusdToken.removeListener(filter, stabilityPoolLUSDListener)
+      stabilityPoolTHUSDFilters.forEach(filter =>
+        thusdToken.removeListener(filter, stabilityPoolTHUSDListener)
       );
   }
 
-  watchLUSDBalance(onLUSDBalanceChanged: (balance: Decimal) => void, address?: string): () => void {
+  watchTHUSDBalance(onTHUSDBalanceChanged: (balance: Decimal) => void, address?: string): () => void {
     address ??= _requireAddress(this._readable.connection);
 
-    const { lusdToken } = _getContracts(this._readable.connection);
-    const { Transfer } = lusdToken.filters;
-    const transferLUSDFromUser = Transfer(address);
-    const transferLUSDToUser = Transfer(null, address);
+    const { thusdToken } = _getContracts(this._readable.connection);
+    const { Transfer } = thusdToken.filters;
+    const transferTHUSDFromUser = Transfer(address);
+    const transferTHUSDToUser = Transfer(null, address);
 
-    const lusdTransferFilters = [transferLUSDFromUser, transferLUSDToUser];
+    const thusdTransferFilters = [transferTHUSDFromUser, transferTHUSDToUser];
 
-    const lusdTransferListener = debounce((blockTag: number) => {
-      this._readable.getLUSDBalance(address, { blockTag }).then(onLUSDBalanceChanged);
+    const thusdTransferListener = debounce((blockTag: number) => {
+      this._readable.getTHUSDBalance(address, { blockTag }).then(onTHUSDBalanceChanged);
     });
 
-    lusdTransferFilters.forEach(filter => lusdToken.on(filter, lusdTransferListener));
+    thusdTransferFilters.forEach(filter => thusdToken.on(filter, thusdTransferListener));
 
     return () =>
-      lusdTransferFilters.forEach(filter => lusdToken.removeListener(filter, lusdTransferListener));
+      thusdTransferFilters.forEach(filter => thusdToken.removeListener(filter, thusdTransferListener));
   }
 }

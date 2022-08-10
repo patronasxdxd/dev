@@ -5,19 +5,19 @@ pragma solidity ^0.8.10;
 interface IPCV {
 
     // --- Events --
-    event LUSDTokenAddressSet(address _lusdTokenAddress);
+    event THUSDTokenAddressSet(address _thusdTokenAddress);
     event TroveManagerAddressSet(address _troveManager);
     event BorrowerOperationsAddressSet(address _borrowerOperationsAddress);
     event ActivePoolAddressSet(address _activePoolAddress);
 
     event F_ETHUpdated(uint _F_ETH);
-    event F_LUSDUpdated(uint _F_LUSD);
+    event F_THUSDUpdated(uint _F_THUSD);
 
     // --- Functions ---
 
     function setAddresses
     (
-        address _lusdTokenAddress,
+        address _thusdTokenAddress,
         address _troveManagerAddress,
         address _borrowerOperationsAddress,
         address _activePoolAddress
@@ -25,6 +25,6 @@ interface IPCV {
 
     function increaseF_ETH(uint _ETHFee) external;
 
-    function increaseF_LUSD(uint _LUSDFee) external;
+    function increaseF_THUSD(uint _THUSDFee) external;
 
 }
