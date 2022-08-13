@@ -4,7 +4,7 @@
 
 ## LiquityStoreBaseState.erc20TokenAllowance property
 
-The liquidity mining contract's allowance of user's Uniswap ETH/THUSD LP tokens.
+The borrower operation's allowance of user's collateral erc20 tokens.
 
 <b>Signature:</b>
 

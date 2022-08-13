@@ -18,8 +18,8 @@ export interface LiquityStoreBaseState
 |  --- | --- | --- |
 |  [accountBalance](./lib-base.liquitystorebasestate.accountbalance.md) | [Decimal](./lib-base.decimal.md) | User's native currency balance (e.g. Ether). |
 |  [collateralSurplusBalance](./lib-base.liquitystorebasestate.collateralsurplusbalance.md) | [Decimal](./lib-base.decimal.md) | Amount of leftover collateral available for withdrawal to the user. |
-|  [erc20TokenAllowance](./lib-base.liquitystorebasestate.erc20tokenallowance.md) | [Decimal](./lib-base.decimal.md) | The liquidity mining contract's allowance of user's Uniswap ETH/THUSD LP tokens. |
-|  [erc20TokenBalance](./lib-base.liquitystorebasestate.erc20tokenbalance.md) | [Decimal](./lib-base.decimal.md) | User's Uniswap ETH/THUSD LP token balance. |
+|  [erc20TokenAllowance](./lib-base.liquitystorebasestate.erc20tokenallowance.md) | [Decimal](./lib-base.decimal.md) | The borrower operation's allowance of user's collateral erc20 tokens. |
+|  [erc20TokenBalance](./lib-base.liquitystorebasestate.erc20tokenbalance.md) | [Decimal](./lib-base.decimal.md) | User's collateral erc20 token balance. |
 |  [numberOfTroves](./lib-base.liquitystorebasestate.numberoftroves.md) | number | Number of Troves that are currently open. |
 |  [pcvBalance](./lib-base.liquitystorebasestate.pcvbalance.md) | [Decimal](./lib-base.decimal.md) | Total amount of LUSD currently deposited in the PCV Pool. |
 |  [price](./lib-base.liquitystorebasestate.price.md) | [Decimal](./lib-base.decimal.md) | Current price of the native currency (e.g. Ether) in USD. |

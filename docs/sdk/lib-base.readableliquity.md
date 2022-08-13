@@ -25,7 +25,7 @@ Implemented by [EthersLiquity](./lib-ethers.ethersliquity.md)<!-- -->.
 |  [getErc20TokenBalance(address)](./lib-base.readableliquity.geterc20tokenbalance.md) | Get the amount of Erc20 tokens held by an address. |
 |  [getFees()](./lib-base.readableliquity.getfees.md) | Get a calculator for current fees. |
 |  [getNumberOfTroves()](./lib-base.readableliquity.getnumberoftroves.md) | Get number of Troves that are currently open. |
-|  [getPCVBalance()](./lib-base.readableliquity.getpcvbalance.md) | Get the total amount of LUSD currently deposited in the PCV Pool. |
+|  [getPCVBalance()](./lib-base.readableliquity.getpcvbalance.md) | Get the total amount of thUSD currently deposited in the PCV Pool. |
 |  [getPrice()](./lib-base.readableliquity.getprice.md) | Get the current price of the native currency (e.g. Ether) in USD. |
 |  [getStabilityDeposit(address)](./lib-base.readableliquity.getstabilitydeposit.md) | Get the current state of a Stability Deposit. |
 |  [getTHUSDBalance(address)](./lib-base.readableliquity.getthusdbalance.md) | Get the amount of thUSD held by an address. |
