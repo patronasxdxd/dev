@@ -108,7 +108,6 @@ interface BorrowerOperationsTransactions {
 
 export interface BorrowerOperations
   extends _TypedLiquityContract<BorrowerOperationsCalls, BorrowerOperationsTransactions> {
-  address: string;
   readonly filters: {
     ActivePoolAddressChanged(_activePoolAddress?: null): EventFilter;
     CollSurplusPoolAddressChanged(_collSurplusPoolAddress?: null): EventFilter;
@@ -406,7 +405,6 @@ interface PCVTransactions {
 
 export interface PCV
   extends _TypedLiquityContract<PCVCalls, PCVTransactions> {
-  address: string;
   readonly filters: {
     ActivePoolAddressSet(_activePoolAddress?: null): EventFilter;
     BorrowerOperationsAddressSet(_borrowerOperationsAddress?: null): EventFilter;

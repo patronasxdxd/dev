@@ -4,7 +4,7 @@
 
 ## ReadableEthersLiquity.getPCVBalance() method
 
-Get the total amount of LUSD currently deposited in the PCV Pool.
+Get the total amount of thUSD currently deposited in the PCV Pool.
 
 <b>Signature:</b>
 
