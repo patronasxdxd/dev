@@ -3,9 +3,11 @@
 pragma solidity ^0.8.10;
 
 import "./Interfaces/ITHUSDToken.sol";
-import "./Dependencies/SafeMath.sol";
 import "./Dependencies/CheckContract.sol";
+import "./Dependencies/Ownable.sol";
+import "./Dependencies/SafeMath.sol";
 import "./Dependencies/console.sol";
+
 /*
 *
 * Based upon OpenZeppelin's ERC20 contract:
@@ -24,7 +26,7 @@ import "./Dependencies/console.sol";
 * 2) sendToPool() and returnFromPool(): functions callable only Liquity core contracts, which move THUSD tokens between Liquity <-> user.
 */
 
-contract THUSDToken is CheckContract, ITHUSDToken {
+contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
     using SafeMath for uint256;
 
     uint256 private _totalSupply;
@@ -55,9 +57,18 @@ contract THUSDToken is CheckContract, ITHUSDToken {
     mapping (address => mapping (address => uint256)) private _allowances;
 
     // --- Addresses ---
-    address public immutable troveManagerAddress;
-    address public immutable stabilityPoolAddress;
-    address public immutable borrowerOperationsAddress;
+    mapping(address => bool) public troveManagers;
+    mapping(address => bool) public stabilityPools;
+    mapping(address => bool) public borrowerOperations;
+    mapping(address => bool) public mintList;
+
+    address public pendingTroveManager;
+    address public pendingStabilityPool;
+    address public pendingBorrowerOperations;
+    address public pendingRevokedMintAddress;
+    uint256 constant governanceTimeDelay = 90 days;
+    uint256 private revokeMintListInitiated;
+    uint256 private addContractsInitiated;
 
     constructor
     (
@@ -66,19 +77,8 @@ contract THUSDToken is CheckContract, ITHUSDToken {
         address _borrowerOperationsAddress
     )
     {
-        checkContract(_troveManagerAddress);
-        checkContract(_stabilityPoolAddress);
-        checkContract(_borrowerOperationsAddress);
-
-        troveManagerAddress = _troveManagerAddress;
-        emit TroveManagerAddressChanged(_troveManagerAddress);
-
-        stabilityPoolAddress = _stabilityPoolAddress;
-        emit StabilityPoolAddressChanged(_stabilityPoolAddress);
-
-        borrowerOperationsAddress = _borrowerOperationsAddress;
-        emit BorrowerOperationsAddressChanged(_borrowerOperationsAddress);
-
+        // when created its linked to one set of contracts and collateral, other collateral types can be added via governance
+        _addSystemContracts(_troveManagerAddress, _stabilityPoolAddress, _borrowerOperationsAddress);
         bytes32 hashedName = keccak256(bytes(_NAME));
         bytes32 hashedVersion = keccak256(bytes(_VERSION));
 
@@ -88,10 +88,82 @@ contract THUSDToken is CheckContract, ITHUSDToken {
         _CACHED_DOMAIN_SEPARATOR = _buildDomainSeparator(_TYPE_HASH, hashedName, hashedVersion);
     }
 
+    modifier onlyAfterGovernanceDelay(
+        uint256 _changeInitializedTimestamp,
+        uint256 _delay
+    ) {
+        require(_changeInitializedTimestamp > 0, "Change not initiated");
+        require(
+            block.timestamp.sub(_changeInitializedTimestamp) >= _delay,
+            "Governance delay has not elapsed"
+        );
+        _;
+    }
+
+    // --- Governance ---
+
+    function startRevokeMintList(address _account)
+        external
+        onlyOwner
+    {
+        revokeMintListInitiated = block.timestamp;
+        pendingRevokedMintAddress = _account;
+    }
+
+    function finalizeRevokeMintList(address _account)
+        external
+        onlyOwner
+        onlyAfterGovernanceDelay(
+            revokeMintListInitiated,
+            governanceTimeDelay
+        )
+    {
+        require(pendingRevokedMintAddress == _account, "Incorrect address to finalize");
+
+        mintList[_account] = false;
+        revokeMintListInitiated = 0;
+    }
+
+    function startAddContracts(address _troveManagerAddress, address _stabilityPoolAddress, address _borrowerOperationsAddress)
+        external
+        onlyOwner
+    {
+        checkContract(_troveManagerAddress);
+        checkContract(_stabilityPoolAddress);
+        checkContract(_borrowerOperationsAddress);
+
+        // save as provisional contracts to add
+        pendingTroveManager = _troveManagerAddress;
+        pendingStabilityPool = _stabilityPoolAddress;
+        pendingTroveManager = _borrowerOperationsAddress;
+
+        // save block number
+        addContractsInitiated = block.timestamp;
+    }
+
+    function finalizeAddContracts(address _troveManagerAddress, address _stabilityPoolAddress, address _borrowerOperationsAddress)
+        external
+        onlyOwner
+        onlyAfterGovernanceDelay(
+            addContractsInitiated,
+            governanceTimeDelay
+        )
+    {
+        // check contracts are the same
+        require(
+          pendingTroveManager == _troveManagerAddress &&
+          pendingStabilityPool == _stabilityPoolAddress &&
+          pendingTroveManager == _borrowerOperationsAddress
+        );
+        // make sure minimum blocks has passed
+        _addSystemContracts(_troveManagerAddress, _stabilityPoolAddress, _borrowerOperationsAddress);
+        addContractsInitiated = 0;
+    }
+
     // --- Functions for intra-Liquity calls ---
 
     function mint(address _account, uint256 _amount) external override {
-        _requireCallerIsBorrowerOperations();
+        _requireCallerInMintList();
         _mint(_account, _amount);
     }
 
@@ -202,6 +274,24 @@ contract THUSDToken is CheckContract, ITHUSDToken {
     }
 
     // --- Internal operations ---
+
+    function _addSystemContracts(address _troveManagerAddress, address _stabilityPoolAddress, address _borrowerOperationsAddress) internal {
+        checkContract(_troveManagerAddress);
+        checkContract(_stabilityPoolAddress);
+        checkContract(_borrowerOperationsAddress);
+
+        troveManagers[_troveManagerAddress] = true;
+        emit TroveManagerAddressChanged(_troveManagerAddress);
+
+        stabilityPools[_stabilityPoolAddress] = true;
+        emit StabilityPoolAddressChanged(_stabilityPoolAddress);
+
+        borrowerOperations[_borrowerOperationsAddress] = true;
+        emit BorrowerOperationsAddressChanged(_borrowerOperationsAddress);
+
+        mintList[_borrowerOperationsAddress] = true;
+    }
+
     // Warning: sanity checks (for sender and recipient) should have been done before calling these internal functions
 
     function _transfer(address sender, address recipient, uint256 amount) internal {
@@ -245,34 +335,28 @@ contract THUSDToken is CheckContract, ITHUSDToken {
             _recipient != address(this),
             "THUSD: Cannot transfer tokens directly to the THUSD token contract or the zero address"
         );
-        require(
-            _recipient != stabilityPoolAddress &&
-            _recipient != troveManagerAddress &&
-            _recipient != borrowerOperationsAddress,
-            "THUSD: Cannot transfer tokens directly to the StabilityPool, TroveManager or BorrowerOps"
-        );
     }
 
-    function _requireCallerIsBorrowerOperations() internal view {
-        require(msg.sender == borrowerOperationsAddress, "THUSDToken: Caller is not BorrowerOperations");
+    function _requireCallerInMintList() internal view {
+        require(mintList[msg.sender], "THUSDToken: Caller not allowed to mint");
     }
 
     function _requireCallerIsBOorTroveMorSP() internal view {
         require(
-            msg.sender == borrowerOperationsAddress ||
-            msg.sender == troveManagerAddress ||
-            msg.sender == stabilityPoolAddress,
+            borrowerOperations[msg.sender] ||
+            troveManagers[msg.sender] ||
+            stabilityPools[msg.sender],
             "THUSD: Caller is neither BorrowerOperations nor TroveManager nor StabilityPool"
         );
     }
 
     function _requireCallerIsStabilityPool() internal view {
-        require(msg.sender == stabilityPoolAddress, "THUSD: Caller is not the StabilityPool");
+        require(stabilityPools[msg.sender], "THUSD: Caller is not the StabilityPool");
     }
 
     function _requireCallerIsTroveMorSP() internal view {
         require(
-            msg.sender == troveManagerAddress || msg.sender == stabilityPoolAddress,
+            troveManagers[msg.sender] || stabilityPools[msg.sender],
             "THUSD: Caller is neither TroveManager nor StabilityPool");
     }
 

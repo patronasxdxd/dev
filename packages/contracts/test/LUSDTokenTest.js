@@ -206,9 +206,6 @@ contract('THUSDToken', async accounts => {
     it('transfer(): transferring to a blacklisted address reverts', async () => {
       await assertRevert(thusdTokenTester.transfer(thusdTokenTester.address, 1, { from: alice }))
       await assertRevert(thusdTokenTester.transfer(ZERO_ADDRESS, 1, { from: alice }))
-      await assertRevert(thusdTokenTester.transfer(troveManager.address, 1, { from: alice }))
-      await assertRevert(thusdTokenTester.transfer(stabilityPool.address, 1, { from: alice }))
-      await assertRevert(thusdTokenTester.transfer(borrowerOperations.address, 1, { from: alice }))
     })
 
     it("increaseAllowance(): increases an account's allowance by the correct amount", async () => {
@@ -279,9 +276,6 @@ contract('THUSDToken', async accounts => {
     it('transfer(): transferring to a blacklisted address reverts', async () => {
       await assertRevert(thusdTokenTester.transfer(thusdTokenTester.address, 1, { from: alice }))
       await assertRevert(thusdTokenTester.transfer(ZERO_ADDRESS, 1, { from: alice }))
-      await assertRevert(thusdTokenTester.transfer(troveManager.address, 1, { from: alice }))
-      await assertRevert(thusdTokenTester.transfer(stabilityPool.address, 1, { from: alice }))
-      await assertRevert(thusdTokenTester.transfer(borrowerOperations.address, 1, { from: alice }))
     })
 
     it('decreaseAllowance(): decreases allowance by the expected amount', async () => {

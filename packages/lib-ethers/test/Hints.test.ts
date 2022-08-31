@@ -174,7 +174,7 @@ describe("findHintForCollateralRatio", () => {
     );
 
     const gasUsed = rawReceipt.gasUsed.toNumber();
-    expect(gasUsed).to.be.at.most(260000);
+    expect(gasUsed).to.be.at.most(270000);
   });
 
   // Test 2
@@ -251,6 +251,6 @@ describe("findHintForCollateralRatio", () => {
     );
 
     const gasUsed = rawReceipt.gasUsed.toNumber();
-    expect(gasUsed).to.be.at.most(250000);
+    expect(gasUsed).to.be.at.most(260000);
   });
 });
