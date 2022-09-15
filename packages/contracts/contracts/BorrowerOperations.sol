@@ -14,7 +14,7 @@ import "./Dependencies/CheckContract.sol";
 import "./Dependencies/console.sol";
 
 contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOperations {
-    
+
     string constant public NAME = "BorrowerOperations";
 
     // --- Connected contract declarations ---
@@ -161,6 +161,7 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOpe
             vars.THUSDFee = _triggerBorrowingFee(contractsCache.troveManager, contractsCache.thusdToken, _THUSDAmount, _maxFeePercentage);
             vars.netDebt += vars.THUSDFee;
         }
+
         _requireAtLeastMinNetDebt(vars.netDebt);
 
         // ICR is based on the composite debt, i.e. the requested THUSD amount + THUSD borrowing fee + THUSD gas comp.
@@ -332,7 +333,9 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOpe
 
         _requireTroveisActive(troveManagerCached, msg.sender);
         uint256 price = priceFeed.fetchPrice();
-        _requireNotInRecoveryMode(price);
+        if (thusdTokenCached.mintList(address(this))) {
+            _requireNotInRecoveryMode(price);
+        }
 
         troveManagerCached.applyPendingRewards(msg.sender);
 
@@ -340,9 +343,10 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOpe
         uint256 debt = troveManagerCached.getTroveDebt(msg.sender);
 
         _requireSufficientTHUSDBalance(thusdTokenCached, msg.sender, debt - THUSD_GAS_COMPENSATION);
-
-        uint256 newTCR = _getNewTCRFromTroveChange(coll, false, debt, false, price);
-        _requireNewTCRisAboveCCR(newTCR);
+        if (thusdTokenCached.mintList(address(this))) {
+            uint256 newTCR = _getNewTCRFromTroveChange(coll, false, debt, false, price);
+            _requireNewTCRisAboveCCR(newTCR);
+        }
 
         troveManagerCached.removeStake(msg.sender);
         troveManagerCached.closeTrove(msg.sender);
@@ -522,19 +526,28 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOpe
         internal
         view
     {
+        ITHUSDToken thusdTokenCached = thusdToken;
+
         /*
-        *In Recovery Mode, only allow:
-        *
-        * - Pure collateral top-up
-        * - Pure debt repayment
-        * - Collateral top-up with debt repayment
-        * - A debt increase combined with a collateral top-up which makes the ICR >= 150% and improves the ICR (and by extension improves the TCR).
-        *
-        * In Normal Mode, ensure:
-        *
-        * - The new ICR is above MCR
-        * - The adjustment won't pull the TCR below CCR
-        */
+         * If contract has been removed from the thUSD mintlist remove the adjustment restrictions
+         */
+        if (!thusdTokenCached.mintList(address(this))) {
+            return;
+        }
+
+        /*
+         *In Recovery Mode, only allow:
+         *
+         * - Pure collateral top-up
+         * - Pure debt repayment
+         * - Collateral top-up with debt repayment
+         * - A debt increase combined with a collateral top-up which makes the ICR >= 150% and improves the ICR (and by extension improves the TCR).
+         *
+         * In Normal Mode, ensure:
+         *
+         * - The new ICR is above MCR
+         * - The adjustment won't pull the TCR below CCR
+         */
         if (_isRecoveryMode) {
             _requireNoCollWithdrawal(_collWithdrawal);
             if (_isDebtIncrease) {

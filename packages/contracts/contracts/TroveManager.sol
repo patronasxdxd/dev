@@ -1211,10 +1211,13 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
     }
 
     function _closeTrove(address _borrower, Status closedStatus) internal {
+        ITHUSDToken thusdTokenCached = thusdToken;
         assert(closedStatus != Status.nonExistent && closedStatus != Status.active);
 
         uint256 TroveOwnersArrayLength = TroveOwners.length;
-        _requireMoreThanOneTroveInSystem(TroveOwnersArrayLength);
+        if (thusdTokenCached.mintList(borrowerOperationsAddress)) {
+          _requireMoreThanOneTroveInSystem(TroveOwnersArrayLength);
+        }
 
         Troves[_borrower].status = closedStatus;
         Troves[_borrower].coll = 0;
