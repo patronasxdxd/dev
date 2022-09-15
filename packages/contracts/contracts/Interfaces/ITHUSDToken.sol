@@ -5,8 +5,8 @@ pragma solidity ^0.8.10;
 import "../Dependencies/IERC20.sol";
 import "../Dependencies/IERC2612.sol";
 
-interface ITHUSDToken is IERC20, IERC2612 { 
-    
+interface ITHUSDToken is IERC20, IERC2612 {
+
     // --- Events ---
 
     event TroveManagerAddressChanged(address _troveManagerAddress);
@@ -16,6 +16,7 @@ interface ITHUSDToken is IERC20, IERC2612 {
     event THUSDTokenBalanceUpdated(address _user, uint256 _amount);
 
     // --- Functions ---
+    function mintList(address contractAddress) external view returns (bool);
 
     function mint(address _account, uint256 _amount) external;
 

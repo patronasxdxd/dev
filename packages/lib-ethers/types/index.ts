@@ -337,6 +337,8 @@ export interface IERC20
 }
 
 interface THUSDTokenCalls {
+  GOVERNANCE_TIME_DELAY(_overrides?: CallOverrides): Promise<BigNumber>;
+  addContractsInitiated(_overrides?: CallOverrides): Promise<BigNumber>;
   allowance(owner: string, spender: string, _overrides?: CallOverrides): Promise<BigNumber>;
   balanceOf(account: string, _overrides?: CallOverrides): Promise<BigNumber>;
   borrowerOperations(arg0: string, _overrides?: CallOverrides): Promise<boolean>;
@@ -352,6 +354,7 @@ interface THUSDTokenCalls {
   pendingStabilityPool(_overrides?: CallOverrides): Promise<string>;
   pendingTroveManager(_overrides?: CallOverrides): Promise<string>;
   permitTypeHash(_overrides?: CallOverrides): Promise<string>;
+  revokeMintListInitiated(_overrides?: CallOverrides): Promise<BigNumber>;
   stabilityPools(arg0: string, _overrides?: CallOverrides): Promise<boolean>;
   symbol(_overrides?: CallOverrides): Promise<string>;
   totalSupply(_overrides?: CallOverrides): Promise<BigNumber>;

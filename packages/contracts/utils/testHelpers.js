@@ -1198,6 +1198,12 @@ class TestHelper {
     return web3.utils.sha3(signatureString).slice(0,10) +
       params.reduce((acc, p) => acc + this.formatParam(p), '')
   }
+
+  static async removeMintlist(contracts, owner, delay) {
+    await contracts.thusdToken.startRevokeMintList(contracts.borrowerOperations.address, { from: owner })
+    await this.fastForwardTime(delay, web3.currentProvider)
+    await contracts.thusdToken.finalizeRevokeMintList(contracts.borrowerOperations.address, { from: owner })
+  }
 }
 
 TestHelper.ZERO_ADDRESS = '0x' + '0'.repeat(40)
