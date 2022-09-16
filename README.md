@@ -1191,7 +1191,7 @@ E.g.:
 yarn deploy --network ropsten
 ```
 
-Supported networks are currently: ropsten, kovan, rinkeby, goerli. The above command will deploy into the default channel (the one that's used by the public dev-frontend). To deploy into the internal channel instead:
+Supported networks are currently: goerli. The above command will deploy into the default channel (the one that's used by the public dev-frontend). To deploy into the internal channel instead:
 
 ```
 yarn deploy --network ropsten --channel internal
@@ -1209,9 +1209,6 @@ To publish a new deployment, you must execute the above command for all of the f
 
 | Network | Channel  |
 | ------- | -------- |
-| ropsten | default  |
-| kovan   | default  |
-| rinkeby | default  |
 | goerli  | default  |
 
 At some point in the future, we will make this process automatic. Once you're done deploying to all the networks, execute the following command:

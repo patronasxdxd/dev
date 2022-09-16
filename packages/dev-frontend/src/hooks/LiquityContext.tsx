@@ -34,7 +34,7 @@ const wsParams = (network: string, infuraApiKey: string): [string, string] => [
   network
 ];
 
-const supportedNetworks = ["homestead", "kovan", "rinkeby", "ropsten", "goerli"];
+const supportedNetworks = ["homestead", "goerli"];
 
 export const LiquityProvider: React.FC<LiquityProviderProps> = ({
   children,
@@ -93,7 +93,7 @@ export const LiquityProvider: React.FC<LiquityProviderProps> = ({
   if (chainId === 1) {
     return <>{unsupportedMainnetFallback}</>;
   }
-  
+
   //Forcing goerli connection
   if (!connection || chainId !== 5) {
     return unsupportedNetworkFallback ? <>{unsupportedNetworkFallback(chainId)}</> : null;

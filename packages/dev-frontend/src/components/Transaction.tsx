@@ -165,13 +165,13 @@ export const useTransactionFunction = (
     } catch (error) {
       if (hasMessage(error) && error.message.includes("User denied transaction signature")) {
         setTransactionState({ type: "cancelled", id });
-      } 
+      }
       else if (hasMessage(error) && error.message.includes("nothing to liquidate")) {
-        setTransactionState({ 
-          type: "failed", 
-          id, 
+        setTransactionState({
+          type: "failed",
+          id,
           error: new Error("There are no vaults under-collateralized to liquidate") });
-      } 
+      }
       else {
         console.error(error);
 
@@ -242,7 +242,6 @@ export function Transaction<C extends React.ReactElement<ButtonlikeProps & Hover
   );
 }
 
-// Doesn't work on Kovan:
 // https://github.com/MetaMask/metamask-extension/issues/5579
 const tryToGetRevertReason = async (provider: Provider, tx: TransactionReceipt) => {
   try {
