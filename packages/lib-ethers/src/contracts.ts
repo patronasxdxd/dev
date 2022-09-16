@@ -216,7 +216,6 @@ export interface _LiquityDeploymentJSON {
   readonly version: string;
   readonly deploymentDate: number;
   readonly startBlock: number;
-  readonly bootstrapPeriod: number;
   readonly _priceFeedIsTestnet: boolean;
   readonly _isDev: boolean;
 }

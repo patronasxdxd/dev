@@ -245,9 +245,6 @@ describe("Gas estimation (fee decay)", () => {
 
     await th.openTroves(deployment, liquity, [redeemedUser], funder, [Trove.recreate(redeemedTrove)]);
 
-    // Jump past bootstrap period
-    await th.increaseTime(60 * 60 * 24 * 15);
-
     // Increase the borrowing rate by redeeming
     const { actualTHUSDAmount } = await liquity.redeemTHUSD(redeemedTrove.netDebt);
 

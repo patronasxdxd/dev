@@ -83,16 +83,6 @@ const oracleAddresses = {
 const hasOracles = (network: string): network is keyof typeof oracleAddresses =>
   network in oracleAddresses;
 
-const wethAddresses = {
-  mainnet: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-  ropsten: "0xc778417E063141139Fce010982780140Aa0cD5Ab",
-  rinkeby: "0xc778417E063141139Fce010982780140Aa0cD5Ab",
-  goerli: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-  kovan: "0xd0A1E359811322d97991E03f863a0C30C2cF029C"
-};
-
-const hasWETH = (network: string): network is keyof typeof wethAddresses => network in wethAddresses;
-
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {
@@ -130,7 +120,6 @@ declare module "hardhat/types/runtime" {
     deployLiquity: (
       deployer: Signer,
       useRealPriceFeed?: boolean,
-      wethAddress?: string,
       overrides?: Overrides
     ) => Promise<_LiquityDeploymentJSON>;
   }
@@ -152,7 +141,6 @@ extendEnvironment(env => {
   env.deployLiquity = async (
     deployer,
     useRealPriceFeed = false,
-    wethAddress = undefined,
     overrides?: Overrides
   ) => {
     const deployment = await deployAndSetupContracts(
@@ -160,7 +148,6 @@ extendEnvironment(env => {
       getContractFactory(env),
       !useRealPriceFeed,
       env.network.name === "dev",
-      wethAddress,
       overrides
     );
 
@@ -172,7 +159,6 @@ type DeployParams = {
   channel: string;
   gasPrice?: number;
   useRealPriceFeed?: boolean;
-  createUniswapPair?: boolean;
 };
 
 const defaultChannel = process.env.CHANNEL || "default";
@@ -186,14 +172,8 @@ task("deploy", "Deploys the contracts to the network")
     undefined,
     types.boolean
   )
-  .addOptionalParam(
-    "createUniswapPair",
-    "Create a real Uniswap v2 WETH-THUSD pair instead of a mock ERC20 token",
-    undefined,
-    types.boolean
-  )
   .setAction(
-    async ({ channel, gasPrice, useRealPriceFeed, createUniswapPair }: DeployParams, env) => {
+    async ({ channel, gasPrice, useRealPriceFeed }: DeployParams, env) => {
       const overrides = { gasPrice: gasPrice && Decimal.from(gasPrice).div(1000000000).hex };
       const [deployer] = await env.ethers.getSigners();
 
@@ -203,17 +183,9 @@ task("deploy", "Deploys the contracts to the network")
         throw new Error(`PriceFeed not supported on ${env.network.name}`);
       }
 
-      let wethAddress: string | undefined = undefined;
-      if (createUniswapPair) {
-        if (!hasWETH(env.network.name)) {
-          throw new Error(`WETH not deployed on ${env.network.name}`);
-        }
-        wethAddress = wethAddresses[env.network.name];
-      }
-
       setSilent(false);
 
-      const deployment = await env.deployLiquity(deployer, useRealPriceFeed, wethAddress, overrides);
+      const deployment = await env.deployLiquity(deployer, useRealPriceFeed, overrides);
 
       if (useRealPriceFeed) {
         const contracts = _connectToContracts(deployer, deployment);
