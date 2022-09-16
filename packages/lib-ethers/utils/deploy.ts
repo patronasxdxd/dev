@@ -260,7 +260,6 @@ export const deployAndSetupContracts = async (
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
   _priceFeedIsTestnet = true,
   _isDev = true,
-  wethAddress?: string,
   overrides?: Overrides
 ): Promise<_LiquityDeploymentJSON> => {
   if (!deployer.provider) {
@@ -274,7 +273,6 @@ export const deployAndSetupContracts = async (
     chainId: await deployer.getChainId(),
     version: "unknown",
     deploymentDate: new Date().getTime(),
-    bootstrapPeriod: 0,
     _priceFeedIsTestnet,
     _isDev,
 

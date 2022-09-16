@@ -50,9 +50,6 @@ contract('CollSurplusPool', async accounts => {
     const { collateral: B_coll, netDebt: B_netDebt } = await openTrove({ ICR: toBN(dec(200, 16)), extraParams: { from: B } })
     await openTrove({ extraTHUSDAmount: B_netDebt, extraParams: { from: A, value: dec(3000, 'ether') } })
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // At ETH:USD = 100, this redemption should leave 1 ether of coll surplus
     await th.redeemCollateralAndGetTxObject(A, contracts, B_netDebt)
 
@@ -82,9 +79,6 @@ contract('CollSurplusPool', async accounts => {
   //   const openTroveData = th.getTransactionData('openTrove(uint256,uint256,address,address)', ['0xde0b6b3a7640000', web3.utils.toHex(B_thusdAmount), B, B])
   //   await nonPayable.forward(borrowerOperations.address, openTroveData, { value: B_coll })
   //   await openTrove({ extraTHUSDAmount: B_netDebt, extraParams: { from: A, value: dec(3000, 'ether') } })
-  //
-  //   // skip bootstrapping phase
-  //   await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
   //
   //   // At ETH:USD = 100, this redemption should leave 1 ether of coll surplus for B
   //   await th.redeemCollateralAndGetTxObject(A, contracts, B_netDebt)

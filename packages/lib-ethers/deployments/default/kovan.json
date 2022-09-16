@@ -2,7 +2,6 @@
   "chainId": 42,
   "version": "5174ecd0da4842157aba989499200d690b7e374f",
   "deploymentDate": 1617374516000,
-  "bootstrapPeriod": 1209600,
   "_priceFeedIsTestnet": false,
   "_isDev": false,
   "startBlock": 24134777,

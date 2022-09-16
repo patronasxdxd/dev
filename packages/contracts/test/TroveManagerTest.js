@@ -2107,9 +2107,6 @@ contract('TroveManager', async accounts => {
       dennis
     )
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // Dennis redeems 20 THUSD
     // Don't pay for gas, as it makes it easier to calculate the received Ether
     const redemptionTx = await troveManager.redeemCollateral(
@@ -2187,9 +2184,6 @@ contract('TroveManager', async accounts => {
       dennis
     )
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // Dennis redeems 20 THUSD
     // Don't pay for gas, as it makes it easier to calculate the received Ether
     const redemptionTx = await troveManager.redeemCollateral(
@@ -2266,9 +2260,6 @@ contract('TroveManager', async accounts => {
       dennis,
       dennis
     )
-
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
 
     // Dennis redeems 20 THUSD
     // Don't pay for gas, as it makes it easier to calculate the received Ether
@@ -2353,9 +2344,6 @@ contract('TroveManager', async accounts => {
       dennis
     )
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // Dennis redeems 20 THUSD
     // Don't pay for gas, as it makes it easier to calculate the received Ether
     const redemptionTx = await troveManager.redeemCollateral(
@@ -2417,9 +2405,6 @@ contract('TroveManager', async accounts => {
     // open trove from redeemer.  Redeemer has highest ICR (100ETH, 100 THUSD), 20000%
     const { thusdAmount: F_thusdAmount } = await openTrove({ ICR: toBN(dec(200, 18)), extraTHUSDAmount: redemptionAmount.mul(toBN(2)), extraParams: { from: flyn } })
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // Flyn redeems collateral
     await troveManager.redeemCollateral(redemptionAmount, alice, alice, alice, 0, 0, th._100pct, { from: flyn })
 
@@ -2474,9 +2459,6 @@ contract('TroveManager', async accounts => {
     // open trove from redeemer.  Redeemer has highest ICR (100ETH, 100 THUSD), 20000%
     const { thusdAmount: F_thusdAmount } = await openTrove({ ICR: toBN(dec(200, 18)), extraTHUSDAmount: redemptionAmount.mul(toBN(2)), extraParams: { from: flyn } })
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // Flyn redeems collateral with only two iterations
     await troveManager.redeemCollateral(attemptedRedemptionAmount, alice, alice, alice, 0, 2, th._100pct, { from: flyn })
 
@@ -2513,9 +2495,6 @@ contract('TroveManager', async accounts => {
 
     await troveManager.setBaseRate(0)
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // THUSD redemption is 55000 US
     const THUSDRedemption = dec(55000, 18)
     const tx1 = await th.redeemCollateralAndGetTxObject(B, contracts, THUSDRedemption, th._100pct)
@@ -2540,9 +2519,6 @@ contract('TroveManager', async accounts => {
     await thusdToken.transfer(B, await thusdToken.balanceOf(C), {from: C})
 
     await troveManager.setBaseRate(0)
-
-    // Skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
 
     // THUSD redemption is 55000 THUSD
     const THUSDRedemption = dec(55000, 18)
@@ -2604,9 +2580,6 @@ contract('TroveManager', async accounts => {
         dennis,
         dennis
       )
-
-      // skip bootstrapping phase
-      await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
 
       // Alice redeems 1 THUSD from Carol's Trove
       await troveManager.redeemCollateral(
@@ -2678,9 +2651,6 @@ contract('TroveManager', async accounts => {
 
     const carol_ETHBalance_Before = toBN(await contracts.erc20.balanceOf(carol))
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     const redemptionTx = await troveManager.redeemCollateral(
       amount,
       alice,
@@ -2722,9 +2692,6 @@ contract('TroveManager', async accounts => {
     await priceFeed.setPrice(price)
 
     // --- TEST ---
-
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
 
     await troveManager.redeemCollateral(
       A_debt,
@@ -2771,9 +2738,6 @@ contract('TroveManager', async accounts => {
 
     await openTrove({ ICR: toBN(dec(100, 18)), extraTHUSDAmount: dec(10, 18), extraParams: { from: whale } })
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     const tx = await troveManager.redeemCollateral(
       redemptionAmount,
       carol, // try to trick redeemCollateral by passing a hint that doesn't exactly point to the
@@ -2813,9 +2777,6 @@ contract('TroveManager', async accounts => {
     const TCR = (await th.getTCR(contracts))
     assert.isTrue(TCR.lt(toBN('1100000000000000000')))
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     await assertRevert(th.redeemCollateral(carol, contracts, dec(270, 18)), "TroveManager: Cannot redeem when TCR < MCR")
   });
 
@@ -2831,9 +2792,6 @@ contract('TroveManager', async accounts => {
     await openTrove({ ICR: toBN(dec(200, 16)), extraParams: { from: carol } })
     await openTrove({ ICR: toBN(dec(200, 16)), extraParams: { from: dennis } })
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // Erin attempts to redeem with _amount = 0
     const redemptionTxPromise = troveManager.redeemCollateral(0, erin, erin, erin, 0, 0, th._100pct, { from: erin })
     await assertRevert(redemptionTxPromise, "TroveManager: Amount must be greater than zero")
@@ -2845,9 +2803,6 @@ contract('TroveManager', async accounts => {
     await openTrove({ ICR: toBN(dec(400, 16)), extraTHUSDAmount: dec(30, 18), extraParams: { from: C } })
     await openTrove({ ICR: toBN(dec(400, 16)), extraTHUSDAmount: dec(40, 18), extraParams: { from: D } })
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     await assertRevert(th.redeemCollateralAndGetTxObject(A, contracts, dec(10, 18), dec(2, 18)), "Max fee percentage must be between 0.5% and 100%")
     await assertRevert(th.redeemCollateralAndGetTxObject(A, contracts, dec(10, 18), '1000000000000000001'), "Max fee percentage must be between 0.5% and 100%")
   })
@@ -2857,9 +2812,6 @@ contract('TroveManager', async accounts => {
     await openTrove({ ICR: toBN(dec(400, 16)), extraTHUSDAmount: dec(20, 18), extraParams: { from: B } })
     await openTrove({ ICR: toBN(dec(400, 16)), extraTHUSDAmount: dec(30, 18), extraParams: { from: C } })
     await openTrove({ ICR: toBN(dec(400, 16)), extraTHUSDAmount: dec(40, 18), extraParams: { from: D } })
-
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
 
     await assertRevert(th.redeemCollateralAndGetTxObject(A, contracts, dec(10, 18), 0), "Max fee percentage must be between 0.5% and 100%")
     await assertRevert(th.redeemCollateralAndGetTxObject(A, contracts, dec(10, 18), 1), "Max fee percentage must be between 0.5% and 100%")
@@ -2877,9 +2829,6 @@ contract('TroveManager', async accounts => {
     th.assertIsApproximatelyEqual(totalSupply, expectedTotalSupply)
 
     await troveManager.setBaseRate(0)
-
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
 
     // THUSD redemption is 27 USD: a redemption that incurs a fee of 27/(270 * 2) = 5%
     const attemptedTHUSDRedemption = expectedTotalSupply.div(toBN(10))
@@ -2915,9 +2864,6 @@ contract('TroveManager', async accounts => {
     th.assertIsApproximatelyEqual(totalSupply, expectedTotalSupply)
 
     await troveManager.setBaseRate(0)
-
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
 
     // THUSD redemption fee with 10% of the supply will be 0.5% + 1/(10*2)
     const attemptedTHUSDRedemption = expectedTotalSupply.div(toBN(10))
@@ -3005,9 +2951,6 @@ contract('TroveManager', async accounts => {
     assert.isTrue(THUSDinSP.gte(mv._zeroBN))
     assert.isTrue(ETHinSP.gte(mv._zeroBN))
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // Erin redeems THUSD
     await th.redeemCollateral(erin, contracts, redemptionAmount, th._100pct)
 
@@ -3066,9 +3009,6 @@ contract('TroveManager', async accounts => {
     assert.equal(activePool_coll_before.toString(), totalColl)
 
     const price = await priceFeed.getPrice()
-
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
 
     // Erin attempts to redeem 400 THUSD
     const {
@@ -3137,9 +3077,6 @@ contract('TroveManager', async accounts => {
 
     let firstRedemptionHint
     let partialRedemptionHintNICR
-
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
 
     // Erin tries to redeem 1000 THUSD
     try {
@@ -3292,9 +3229,6 @@ contract('TroveManager', async accounts => {
       erin
     )
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     const redemption_1 = await troveManager.redeemCollateral(
       _120_THUSD,
       firstRedemptionHint,
@@ -3434,9 +3368,6 @@ contract('TroveManager', async accounts => {
       bob
     )
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // Bob attempts to redeem his ill-gotten 101 THUSD, from a system that has 100 THUSD outstanding debt
     try {
       const redemptionTx = await troveManager.redeemCollateral(
@@ -3462,9 +3393,6 @@ contract('TroveManager', async accounts => {
 
     // Check baseRate == 0
     assert.equal(await troveManager.baseRate(), '0')
-
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
 
     const A_balanceBefore = await thusdToken.balanceOf(A)
 
@@ -3526,9 +3454,6 @@ contract('TroveManager', async accounts => {
     await openTrove({ ICR: toBN(dec(200, 16)), extraTHUSDAmount: dec(100, 18), extraParams: { from: A } })
     await openTrove({ ICR: toBN(dec(190, 16)), extraTHUSDAmount: dec(100, 18), extraParams: { from: B } })
     await openTrove({ ICR: toBN(dec(180, 16)), extraTHUSDAmount: dec(100, 18), extraParams: { from: C } })
-
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
 
     const A_balanceBefore = await thusdToken.balanceOf(A)
 
@@ -3888,9 +3813,6 @@ contract('TroveManager', async accounts => {
     const partialAmount = toBN(dec(15, 18))
     const redemptionAmount = A_netDebt.add(B_netDebt).add(C_netDebt).add(partialAmount)
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // whale redeems THUSD.  Expect this to fully redeem A, B, C, and partially redeem 15 THUSD from D.
     const redemptionTx = await th.redeemCollateralAndGetTxObject(whale, contracts, redemptionAmount, th._100pct, { gasPrice: 0 })
 
@@ -4004,10 +3926,6 @@ contract('TroveManager', async accounts => {
     assert.equal(price, dec(200, 18))
 
     // --- TEST ---
-
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // keep redeeming until we get the base rate to the ceiling of 100%
     for (let i = 0; i < 2; i++) {
       // Find hints for redeeming

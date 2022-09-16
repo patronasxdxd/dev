@@ -1620,9 +1620,6 @@ contract('TroveManager - in Recovery Mode', async accounts => {
     const bob_balanceAfter = th.toBN(await contracts.erc20.balanceOf(bob))
     th.assertIsApproximatelyEqual(bob_balanceAfter, bob_balanceBefore.add(th.toBN(bob_remainingCollateral)))
 
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // Bob re-opens the trove, price 200, total debt 80 THUSD, ICR = 120% (lowest one)
     // Dennis redeems 30, so Bob has a surplus of (200 * 0.48 - 30) / 200 = 0.33 ETH
     await priceFeed.setPrice('200000000000000000000')
@@ -1647,9 +1644,6 @@ contract('TroveManager - in Recovery Mode', async accounts => {
     const { collateral: D_coll } = await openTrove({ ICR: toBN(dec(266, 16)), extraTHUSDAmount: B_netDebt, extraParams: { from: dennis } })
 
     // --- TEST ---
-    // skip bootstrapping phase
-    await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
-
     // Dennis redeems 40, so Bob has a surplus of (200 * 1 - 40) / 200 = 0.8 ETH
     await th.redeemCollateral(dennis, contracts, B_netDebt)
     let price = await priceFeed.getPrice()

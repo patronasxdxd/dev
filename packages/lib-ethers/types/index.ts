@@ -642,7 +642,6 @@ export interface StabilityPool
 
 interface TroveManagerCalls {
   BETA(_overrides?: CallOverrides): Promise<BigNumber>;
-  BOOTSTRAP_PERIOD(_overrides?: CallOverrides): Promise<BigNumber>;
   BORROWING_FEE_FLOOR(_overrides?: CallOverrides): Promise<BigNumber>;
   CCR(_overrides?: CallOverrides): Promise<BigNumber>;
   DECIMAL_PRECISION(_overrides?: CallOverrides): Promise<BigNumber>;
