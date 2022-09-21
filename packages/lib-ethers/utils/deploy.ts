@@ -53,6 +53,7 @@ const deployContract: (
 const deployContracts = async (
   deployer: Signer,
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
+  stablecoinAddress: string,
   priceFeedIsTestnet = true,
   overrides?: Overrides
 ): Promise<[addresses: Omit<_LiquityContractAddresses, "uniToken">, startBlock: number]> => {
@@ -97,18 +98,20 @@ const deployContracts = async (
     })
   };
 
+  const thusdToken = (stablecoinAddress != "") ? stablecoinAddress : await deployContract(
+    deployer,
+    getContractFactory,
+    "THUSDToken",
+    addresses.troveManager,
+    addresses.stabilityPool,
+    addresses.borrowerOperations,
+    { ...overrides }
+  );
+
   return [
     {
       ...addresses,
-      thusdToken: await deployContract(
-        deployer,
-        getContractFactory,
-        "THUSDToken",
-        addresses.troveManager,
-        addresses.stabilityPool,
-        addresses.borrowerOperations,
-        { ...overrides }
-      ),
+      thusdToken: thusdToken,
 
       multiTroveGetter: await deployContract(
         deployer,
@@ -258,6 +261,7 @@ const connectContracts = async (
 export const deployAndSetupContracts = async (
   deployer: Signer,
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
+  stablecoinAddress: string,
   _priceFeedIsTestnet = true,
   _isDev = true,
   overrides?: Overrides
@@ -276,7 +280,7 @@ export const deployAndSetupContracts = async (
     _priceFeedIsTestnet,
     _isDev,
 
-    ...(await deployContracts(deployer, getContractFactory, _priceFeedIsTestnet, overrides).then(
+    ...(await deployContracts(deployer, getContractFactory, stablecoinAddress, _priceFeedIsTestnet, overrides).then(
       async ([addresses, startBlock]) => ({
         startBlock,
 
