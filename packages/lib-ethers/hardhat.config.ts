@@ -219,11 +219,11 @@ task("deploy", "Deploys the contracts to the network")
         throw new Error(`PriceFeed not supported on ${env.network.name}`);
       }
 
-console.log('network', env.network.name);
-console.log('collateral', collateral);
-console.log('version', contractsVersion);
-console.log('stablecoin address:', stablecoinAddress);
-console.log('gas price: ', gasPrice);
+      console.log('network', env.network.name);
+      console.log('collateral', collateral);
+      console.log('version', contractsVersion);
+      console.log('stablecoin address:', stablecoinAddress);
+      console.log('gas price: ', gasPrice);
       setSilent(false);
 
       const deployment = await env.deployLiquity(deployer, stablecoinAddress, useRealPriceFeed, overrides);

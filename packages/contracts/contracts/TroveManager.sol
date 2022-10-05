@@ -1212,7 +1212,7 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
         assert(closedStatus != Status.nonExistent && closedStatus != Status.active);
 
         uint256 TroveOwnersArrayLength = TroveOwners.length;
-        if (thusdTokenCached.mintList(borrowerOperationsAddress)) {
+        if (thusdToken.mintList(borrowerOperationsAddress)) {
           _requireMoreThanOneTroveInSystem(TroveOwnersArrayLength);
         }
 
