@@ -139,7 +139,7 @@ declare module "hardhat/types/runtime" {
   interface HardhatRuntimeEnvironment {
     deployLiquity: (
       deployer: Signer,
-      stablecoinAddress: string,
+      stablecoinAddress?: string,
       useRealPriceFeed?: boolean,
       overrides?: Overrides
     ) => Promise<_LiquityDeploymentJSON>;
@@ -161,7 +161,7 @@ const getContractFactory: (
 extendEnvironment(env => {
   env.deployLiquity = async (
     deployer,
-    stablecoinAddress,
+    stablecoinAddress = "",
     useRealPriceFeed = false,
     overrides?: Overrides
   ) => {

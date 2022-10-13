@@ -1,11 +1,12 @@
 import fs from "fs";
 import path from "path";
 
+// TODO update this script to support multiple collaterals and versions once the front end is updated to support this.
 const outputDir = "deployments";
 const inputDir = (channel: string) => path.join("deployments", channel);
 
 const backfillChannel = "backfill";
-const defaultChannel = "default";
+const defaultChannel = "default/eth/v1";
 
 const exists = (dir: string) => {
   return fs.existsSync(dir) && fs.lstatSync(dir).isDirectory();
