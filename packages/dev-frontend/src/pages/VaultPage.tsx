@@ -3,7 +3,7 @@ import { Box, Card, Container, Heading, Link, Paragraph } from "theme-ui";
 import { SystemStatsCard } from "../components/SystemStatsCard";
 import { InfoMessage } from "../components/InfoMessage";
 import { Vault } from "../components/Trove/Vault";
-import { COIN, FIRST_ERC20_COLLATERAL } from "../strings";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../utils/constants";
 
 export const VaultPage: React.FC = () => {
   return (

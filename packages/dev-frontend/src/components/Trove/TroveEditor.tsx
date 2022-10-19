@@ -12,7 +12,7 @@ import {
 } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../../utils/constants";
 
 import { StaticRow } from "./Editor";
 import { LoadingOverlay } from "../LoadingOverlay";

@@ -11,7 +11,7 @@ import { useMyTransactionState } from "../Transaction";
 import { TroveEditor } from "./TroveEditor";
 import { TroveAction } from "./TroveAction";
 import { useTroveView } from "./context/TroveViewContext";
-import { FIRST_ERC20_COLLATERAL } from "../../strings";
+import { FIRST_ERC20_COLLATERAL } from "../../utils/constants";
 
 import {
   selectForTroveChangeValidation,

@@ -17,7 +17,7 @@ import { Transaction, useMyTransactionState } from "../Transaction";
 import { useLiquity } from "../../hooks/LiquityContext";
 import { TroveAction } from "./TroveAction";
 import { useTroveView } from "./context/TroveViewContext";
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../../utils/constants";
 import { InfoIcon } from "../InfoIcon";
 import { LoadingOverlay } from "../LoadingOverlay";
 import { CollateralRatio } from "./CollateralRatio";

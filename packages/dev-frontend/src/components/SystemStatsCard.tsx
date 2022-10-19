@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Box, Button, Card, Flex, Input, ThemeUICSSProperties } from "theme-ui";
 import { Decimal, Percent, LiquityStoreState } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
-import { COIN, FIRST_ERC20_COLLATERAL } from '../strings';
+import { COIN, FIRST_ERC20_COLLATERAL } from "../utils/constants";
 import { useLiquity } from "../hooks/LiquityContext";
 
 import { SystemStat } from "./SystemStat";

@@ -4,7 +4,7 @@ import { Box, Flex, Card, Link } from "theme-ui";
 import { Decimal, Percent, LiquityStoreState, MINIMUM_COLLATERAL_RATIO } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 
-import { COIN } from "../../strings";
+import { COIN } from "../../utils/constants";
 
 import { LoadingOverlay } from "../LoadingOverlay";
 import { EditableRow, StaticRow } from "../Trove/Editor";

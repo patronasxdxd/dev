@@ -6,7 +6,7 @@ import { useLiquitySelector } from "@liquity/lib-react";
 import { useTroveView } from "../Trove/context/TroveViewContext";
 import { TroveView } from "../Trove/context/types";
 
-import { FIRST_ERC20_COLLATERAL } from "../../strings";
+import { FIRST_ERC20_COLLATERAL } from "../../utils/constants";
 import { BottomCard } from "./BottomCard";
 
 type VaultCardProps = {

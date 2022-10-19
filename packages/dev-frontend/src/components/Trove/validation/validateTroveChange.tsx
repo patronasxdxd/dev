@@ -13,7 +13,7 @@ import {
   TroveCreationParams
 } from "@liquity/lib-base";
 
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../../strings";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../../../utils/constants";
 
 import { ActionDescription, Amount } from "../../ActionDescription";
 import { ErrorDescription } from "../../ErrorDescription";
