@@ -5,7 +5,7 @@ import { useTroveView } from "./context/TroveViewContext";
 import { LiquityStoreState } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
+import { COIN, FIRST_ERC20_COLLATERAL, DARK_FILTER } from "../../utils/constants";
 import { ActionDescription } from "../ActionDescription";
 import { GenericIcon } from "../GenericIcon";
 import { InfoIcon } from "../InfoIcon";
@@ -48,7 +48,7 @@ export const NoTrove: React.FC = props => {
           </ActionDescription>
           { FIRST_ERC20_COLLATERAL } available 
           <Flex variant="layout.balanceRow">
-            <GenericIcon imgSrc={colorMode === "darkGrey" ? "./icons/darkgrey-threshold-icon.svg" : "./icons/threshold-icon.svg"} height={"18px"} />
+            <GenericIcon imgSrc="./icons/threshold-icon.svg" sx={colorMode === "darkGrey" ? {filter: DARK_FILTER} : {}} height={"18px"} />
             <Box sx={{ fontSize: 3 }}>
               {!erc20TokenBalance.eq(0) ? erc20TokenBalance.prettify() : '--'}
             </Box>

@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Button, Card, Flex, Link, useColorMode } from "theme-ui";
 import { NavLink } from "react-router-dom";
 
+import { DARK_FILTER } from "../../utils/constants";
 import { GenericIcon } from "../GenericIcon";
 import { InfoIcon } from "../InfoIcon";
 
@@ -24,7 +25,6 @@ export const BottomCard: React.FC<BottomCardProps> = ({
   children
 }) => {
   const [colorMode] = useColorMode();
-
     return (
       <Card variant="layout.columns">
         <Flex sx={{
@@ -46,7 +46,7 @@ export const BottomCard: React.FC<BottomCardProps> = ({
         }}>
           {token} available 
           <Flex variant="layout.balanceRow" sx={{ color: "inputText"}}>
-            <GenericIcon imgSrc={colorMode === "darkGrey" ? "./icons/darkgrey-threshold-icon.svg" : "./icons/threshold-icon.svg"} height={"18px"} />
+            <GenericIcon imgSrc="./icons/threshold-icon.svg" sx={colorMode === "darkGrey" ? {filter: DARK_FILTER} : {}} height={"18px"} />
             <Box sx={{ fontSize: 3 }}>
               {children}
             </Box>

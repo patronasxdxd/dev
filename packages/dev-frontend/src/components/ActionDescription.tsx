@@ -1,6 +1,7 @@
 import { Box, Flex, Text, useColorMode } from "theme-ui";
 
 import { GenericIcon } from "./GenericIcon";
+import { PURPLE_FILTER, WHITE_FILTER } from "../utils/constants";
 
 type ActionDescriptionProps = {
   title?: string;
@@ -26,7 +27,8 @@ export const ActionDescription: React.FC<ActionDescriptionProps> = ({ title, chi
       }}
     >
       <Flex sx={{ alignItems: "center", fontSize: "0.9em" }}>
-        <GenericIcon imgSrc={colorMode === "dark" ? "./icons/purple-rounded-info.svg" : colorMode === "darkGrey" ? "./icons/white-rounded-info.svg" :  "./icons/rounded-info.svg"} height={"18px"} />
+        <GenericIcon imgSrc="./icons/rounded-info.svg" 
+            sx={colorMode === "dark" ? {filter: PURPLE_FILTER} : colorMode === "darkGrey" ? {filter: WHITE_FILTER} : {}} height={"18px"} />
         <Flex sx={{ alignItems: "start", flexDirection: "column", ml: "1.8em", gap: "0.5em" }}>
           <Text sx={{ color: "text" }}>{title}</Text>
           <Text sx={{ color: "greytext" }}>{children}</Text>

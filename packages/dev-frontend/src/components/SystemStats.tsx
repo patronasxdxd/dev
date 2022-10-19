@@ -4,7 +4,7 @@ import { Decimal, Percent, LiquityStoreState } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 
 import { useLiquity } from "../hooks/LiquityContext";
-import { COIN } from "../strings";
+import { COIN } from "../utils/constants";
 import { Statistic } from "./Statistic";
 
 const selectBalances = ({ accountBalance, thusdBalance }: LiquityStoreState) => ({
