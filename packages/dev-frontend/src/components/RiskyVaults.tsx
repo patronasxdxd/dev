@@ -15,7 +15,7 @@ import { useWeb3React } from "@web3-react/core";
 
 import { shortenAddress } from "../utils/shortenAddress";
 import { useLiquity } from "../hooks/LiquityContext";
-import { COIN } from "../strings";
+import { COIN } from "../utils/constants";
 
 import { Icon } from "./Icon";
 import { Transaction } from "./Transaction";
@@ -66,7 +66,6 @@ const select = ({
 
 export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
   const { chainId } = useWeb3React<Web3Provider>();
-  console.log('chainId: ', chainId)
   const {
     blockTag,
     numberOfTroves,

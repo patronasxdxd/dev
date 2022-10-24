@@ -1,8 +1,8 @@
 export type ThresholdConfig = {
   infuraApiKey?: string;
   testnetOnly?: boolean;
-  BlocksApiUrl?: string;
-  ThresholdUsdApiUrl?: string;
+  blocksApiUrl?: string;
+  thresholdUsdApiUrl?: string;
 };
 
 const defaultConfig: ThresholdConfig = {
@@ -38,25 +38,25 @@ const parseConfig = (json: unknown): ThresholdConfig => {
       }
     }
 
-    if (hasKey(json, "BlocksApiUrl") && json.BlocksApiUrl !== "") {
-      const { BlocksApiUrl } = json;
+    if (hasKey(json, "blocksApiUrl") && json.blocksApiUrl !== "") {
+      const { blocksApiUrl } = json;
 
-      if (typeof BlocksApiUrl === "string") {
-        config.BlocksApiUrl = BlocksApiUrl;
+      if (typeof blocksApiUrl === "string") {
+        config.blocksApiUrl = blocksApiUrl;
       } else {
-        console.error("Malformed BlocksApiUrl:");
-        console.log(BlocksApiUrl);
+        console.error("Malformed blocksApiUrl:");
+        console.log(blocksApiUrl);
       }
     }
 
-    if (hasKey(json, "ThresholdUsdApiUrl") && json.ThresholdUsdApiUrl !== "") {
-      const { ThresholdUsdApiUrl } = json;
+    if (hasKey(json, "thresholdUsdApiUrl") && json.thresholdUsdApiUrl !== "") {
+      const { thresholdUsdApiUrl } = json;
 
-      if (typeof ThresholdUsdApiUrl === "string") {
-        config.ThresholdUsdApiUrl = ThresholdUsdApiUrl;
+      if (typeof thresholdUsdApiUrl === "string") {
+        config.thresholdUsdApiUrl = thresholdUsdApiUrl;
       } else {
-        console.error("Malformed ThresholdUsdApiUrl:");
-        console.log(ThresholdUsdApiUrl);
+        console.error("Malformed thresholdUsdApiUrl:");
+        console.log(thresholdUsdApiUrl);
       }
     }
   } else {

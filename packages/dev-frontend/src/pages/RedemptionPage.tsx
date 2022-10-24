@@ -3,7 +3,7 @@ import { Box, Card, Container, Heading, Link, Paragraph } from "theme-ui";
 import { SystemStatsCard } from "../components/SystemStatsCard";
 import { Redemption } from "../components/Redemption/Redemption";
 import { InfoMessage } from "../components/InfoMessage";
-import { COIN, FIRST_ERC20_COLLATERAL } from "../strings";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../utils/constants";
 
 export const RedemptionPage: React.FC = () => {
   return (

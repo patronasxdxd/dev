@@ -1,6 +1,6 @@
 import React from "react";
 import { Card } from "theme-ui";
-import { COIN } from "../../strings";
+import { COIN } from "../../utils/constants";
 
 import { LiquityStoreState } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";

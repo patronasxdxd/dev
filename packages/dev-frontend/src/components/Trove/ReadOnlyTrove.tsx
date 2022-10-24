@@ -6,7 +6,7 @@ import { DisabledEditableRow } from "./Editor";
 import { useTroveView } from "./context/TroveViewContext";
 import { Icon } from "../Icon";
 import { InfoIcon } from "../InfoIcon";
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../../utils/constants";
 import { CollateralRatio } from "./CollateralRatio";
 
 const select = ({ trove, price }: LiquityStoreState) => ({ trove, price });

@@ -4,7 +4,7 @@ import { CollateralSurplusAction } from "../CollateralSurplusAction";
 import { LiquityStoreState } from "@liquity/lib-base";
 import { useLiquitySelector } from "@liquity/lib-react";
 import { useTroveView } from "./context/TroveViewContext";
-import { COIN } from "../../strings";
+import { COIN } from "../../utils/constants";
 
 import { InfoMessage } from "../InfoMessage";
 

@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, MutableRefObject } from "react";
 import { Box, Card, Flex, useColorMode } from "theme-ui";
 
-import { FIRST_ERC20_COLLATERAL } from '../../../strings';
+import { FIRST_ERC20_COLLATERAL } from "../../../utils/constants";
 
 import { useTvl } from "./context/ChartContext";
-import { tvlData } from "./context/ChartProvider";
+import { tvlData, TimestampsObject } from "./context/ChartProvider";
 
 import {
   Chart as ChartJS,
@@ -16,7 +16,7 @@ import {
   Tooltip,
   Legend,
   Filler,
-  ScriptableContext
+  ScriptableContext,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
@@ -53,25 +53,50 @@ ChartJS.register({
 });
 
 export const LineChart: React.FC = () => {
+  const [hoverRef, isHovered] = useHover<HTMLDivElement>();
+  
   const [colorMode] = useColorMode();
-
   const [activeData, setActiveData] = useState<number | string>('-');
-  const [activeLabel, setActiveLabel] = useState<string>();
+  const [activeLabel, setActiveLabel] = useState<string>('-');
   const [chartData, setChartData] = useState<Array<tvlData>>();
-  const [chartLabels, setChartLabels] = useState<Array<number>>();
+  const [chartLabels, setChartLabels] = useState<Array<TimestampsObject>>();
+
+  function useHover<T>(): [MutableRefObject<T>, boolean] {
+    const [value, setValue] = useState<boolean>(false); 
+    const ref: any = useRef<T | null>(null);
+    const handleMouseOver = (): void => setValue(true);
+    const handleMouseOut = (): void => setValue(false);
+
+    useEffect(
+      () => {
+        const node: any = ref.current;
+        if (node) {
+          node.addEventListener("mouseover", handleMouseOver);
+          node.addEventListener("mouseout", handleMouseOut);
+          return () => {
+            node.removeEventListener("mouseover", handleMouseOver);
+            node.removeEventListener("mouseout", handleMouseOut);
+          };
+        }
+      },
+      [] // Recall only if ref changes
+    );
+    return [ref, value];
+  };
 
   useTvl().then((result) => {
+    if (!result) return null;
     const { tvl , timestamps } = result;
-    setChartData(tvl)
-    setChartLabels(timestamps)
+    setChartData(tvl);
+    setChartLabels(timestamps);
   });
 
   const labels: Array<{[date: string]: string}> = [];
 
-  chartLabels?.map((label: number) => {
-    const date = new Date(label * 1000) // convert timestamp to date;
+  chartLabels?.map((timestamp: TimestampsObject) => {
+    const date = new Date(timestamp.localTimestamp * 1000) // convert timestamp to date;
     const day = date.getUTCDate();
-    const month = date.toLocaleString('default', { month: 'long' })
+    const month = date.toLocaleString('default', { month: 'long' });
     const year = date.getUTCFullYear();
 
     return labels.push({[day]: `${month} ${day}, ${year}`})
@@ -90,10 +115,11 @@ export const LineChart: React.FC = () => {
       y: {
         display: false,
         drawTicks: false,
+        beginAtZero: true
       }, 
       x: {
         ticks: {
-          padding: 15,
+          padding: 12,
           autoSkip: true,
           maxTicksLimit: 20,
           font: {
@@ -131,7 +157,7 @@ export const LineChart: React.FC = () => {
       const labelIndex = labels[index];
       const activeLabel = labelIndex && Object.values(labelIndex)[0];
       setActiveData(activeData ? activeData : '-');
-      setActiveLabel(activeLabel && activeLabel)
+      setActiveLabel(activeLabel ?? '-')
     }
   };
   
@@ -178,7 +204,7 @@ export const LineChart: React.FC = () => {
         <Box style={{
           height: "18.5em",
           marginTop: "2.5em",
-          marginBottom: "3em"
+          paddingBottom: "2.5em"
         }}>
           <Flex sx={{ 
             position: "absolute", 
@@ -187,21 +213,26 @@ export const LineChart: React.FC = () => {
             fontWeight: "bold", 
             color: "text"
           }}>
-            {activeData} {activeData > 0 && ` ${ FIRST_ERC20_COLLATERAL }` }
+            {isHovered ? activeData : '-'} {isHovered && activeData > 0 && ` ${ FIRST_ERC20_COLLATERAL }` }
           </Flex>
           <Flex sx={{ 
-            position: "absolute",
             fontSize: ".9em",
+            marginBottom: "1.5em"
           }}>
-            {activeLabel}
+            {isHovered ? activeLabel : '-'}
           </Flex>
-          <Line options={{
-            ...options,
-            interaction: {
-              mode: 'index',
-              intersect: false,
-            }
-          }}  data={data} />
+          <Box sx={{height: "100%"}} ref={hoverRef}>
+            <Line 
+              options={{
+                ...options,
+                interaction: {
+                  mode: 'index',
+                  intersect: false,
+                }
+              }}  
+              data={data} 
+            />
+          </Box>
         </Box>
       </Flex>
     </Card>
