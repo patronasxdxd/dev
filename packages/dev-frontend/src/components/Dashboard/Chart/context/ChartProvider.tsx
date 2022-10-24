@@ -21,7 +21,7 @@ export type FunctionalPanelProps = {
   loader?: React.ReactNode;
 };
 
-const fetchBlockByTimestamp = (timestamp: number, BlocksApiUrl: string) => {
+const fetchBlockByTimestamp = (timestamp: number, blocksApiUrl: string) => {
   const query = `
   query {
     blocks(
@@ -36,10 +36,10 @@ const fetchBlockByTimestamp = (timestamp: number, BlocksApiUrl: string) => {
       number
     }
   }`
-  return fetchData(BlocksApiUrl, query);
+  return fetchData(blocksApiUrl, query);
 };
 
-const fetchTvlByBlock = (blockNumber: number, ThresholdUsdApiUrl: string) => {
+const fetchTvlByBlock = (blockNumber: number, thresholdUsdApiUrl: string) => {
   const query = `
   query {
     systemStates(
@@ -53,7 +53,7 @@ const fetchTvlByBlock = (blockNumber: number, ThresholdUsdApiUrl: string) => {
       totalCollateral
     }
   }`
-  return fetchData(ThresholdUsdApiUrl, query);
+  return fetchData(thresholdUsdApiUrl, query);
 };
 
 export const createListOfTimestamps = (): Array<TimestampsObject> => {
@@ -70,18 +70,19 @@ export const createListOfTimestamps = (): Array<TimestampsObject> => {
   return timestamps;
 };
 
-export const queryBlocksByTimestamps = async (timestamps: Array<TimestampsObject>, BlocksApiUrl: string): Promise<Array<BlockObject>> => {
+export const queryBlocksByTimestamps = async (timestamps: Array<TimestampsObject>, blocksApiUrl: string): Promise<Array<BlockObject>> => {
   const Blocks = timestamps.map(async (timestamp): Promise<BlockObject> => {
-    const blocksData = await fetchBlockByTimestamp(timestamp.universalTimestamp, BlocksApiUrl);
+    const blocksData = await fetchBlockByTimestamp(timestamp.universalTimestamp, blocksApiUrl);
     return blocksData.data.blocks[0];
   })
   return Promise.all(Blocks);
 };
 
-export const queryTvlByBlocks = async (blocks: Array<BlockObject>, ThresholdUsdApiUrl: string): Promise<Array<tvlData>> => {
+export const queryTvlByBlocks = async (blocks: Array<BlockObject>, thresholdUsdApiUrl: string): Promise<Array<tvlData>> => {
   const tvlData: Array<Promise<tvlData>> = blocks.map(async (block) => {
     const blockNumber: number = Number(block.number);
-    return fetchTvlByBlock(blockNumber, ThresholdUsdApiUrl).then((result) => {
+    return fetchTvlByBlock(blockNumber, thresholdUsdApiUrl)
+    .then((result) => {
       const tvlValue: tvlData = result.data ? {
         totalCollateral: Number(result.data.systemStates[0].totalCollateral), 
         blockNumber: blockNumber
@@ -90,16 +91,16 @@ export const queryTvlByBlocks = async (blocks: Array<BlockObject>, ThresholdUsdA
         blockNumber: blockNumber
       };
       return tvlValue;
-    });
+    })
   });
   return Promise.all(tvlData);
 };
 
-export const queryTvl = async (BlocksApiUrl: string, ThresholdUsdApiUrl: string):  Promise<Array<tvlData>> => {
+export const queryTvl = async (blocksApiUrl: string, thresholdUsdApiUrl: string):  Promise<Array<tvlData>> => {
   const timestamps: Array<TimestampsObject> = createListOfTimestamps();
-  return queryBlocksByTimestamps(timestamps, BlocksApiUrl).then(
+  return queryBlocksByTimestamps(timestamps, blocksApiUrl).then(
     async (blocks) => {
-      const tvl = await queryTvlByBlocks(blocks, ThresholdUsdApiUrl);
+      const tvl = await queryTvlByBlocks(blocks, thresholdUsdApiUrl);
       return tvl;
     }
   );
@@ -115,23 +116,23 @@ async function fetchData(API_URL: string, query: string) {
 
 export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader })  => {
   const timestamps: Array<TimestampsObject> = createListOfTimestamps();
-  const [ isTVLDataAvailable , SetisTVLDataAvailable ] = useState<boolean>(true);
+  const [ isTVLDataAvailable , setisTVLDataAvailable ] = useState<boolean>(true);
   const [ tvl, setTvl ] = useState<Array<tvlData>>();
   const [ isMounted, setIsMounted ] = useState<boolean>(true);
   const { config, provider } = useLiquity();
-  const { BlocksApiUrl, ThresholdUsdApiUrl } = config;
+  const { blocksApiUrl, thresholdUsdApiUrl } = config;
 
   const getTVLData = () => {
     return provider.getNetwork()
     .then((network) => {
       const networkName = network.name === 'homestead' ? 'ethereum' : network.name;
-      const BlocksUrlByNetwork = `https://${BlocksApiUrl}/${networkName}-blocks`;
-      const ThresholdUrlByNetwork = `https://${ThresholdUsdApiUrl}/${networkName}-thresholdusd`;
-      return queryTvl(BlocksUrlByNetwork, ThresholdUrlByNetwork)
+      const blocksUrlByNetwork = `https://${blocksApiUrl}/${networkName}-blocks`;
+      const thresholdUrlByNetwork = `https://${thresholdUsdApiUrl}/${networkName}-thresholdusd`;
+      return queryTvl(blocksUrlByNetwork, thresholdUrlByNetwork)
         .then((result) => setTvl(result));
     })
     .catch((error) => {
-      SetisTVLDataAvailable(false);
+      setisTVLDataAvailable(false);
       console.error('failed to fetch tvl: ', error);
     });
   }
@@ -149,7 +150,7 @@ export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted]);
 
-  if (!BlocksApiUrl || !ThresholdUsdApiUrl) {
+  if (!blocksApiUrl || !thresholdUsdApiUrl) {
     console.error(`You must add a config.json file into the public source folder.`)
     return <>{children}</>
   };
