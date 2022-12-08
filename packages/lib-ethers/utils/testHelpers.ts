@@ -12,6 +12,7 @@ import {
   TroveCreationParams,
 } from "@liquity/lib-base";
 
+import { DEPLOYMENT_VERSION_FOR_TESTING } from "../src/_utils"
 import { _connectToDeployment } from "../src/EthersLiquityConnection";
 import { _LiquityDeploymentJSON } from "../src/contracts";
 import { EthersLiquity } from "../src/EthersLiquity";
@@ -28,7 +29,7 @@ export const connectToDeployment = async (
   signer: Signer
 ) =>
   EthersLiquity._from(
-    _connectToDeployment(deployment, signer, {
+    _connectToDeployment(DEPLOYMENT_VERSION_FOR_TESTING, deployment, signer, {
       userAddress: await signer.getAddress()
     })
   );

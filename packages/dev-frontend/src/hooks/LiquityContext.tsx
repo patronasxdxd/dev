@@ -9,7 +9,8 @@ import {
   BlockPolledLiquityStore,
   EthersLiquity,
   EthersLiquityWithStore,
-  _connectByChainId
+  _connectByChainId,
+  _getVersionedDeployments
 } from "@liquity/lib-ethers";
 
 import { ThresholdConfig, getConfig } from "../config";
@@ -18,7 +19,7 @@ type LiquityContextValue = {
   config: ThresholdConfig;
   account: string;
   provider: Provider;
-  liquity: EthersLiquityWithStore<BlockPolledLiquityStore>;
+  threshold: EthersLiquityWithStore<BlockPolledLiquityStore>[];
 };
 
 const LiquityContext = createContext<LiquityContextValue | undefined>(undefined);
@@ -45,44 +46,61 @@ export const LiquityProvider: React.FC<LiquityProviderProps> = ({
   const { library: provider, account, chainId } = useWeb3React<Web3Provider>();
   const [config, setConfig] = useState<ThresholdConfig>();
 
-  const connection = useMemo(() => {
-    if (config && provider && account && chainId) {
+  const deploymentVersions = useMemo(() => {
+    if (chainId) {
       try {
-        return _connectByChainId(provider, provider.getSigner(account), chainId, {
-          userAddress: account,
-          useStore: "blockPolled"
-        });
+        return _getVersionedDeployments(chainId === 1 ? 'mainnet' : 'goerli');
       } catch {}
     }
-  }, [config, provider, account, chainId]);
+  }, [chainId]);
+
+  const connections = useMemo(() => {
+    if (deploymentVersions && config && provider && account && chainId) {
+      try {
+        return deploymentVersions.versions.map((version) => {
+          return _connectByChainId(
+            version, deploymentVersions.versionedDeployments[version], 
+            provider, 
+            provider.getSigner(account), chainId, 
+            { userAddress: account, useStore: "blockPolled" }
+          )
+        })
+      } catch {}
+    }
+  }, [deploymentVersions, config, provider, account, chainId]);
 
   useEffect(() => {
     getConfig().then(setConfig);
   }, []);
 
   useEffect(() => {
-    if (config && connection) {
-      const { provider, chainId } = connection;
+    if (config && connections) {
+      //Get the connection of the first collateral ("v1") for network identification
+      const connection = connections.find(connection => connection.version === "v1");
 
-      if (isBatchedProvider(provider) && provider.chainId !== chainId) {
-        provider.chainId = chainId;
-      }
+      if (connection) {
+        const { provider, chainId } = connection;
 
-      if (isWebSocketAugmentedProvider(provider)) {
-        const network = getNetwork(chainId);
-
-        if (network.name && supportedNetworks.includes(network.name) && config.infuraApiKey) {
-          provider.openWebSocket(...wsParams(network.name, config.infuraApiKey));
-        } else if (connection._isDev) {
-          provider.openWebSocket(`ws://${window.location.hostname}:8546`, chainId);
+        if (isBatchedProvider(provider) && provider.chainId !== chainId) {
+          provider.chainId = chainId;
         }
 
-        return () => {
-          provider.closeWebSocket();
-        };
+        if (isWebSocketAugmentedProvider(provider)) {
+          const network = getNetwork(chainId);
+
+          if (network.name && supportedNetworks.includes(network.name) && config.infuraApiKey) {
+            provider.openWebSocket(...wsParams(network.name, config.infuraApiKey));
+          } else if (connections[0]._isDev) {
+            provider.openWebSocket(`ws://${window.location.hostname}:8546`, chainId);
+          }
+
+          return () => {
+            provider.closeWebSocket();
+          };
+        }
       }
     }
-  }, [config, connection]);
+  }, [config, connections]);
 
 
   if (!config || !provider || !account || !chainId) {
@@ -95,15 +113,21 @@ export const LiquityProvider: React.FC<LiquityProviderProps> = ({
   }
 
   //Forcing goerli connection
-  if (!connection || chainId !== 5) {
+  if (!connections || chainId !== 5) {
     return unsupportedNetworkFallback ? <>{unsupportedNetworkFallback(chainId)}</> : null;
   }
 
-  const liquity = EthersLiquity._from(connection);
-  liquity.store.logging = true;
+  const threshold = connections.map((connection) => {
+    return EthersLiquity._from(connection);
+  })
+
+  threshold.forEach((thresholdInstance) => {
+    thresholdInstance.store.logging = true;
+  })
+
 
   return (
-    <LiquityContext.Provider value={{ config, account, provider, liquity }}>
+    <LiquityContext.Provider value={{ config, account, provider, threshold }}>
       {children}
     </LiquityContext.Provider>
   );

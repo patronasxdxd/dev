@@ -14,22 +14,26 @@ type FunctionalPanelProps = {
 
 export const FunctionalPanel: React.FC<FunctionalPanelProps> = ({ children, loader }) => {
 
-  const { account, provider, liquity } = useLiquity();
+  const { account, provider, threshold } = useLiquity();
 
   // For console tinkering ;-)
   Object.assign(window, {
     account,
     provider,
-    liquity,
+    threshold,
     Trove,
     Decimal,
     Difference,
     Wallet
   });
 
+  const thresholdStores = threshold.map((thresholdInstance) => {
+    return thresholdInstance.store;
+  })
+
   return (
     <>
-      <LiquityStoreProvider {...{ loader }} store={liquity.store}>
+      <LiquityStoreProvider {...{ loader }} thresholdStores={thresholdStores}>
         <TroveViewProvider>
           {children}
         </TroveViewProvider>

@@ -15,13 +15,19 @@ import {
 
 import { MultiTroveGetter } from "../types";
 
-import { decimalify, panic } from "./_utils";
+import { decimalify, panic, DEPLOYMENT_VERSION_FOR_TESTING } from "./_utils";
 import { EthersCallOverrides, EthersProvider, EthersSigner } from "./types";
 
 import {
+  _LiquityDeploymentJSON
+} from "./contracts"
+import {
+  deployments,
   EthersLiquityConnection,
   EthersLiquityConnectionOptionalParams,
   EthersLiquityStoreOption,
+  getProviderAndSigner,
+  UnsupportedNetworkError,
   _connect,
   _getBlockTimestamp,
   _getContracts,
@@ -125,7 +131,13 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     signerOrProvider: EthersSigner | EthersProvider,
     optionalParams?: EthersLiquityConnectionOptionalParams
   ): Promise<ReadableEthersLiquity> {
-    return ReadableEthersLiquity._from(await _connect(signerOrProvider, optionalParams));
+    const [provider, signer] = getProviderAndSigner(signerOrProvider);
+    const chainId = (await provider.getNetwork()).chainId
+
+    const importedDeployment: _LiquityDeploymentJSON =
+    deployments[chainId] ?? panic(new UnsupportedNetworkError(chainId));
+
+    return ReadableEthersLiquity._from(await _connect(DEPLOYMENT_VERSION_FOR_TESTING, importedDeployment, provider, signer, optionalParams));
   }
 
   /**

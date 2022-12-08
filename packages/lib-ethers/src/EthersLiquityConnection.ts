@@ -9,6 +9,7 @@ import { numberify, panic } from "./_utils";
 import { EthersProvider, EthersSigner } from "./types";
 
 import {
+  _VersionedLiquityDeployments,
   _connectToContracts,
   _LiquityContractAddresses,
   _LiquityContracts,
@@ -19,7 +20,7 @@ import { _connectToMulticall, _Multicall } from "./_Multicall";
 
 const dev = devOrNull as _LiquityDeploymentJSON | null;
 
-const deployments: {
+export const deployments: {
   [chainId: number]: _LiquityDeploymentJSON | undefined;
 } = {
   [mainnet.chainId]: mainnet,
@@ -48,6 +49,9 @@ export interface EthersLiquityConnection extends EthersLiquityConnectionOptional
 
   /** Ethers `Signer` used for sending transactions. */
   readonly signer?: EthersSigner;
+
+  /** deployment collateral version of the connected network. */
+  readonly deploymentVersion: string;
 
   /** Chain ID of the connected network. */
   readonly chainId: number;
@@ -82,6 +86,7 @@ export interface _InternalEthersLiquityConnection extends EthersLiquityConnectio
 }
 
 const connectionFrom = (
+  deploymentVersion: string,
   provider: EthersProvider,
   signer: EthersSigner | undefined,
   _contracts: _LiquityContracts,
@@ -101,6 +106,7 @@ const connectionFrom = (
   }
 
   return branded({
+    deploymentVersion,
     provider,
     signer,
     _contracts,
@@ -171,7 +177,7 @@ export class UnsupportedNetworkError extends Error {
   }
 }
 
-const getProviderAndSigner = (
+export const getProviderAndSigner = (
   signerOrProvider: EthersSigner | EthersProvider
 ): [provider: EthersProvider, signer: EthersSigner | undefined] => {
   const provider: EthersProvider = Signer.isSigner(signerOrProvider)
@@ -185,11 +191,13 @@ const getProviderAndSigner = (
 
 /** @internal */
 export const _connectToDeployment = (
+  version: string,
   deployment: _LiquityDeploymentJSON,
   signerOrProvider: EthersSigner | EthersProvider,
   optionalParams?: EthersLiquityConnectionOptionalParams
 ): EthersLiquityConnection =>
   connectionFrom(
+    version,
     ...getProviderAndSigner(signerOrProvider),
     _connectToContracts(signerOrProvider, deployment),
     undefined,
@@ -249,6 +257,8 @@ export interface EthersLiquityConnectionOptionalParams {
 
 /** @internal */
 export function _connectByChainId<T>(
+  version: string,
+  deployment: _LiquityDeploymentJSON,
   provider: EthersProvider,
   signer: EthersSigner | undefined,
   chainId: number,
@@ -257,6 +267,8 @@ export function _connectByChainId<T>(
 
 /** @internal */
 export function _connectByChainId(
+  version: string,
+  deployment: _LiquityDeploymentJSON,
   provider: EthersProvider,
   signer: EthersSigner | undefined,
   chainId: number,
@@ -265,15 +277,16 @@ export function _connectByChainId(
 
 /** @internal */
 export function _connectByChainId(
+  version: string,
+  deployment: _LiquityDeploymentJSON,
   provider: EthersProvider,
   signer: EthersSigner | undefined,
   chainId: number,
   optionalParams?: EthersLiquityConnectionOptionalParams
 ): EthersLiquityConnection {
-  const deployment: _LiquityDeploymentJSON =
-    deployments[chainId] ?? panic(new UnsupportedNetworkError(chainId));
 
   return connectionFrom(
+    version,
     provider,
     signer,
     _connectToContracts(signer ?? provider, deployment),
@@ -284,11 +297,34 @@ export function _connectByChainId(
 }
 
 /** @internal */
+export function _getVersionedDeployments(network: string): {versions: string[], versionedDeployments: _VersionedLiquityDeployments} {
+  const versionedDeployments: _VersionedLiquityDeployments = {};
+  const versions: string[] = [];
+
+  for (let i = 1; i < 10; i++) {
+    import(`../deployments/default/eth/v${i.toString()}/${network}.json`)
+      .then((deployment) => {
+        versionedDeployments['v'+i] = deployment;
+        versions.push(`v${i.toString()}`)
+      })
+      .catch((err) => {
+        return err
+      })
+  }
+  return {
+    versions: versions, 
+    versionedDeployments: versionedDeployments
+  };
+}
+
+/** @internal */
 export const _connect = async (
-  signerOrProvider: EthersSigner | EthersProvider,
+  version: string,
+  deployment: _LiquityDeploymentJSON,
+  provider: EthersProvider,
+  signer?: EthersSigner,
   optionalParams?: EthersLiquityConnectionOptionalParams
 ): Promise<EthersLiquityConnection> => {
-  const [provider, signer] = getProviderAndSigner(signerOrProvider);
 
   if (signer) {
     if (optionalParams?.userAddress !== undefined) {
@@ -301,5 +337,5 @@ export const _connect = async (
     };
   }
 
-  return _connectByChainId(provider, signer, (await provider.getNetwork()).chainId, optionalParams);
+  return _connectByChainId(version, deployment, provider, signer, (await provider.getNetwork()).chainId, optionalParams);
 };

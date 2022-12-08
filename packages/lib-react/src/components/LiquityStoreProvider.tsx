@@ -1,30 +1,39 @@
-import { LiquityStore } from "@liquity/lib-base";
+import { LiquityStore, } from "@liquity/lib-base";
+
 import React, { createContext, useEffect, useState } from "react";
 
 export const LiquityStoreContext = createContext<LiquityStore | undefined>(undefined);
 
 type LiquityStoreProviderProps = {
-  store: LiquityStore;
+  thresholdStores: LiquityStore[];
   loader?: React.ReactNode;
 };
 
 export const LiquityStoreProvider: React.FC<LiquityStoreProviderProps> = ({
-  store,
+  thresholdStores,
   loader,
   children
 }) => {
   const [loadedStore, setLoadedStore] = useState<LiquityStore>();
 
   useEffect(() => {
-    store.onLoaded = () => setLoadedStore(store);
-    const stop = store.start();
+    const stopArray: (() => void)[] = []
+
+    thresholdStores.forEach((thresholdStore) => {
+      thresholdStore.onLoaded = () => setLoadedStore(thresholdStore);
+      const stop = thresholdStore.start()
+      stopArray.push(stop) 
+    })
 
     return () => {
-      store.onLoaded = undefined;
-      setLoadedStore(undefined);
-      stop();
+      thresholdStores.forEach((thresholdStore, index) => {
+        thresholdStore.onLoaded = undefined;
+        const stop = stopArray[index];
+        stop();
+        setLoadedStore(undefined);
+      })
     };
-  }, [store]);
+  }, [thresholdStores]);
 
   if (!loadedStore) {
     return <>{loader}</>;

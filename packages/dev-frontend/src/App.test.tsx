@@ -16,9 +16,10 @@ console.log(`${trove}`);
 test("there's no smoke", async () => {
   const { getByText, getByLabelText, findByText } = render(<App />);
 
-  expect(await findByText(/Dashboard/i)).toBeInTheDocument();
+  expect(await findByText(/open a vault/i)).toBeInTheDocument();
 
-  fireEvent.click(getByText(/open trove/i));
+  fireEvent.click(getByText(/open a vault/i));
+  fireEvent.click(getByText(/open a vault/i));
   fireEvent.click(getByLabelText(/collateral/i));
   fireEvent.change(getByLabelText(/^collateral$/i), { target: { value: `${trove.collateral}` } });
   fireEvent.click(getByLabelText(/^borrow$/i));

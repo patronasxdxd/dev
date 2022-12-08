@@ -1,10 +1,16 @@
 export {
+  _getVersionedDeployments,
   _connectByChainId,
   EthersLiquityConnection,
   EthersLiquityConnectionOptionalParams,
   EthersLiquityStoreOption,
   UnsupportedNetworkError
 } from "./src/EthersLiquityConnection";
+
+export {
+  _LiquityContractAddresses,
+  _LiquityDeploymentJSON
+} from "./src/contracts";
 
 export * from "./src/types";
 export * from "./src/ReadableEthersLiquity";
