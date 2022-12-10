@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "theme-ui";
-import { Percent, LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { Percent, LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
 
 import { TopCard } from "./TopCard";
 
@@ -11,7 +11,7 @@ type BorrowingFeeProps = {
 
 const select = ({
   borrowingRate,
-}: LiquityStoreState) => ({
+}: ThresholdStoreState) => ({
   borrowingRate,
 });
 
@@ -19,7 +19,7 @@ const select = ({
 export const BorrowingFee: React.FC<BorrowingFeeProps> = ({ variant = "mainCards" }) => {
   const {
     borrowingRate,
-  } = useLiquitySelector(select);
+  } = useThresholdSelector(select);
 
   const borrowingFeePct = new Percent(borrowingRate);
 

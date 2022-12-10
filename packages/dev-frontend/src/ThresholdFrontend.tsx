@@ -18,9 +18,9 @@ import { RiskyVaultsPage } from "./pages/RiskyVaultsPage";
 
 import { VaultPage } from "./pages/VaultPage";
 
-import { LiquityProvider } from "./hooks/LiquityContext";
+import { ThresholdProvider } from "./hooks/ThresholdContext";
 
-type LiquityFrontendProps = {
+type ThresholdFrontendProps = {
   loader?: React.ReactNode;
 };
 
@@ -44,7 +44,7 @@ const UnsupportedMainnetFallback: React.FC = () => (
   </Flex>
 );
 
-export const LiquityFrontend: React.FC<LiquityFrontendProps> = ({ loader }) => {
+export const ThresholdFrontend: React.FC<ThresholdFrontendProps> = ({ loader }) => {
   const unsupportedNetworkFallback = (chainId: number) => (
     <Flex
       sx={{
@@ -82,7 +82,7 @@ export const LiquityFrontend: React.FC<LiquityFrontendProps> = ({ loader }) => {
             }}
           >
             <WalletConnector loader={loader}>
-              <LiquityProvider
+              <ThresholdProvider
                 loader={loader}
                 unsupportedNetworkFallback={unsupportedNetworkFallback}
                 unsupportedMainnetFallback={<UnsupportedMainnetFallback />}
@@ -110,7 +110,7 @@ export const LiquityFrontend: React.FC<LiquityFrontendProps> = ({ loader }) => {
                     </FunctionalPanel>
                   </TransactionProvider>
                 </ChartProvider>
-              </LiquityProvider>
+              </ThresholdProvider>
             </WalletConnector>
           </Container>
         </Flex>

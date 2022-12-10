@@ -2,9 +2,9 @@ import React from "react";
 import { Wallet } from "@ethersproject/wallet";
 
 import { Decimal, Difference, Trove } from "@liquity/lib-base";
-import { LiquityStoreProvider } from "@liquity/lib-react";
+import { LiquityStoreProvider as ThresholdStoreProvider } from "@liquity/lib-react";
 
-import { useLiquity } from "../hooks/LiquityContext";
+import { useThreshold } from "../hooks/ThresholdContext";
 import { TroveViewProvider } from "./Trove/context/TroveViewProvider";
 import { TransactionMonitor } from "./Transaction";
 
@@ -14,7 +14,7 @@ type FunctionalPanelProps = {
 
 export const FunctionalPanel: React.FC<FunctionalPanelProps> = ({ children, loader }) => {
 
-  const { account, provider, threshold } = useLiquity();
+  const { account, provider, threshold } = useThreshold();
 
   // For console tinkering ;-)
   Object.assign(window, {
@@ -33,11 +33,11 @@ export const FunctionalPanel: React.FC<FunctionalPanelProps> = ({ children, load
 
   return (
     <>
-      <LiquityStoreProvider {...{ loader }} thresholdStores={thresholdStores}>
+      <ThresholdStoreProvider {...{ loader }} thresholdStores={thresholdStores}>
         <TroveViewProvider>
           {children}
         </TroveViewProvider>
-      </LiquityStoreProvider>
+      </ThresholdStoreProvider>
       <TransactionMonitor />
     </>            
   );

@@ -1,23 +1,23 @@
 import React from "react";
 import { Text, Flex, Box, Heading } from "theme-ui";
 
-import { LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
 
 import { COIN } from "../strings";
-import { useLiquity } from "../hooks/LiquityContext";
+import { useThreshold } from "../hooks/ThresholdContext";
 import { shortenAddress } from "../utils/shortenAddress";
 
 import { Icon } from "./Icon";
 
-const select = ({ accountBalance, thusdBalance }: LiquityStoreState) => ({
+const select = ({ accountBalance, thusdBalance }: ThresholdStoreState) => ({
   accountBalance,
   thusdBalance
 });
 
 export const Social: React.FC = () => {
-  const { account } = useLiquity();
-  const { accountBalance, thusdBalance } = useLiquitySelector(select);
+  const { account } = useThreshold();
+  const { accountBalance, thusdBalance } = useThresholdSelector(select);
 
   return (
     <Box sx={{ display: ["none", "flex"] }}>

@@ -8,7 +8,7 @@ import { getConfig } from "./config";
 import theme from "./theme";
 
 import { DisposableWalletProvider } from "./testUtils/DisposableWalletProvider";
-import { LiquityFrontend } from "./LiquityFrontend";
+import { ThresholdFrontend } from "./ThresholdFrontend";
 
 if (window.ethereum) {
   // Silence MetaMask warning in console
@@ -49,7 +49,7 @@ const App = () => {
   return (
     <EthersWeb3ReactProvider>
       <ThemeProvider theme={theme}>
-        <LiquityFrontend loader={loader} />
+        <ThresholdFrontend loader={loader} />
       </ThemeProvider>
     </EthersWeb3ReactProvider>
   );

@@ -8,7 +8,7 @@ import {
   Percent,
   MINIMUM_COLLATERAL_RATIO,
   CRITICAL_COLLATERAL_RATIO,
-  LiquityStoreState,
+  LiquityStoreState as ThresholdStoreState,
   TroveClosureParams,
   TroveCreationParams
 } from "@liquity/lib-base";
@@ -89,7 +89,7 @@ export const selectForTroveChangeValidation = ({
   erc20TokenBalance,
   thusdBalance,
   numberOfTroves
-}: LiquityStoreState) => ({ price, total, erc20TokenBalance, thusdBalance, numberOfTroves });
+}: ThresholdStoreState) => ({ price, total, erc20TokenBalance, thusdBalance, numberOfTroves });
 
 type TroveChangeValidationSelectedState = ReturnType<typeof selectForTroveChangeValidation>;
 

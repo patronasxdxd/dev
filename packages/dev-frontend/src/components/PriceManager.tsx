@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { Card, Box, Heading, Flex, Button, Label, Input } from "theme-ui";
 
-import { Decimal, LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { Decimal, LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
 
-import { useLiquity } from "../hooks/LiquityContext";
+import { useThreshold } from "../hooks/ThresholdContext";
 
 import { Icon } from "./Icon";
 import { Transaction } from "./Transaction";
 
-const selectPrice = ({ price }: LiquityStoreState) => price;
+const selectPrice = ({ price }: ThresholdStoreState) => price;
 
 export const PriceManager: React.FC = () => {
   const {
-    liquity: {
-      send: liquity,
+    threshold: {
+      send: threshold,
       connection: { _priceFeedIsTestnet: canSetPrice }
     }
-  } = useLiquity();
+  } = useThreshold();
 
-  const price = useLiquitySelector(selectPrice);
+  const price = useThresholdSelector(selectPrice);
   const [editedPrice, setEditedPrice] = useState(price.toString(2));
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export const PriceManager: React.FC = () => {
                   if (!editedPrice) {
                     throw new Error("Invalid price");
                   }
-                  return liquity.setPrice(Decimal.from(editedPrice), overrides);
+                  return threshold.setPrice(Decimal.from(editedPrice), overrides);
                 }}
               >
                 <Button variant="icon">

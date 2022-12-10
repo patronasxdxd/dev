@@ -2,15 +2,15 @@ import React, { useCallback } from "react";
 import { Box, Button, Card, Flex, Link } from "theme-ui";
 import { useTroveView } from "./context/TroveViewContext";
 
-import { LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
 
 import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
 import { ActionDescription } from "../ActionDescription";
 import { GenericIcon } from "../GenericIcon";
 import { InfoIcon } from "../InfoIcon";
 
-const select = ({ erc20TokenBalance }: LiquityStoreState) => ({
+const select = ({ erc20TokenBalance }: ThresholdStoreState) => ({
   erc20TokenBalance
 });
 
@@ -21,7 +21,7 @@ export const NoTrove: React.FC = props => {
     dispatchEvent("OPEN_TROVE_PRESSED");
   }, [dispatchEvent]);
 
-  const { erc20TokenBalance } = useLiquitySelector(select);
+  const { erc20TokenBalance } = useThresholdSelector(select);
 
   return (
     <Card variant="mainCards">

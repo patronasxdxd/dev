@@ -8,13 +8,13 @@ import {
   UserTrove,
   Decimal
 } from "@liquity/lib-base";
-import { BlockPolledLiquityStoreState } from "@liquity/lib-ethers";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { BlockPolledLiquityStoreState as BlockPolledThresholdStoreState } from "@liquity/lib-ethers";
+import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
 import { Web3Provider } from "@ethersproject/providers";
 import { useWeb3React } from "@web3-react/core";
 
 import { shortenAddress } from "../utils/shortenAddress";
-import { useLiquity } from "../hooks/LiquityContext";
+import { useThreshold } from "../hooks/ThresholdContext";
 import { COIN } from "../strings";
 
 import { Icon } from "./Icon";
@@ -56,7 +56,7 @@ const select = ({
   total,
   thusdInStabilityPool,
   blockTag
-}: BlockPolledLiquityStoreState) => ({
+}: BlockPolledThresholdStoreState) => ({
   numberOfTroves,
   price,
   recoveryMode: total.collateralRatioIsBelowCritical(price),
@@ -75,8 +75,8 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
     totalCollateralRatio,
     thusdInStabilityPool,
     price
-  } = useLiquitySelector(select);
-  const { liquity } = useLiquity();
+  } = useThresholdSelector(select);
+  const { threshold } = useThreshold();
 
   const [loading, setLoading] = useState(true);
   const [troves, setTroves] = useState<UserTrove[]>();
@@ -111,7 +111,7 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
 
     setLoading(true);
 
-    liquity
+    threshold
       .getTroves(
         {
           first: pageSize,
@@ -132,7 +132,7 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
     };
     // Omit blockTag from deps on purpose
     // eslint-disable-next-line
-  }, [liquity, clampedPage, pageSize, reload]);
+  }, [threshold, clampedPage, pageSize, reload]);
 
   useEffect(() => {
     forceReload();
@@ -333,7 +333,7 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
                                     )
                                   : liquidatableInNormalMode(trove, price)
                               ]}
-                              send={liquity.send.liquidate.bind(liquity.send, trove.ownerAddress)}
+                              send={threshold.send.liquidate.bind(threshold.send, trove.ownerAddress)}
                             >
                               <Button variant="dangerIcon">
                                 <Icon name="trash" />

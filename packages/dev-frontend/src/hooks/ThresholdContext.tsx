@@ -6,25 +6,25 @@ import { useWeb3React } from "@web3-react/core";
 
 import { isBatchedProvider, isWebSocketAugmentedProvider } from "@liquity/providers";
 import {
-  BlockPolledLiquityStore,
-  EthersLiquity,
-  EthersLiquityWithStore,
+  BlockPolledLiquityStore as BlockPolledThresholdStore,
+  EthersLiquity as EthersThreshold,
+  EthersLiquityWithStore as EthersThresholdWithStore,
   _connectByChainId,
   _getVersionedDeployments
 } from "@liquity/lib-ethers";
 
 import { ThresholdConfig, getConfig } from "../config";
 
-type LiquityContextValue = {
+type ThresholdContextValue = {
   config: ThresholdConfig;
   account: string;
   provider: Provider;
-  threshold: EthersLiquityWithStore<BlockPolledLiquityStore>[];
+  threshold: EthersThresholdWithStore<BlockPolledThresholdStore>[];
 };
 
-const LiquityContext = createContext<LiquityContextValue | undefined>(undefined);
+const ThresholdContext = createContext<ThresholdContextValue | undefined>(undefined);
 
-type LiquityProviderProps = {
+type ThresholdProviderProps = {
   loader?: React.ReactNode;
   unsupportedNetworkFallback?: (chainId: number) => React.ReactNode;
   unsupportedMainnetFallback?: React.ReactNode;
@@ -37,7 +37,7 @@ const wsParams = (network: string, infuraApiKey: string): [string, string] => [
 
 const supportedNetworks = ["homestead", "goerli"];
 
-export const LiquityProvider: React.FC<LiquityProviderProps> = ({
+export const ThresholdProvider: React.FC<ThresholdProviderProps> = ({
   children,
   loader,
   unsupportedNetworkFallback,
@@ -118,7 +118,7 @@ export const LiquityProvider: React.FC<LiquityProviderProps> = ({
   }
 
   const threshold = connections.map((connection) => {
-    return EthersLiquity._from(connection);
+    return EthersThreshold._from(connection);
   })
 
   threshold.forEach((thresholdInstance) => {
@@ -127,18 +127,18 @@ export const LiquityProvider: React.FC<LiquityProviderProps> = ({
 
 
   return (
-    <LiquityContext.Provider value={{ config, account, provider, threshold }}>
+    <ThresholdContext.Provider value={{ config, account, provider, threshold }}>
       {children}
-    </LiquityContext.Provider>
+    </ThresholdContext.Provider>
   );
 };
 
-export const useLiquity = () => {
-  const liquityContext = useContext(LiquityContext);
+export const useThreshold = () => {
+  const thresholdContext = useContext(ThresholdContext);
 
-  if (!liquityContext) {
-    throw new Error("You must provide a LiquityContext via LiquityProvider");
+  if (!thresholdContext) {
+    throw new Error("You must provide a ThresholdContext via ThresholdProvider");
   }
 
-  return liquityContext;
+  return thresholdContext;
 };

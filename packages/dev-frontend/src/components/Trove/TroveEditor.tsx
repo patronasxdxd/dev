@@ -7,10 +7,10 @@ import {
   Decimalish,
   Decimal,
   Trove,
-  LiquityStoreState,
+  LiquityStoreState as ThresholdStoreState,
   THUSD_LIQUIDATION_RESERVE
 } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
 
 import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
 
@@ -30,7 +30,7 @@ type TroveEditorProps = {
   ) => void;
 };
 
-const select = ({ price }: LiquityStoreState) => ({ price });
+const select = ({ price }: ThresholdStoreState) => ({ price });
 
 export const TroveEditor: React.FC<TroveEditorProps> = ({
   children,
@@ -40,7 +40,7 @@ export const TroveEditor: React.FC<TroveEditorProps> = ({
   borrowingRate,
   changePending
 }) => {
-  const { price } = useLiquitySelector(select);
+  const { price } = useThresholdSelector(select);
 
   const feePct = new Percent(borrowingRate);
 

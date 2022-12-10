@@ -1,18 +1,18 @@
 import React, { useCallback } from "react";
 import { Card, Button, Flex, Link } from "theme-ui";
 import { CollateralSurplusAction } from "../CollateralSurplusAction";
-import { LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
 import { useTroveView } from "./context/TroveViewContext";
 import { COIN } from "../../strings";
 import { InfoMessage } from "../InfoMessage";
 
-const select = ({ collateralSurplusBalance }: LiquityStoreState) => ({
+const select = ({ collateralSurplusBalance }: ThresholdStoreState) => ({
   hasSurplusCollateral: !collateralSurplusBalance.isZero
 });
 
 export const RedeemedTrove: React.FC = () => {
-  const { hasSurplusCollateral } = useLiquitySelector(select);
+  const { hasSurplusCollateral } = useThresholdSelector(select);
   const { dispatchEvent } = useTroveView();
 
   const handleOpenTrove = useCallback(() => {

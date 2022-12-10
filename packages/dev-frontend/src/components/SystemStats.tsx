@@ -1,19 +1,19 @@
 import React from "react";
 import { Card, Heading, Link, Box, Text } from "theme-ui";
-import { Decimal, Percent, LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { Decimal, Percent, LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
 
-import { useLiquity } from "../hooks/LiquityContext";
+import { useThreshold } from "../hooks/ThresholdContext";
 import { COIN } from "../strings";
 import { Statistic } from "./Statistic";
 
-const selectBalances = ({ accountBalance, thusdBalance }: LiquityStoreState) => ({
+const selectBalances = ({ accountBalance, thusdBalance }: ThresholdStoreState) => ({
   accountBalance,
   thusdBalance
 });
 
 const Balances: React.FC = () => {
-  const { accountBalance, thusdBalance } = useLiquitySelector(selectBalances);
+  const { accountBalance, thusdBalance } = useThresholdSelector(selectBalances);
 
   return (
     <Box sx={{ mb: 3 }}>
@@ -26,7 +26,7 @@ const Balances: React.FC = () => {
 
 const GitHubCommit: React.FC<{ children?: string }> = ({ children }) =>
   children?.match(/[0-9a-f]{40}/) ? (
-    <Link href={`https://github.com/liquity/dev/commit/${children}`}>{children.substr(0, 7)}</Link>
+    <Link href={`https://github.com/Threshold-USD/dev/commit/${children}`}>{children.substr(0, 7)}</Link>
   ) : (
     <>unknown</>
   );
@@ -43,7 +43,7 @@ const select = ({
   thusdInStabilityPool,
   borrowingRate,
   redemptionRate
-}: LiquityStoreState) => ({
+}: ThresholdStoreState) => ({
   numberOfTroves,
   price,
   total,
@@ -54,10 +54,10 @@ const select = ({
 
 export const SystemStats: React.FC<SystemStatsProps> = ({ variant = "info", showBalances }) => {
   const {
-    liquity: {
+    threshold: {
       connection: { version: contractsVersion, deploymentDate }
     }
-  } = useLiquity();
+  } = useThreshold();
 
   const {
     numberOfTroves,
@@ -65,7 +65,7 @@ export const SystemStats: React.FC<SystemStatsProps> = ({ variant = "info", show
     thusdInStabilityPool,
     total,
     borrowingRate
-  } = useLiquitySelector(select);
+  } = useThresholdSelector(select);
 
   const thusdInStabilityPoolPct =
     total.debt.nonZero && new Percent(thusdInStabilityPool.div(total.debt));
@@ -76,7 +76,7 @@ export const SystemStats: React.FC<SystemStatsProps> = ({ variant = "info", show
     <Card {...{ variant }}>
       {showBalances && <Balances />}
 
-      <Heading>Liquity statistics</Heading>
+      <Heading>Threshold statistics</Heading>
 
       <Heading as="h2" sx={{ mt: 3, fontWeight: "body" }}>
         Protocol
@@ -101,7 +101,7 @@ export const SystemStats: React.FC<SystemStatsProps> = ({ variant = "info", show
       <Statistic name="Troves" tooltip="The total number of active Troves in the system.">
         {Decimal.from(numberOfTroves).prettify(0)}
       </Statistic>
-      <Statistic name="THUSD supply" tooltip="The total thUSD minted by the Liquity Protocol.">
+      <Statistic name="THUSD supply" tooltip="The total thUSD minted by the Threshold Protocol.">
         {total.debt.shorten()}
       </Statistic>
       {thusdInStabilityPoolPct && (

@@ -1,20 +1,20 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { Flex, Button, Card, Link } from "theme-ui";
 import {
-  LiquityStoreState,
+  LiquityStoreState as ThresholdStoreState,
   Decimal,
   Trove,
   THUSD_LIQUIDATION_RESERVE,
   Percent,
   Difference
 } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
 
 import { useStableTroveChange } from "../../hooks/useStableTroveChange";
 import { useValidationState } from "./validation/useValidationState";
 import { ActionDescription } from "../ActionDescription";
 import { Transaction, useMyTransactionState } from "../Transaction";
-import { useLiquity } from "../../hooks/LiquityContext";
+import { useThreshold } from "../../hooks/ThresholdContext";
 import { TroveAction } from "./TroveAction";
 import { useTroveView } from "./context/TroveViewContext";
 import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
@@ -28,7 +28,7 @@ import {
   validateTroveChange
 } from "./validation/validateTroveChange";
 
-const selector = (state: LiquityStoreState) => {
+const selector = (state: ThresholdStoreState) => {
   const { trove, fees, price, erc20TokenBalance } = state;
   return {
     trove,
@@ -84,10 +84,10 @@ const applyUnsavedNetDebtChanges = (unsavedChanges: Difference, trove: Trove) =>
 
 export const Adjusting: React.FC = () => {
   const {
-    liquity: { send: liquity }
-  } = useLiquity();
+    threshold: { send: threshold }
+  } = useThreshold();
   const { dispatchEvent } = useTroveView();
-  const { trove, fees, price, erc20TokenBalance, validationContext } = useLiquitySelector(selector);
+  const { trove, fees, price, erc20TokenBalance, validationContext } = useThresholdSelector(selector);
   const editingState = useState<string>();
   const previousTrove = useRef<Trove>(trove);
   const [collateral, setCollateral] = useState<Decimal>(trove.collateral);
@@ -281,7 +281,7 @@ export const Adjusting: React.FC = () => {
             {!hasApproved && amountToApprove ?
               <Transaction
                 id={APPROVE_TRANSACTION_ID}
-                send={liquity.approveErc20.bind(liquity, amountToApprove)}
+                send={threshold.approveErc20.bind(threshold, amountToApprove)}
                 showFailure="asTooltip"
                 tooltipPlacement="bottom"
               >

@@ -1,8 +1,8 @@
 import React from "react";
 import { Card } from "theme-ui";
 
-import { LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
 import { useTroveView } from "../Trove/context/TroveViewContext";
 import { TroveView } from "../Trove/context/types";
 
@@ -13,7 +13,7 @@ type VaultCardProps = {
   variant?: string;
 };
 
-const select = ({ erc20TokenBalance }: LiquityStoreState) => ({
+const select = ({ erc20TokenBalance }: ThresholdStoreState) => ({
   erc20TokenBalance
 });
 
@@ -24,7 +24,7 @@ const vaultStatus = (view: TroveView) => {
 
 export const VaultCard: React.FC<VaultCardProps> = ({ variant = "mainCards" }) => {
   const { view } = useTroveView();
-  const { erc20TokenBalance } = useLiquitySelector(select);
+  const { erc20TokenBalance } = useThresholdSelector(select);
 
   return (
     <Card {...{ variant }}>

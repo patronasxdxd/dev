@@ -1,23 +1,21 @@
 import React, { useEffect } from "react";
 import { Button, Flex, Spinner } from "theme-ui";
 
-import { LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
 
-import { useLiquity } from "../hooks/LiquityContext";
+import { useThreshold } from "../hooks/ThresholdContext";
 
 import { Transaction, useMyTransactionState } from "./Transaction";
 import { useTroveView } from "./Trove/context/TroveViewContext";
 
-const select = ({ collateralSurplusBalance }: LiquityStoreState) => ({
+const select = ({ collateralSurplusBalance }: ThresholdStoreState) => ({
   collateralSurplusBalance
 });
 
-export const CollateralSurplusAction: React.FC = () => {
-  const { collateralSurplusBalance } = useLiquitySelector(select);
-  const {
-    liquity: { send: liquity }
-  } = useLiquity();
+export const CollateralSurplusAction = () => {
+  const { collateralSurplusBalance } = useThresholdSelector(select);
+  const { threshold } = useThreshold();
 
   const myTransactionId = "claim-coll-surplus";
   const myTransactionState = useMyTransactionState(myTransactionId);
@@ -30,22 +28,26 @@ export const CollateralSurplusAction: React.FC = () => {
     }
   }, [myTransactionState.type, dispatchEvent]);
 
-  return myTransactionState.type === "waitingForApproval" ? (
-    <Flex variant="layout.actions">
-      <Button disabled sx={{ mx: 2 }}>
-        <Spinner sx={{ mr: 2, color: "white" }} size="20px" />
-        Waiting for your approval
-      </Button>
-    </Flex>
-  ) : myTransactionState.type !== "waitingForConfirmation" &&
-    myTransactionState.type !== "confirmed" ? (
-    <Flex variant="layout.actions">
-      <Transaction
-        id={myTransactionId}
-        send={liquity.claimCollateralSurplus.bind(liquity, undefined)}
-      >
-        <Button sx={{ mx: 2 }}>Claim {collateralSurplusBalance.prettify()} ETH</Button>
-      </Transaction>
-    </Flex>
-  ) : null;
+  threshold.map((elemento) => {
+    const { send: threshold } = elemento
+
+    return myTransactionState.type === "waitingForApproval" ? (
+      <Flex variant="layout.actions">
+        <Button disabled sx={{ mx: 2 }}>
+          <Spinner sx={{ mr: 2, color: "white" }} size="20px" />
+          Waiting for your approval
+        </Button>
+      </Flex>
+    ) : myTransactionState.type !== "waitingForConfirmation" &&
+      myTransactionState.type !== "confirmed" ? (
+      <Flex variant="layout.actions">
+        <Transaction
+          id={myTransactionId}
+          send={threshold.claimCollateralSurplus.bind(threshold, undefined)}
+        >
+          <Button sx={{ mx: 2 }}>Claim {collateralSurplusBalance.prettify()} ETH</Button>
+        </Transaction>
+      </Flex>
+    ) : null;
+  })
 };

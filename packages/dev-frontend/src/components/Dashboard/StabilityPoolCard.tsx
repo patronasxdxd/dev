@@ -2,8 +2,8 @@ import React from "react";
 import { Card } from "theme-ui";
 import { COIN } from "../../strings";
 
-import { LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
 
 import { BottomCard } from "./BottomCard";
 
@@ -11,12 +11,12 @@ type StabilityPoolCardProps = {
   variant?: string;
 };
 
-const select = ({  thusdBalance }: LiquityStoreState) => ({
+const select = ({  thusdBalance }: ThresholdStoreState) => ({
   thusdBalance
 });
 
 export const StabilityPoolCard: React.FC<StabilityPoolCardProps> = ({ variant = "mainCards" }) => {
-  const { thusdBalance } = useLiquitySelector(select);
+  const { thusdBalance } = useThresholdSelector(select);
 
   return (
     <Card {...{ variant }}>

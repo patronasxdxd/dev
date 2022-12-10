@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import { Card, Box, Flex, Button, Link } from "theme-ui";
-import { useLiquitySelector } from "@liquity/lib-react";
-import { LiquityStoreState } from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
 import { DisabledEditableRow } from "./Editor";
 import { useTroveView } from "./context/TroveViewContext";
 import { Icon } from "../Icon";
@@ -9,7 +9,7 @@ import { InfoIcon } from "../InfoIcon";
 import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
 import { CollateralRatio } from "./CollateralRatio";
 
-const select = ({ trove, price }: LiquityStoreState) => ({ trove, price });
+const select = ({ trove, price }: ThresholdStoreState) => ({ trove, price });
 
 export const ReadOnlyTrove: React.FC = () => {
   const { dispatchEvent } = useTroveView();
@@ -20,7 +20,7 @@ export const ReadOnlyTrove: React.FC = () => {
     dispatchEvent("CLOSE_TROVE_PRESSED");
   }, [dispatchEvent]);
 
-  const { trove, price } = useLiquitySelector(select);
+  const { trove, price } = useThresholdSelector(select);
 
   // console.log("READONLY TROVE", trove.collateral.prettify(4));
   return (

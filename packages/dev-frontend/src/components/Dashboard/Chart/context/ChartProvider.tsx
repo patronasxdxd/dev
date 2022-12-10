@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { createClient } from "urql";
 import { ChartContext } from "./ChartContext";
 
-import { useLiquity } from "../../../../hooks/LiquityContext";
+import { useThreshold } from "../../../../hooks/ThresholdContext";
 
 export type BlockObject = {
   number?: string, 
@@ -124,7 +124,7 @@ export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader
   const [tvl, setTvl] = useState<Array<tvlData>>();
   const [isMounted, setIsMounted] = useState<boolean>(true);
 
-  const { config, provider } = useLiquity();
+  const { config, provider } = useThreshold();
   const { BlocksApiUrl, ThresholdUsdApiUrl } = config;
 
   useEffect(() => {

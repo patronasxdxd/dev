@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "theme-ui";
-import { Decimal, LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { Decimal, LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
 
 import { TopCard } from "./TopCard";
 
@@ -11,7 +11,7 @@ type SystemStatsProps = {
 
 const select = ({
   numberOfTroves,
-}: LiquityStoreState) => ({
+}: ThresholdStoreState) => ({
   numberOfTroves,
 });
 
@@ -20,7 +20,7 @@ export const OpenedVaults: React.FC<SystemStatsProps> = ({ variant = "mainCards"
   
   const {
     numberOfTroves,
-  } = useLiquitySelector(select);
+  } = useThresholdSelector(select);
 
   return (
     <Card {...{ variant }} sx={{ display: ['none', 'block'] }}>

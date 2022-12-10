@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Box, Button, Card, Flex, Input, ThemeUICSSProperties } from "theme-ui";
-import { Decimal, Percent, LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { Decimal, Percent, LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
 import { COIN, FIRST_ERC20_COLLATERAL } from '../strings';
-import { useLiquity } from "../hooks/LiquityContext";
+import { useThreshold } from "../hooks/ThresholdContext";
 
 import { SystemStat } from "./SystemStat";
 import { Transaction } from "./Transaction";
@@ -32,7 +32,7 @@ const select = ({
   borrowingRate,
   redemptionRate,
   pcvBalance
-}: LiquityStoreState) => ({
+}: ThresholdStoreState) => ({
   numberOfTroves,
   price,
   total,
@@ -45,11 +45,11 @@ const select = ({
 export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "info" }) => {
 
   const {
-    liquity: {
-      send: liquity,
+    threshold: {
+      send: threshold,
       connection: { _priceFeedIsTestnet: canSetPrice }
     }
-  } = useLiquity();
+  } = useThreshold();
 
   const {
     numberOfTroves,
@@ -58,7 +58,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
     borrowingRate,
     thusdInStabilityPool,
     pcvBalance
-  } = useLiquitySelector(select);
+  } = useThresholdSelector(select);
 
   const [editedPrice, setEditedPrice] = useState(price.toString(2));
   const borrowingFeePct = new Percent(borrowingRate);
@@ -169,7 +169,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
                     if (!editedPrice) {
                       throw new Error("Invalid price");
                     }
-                    return liquity.setPrice(Decimal.from(editedPrice), overrides);
+                    return threshold.setPrice(Decimal.from(editedPrice), overrides);
                   }}
                 >
                   <Button sx={{

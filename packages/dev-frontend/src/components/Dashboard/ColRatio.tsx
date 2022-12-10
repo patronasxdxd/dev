@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "theme-ui";
-import { Percent, LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { Percent, LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
 
 import { TopCard } from "./TopCard";
 
@@ -12,7 +12,7 @@ type SystemStatsProps = {
 const select = ({
   price,
   total
-}: LiquityStoreState) => ({
+}: ThresholdStoreState) => ({
   price,
   total
 });
@@ -22,7 +22,7 @@ export const ColRatio: React.FC<SystemStatsProps> = ({ variant = "mainCards" }) 
   const {
     price,
     total
-  } = useLiquitySelector(select);
+  } = useThresholdSelector(select);
 
   const totalCollateralRatioPct = new Percent(total.collateralRatio(price));
 

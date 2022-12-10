@@ -1,14 +1,14 @@
 import React, { useEffect } from "react";
 
 import { Decimal, TroveChange } from "@liquity/lib-base";
-import { PopulatedEthersLiquityTransaction } from "@liquity/lib-ethers";
+import { PopulatedEthersLiquityTransaction as PopulatedEthersThresholdTransaction } from "@liquity/lib-ethers";
 
-import { useLiquity } from "../../hooks/LiquityContext";
+import { useThreshold } from "../../hooks/ThresholdContext";
 import { Warning } from "../Warning";
 
 export type GasEstimationState =
   | { type: "idle" | "inProgress" }
-  | { type: "complete"; populatedTx: PopulatedEthersLiquityTransaction };
+  | { type: "complete"; populatedTx: PopulatedEthersThresholdTransaction };
 
 type ExpensiveTroveChangeWarningParams = {
   troveChange?: Exclude<TroveChange<Decimal>, { type: "invalidCreation" }>;
@@ -25,7 +25,7 @@ export const ExpensiveTroveChangeWarning: React.FC<ExpensiveTroveChangeWarningPa
   gasEstimationState,
   setGasEstimationState
 }) => {
-  const { liquity } = useLiquity();
+  const { threshold } = useThreshold();
   useEffect(() => {
     if (troveChange && troveChange.type !== "closure") {
       setGasEstimationState({ type: "inProgress" });
@@ -34,11 +34,11 @@ export const ExpensiveTroveChangeWarning: React.FC<ExpensiveTroveChangeWarningPa
 
       const timeoutId = setTimeout(async () => {
         const populatedTx = await (troveChange.type === "creation"
-          ? liquity.populate.openTrove(troveChange.params, {
+          ? threshold.populate.openTrove(troveChange.params, {
               maxBorrowingRate,
               borrowingFeeDecayToleranceMinutes
             })
-          : liquity.populate.adjustTrove(troveChange.params, {
+          : threshold.populate.adjustTrove(troveChange.params, {
               maxBorrowingRate,
               borrowingFeeDecayToleranceMinutes
             }));

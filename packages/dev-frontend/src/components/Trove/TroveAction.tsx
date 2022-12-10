@@ -2,7 +2,7 @@ import { Button } from "theme-ui";
 
 import { Decimal, TroveChange } from "@liquity/lib-base";
 
-import { useLiquity } from "../../hooks/LiquityContext";
+import { useThreshold } from "../../hooks/ThresholdContext";
 import { useTransactionFunction } from "../Transaction";
 
 type TroveActionProps = {
@@ -19,18 +19,18 @@ export const TroveAction: React.FC<TroveActionProps> = ({
   maxBorrowingRate,
   borrowingFeeDecayToleranceMinutes
 }) => {
-  const { liquity } = useLiquity();
+  const { threshold } = useThreshold();
 
   const [sendTransaction] = useTransactionFunction(
     transactionId,
     change.type === "creation"
-      ? liquity.send.openTrove.bind(liquity.send, change.params, {
+      ? threshold.send.openTrove.bind(threshold.send, change.params, {
           maxBorrowingRate,
           borrowingFeeDecayToleranceMinutes
         })
       : change.type === "closure"
-      ? liquity.send.closeTrove.bind(liquity.send)
-      : liquity.send.adjustTrove.bind(liquity.send, change.params, {
+      ? threshold.send.closeTrove.bind(threshold.send)
+      : threshold.send.adjustTrove.bind(threshold.send, change.params, {
           maxBorrowingRate,
           borrowingFeeDecayToleranceMinutes
         })

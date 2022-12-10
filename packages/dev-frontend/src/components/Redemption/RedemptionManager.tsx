@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Box, Flex, Card, Link } from "theme-ui";
 
-import { Decimal, Percent, LiquityStoreState, MINIMUM_COLLATERAL_RATIO } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { Decimal, Percent, LiquityStoreState as ThresholdStoreState, MINIMUM_COLLATERAL_RATIO } from "@liquity/lib-base";
+import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
 
 import { COIN } from "../../strings";
 
@@ -17,7 +17,7 @@ import { InfoIcon } from "../InfoIcon";
 
 const mcrPercent = new Percent(MINIMUM_COLLATERAL_RATIO).toString(0);
 
-const select = ({ price, fees, total, thusdBalance }: LiquityStoreState) => ({
+const select = ({ price, fees, total, thusdBalance }: ThresholdStoreState) => ({
   price,
   fees,
   total,
@@ -27,7 +27,7 @@ const select = ({ price, fees, total, thusdBalance }: LiquityStoreState) => ({
 const transactionId = "redemption";
 
 export const RedemptionManager: React.FC = () => {
-  const { price, fees, total, thusdBalance } = useLiquitySelector(select);
+  const { price, fees, total, thusdBalance } = useThresholdSelector(select);
   const [thusdAmount, setTHUSDAmount] = useState(Decimal.ZERO);
   const [changePending, setChangePending] = useState(false);
   const editingState = useState<string>();

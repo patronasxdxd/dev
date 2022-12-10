@@ -1,20 +1,20 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, Flex, Link, Spinner } from "theme-ui";
 import {
-  LiquityStoreState,
+  LiquityStoreState as ThresholdStoreState,
   Decimal,
   Trove,
   THUSD_LIQUIDATION_RESERVE,
   THUSD_MINIMUM_NET_DEBT,
   Percent
 } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
 
 import { useStableTroveChange } from "../../hooks/useStableTroveChange";
 import { useValidationState } from "./validation/useValidationState";
 import { ActionDescription } from "../ActionDescription";
 import { Transaction, useMyTransactionState } from "../Transaction";
-import { useLiquity } from "../../hooks/LiquityContext";
+import { useThreshold } from "../../hooks/ThresholdContext";
 import { TroveAction } from "./TroveAction";
 import { useTroveView } from "./context/TroveViewContext";
 import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
@@ -28,7 +28,7 @@ import {
   validateTroveChange
 } from "./validation/validateTroveChange";
 
-const selector = (state: LiquityStoreState) => {
+const selector = (state: ThresholdStoreState) => {
   const { fees, price, erc20TokenBalance } = state;
   return {
     fees,
@@ -44,10 +44,10 @@ const APPROVE_TRANSACTION_ID = "trove-approve";
 
 export const Opening: React.FC = () => {
   const {
-    liquity: { send: liquity }
-  } = useLiquity();
+    threshold: { send: threshold }
+  } = useThreshold();
   const { dispatchEvent } = useTroveView();
-  const { fees, price, erc20TokenBalance, validationContext } = useLiquitySelector(selector);
+  const { fees, price, erc20TokenBalance, validationContext } = useThresholdSelector(selector);
   const borrowingRate = fees.borrowingRate();
   const editingState = useState<string>();
 
@@ -216,7 +216,7 @@ export const Opening: React.FC = () => {
             {!hasApproved && amountToApprove ? (
               <Transaction
                 id={APPROVE_TRANSACTION_ID}
-                send={liquity.approveErc20.bind(liquity, amountToApprove)}
+                send={threshold.approveErc20.bind(threshold, amountToApprove)}
                 showFailure="asTooltip"
                 tooltipPlacement="bottom"
               >

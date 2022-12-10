@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, Flex, Button, Link, Input, ThemeUICSSProperties } from "theme-ui";
 import { StaticAmounts, Row } from "./Trove/Editor";
-import { useLiquity } from "../hooks/LiquityContext";
+import { useThreshold } from "../hooks/ThresholdContext";
 import { Transaction } from "./Transaction";
 import { InfoIcon } from "./InfoIcon";
 
@@ -24,8 +24,8 @@ const editableStyle: ThemeUICSSProperties = {
 
 export const LiquidationManager: React.FC = () => {
   const {
-    liquity: { send: liquity }
-  } = useLiquity();
+    threshold: { send: threshold }
+  } = useThreshold();
   const [numberOfTrovesToLiquidate, setNumberOfTrovesToLiquidate] = useState("90");
   
   const [editing, setEditing] = useState<string>();
@@ -90,7 +90,7 @@ export const LiquidationManager: React.FC = () => {
                 if (!numberOfTrovesToLiquidate) {
                   throw new Error("Invalid number");
                 }
-                return liquity.liquidateUpTo(parseInt(numberOfTrovesToLiquidate, 10), overrides);
+                return threshold.liquidateUpTo(parseInt(numberOfTrovesToLiquidate, 10), overrides);
               }}
             >
               <Button sx={{ width: "100%" }}>Liquidate</Button>
