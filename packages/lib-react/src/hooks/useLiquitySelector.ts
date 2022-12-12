@@ -3,10 +3,10 @@ import { useEffect, useReducer } from "react";
 import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
 
 import { equals } from "../utils/equals";
-import { useThresholdStore } from "./useThresholdStore";
+import { useLiquityStore } from "./useLiquityStore";
 
 export const useLiquitySelector = <S, T>(select: (state: ThresholdStoreState<T>) => S): S => {
-  const store = useThresholdStore<T>();
+  const store = useLiquityStore<T>();
   const [, rerender] = useReducer(() => ({}), {});
 
   useEffect(

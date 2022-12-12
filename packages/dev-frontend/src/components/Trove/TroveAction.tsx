@@ -21,20 +21,22 @@ export const TroveAction: React.FC<TroveActionProps> = ({
 }) => {
   const { threshold } = useThreshold();
 
-  const [sendTransaction] = useTransactionFunction(
-    transactionId,
-    change.type === "creation"
-      ? threshold.send.openTrove.bind(threshold.send, change.params, {
-          maxBorrowingRate,
-          borrowingFeeDecayToleranceMinutes
-        })
-      : change.type === "closure"
-      ? threshold.send.closeTrove.bind(threshold.send)
-      : threshold.send.adjustTrove.bind(threshold.send, change.params, {
-          maxBorrowingRate,
-          borrowingFeeDecayToleranceMinutes
-        })
-  );
+  // TODO
+  // const [sendTransaction] = useTransactionFunction(
+  //   transactionId,
+  //   change.type === "creation"
+  //     ? threshold.send.openTrove.bind(threshold.send, change.params, {
+  //         maxBorrowingRate,
+  //         borrowingFeeDecayToleranceMinutes
+  //       })
+  //     : change.type === "closure"
+  //     ? threshold.send.closeTrove.bind(threshold.send)
+  //     : threshold.send.adjustTrove.bind(threshold.send, change.params, {
+  //         maxBorrowingRate,
+  //         borrowingFeeDecayToleranceMinutes
+  //       })
+  // );
 
-  return <Button onClick={sendTransaction}>{children}</Button>;
+  // TODO add onClick={sendTransaction}>
+  return <Button >{children}</Button>;
 };

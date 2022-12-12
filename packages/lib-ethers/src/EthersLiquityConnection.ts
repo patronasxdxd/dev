@@ -297,22 +297,19 @@ export function _connectByChainId(
 }
 
 /** @internal */
-export function _getVersionedDeployments(network: string): {versions: string[], versionedDeployments: _VersionedLiquityDeployments} {
+export async function _getVersionedDeployments(network: string): Promise<{versionedDeployments: _VersionedLiquityDeployments}> {
   const versionedDeployments: _VersionedLiquityDeployments = {};
-  const versions: string[] = [];
 
   for (let i = 1; i < 10; i++) {
     import(`../deployments/default/eth/v${i.toString()}/${network}.json`)
       .then((deployment) => {
         versionedDeployments['v'+i] = deployment;
-        versions.push(`v${i.toString()}`)
       })
       .catch((err) => {
         return err
       })
   }
   return {
-    versions: versions, 
     versionedDeployments: versionedDeployments
   };
 }

@@ -8,7 +8,9 @@ export {
 } from "./src/EthersLiquityConnection";
 
 export {
+  _VersionedLiquityDeployments,
   _LiquityContractAddresses,
+  _LiquityContractsKey,
   _LiquityDeploymentJSON
 } from "./src/contracts";
 

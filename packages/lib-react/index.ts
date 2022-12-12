@@ -1,5 +1,5 @@
-export * from "./src/components/ThresholdStoreProvider";
+export * from "./src/components/LiquityStoreProvider";
 
-export * from "./src/hooks/useThresholdStore";
-export * from "./src/hooks/useThresholdReducer";
-export * from "./src/hooks/useThresholdSelector";
+export * from "./src/hooks/useLiquityStore";
+export * from "./src/hooks/useLiquityReducer";
+export * from "./src/hooks/useLiquitySelector";

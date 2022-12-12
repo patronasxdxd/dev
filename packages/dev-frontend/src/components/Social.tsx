@@ -30,10 +30,8 @@ export const Social: React.FC = () => {
           </Text>
         </Flex>
       </Flex>
-
       <Flex sx={{ alignItems: "center" }}>
         <Icon name="wallet" size="lg" />
-
         {([
           ["ETH", accountBalance],
           [COIN, thusdBalance]

@@ -28,10 +28,7 @@ export const CollateralSurplusAction = () => {
     }
   }, [myTransactionState.type, dispatchEvent]);
 
-  threshold.map((elemento) => {
-    const { send: threshold } = elemento
-
-    return myTransactionState.type === "waitingForApproval" ? (
+  return myTransactionState.type === "waitingForApproval" ? (
       <Flex variant="layout.actions">
         <Button disabled sx={{ mx: 2 }}>
           <Spinner sx={{ mr: 2, color: "white" }} size="20px" />
@@ -41,13 +38,13 @@ export const CollateralSurplusAction = () => {
     ) : myTransactionState.type !== "waitingForConfirmation" &&
       myTransactionState.type !== "confirmed" ? (
       <Flex variant="layout.actions">
+        {/* TODO
         <Transaction
           id={myTransactionId}
           send={threshold.claimCollateralSurplus.bind(threshold, undefined)}
         >
           <Button sx={{ mx: 2 }}>Claim {collateralSurplusBalance.prettify()} ETH</Button>
-        </Transaction>
+        </Transaction> */}
       </Flex>
     ) : null;
-  })
 };

@@ -33,23 +33,24 @@ export const ExpensiveTroveChangeWarning: React.FC<ExpensiveTroveChangeWarningPa
       let cancelled = false;
 
       const timeoutId = setTimeout(async () => {
-        const populatedTx = await (troveChange.type === "creation"
-          ? threshold.populate.openTrove(troveChange.params, {
-              maxBorrowingRate,
-              borrowingFeeDecayToleranceMinutes
-            })
-          : threshold.populate.adjustTrove(troveChange.params, {
-              maxBorrowingRate,
-              borrowingFeeDecayToleranceMinutes
-            }));
+        // TODO
+        // const populatedTx = await (troveChange.type === "creation"
+        //   ? threshold.populate.openTrove(troveChange.params, {
+        //       maxBorrowingRate,
+        //       borrowingFeeDecayToleranceMinutes
+        //     })
+        //   : threshold.populate.adjustTrove(troveChange.params, {
+        //       maxBorrowingRate,
+        //       borrowingFeeDecayToleranceMinutes
+        //     }));
 
-        if (!cancelled) {
-          setGasEstimationState({ type: "complete", populatedTx });
-          console.log(
-            "Estimated TX cost: " +
-              Decimal.from(`${populatedTx.rawPopulatedTransaction.gasLimit}`).prettify(0)
-          );
-        }
+        // if (!cancelled) {
+        //   setGasEstimationState({ type: "complete", populatedTx });
+        //   console.log(
+        //     "Estimated TX cost: " +
+        //       Decimal.from(`${populatedTx.rawPopulatedTransaction.gasLimit}`).prettify(0)
+        //   );
+        // }
       }, 333);
 
       return () => {

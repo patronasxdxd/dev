@@ -42,14 +42,9 @@ const select = ({
   pcvBalance
 });
 
-export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "info" }) => {
+export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps) => {
 
-  const {
-    threshold: {
-      send: threshold,
-      connection: { _priceFeedIsTestnet: canSetPrice }
-    }
-  } = useThreshold();
+  const { threshold } = useThreshold();
 
   const {
     numberOfTroves,
@@ -61,12 +56,14 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
   } = useThresholdSelector(select);
 
   const [editedPrice, setEditedPrice] = useState(price.toString(2));
+  const [isSetPriceEnabled, setisSetPriceEnabled] = useState(true);
+  const [thresholdInstance, setThresholdInstance] = useState([]);
   const borrowingFeePct = new Percent(borrowingRate);
 
   useEffect(() => {
     setEditedPrice(price.toString(2));
   }, [price]);
-
+    
   return (
     <Card {...{ variant }}>
       <Card variant="layout.columns">
@@ -148,7 +145,8 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
           pt: 14,
           pb: 3
         }}>
-          <SystemStat>
+          {/* TODO Iterate over threshold instances */}
+          {/* <SystemStat>
             {canSetPrice ? (
               <Flex sx={{ mb:1, alignItems: "center", height: "1.2em", }}>
                 <Input
@@ -186,7 +184,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
             ) : (
               price.toString(2)
             )}
-          </SystemStat>
+          </SystemStat> */}
         </Flex>
       </Card>
     </Card>

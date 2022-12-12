@@ -83,9 +83,10 @@ const applyUnsavedNetDebtChanges = (unsavedChanges: Difference, trove: Trove) =>
 };
 
 export const Adjusting: React.FC = () => {
-  const {
-    threshold: { send: threshold }
-  } = useThreshold();
+  // TODO
+  // const {
+  //   threshold: { send: threshold }
+  // } = useThreshold();
   const { dispatchEvent } = useTroveView();
   const { trove, fees, price, erc20TokenBalance, validationContext } = useThresholdSelector(selector);
   const editingState = useState<string>();
@@ -278,7 +279,8 @@ export const Adjusting: React.FC = () => {
           />)}
 
           <Flex variant="layout.actions" sx={{ flexDirection: "column" }}>
-            {!hasApproved && amountToApprove ?
+            {/* TODO */}
+            {/* {!hasApproved && amountToApprove ?
               <Transaction
                 id={APPROVE_TRANSACTION_ID}
                 send={threshold.approveErc20.bind(threshold, amountToApprove)}
@@ -298,7 +300,7 @@ export const Adjusting: React.FC = () => {
               </TroveAction>
             ) : (
               <Button disabled>Confirm</Button>
-            )}
+            )} */}
             <Button variant="cancel" onClick={handleCancelPressed} sx={{ borderRadius: "12px", mt: 3 }}>
               Cancel
             </Button>

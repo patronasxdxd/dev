@@ -14,18 +14,23 @@ export const LiquityStoreProvider: React.FC<LiquityStoreProviderProps> = ({
   loader,
   children
 }) => {
+
   const [loadedStore, setLoadedStore] = useState<LiquityStore>();
+ 
 
   useEffect(() => {
+
     const stopArray: (() => void)[] = []
 
-    thresholdStores.forEach((thresholdStore) => {
+    thresholdStores.map((thresholdStore) => {
+
       thresholdStore.onLoaded = () => setLoadedStore(thresholdStore);
       const stop = thresholdStore.start()
       stopArray.push(stop) 
     })
 
     return () => {
+
       thresholdStores.forEach((thresholdStore, index) => {
         thresholdStore.onLoaded = undefined;
         const stop = stopArray[index];

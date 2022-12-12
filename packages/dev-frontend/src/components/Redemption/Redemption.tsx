@@ -1,5 +1,5 @@
 import { RedemptionManager } from "./RedemptionManager";
 
-export const Redemption: React.FC = () => {
+export const Redemption = (): JSX.Element => {
   return <RedemptionManager />;
 };

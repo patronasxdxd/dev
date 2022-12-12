@@ -18,17 +18,19 @@ export const RedemptionAction: React.FC<RedemptionActionProps> = ({
   thusdAmount,
   maxRedemptionRate
 }) => {
-  const {
-    threshold: { send: threshold }
-  } = useThreshold();
+  // TODO
+  // const {
+  //   threshold: { send: threshold }
+  // } = useThreshold();
 
-  const [sendTransaction] = useTransactionFunction(
-    transactionId,
-    threshold.redeemTHUSD.bind(threshold, thusdAmount, maxRedemptionRate)
-  );
+  // const [sendTransaction] = useTransactionFunction(
+  //   transactionId,
+  //   threshold.redeemTHUSD.bind(threshold, thusdAmount, maxRedemptionRate)
+  // );
 
   return (
-    <Button disabled={disabled} onClick={sendTransaction} sx={{ width: '100%' }}>
+    // TODO add onClick={sendTransaction}
+    <Button disabled={disabled}  sx={{ width: '100%' }}>
       Confirm
     </Button>
   );

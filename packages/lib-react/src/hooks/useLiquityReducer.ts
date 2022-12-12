@@ -3,7 +3,7 @@ import { useCallback, useEffect, useReducer, useRef } from "react";
 import { LiquityStoreState } from "@liquity/lib-base";
 
 import { equals } from "../utils/equals";
-import { useLiquityStore } from "./useThresholdStore";
+import { useLiquityStore } from "./useLiquityStore";
 
 export type LiquityStoreUpdate<T = unknown> = {
   type: "updateStore";

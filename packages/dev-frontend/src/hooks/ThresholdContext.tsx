@@ -10,8 +10,10 @@ import {
   EthersLiquity as EthersThreshold,
   EthersLiquityWithStore as EthersThresholdWithStore,
   _connectByChainId,
-  _getVersionedDeployments
+  _getVersionedDeployments,
+  EthersLiquityConnection
 } from "@liquity/lib-ethers";
+import { _VersionedLiquityDeployments } from "@liquity/lib-ethers/dist/src/contracts";
 
 import { ThresholdConfig, getConfig } from "../config";
 
@@ -37,6 +39,30 @@ const wsParams = (network: string, infuraApiKey: string): [string, string] => [
 
 const supportedNetworks = ["homestead", "goerli"];
 
+const getDeploymentVersions = async (chainId: number): Promise<{versionedDeployments: _VersionedLiquityDeployments}> => {
+  return await _getVersionedDeployments(chainId === 1 ? 'mainnet' : 'goerli');
+}
+
+const getConnections = async (
+    result: { versionedDeployments: _VersionedLiquityDeployments; }, 
+    provider: Web3Provider, 
+    account: string, 
+    chainId: number,
+    setConnections: Function
+  ) => {
+    const connectionsByChainId: any = [];
+    for (const [key, value] of Object.entries(result.versionedDeployments)) {
+      connectionsByChainId.push(_connectByChainId(
+        key, 
+        value, 
+        provider, 
+        provider.getSigner(account), chainId, 
+        { userAddress: account, useStore: "blockPolled" }
+      ))
+    }
+    return setConnections(connectionsByChainId)
+}
+
 export const ThresholdProvider: React.FC<ThresholdProviderProps> = ({
   children,
   loader,
@@ -45,30 +71,19 @@ export const ThresholdProvider: React.FC<ThresholdProviderProps> = ({
 }) => {
   const { library: provider, account, chainId } = useWeb3React<Web3Provider>();
   const [config, setConfig] = useState<ThresholdConfig>();
+  const [connections, setConnections] = useState<EthersLiquityConnection[]>();
 
-  const deploymentVersions = useMemo(() => {
+  useEffect(() => {
     if (chainId) {
-      try {
-        return _getVersionedDeployments(chainId === 1 ? 'mainnet' : 'goerli');
-      } catch {}
-    }
-  }, [chainId]);
-
-  const connections = useMemo(() => {
-    if (deploymentVersions && config && provider && account && chainId) {
-      try {
-        return deploymentVersions.versions.map((version) => {
-          return _connectByChainId(
-            version, deploymentVersions.versionedDeployments[version], 
-            provider, 
-            provider.getSigner(account), chainId, 
-            { userAddress: account, useStore: "blockPolled" }
-          )
+      getDeploymentVersions(chainId)
+        .then((result) => {
+          if (provider && account && config) {
+            getConnections(result, provider, account, chainId, setConnections)
+          }
         })
-      } catch {}
     }
-  }, [deploymentVersions, config, provider, account, chainId]);
-
+  }, [chainId, provider, account, config])
+  
   useEffect(() => {
     getConfig().then(setConfig);
   }, []);
@@ -76,10 +91,8 @@ export const ThresholdProvider: React.FC<ThresholdProviderProps> = ({
   useEffect(() => {
     if (config && connections) {
       //Get the connection of the first collateral ("v1") for network identification
-      const connection = connections.find(connection => connection.version === "v1");
-
-      if (connection) {
-        const { provider, chainId } = connection;
+      if (connections) {
+        const { provider, chainId } = connections[0];
 
         if (isBatchedProvider(provider) && provider.chainId !== chainId) {
           provider.chainId = chainId;
@@ -117,14 +130,13 @@ export const ThresholdProvider: React.FC<ThresholdProviderProps> = ({
     return unsupportedNetworkFallback ? <>{unsupportedNetworkFallback(chainId)}</> : null;
   }
 
-  const threshold = connections.map((connection) => {
+  const threshold = connections.map((connection: any) => {
     return EthersThreshold._from(connection);
   })
 
-  threshold.forEach((thresholdInstance) => {
+  for (const thresholdInstance of threshold) {
     thresholdInstance.store.logging = true;
-  })
-
+  }
 
   return (
     <ThresholdContext.Provider value={{ config, account, provider, threshold }}>

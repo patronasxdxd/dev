@@ -275,13 +275,15 @@ export type EthersTransactionReceipt = TransactionReceipt;
 export type EthersTransactionResponse = TransactionResponse;
 
 // @internal (undocumented)
-export function _getVersionedDeployments(network: string): {
-    versions: string[];
+export function _getVersionedDeployments(network: string): Promise<{
     versionedDeployments: _VersionedLiquityDeployments;
-};
+}>;
 
 // @internal (undocumented)
 export type _LiquityContractAddresses = Record<_LiquityContractsKey, string>;
+
+// @internal (undocumented)
+export type _LiquityContractsKey = keyof _LiquityContracts;
 
 // @internal (undocumented)
 export interface _LiquityDeploymentJSON {
@@ -555,6 +557,9 @@ export class UnsupportedNetworkError extends Error {
     constructor(chainId: number);
     readonly chainId: number;
 }
+
+// @internal (undocumented)
+export type _VersionedLiquityDeployments = Record<string, _LiquityDeploymentJSON>;
 
 
 // (No @packageDocumentation comment for this package)
