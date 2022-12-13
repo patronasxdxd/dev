@@ -74,14 +74,13 @@ export const ThresholdProvider: React.FC<ThresholdProviderProps> = ({
   const [connections, setConnections] = useState<EthersLiquityConnection[]>();
 
   useEffect(() => {
-    if (chainId) {
-      getDeploymentVersions(chainId)
-        .then((result) => {
-          if (provider && account && config) {
-            getConnections(result, provider, account, chainId, setConnections)
-          }
-        })
+    if (!chainId || !provider || !account || !config) {
+      return;
     }
+    getDeploymentVersions(chainId)
+    .then((result) => {
+      getConnections(result, provider, account, chainId, setConnections)
+    })
   }, [chainId, provider, account, config])
   
   useEffect(() => {
@@ -91,7 +90,7 @@ export const ThresholdProvider: React.FC<ThresholdProviderProps> = ({
   useEffect(() => {
     if (config && connections) {
       //Get the connection of the first collateral ("v1") for network identification
-      if (connections) {
+      if (connections.length > 0) {
         const { provider, chainId } = connections[0];
 
         if (isBatchedProvider(provider) && provider.chainId !== chainId) {
