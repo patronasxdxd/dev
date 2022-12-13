@@ -14,7 +14,8 @@ const select = ({ collateralSurplusBalance }: ThresholdStoreState) => ({
 });
 
 export const CollateralSurplusAction = () => {
-  const { collateralSurplusBalance } = useThresholdSelector(select);
+  // TODO
+  const { collateralSurplusBalance } = useThresholdSelector(1, select);
   const { threshold } = useThreshold();
 
   const myTransactionId = "claim-coll-surplus";

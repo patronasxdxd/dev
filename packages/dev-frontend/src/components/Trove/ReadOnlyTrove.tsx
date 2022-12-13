@@ -19,8 +19,8 @@ export const ReadOnlyTrove: React.FC = () => {
   const handleCloseTrove = useCallback(() => {
     dispatchEvent("CLOSE_TROVE_PRESSED");
   }, [dispatchEvent]);
-
-  const { trove, price } = useThresholdSelector(select);
+  // TODO
+  const { trove, price } = useThresholdSelector(1, select);
 
   // console.log("READONLY TROVE", trove.collateral.prettify(4));
   return (

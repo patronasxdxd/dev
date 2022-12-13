@@ -14,7 +14,8 @@ type VaultStakeValidation = {
 };
 
 export const useValidationState = (stableTroveChange: ValidTroveChange | undefined): VaultStakeValidation => {
-  const { erc20TokenAllowance } = useThresholdSelector(selector);
+    // TODO
+  const { erc20TokenAllowance } = useThresholdSelector(1, selector);
 
   const CollateralBN = stableTroveChange?.params.depositCollateral;
 

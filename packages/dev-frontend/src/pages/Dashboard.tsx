@@ -35,7 +35,7 @@ const selector = (state: ThresholdStoreState) => {
 
 export const Dashboard = () => {
   const { threshold } = useThreshold()
-  console.log(threshold);
+  const thresholdSelector = useThresholdSelector(1, selector)
 
   return (
   <Container>

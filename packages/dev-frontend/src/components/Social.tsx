@@ -17,7 +17,8 @@ const select = ({ accountBalance, thusdBalance }: ThresholdStoreState) => ({
 
 export const Social: React.FC = () => {
   const { account } = useThreshold();
-  const { accountBalance, thusdBalance } = useThresholdSelector(select);
+    // TODO
+  const { accountBalance, thusdBalance } = useThresholdSelector(1, select);
 
   return (
     <Box sx={{ display: ["none", "flex"] }}>

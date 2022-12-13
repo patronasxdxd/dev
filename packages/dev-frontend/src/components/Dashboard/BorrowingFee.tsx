@@ -17,9 +17,10 @@ const select = ({
 
 
 export const BorrowingFee: React.FC<BorrowingFeeProps> = ({ variant = "mainCards" }) => {
+  // TODO
   const {
     borrowingRate,
-  } = useThresholdSelector(select);
+  } = useThresholdSelector(1, select);
 
   const borrowingFeePct = new Percent(borrowingRate);
 

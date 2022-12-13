@@ -157,8 +157,9 @@ type TroveManagerProps = {
 };
 
 export const TroveManager: React.FC<TroveManagerProps> = ({ collateral, debt }) => {
-  const [{ original, edited, changePending }, dispatch] = useThresholdReducer(reduce, init);
-  const { fees, validationContext } = useThresholdSelector(select);
+    // TODO
+  const [{ original, edited, changePending }, dispatch] = useThresholdReducer(1, reduce, init);
+  const { fees, validationContext } = useThresholdSelector(1, select);
 
   useEffect(() => {
     if (collateral !== undefined) {

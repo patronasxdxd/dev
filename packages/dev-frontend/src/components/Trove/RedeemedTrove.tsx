@@ -12,7 +12,8 @@ const select = ({ collateralSurplusBalance }: ThresholdStoreState) => ({
 });
 
 export const RedeemedTrove: React.FC = () => {
-  const { hasSurplusCollateral } = useThresholdSelector(select);
+  // TODO
+  const { hasSurplusCollateral } = useThresholdSelector(1, select);
   const { dispatchEvent } = useTroveView();
 
   const handleOpenTrove = useCallback(() => {

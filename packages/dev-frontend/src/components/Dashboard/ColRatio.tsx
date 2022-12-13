@@ -18,11 +18,11 @@ const select = ({
 });
 
 export const ColRatio: React.FC<SystemStatsProps> = ({ variant = "mainCards" }) => {
-
+  // TODO
   const {
     price,
     total
-  } = useThresholdSelector(select);
+  } = useThresholdSelector(1, select);
 
   const totalCollateralRatioPct = new Percent(total.collateralRatio(price));
 

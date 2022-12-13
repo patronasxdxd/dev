@@ -45,7 +45,7 @@ const select = ({
 export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps) => {
 
   const { threshold } = useThreshold();
-
+  // TODO
   const {
     numberOfTroves,
     price,
@@ -53,7 +53,7 @@ export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps) => {
     borrowingRate,
     thusdInStabilityPool,
     pcvBalance
-  } = useThresholdSelector(select);
+  } = useThresholdSelector(1, select);
 
   const [editedPrice, setEditedPrice] = useState(price.toString(2));
   const [isSetPriceEnabled, setisSetPriceEnabled] = useState(true);

@@ -67,7 +67,7 @@ const select = ({
 
 export const RiskyVaults = ({ pageSize }: RiskyVaultsProps) => {
   const { chainId } = useWeb3React<Web3Provider>();
-
+  // TODO
   const {
     blockTag,
     numberOfTroves,
@@ -75,7 +75,7 @@ export const RiskyVaults = ({ pageSize }: RiskyVaultsProps) => {
     totalCollateralRatio,
     thusdInStabilityPool,
     price
-  } = useThresholdSelector(select);
+  } = useThresholdSelector(1, select);
   const { threshold } = useThreshold();
 
   const [loading, setLoading] = useState(true);

@@ -13,8 +13,8 @@ const selectPrice = ({ price }: ThresholdStoreState) => price;
 
 export const PriceManager = () => {
   const { threshold } = useThreshold();
-
-  const price = useThresholdSelector(selectPrice);
+  // TODO
+  const price = useThresholdSelector(1, selectPrice);
   const [editedPrice, setEditedPrice] = useState(price.toString(2));
 
   useEffect(() => {

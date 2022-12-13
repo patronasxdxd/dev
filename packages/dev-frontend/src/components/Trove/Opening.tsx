@@ -48,7 +48,8 @@ export const Opening: React.FC = () => {
   //   threshold: { send: threshold }
   // } = useThreshold();
   const { dispatchEvent } = useTroveView();
-  const { fees, price, erc20TokenBalance, validationContext } = useThresholdSelector(selector);
+  // TODO
+  const { fees, price, erc20TokenBalance, validationContext } = useThresholdSelector(1, selector);
   const borrowingRate = fees.borrowingRate();
   const editingState = useState<string>();
 

@@ -20,8 +20,8 @@ export const NoTrove: React.FC = props => {
   const handleOpenTrove = useCallback(() => {
     dispatchEvent("OPEN_TROVE_PRESSED");
   }, [dispatchEvent]);
-
-  const { erc20TokenBalance } = useThresholdSelector(select);
+  //TODO
+  const { erc20TokenBalance } = useThresholdSelector(1, select);
 
   return (
     <Card variant="mainCards">

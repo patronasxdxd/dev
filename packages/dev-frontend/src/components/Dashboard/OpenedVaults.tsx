@@ -17,10 +17,10 @@ const select = ({
 
 
 export const OpenedVaults: React.FC<SystemStatsProps> = ({ variant = "mainCards" }) => {
-  
+  // TODO
   const {
     numberOfTroves,
-  } = useThresholdSelector(select);
+  } = useThresholdSelector(1, select);
 
   return (
     <Card {...{ variant }} sx={{ display: ['none', 'block'] }}>

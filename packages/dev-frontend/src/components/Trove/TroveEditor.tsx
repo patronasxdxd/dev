@@ -40,7 +40,8 @@ export const TroveEditor: React.FC<TroveEditorProps> = ({
   borrowingRate,
   changePending
 }) => {
-  const { price } = useThresholdSelector(select);
+  // TODO
+  const { price } = useThresholdSelector(1, select);
 
   const feePct = new Percent(borrowingRate);
 

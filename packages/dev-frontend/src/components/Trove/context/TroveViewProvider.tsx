@@ -79,7 +79,9 @@ const select = ({ trove: { status } }: ThresholdStoreState) => status;
 
 export const TroveViewProvider: React.FC = props => {
   const { children } = props;
-  const troveStatus = useThresholdSelector(select);
+    // TODO
+  const troveStatus = useThresholdSelector(1, select);
+  console.log('troveStatus: ', troveStatus)
 
   const [view, setView] = useState<TroveView>(getInitialView(troveStatus));
   const viewRef = useRef<TroveView>(view);

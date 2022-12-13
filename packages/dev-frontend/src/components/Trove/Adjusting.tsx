@@ -88,7 +88,8 @@ export const Adjusting: React.FC = () => {
   //   threshold: { send: threshold }
   // } = useThreshold();
   const { dispatchEvent } = useTroveView();
-  const { trove, fees, price, erc20TokenBalance, validationContext } = useThresholdSelector(selector);
+  // TODO
+  const { trove, fees, price, erc20TokenBalance, validationContext } = useThresholdSelector(1, selector);
   const editingState = useState<string>();
   const previousTrove = useRef<Trove>(trove);
   const [collateral, setCollateral] = useState<Decimal>(trove.collateral);

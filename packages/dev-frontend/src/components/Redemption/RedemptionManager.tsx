@@ -27,7 +27,8 @@ const select = ({ price, fees, total, thusdBalance }: ThresholdStoreState) => ({
 const transactionId = "redemption";
 
 export const RedemptionManager: React.FC = () => {
-  const { price, fees, total, thusdBalance } = useThresholdSelector(select);
+  // TODO
+  const { price, fees, total, thusdBalance } = useThresholdSelector(1, select);
   const [thusdAmount, setTHUSDAmount] = useState(Decimal.ZERO);
   const [changePending, setChangePending] = useState(false);
   const editingState = useState<string>();
