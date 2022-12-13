@@ -5,19 +5,19 @@ import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
 import { equals } from "../utils/equals";
 import { useLiquityStore } from "./useLiquityStore";
 
-export const useLiquitySelector = <S, T>(select: (state: ThresholdStoreState<T>) => S): S => {
-  const store = useLiquityStore<T>();
+export const useLiquitySelector = <S, T>(index: number, select: (state: ThresholdStoreState<T>) => S): S => {
+  const stores = useLiquityStore<T>();
   const [, rerender] = useReducer(() => ({}), {});
 
   useEffect(
     () =>
-      store.subscribe(({ newState, oldState }) => {
+      stores[index].subscribe(({ newState, oldState }) => {
         if (!equals(select(newState), select(oldState))) {
           rerender();
         }
       }),
-    [store, select]
+    [index, stores, select]
   );
 
-  return select(store.state);
+  return select(stores[index].state);
 };
