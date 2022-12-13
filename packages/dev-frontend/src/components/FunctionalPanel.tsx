@@ -14,11 +14,12 @@ type FunctionalPanelProps = {
 
 export const FunctionalPanel: React.FC<FunctionalPanelProps> = ({ children, loader }) => {
 
-  const { threshold } = useThreshold();
+  const { account, provider, threshold } = useThreshold();
 
   // For console tinkering ;-)
   Object.assign(window, {
-
+    account,
+    provider,
     threshold,
     Trove,
     Decimal,
