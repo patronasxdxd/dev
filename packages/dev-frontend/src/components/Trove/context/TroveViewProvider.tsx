@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
+import { useThresholdSelector} from "@liquity/lib-react";
 import { LiquityStoreState as ThresholdStoreState, UserTroveStatus } from "@liquity/lib-base";
 import { TroveViewContext } from "./TroveViewContext";
 import type { TroveView, TroveEvent } from "./types";
@@ -87,7 +87,6 @@ export const TroveViewProvider = ({
   children
 }: TroveViewProps): JSX.Element => {
   const trovesStatus = useThresholdSelector(select);
-  console.log('trovesStatus: ', trovesStatus)
   const [views, setViews] = useState<Record<string, TroveView>>({});
 
   useEffect(() => {
@@ -97,6 +96,7 @@ export const TroveViewProvider = ({
     for (const [version, troveStatus] of Object.entries(trovesStatus)) {
       setViews(prev => { return {...prev, [version]: getInitialView(troveStatus)}})
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   
   const viewsRef = useRef<Record<string, TroveView>>(views);

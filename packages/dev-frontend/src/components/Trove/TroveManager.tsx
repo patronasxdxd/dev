@@ -3,7 +3,7 @@ import { Button, Flex, Link } from "theme-ui";
 
 import { LiquityStoreState as ThresholdStoreState, Decimal, Trove, Decimalish, THUSD_MINIMUM_DEBT } from "@liquity/lib-base";
 
-import { LiquityStoreUpdate as ThresholdStoreUpdate, useLiquityReducer as useThresholdReducer, useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
+import { ThresholdStoreUpdate, useThresholdReducer, useThresholdSelector} from "@liquity/lib-react";
 
 import { ActionDescription } from "../ActionDescription";
 import { useMyTransactionState } from "../Transaction";
@@ -41,9 +41,6 @@ const finishChange = reduceWith({ type: "finishChange" });
 const revert = reduceWith({ type: "revert" });
 
 const reduce = (state: TroveManagerState, action: TroveManagerAction): TroveManagerState => {
-  // console.log(state);
-  // console.log(action);
-
   const { original, edited, changePending, debtDirty, addedMinimumDebt } = state;
 
   switch (action.type) {
@@ -127,7 +124,6 @@ const reduce = (state: TroveManagerState, action: TroveManagerAction): TroveMana
       ) {
         return revert(newState);
       }
-
       return { ...newState, edited: trove.apply(change, 0) };
     }
   }
@@ -157,7 +153,7 @@ type TroveManagerProps = {
 };
 
 export const TroveManager: React.FC<TroveManagerProps> = ({ collateral, debt }) => {
-    // TODO
+  // TODO needs to set dynamic versioning
   const [{ original, edited, changePending }, dispatch] = useThresholdReducer(1, reduce, init);
   const { v1: { fees, validationContext } } = useThresholdSelector(select);
 

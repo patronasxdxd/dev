@@ -9,7 +9,7 @@ import {
   Decimal
 } from "@liquity/lib-base";
 import { BlockPolledLiquityStoreState as BlockPolledThresholdStoreState } from "@liquity/lib-ethers";
-import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
+import { useThresholdSelector } from "@liquity/lib-react";
 import { Web3Provider } from "@ethersproject/providers";
 import { useWeb3React } from "@web3-react/core";
 
@@ -58,7 +58,6 @@ const select = ({
 }: BlockPolledThresholdStoreState) => ({
   numberOfTroves,
   price,
-  total,
   recoveryMode: total.collateralRatioIsBelowCritical(price),
   totalCollateralRatio: total.collateralRatio(price),
   thusdInStabilityPool,
@@ -67,17 +66,26 @@ const select = ({
 
 export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
   const { chainId } = useWeb3React<Web3Provider>();
-
-  const thresholdSelector = useThresholdSelector(select);
+  console.log('chainId: ', chainId)
+  // TODO needs to set dynamic versioning
+  const {
+    v1: {
+      blockTag,
+      numberOfTroves,
+      recoveryMode,
+      totalCollateralRatio,
+      thusdInStabilityPool,
+      price
+    }
+  } = useThresholdSelector(select);
   const { threshold } = useThreshold();
 
   const [troves, setTroves] = useState<UserTrove[]>();
   const [reload, setReload] = useState({});
-  const [numberOfTroves, setNumberOfTroves] = useState(0)
-  const [numberOfPages, setNumberOfPages] = useState(1)
   const forceReload = useCallback(() => setReload({}), []);
 
   const [page, setPage] = useState(0);
+  const numberOfPages = Math.ceil(numberOfTroves / pageSize) || 1;
   const clampedPage = Math.min(page, numberOfPages - 1);
 
   const nextPage = () => {
@@ -100,35 +108,28 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
 
   useEffect(() => {
     let mounted = true;
+    // TODO needs to set dynamic versioning
+    threshold.v1
+      .getTroves(
+        {
+          first: pageSize,
+          sortedBy: "ascendingCollateralRatio",
+          startingAt: clampedPage * pageSize
+        },
+        { blockTag }
+      )
+      .then(troves => {
+        if (mounted) {
+          setTroves(troves);
+        }
+      });
 
-    if (thresholdSelector) {
-      // TODO needs to set dynamic versioning
-      const { numberOfTroves, blockTag } = thresholdSelector.v1
-      setNumberOfTroves(numberOfTroves)
-      setNumberOfPages(Math.ceil(numberOfTroves / pageSize))
-
-      // TODO needs to set dynamic versioning
-      threshold.v1
-        .getTroves(
-          {
-            first: pageSize,
-            sortedBy: "ascendingCollateralRatio",
-            startingAt: clampedPage * pageSize
-          },
-          { blockTag }
-        )
-        .then(troves => {
-          if (mounted) {
-            setTroves(troves);
-          }
-        });
-    }
     return () => {
       mounted = false;
     };
     // Omit blockTag from deps on purpose
     // eslint-disable-next-line
-  }, [thresholdSelector, threshold, clampedPage, pageSize, reload]);
+  }, [threshold, clampedPage, pageSize, reload]);
 
   useEffect(() => {
     forceReload();
@@ -295,7 +296,7 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
                             </Abbreviation>
                           </td>
                           <td>
-                            {thresholdSelector && (collateralRatio => (
+                            {(collateralRatio => (
                               <Text
                                 color={
                                   collateralRatio.gt(CRITICAL_COLLATERAL_RATIO)
@@ -307,32 +308,29 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
                               >
                                 {new Percent(collateralRatio).prettify()}
                               </Text>
-                            ))(trove.collateralRatio(thresholdSelector.v1.price))}
+                            ))(trove.collateralRatio(price))}
                           </td>
                           <td>
-                            {thresholdSelector &&
-                              <Transaction
-                                id={`liquidate-${trove.ownerAddress}`}
-                                tooltip="Liquidate"
-                                requires={[
-                                  // TODO needs to set dynamic versioning
-                                  thresholdSelector.v1.recoveryMode
-                                    ? liquidatableInRecoveryMode(
-                                        trove,
-                                        thresholdSelector.v1.price,
-                                        thresholdSelector.v1.totalCollateralRatio,
-                                        thresholdSelector.v1.thusdInStabilityPool
-                                      )
-                                    : liquidatableInNormalMode(trove, thresholdSelector.v1.price)
-                                ]}
-                                // TODO needs to set dynamic versioning
-                                send={threshold.v1.send.liquidate.bind(threshold.v1.send, trove.ownerAddress)}
-                              >
-                                <Button variant="dangerIcon">
-                                  <Icon name="trash" />
-                                </Button>
-                              </Transaction>
-                            }
+                            <Transaction
+                              id={`liquidate-${trove.ownerAddress}`}
+                              tooltip="Liquidate"
+                              requires={[
+                                recoveryMode
+                                  ? liquidatableInRecoveryMode(
+                                      trove,
+                                      price,
+                                      totalCollateralRatio,
+                                      thusdInStabilityPool
+                                    )
+                                  : liquidatableInNormalMode(trove, price)
+                              ]}
+                              // TODO needs to set dynamic versioning
+                              send={threshold.v1.send.liquidate.bind(threshold.v1.send, trove.ownerAddress)}
+                            >
+                              <Button variant="dangerIcon">
+                                <Icon name="trash" />
+                              </Button>
+                            </Transaction>
                           </td>
                         </tr>
                       )

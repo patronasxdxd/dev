@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React from "react";
 import { Card } from "theme-ui";
 
-import { LiquityStoreState as ThresholdStoreState, Decimal} from "@liquity/lib-base";
-import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
+import { useThresholdSelector } from "@liquity/lib-react";
 import { TroveView } from "../Trove/context/types";
 import { useTroveView } from "../Trove/context/TroveViewContext";
 
@@ -23,16 +23,17 @@ const vaultStatus = (view: TroveView) => {
 }
 
 export const VaultCard: React.FC<VaultCardProps> = ({ variant = "mainCards" }) => {
-  const { views } = useTroveView();
+  // TODO needs to set dynamic versioning
+  const { views: { v1 } } = useTroveView();
   // TODO needs to set dynamic versioning
   const {v1: { erc20TokenBalance }} = useThresholdSelector(select);
 
   return (
     <Card {...{ variant }}>
       <BottomCard
-        title={vaultStatus(views[0])}
+        title={vaultStatus(v1)}
         tooltip={`To mint and borrow thUSD you must open a vault and deposit a certain amount of collateral (${ FIRST_ERC20_COLLATERAL }) to it.`}
-        action={vaultStatus(views[0])}
+        action={vaultStatus(v1)}
         token={ FIRST_ERC20_COLLATERAL }
         path='/borrow'
       >

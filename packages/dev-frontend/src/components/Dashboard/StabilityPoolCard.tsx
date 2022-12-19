@@ -3,7 +3,7 @@ import { Card } from "theme-ui";
 import { COIN } from "../../strings";
 
 import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
-import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
+import { useThresholdSelector} from "@liquity/lib-react";
 
 import { BottomCard } from "./BottomCard";
 
@@ -16,7 +16,8 @@ const select = ({  thusdBalance }: ThresholdStoreState) => ({
 });
 
 export const StabilityPoolCard: React.FC<StabilityPoolCardProps> = ({ variant = "mainCards" }) => {
-  const thresholdSelector = useThresholdSelector(select);
+  // TODO needs to set dynamic versioning
+  const { v1: { thusdBalance } } = useThresholdSelector(select);
 
   return (
     <Card {...{ variant }}>
@@ -28,8 +29,7 @@ export const StabilityPoolCard: React.FC<StabilityPoolCardProps> = ({ variant = 
         path='/earn'
         disabled={ true }
       >
-        {/* TODO needs to set dynamic versioning */}
-        {thresholdSelector && (!thresholdSelector.v1.thusdBalance.eq(0) ? thresholdSelector.v1.thusdBalance.prettify() : '--')}
+        {(!thusdBalance.eq(0) ? thusdBalance.prettify() : '--')}
       </BottomCard>
     </Card>
   );

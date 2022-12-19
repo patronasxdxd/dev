@@ -7,57 +7,27 @@ import { Chart } from "../components/Dashboard/Chart/Chart";
 import { VaultCard } from "../components/Dashboard/VaultCard";
 import { StabilityPoolCard } from "../components/Dashboard/StabilityPoolCard";
 import { SystemStatsCard } from "../components/SystemStatsCard";
-import { useThreshold } from "../hooks/ThresholdContext";
-import { useTroveView } from "../components/Trove/context/TroveViewContext";
-import {
-  LiquityStoreState as ThresholdStoreState,
-  Decimal,
-  Trove,
-  THUSD_LIQUIDATION_RESERVE,
-  Percent,
-  Difference
-} from "@liquity/lib-base";
-import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
-import {
-  selectForTroveChangeValidation,
-  validateTroveChange
-} from "../components/Trove/validation/validateTroveChange";
 
-const selector = (state: ThresholdStoreState) => {
-  const { trove, fees, price, erc20TokenBalance } = state;
-  return {
-    trove,
-    fees,
-    price,
-    erc20TokenBalance,
-    validationContext: selectForTroveChangeValidation(state)
-  };
-};
-
-export const Dashboard = () => {
-  const { v1: { trove, fees, price, erc20TokenBalance } } = useThresholdSelector(selector)
-  console.log('fees: ', fees)
-  return (
+export const Dashboard: React.FC = () => (
   <Container>
     <Heading as="h2" sx={{ mt: "2.5em", fontWeight: "semibold" }}>
       Dashboard
     </Heading>
     <Container variant="dashboardGrid">
       <Container variant="oneThird">
-        {/* TODO */}
-        {/* <BorrowingFee /> */}
+        <BorrowingFee />
       </Container>
       <Container variant="oneThird">
-        {/* <OpenedVaults /> */}
+        <OpenedVaults />
       </Container>
       <Container variant="oneThird">
-        {/* <ColRatio /> */}
+        <ColRatio />
       </Container>
       <Container variant="twoThirds">
         <Chart />
       </Container>
       <Container variant="oneThird">
-        {/* <SystemStatsCard /> */}
+        <SystemStatsCard />
       </Container>
       <Container variant="half">
         <VaultCard />
@@ -67,5 +37,4 @@ export const Dashboard = () => {
       </Container>
     </Container>
   </Container>
-  )
-};
+);

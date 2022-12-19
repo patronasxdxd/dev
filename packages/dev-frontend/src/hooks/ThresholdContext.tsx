@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { Provider } from "@ethersproject/abstract-provider";
 import { getNetwork } from "@ethersproject/networks";
 import { Web3Provider } from "@ethersproject/providers";
@@ -10,8 +10,7 @@ import {
   EthersLiquity as EthersThreshold,
   EthersLiquityWithStore as EthersThresholdWithStore,
   _connectByChainId,
-  _getVersionedDeployments,
-  EthersLiquityConnection as EthersThresholdConnection
+  _getVersionedDeployments
 } from "@liquity/lib-ethers";
 import { _VersionedLiquityDeployments } from "@liquity/lib-ethers/dist/src/contracts";
 

@@ -24,12 +24,12 @@ export const RiskyVaultsPage: React.FC = () => (
     </Card>
     <Container variant="pageRow">
       <Container variant="firstHalf">
-        {/* <LiquidationManager /> */}
+        <LiquidationManager />
       </Container>
       <Container variant="secondHalf">
         <SystemStatsCard />
       </Container>
     </Container>
-    {/* <RiskyVaults pageSize={10} /> */}
+    <RiskyVaults pageSize={10} />
   </Container>
 );

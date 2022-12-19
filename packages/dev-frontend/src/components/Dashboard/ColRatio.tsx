@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Card } from "theme-ui";
-import { Decimal, Percent, LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
-import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
+import { Percent, LiquityStoreState } from "@liquity/lib-base";
+import { useThresholdSelector } from "@liquity/lib-react";
 
 import { TopCard } from "./TopCard";
 
@@ -12,25 +12,21 @@ type SystemStatsProps = {
 const select = ({
   price,
   total
-}: ThresholdStoreState) => ({
+}: LiquityStoreState) => ({
   price,
   total
 });
 
 export const ColRatio: React.FC<SystemStatsProps> = ({ variant = "mainCards" }) => {
-  const [totalCollateralRatioPct, setTotalCollateralRatioPct] = useState<Percent<Decimal, { gte(n: string): boolean; }>>()
-  const thresholdSelector = useThresholdSelector(select);
+// TODO needs to set dynamic versioning
+  const {
+    v1: {
+      price,
+      total
+    }
+  } = useThresholdSelector(select);
 
-  useEffect(() => {
-    if (thresholdSelector) {
-      // TODO needs to set dynamic versioning
-      const { total, price } = thresholdSelector.v1
-      setTotalCollateralRatioPct(new Percent(total.collateralRatio(price)))
-    }
-    return () => {
-      setTotalCollateralRatioPct(undefined)
-    }
-  }, [thresholdSelector])
+  const totalCollateralRatioPct = new Percent(total.collateralRatio(price));
 
   return (
     <Card {...{ variant }}>
@@ -39,7 +35,7 @@ export const ColRatio: React.FC<SystemStatsProps> = ({ variant = "mainCards" }) 
         tooltip="The ratio of the Dollar value of the entire system collateral at the current ETH:USD price, to the entire system debt." 
         imgSrc="./icons/col-ratio.svg" 
       >
-        {totalCollateralRatioPct && totalCollateralRatioPct.prettify()}
+        {totalCollateralRatioPct.prettify()}
       </TopCard>
     </Card>
   );

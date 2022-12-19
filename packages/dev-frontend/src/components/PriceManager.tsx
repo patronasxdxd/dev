@@ -2,50 +2,49 @@ import React, { useState, useEffect } from "react";
 import { Card, Box, Heading, Flex, Button, Label, Input } from "theme-ui";
 
 import { Decimal, LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
-import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
+import { useThresholdSelector } from "@liquity/lib-react";
 
 import { useThreshold } from "../hooks/ThresholdContext";
 
 import { Icon } from "./Icon";
 import { Transaction } from "./Transaction";
 
-const select = ({
-  price
-}: ThresholdStoreState) => ({
-  price
-});
+const selectPrice = ({ price }: ThresholdStoreState) => price;
 
-export const PriceManager = () => {
-  const { threshold } = useThreshold();
-  const thresholdSelector = useThresholdSelector(select);
-  const [editedPrice, setEditedPrice] = useState<string>();
+export const PriceManager: React.FC = () => {
+  // TODO needs to set dynamic versioning
+  const {
+    threshold: {
+      v1: {
+        send: threshold,
+        connection: { _priceFeedIsTestnet: canSetPrice }
+      }
+    }
+  } = useThreshold();
+  // TODO needs to set dynamic versioning
+  const { v1: price } = useThresholdSelector(selectPrice);
+  const [editedPrice, setEditedPrice] = useState(price.toString(2));
 
   useEffect(() => {
-    if (thresholdSelector) {
-      // TODO needs to set dynamic versioning
-      setEditedPrice(thresholdSelector.v1.price.toString(2));
-    }
-  }, [thresholdSelector]);
+    setEditedPrice(price.toString(2));
+  }, [price]);
 
   return (
     <Card>
       <Heading>Price feed</Heading>
+
       <Box sx={{ p: [2, 3] }}>
         <Flex sx={{ alignItems: "stretch" }}>
           <Label>ETH</Label>
-
           <Label variant="unit">$</Label>
-          {(editedPrice && threshold) &&
-            <Input
-              // TODO needs to set dynamic versioning
-              type={threshold.v1.connection._priceFeedIsTestnet ? "number" : "text"}
-              step="any"
-              value={editedPrice}
-              onChange={e => setEditedPrice(e.target.value)}
-              disabled={!threshold.v1.connection._priceFeedIsTestnet}
-            />
-          }
-          {threshold.v1.connection._priceFeedIsTestnet && (
+          <Input
+            type={canSetPrice ? "number" : "text"}
+            step="any"
+            value={editedPrice}
+            onChange={e => setEditedPrice(e.target.value)}
+            disabled={!canSetPrice}
+          />
+          {canSetPrice && (
             <Flex sx={{ ml: 2, alignItems: "center" }}>
               <Transaction
                 id="set-price"
@@ -55,8 +54,7 @@ export const PriceManager = () => {
                   if (!editedPrice) {
                     throw new Error("Invalid price");
                   }
-                  // TODO needs to set dynamic versioning
-                  return threshold.v1.send.setPrice(Decimal.from(editedPrice), overrides);
+                  return threshold.setPrice(Decimal.from(editedPrice), overrides);
                 }}
               >
                 <Button variant="icon">

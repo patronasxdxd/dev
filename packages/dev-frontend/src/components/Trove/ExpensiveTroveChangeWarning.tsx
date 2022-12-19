@@ -25,7 +25,8 @@ export const ExpensiveTroveChangeWarning: React.FC<ExpensiveTroveChangeWarningPa
   gasEstimationState,
   setGasEstimationState
 }) => {
-  const { threshold } = useThreshold();
+  // TODO needs to set dynamic versioning
+  const { threshold: { v1 } } = useThreshold();
   useEffect(() => {
     if (troveChange && troveChange.type !== "closure") {
       setGasEstimationState({ type: "inProgress" });
@@ -33,24 +34,23 @@ export const ExpensiveTroveChangeWarning: React.FC<ExpensiveTroveChangeWarningPa
       let cancelled = false;
 
       const timeoutId = setTimeout(async () => {
-        // TODO
-        // const populatedTx = await (troveChange.type === "creation"
-        //   ? threshold.populate.openTrove(troveChange.params, {
-        //       maxBorrowingRate,
-        //       borrowingFeeDecayToleranceMinutes
-        //     })
-        //   : threshold.populate.adjustTrove(troveChange.params, {
-        //       maxBorrowingRate,
-        //       borrowingFeeDecayToleranceMinutes
-        //     }));
+        const populatedTx = await (troveChange.type === "creation"
+          ? v1.populate.openTrove(troveChange.params, {
+              maxBorrowingRate,
+              borrowingFeeDecayToleranceMinutes
+            })
+          : v1.populate.adjustTrove(troveChange.params, {
+              maxBorrowingRate,
+              borrowingFeeDecayToleranceMinutes
+            }));
 
-        // if (!cancelled) {
-        //   setGasEstimationState({ type: "complete", populatedTx });
-        //   console.log(
-        //     "Estimated TX cost: " +
-        //       Decimal.from(`${populatedTx.rawPopulatedTransaction.gasLimit}`).prettify(0)
-        //   );
-        // }
+        if (!cancelled) {
+          setGasEstimationState({ type: "complete", populatedTx });
+          console.log(
+            "Estimated TX cost: " +
+              Decimal.from(`${populatedTx.rawPopulatedTransaction.gasLimit}`).prettify(0)
+          );
+        }
       }, 333);
 
       return () => {

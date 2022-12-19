@@ -2,7 +2,7 @@ import React from "react";
 import { Text, Flex, Box, Heading } from "theme-ui";
 
 import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
-import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
+import { useThresholdSelector } from "@liquity/lib-react";
 
 import { COIN } from "../strings";
 import { useThreshold } from "../hooks/ThresholdContext";
@@ -17,7 +17,8 @@ const select = ({ accountBalance, thusdBalance }: ThresholdStoreState) => ({
 
 export const Social: React.FC = () => {
   const { account } = useThreshold();
-  const thresholdSelector = useThresholdSelector(select);
+  // TODO needs to set dynamic versioning
+  const { v1: { accountBalance, thusdBalance }} = useThresholdSelector(select);
 
   return (
     <Box sx={{ display: ["none", "flex"] }}>
@@ -32,10 +33,9 @@ export const Social: React.FC = () => {
       </Flex>
       <Flex sx={{ alignItems: "center" }}>
         <Icon name="wallet" size="lg" />
-        {thresholdSelector && ([
-          // TODO needs to set dynamic versioning
-          ["ETH", thresholdSelector.v1.accountBalance],
-          [COIN, thresholdSelector.v1.thusdBalance]
+        {([
+          ["ETH", accountBalance],
+          [COIN, thusdBalance]
         ] as const).map(([currency, balance], i) => (
           <Flex key={i} sx={{ ml: 3, flexDirection: "column" }}>
             <Heading sx={{ fontSize: 1 }}>{currency}</Heading>

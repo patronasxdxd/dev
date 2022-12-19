@@ -8,7 +8,7 @@ import {
   Percent,
   Difference
 } from "@liquity/lib-base";
-import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
+import { useThresholdSelector } from "@liquity/lib-react";
 
 import { useStableTroveChange } from "../../hooks/useStableTroveChange";
 import { useValidationState } from "./validation/useValidationState";
@@ -83,7 +83,10 @@ const applyUnsavedNetDebtChanges = (unsavedChanges: Difference, trove: Trove) =>
 };
 
 export const Adjusting: React.FC = () => {
-  const { threshold } = useThreshold();
+  // TODO needs to set dynamic versioning
+  const {
+    threshold: { v1: { send: threshold } }
+  } = useThreshold();
   const { dispatchEvent } = useTroveView();
   // TODO needs to set dynamic versioning
   const { v1: { trove, fees, price, erc20TokenBalance, validationContext } } = useThresholdSelector(selector);
@@ -95,9 +98,9 @@ export const Adjusting: React.FC = () => {
   const transactionState = useMyTransactionState(TRANSACTION_ID);
   const borrowingRate = fees.borrowingRate();
 
+  // TODO needs to set dynamic versioning
   useEffect(() => {
     if (transactionState.type === "confirmedOneShot") {
-      // TODO needs to set dynamic versioning
       dispatchEvent("TROVE_ADJUSTED", "v1");
     }
   }, [transactionState.type, dispatchEvent]);
@@ -116,8 +119,8 @@ export const Adjusting: React.FC = () => {
     previousTrove.current = trove;
   }, [trove, collateral, netDebt]);
 
+  // TODO needs to set dynamic versioning
   const handleCancelPressed = useCallback(() => {
-    // TODO needs to set dynamic versioning
     dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED", "v1");
   }, [dispatchEvent]);
 
@@ -282,8 +285,7 @@ export const Adjusting: React.FC = () => {
             {!hasApproved && amountToApprove ?
               <Transaction
                 id={APPROVE_TRANSACTION_ID}
-                // TODO needs to set dynamic versioning
-                send={threshold.v1.send.approveErc20.bind(threshold.v1, amountToApprove)}
+                send={threshold.approveErc20.bind(threshold, amountToApprove)}
                 showFailure="asTooltip"
                 tooltipPlacement="bottom"
               >

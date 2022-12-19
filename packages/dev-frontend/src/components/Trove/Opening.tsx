@@ -8,7 +8,7 @@ import {
   THUSD_MINIMUM_NET_DEBT,
   Percent
 } from "@liquity/lib-base";
-import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
+import { useThresholdSelector } from "@liquity/lib-react";
 
 import { useStableTroveChange } from "../../hooks/useStableTroveChange";
 import { useValidationState } from "./validation/useValidationState";
@@ -43,13 +43,13 @@ const TRANSACTION_ID = "trove-creation";
 const APPROVE_TRANSACTION_ID = "trove-approve";
 
 export const Opening: React.FC = () => {
-  // TODO
-  // const {
-  //   threshold: { send: threshold }
-  // } = useThreshold();
+  // TODO needs to set dynamic versioning
+  const {
+    threshold: { v1: { send: threshold } }
+  } = useThreshold();
   const { dispatchEvent } = useTroveView();
-  // TODO
-  const { fees, price, erc20TokenBalance, validationContext } = useThresholdSelector(selector)[0];
+  // TODO needs to set dynamic versioning
+  const { v1: { fees, price, erc20TokenBalance, validationContext }} = useThresholdSelector(selector);
   const borrowingRate = fees.borrowingRate();
   const editingState = useState<string>();
 
@@ -68,15 +68,15 @@ export const Opening: React.FC = () => {
   const collateralRatio =
     !collateral.isZero && !borrowAmount.isZero ? trove.collateralRatio(price) : undefined;
 
-   const [troveChange, description] = validateTroveChange(
-     EMPTY_TROVE,
-     trove,
-     borrowingRate,
-     validationContext
-   );
+  const [troveChange, description] = validateTroveChange(
+    EMPTY_TROVE,
+    trove,
+    borrowingRate,
+    validationContext
+  );
     
-   const stableTroveChange = useStableTroveChange(troveChange);
-   const { hasApproved, amountToApprove } = useValidationState(stableTroveChange);
+  const stableTroveChange = useStableTroveChange(troveChange);
+  const { hasApproved, amountToApprove } = useValidationState(stableTroveChange);
   
   const [gasEstimationState, setGasEstimationState] = useState<GasEstimationState>({ type: "idle" });
 
@@ -86,7 +86,6 @@ export const Opening: React.FC = () => {
     transactionState.type === "waitingForConfirmation";
 
   const handleCancelPressed = useCallback(() => {
-    // TODO needs to set dynamic versioning
     dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED", "v1");
   }, [dispatchEvent]);
 
@@ -216,8 +215,7 @@ export const Opening: React.FC = () => {
           )}
 
           <Flex variant="layout.actions" sx={{ flexDirection: "column" }}>
-            {/* TODO */}
-            {/* {!hasApproved && amountToApprove ? (
+            {!hasApproved && amountToApprove ? (
               <Transaction
                 id={APPROVE_TRANSACTION_ID}
                 send={threshold.approveErc20.bind(threshold, amountToApprove)}
@@ -241,7 +239,7 @@ export const Opening: React.FC = () => {
               </TroveAction>
             ) : (
               <Button disabled>Confirm</Button>
-            )} */}
+            )}
             <Button variant="cancel" onClick={handleCancelPressed} sx={{ borderRadius: "12px", mt: 3 }}>
               Cancel
             </Button>

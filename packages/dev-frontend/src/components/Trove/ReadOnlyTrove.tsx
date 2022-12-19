@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Card, Box, Flex, Button, Link } from "theme-ui";
-import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
+import { useThresholdSelector} from "@liquity/lib-react";
 import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
 import { DisabledEditableRow } from "./Editor";
 import { useTroveView } from "./context/TroveViewContext";
@@ -24,7 +24,6 @@ export const ReadOnlyTrove: React.FC = () => {
   // TODO needs to set dynamic versioning
   const { v1: { trove, price } } = useThresholdSelector(select);
 
-  // console.log("READONLY TROVE", trove.collateral.prettify(4));
   return (
     <Card variant="mainCards">
       <Card variant="layout.columns">
@@ -61,7 +60,6 @@ export const ReadOnlyTrove: React.FC = () => {
 
             <CollateralRatio value={trove.collateralRatio(price)} sx={{ mt: -3 }} />
           </Box>
-
           <Flex variant="layout.actions" sx={{ flexDirection: "column" }}>
             <Button onClick={handleAdjustTrove}>
               <Icon name="pen" size="sm" />
@@ -77,7 +75,9 @@ export const ReadOnlyTrove: React.FC = () => {
             fontWeight: "body",
             mt: "1.5em"
           }}>
-            <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+            <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">
+              Read about
+            </Link>
             in the documentation
           </Flex>
         </Flex>

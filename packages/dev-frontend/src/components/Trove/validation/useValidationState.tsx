@@ -1,5 +1,5 @@
 import { Decimal, LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
-import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
+import { useThresholdSelector} from "@liquity/lib-react";
 import { ValidTroveChange } from "../../../hooks/useStableTroveChange";
 
 const selector = ({
@@ -14,13 +14,13 @@ type VaultStakeValidation = {
 };
 
 export const useValidationState = (stableTroveChange: ValidTroveChange | undefined): VaultStakeValidation => {
-    // TODO
-  const { erc20TokenAllowance } = useThresholdSelector(selector)[0];
+  // TODO needs to set dynamic versioning
+  const { v1: { erc20TokenAllowance }} = useThresholdSelector(selector);
 
   const CollateralBN = stableTroveChange?.params.depositCollateral;
 
   if (CollateralBN) {
-    const hasApproved =  !erc20TokenAllowance.isZero && erc20TokenAllowance.gte(CollateralBN);
+    const hasApproved = !erc20TokenAllowance.isZero && erc20TokenAllowance.gte(CollateralBN);
     const amountToApprove = !hasApproved ? CollateralBN : Decimal.from(0);
 
     return  {

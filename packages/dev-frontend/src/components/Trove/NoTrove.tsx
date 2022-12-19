@@ -3,7 +3,7 @@ import { Box, Button, Card, Flex, Link } from "theme-ui";
 import { useTroveView } from "./context/TroveViewContext";
 
 import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
-import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
+import { useThresholdSelector} from "@liquity/lib-react";
 
 import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
 import { ActionDescription } from "../ActionDescription";
@@ -56,7 +56,9 @@ export const NoTrove: React.FC = props => {
               { FIRST_ERC20_COLLATERAL }
             </Box>
           </Flex>
-          <Button onClick={handleOpenTrove} sx={{ mt: 2, width: "100%" }}>Open a Vault</Button>
+          <Button onClick={handleOpenTrove} sx={{ mt: 2, width: "100%" }}>
+            Open a Vault
+          </Button>
           <Flex sx={{ 
             alignSelf: "center",
             fontSize: 11,

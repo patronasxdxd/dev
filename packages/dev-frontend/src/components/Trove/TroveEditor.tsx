@@ -7,10 +7,10 @@ import {
   Decimalish,
   Decimal,
   Trove,
-  LiquityStoreState as ThresholdStoreState,
+  LiquityStoreState,
   THUSD_LIQUIDATION_RESERVE
 } from "@liquity/lib-base";
-import { useLiquitySelector as useThresholdSelector } from "@liquity/lib-react";
+import { useThresholdSelector } from "@liquity/lib-react";
 
 import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
 
@@ -30,7 +30,7 @@ type TroveEditorProps = {
   ) => void;
 };
 
-const select = ({ price }: ThresholdStoreState) => ({ price });
+const select = ({ price }: LiquityStoreState) => ({ price });
 
 export const TroveEditor: React.FC<TroveEditorProps> = ({
   children,
@@ -40,8 +40,8 @@ export const TroveEditor: React.FC<TroveEditorProps> = ({
   borrowingRate,
   changePending
 }) => {
-  // TODO
-  const { price } = useThresholdSelector(select)[0];
+  // TODO needs to set dynamic versioning
+  const { v1: { price } } = useThresholdSelector(select);
 
   const feePct = new Percent(borrowingRate);
 
@@ -75,9 +75,7 @@ export const TroveEditor: React.FC<TroveEditorProps> = ({
             amount={edited.collateral.prettify(4)}
             unit={ FIRST_ERC20_COLLATERAL }
           />
-
           <StaticRow label="Debt" inputId="trove-debt" amount={edited.debt.prettify()} unit={COIN} />
-
           {original.isEmpty && (
             <StaticRow
               label="Liquidation Reserve"
@@ -97,7 +95,6 @@ export const TroveEditor: React.FC<TroveEditorProps> = ({
               }
             />
           )}
-
           <StaticRow
             label="Borrowing Fee"
             inputId="trove-borrowing-fee"
@@ -115,12 +112,9 @@ export const TroveEditor: React.FC<TroveEditorProps> = ({
               />
             }
           />
-
           <CollateralRatio value={collateralRatio} change={collateralRatioChange} />
-
           {children}
         </Flex>
-
         {changePending && <LoadingOverlay />}
       </Card>
     </Card>

@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { Card, Button, Flex, Link } from "theme-ui";
 import { CollateralSurplusAction } from "../CollateralSurplusAction";
 import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
-import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
+import { useThresholdSelector} from "@liquity/lib-react";
 import { useTroveView } from "./context/TroveViewContext";
 import { COIN } from "../../strings";
 import { InfoMessage } from "../InfoMessage";
