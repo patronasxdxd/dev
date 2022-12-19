@@ -11,7 +11,7 @@ import {
   EthersLiquityWithStore as EthersThresholdWithStore,
   _connectByChainId,
   _getVersionedDeployments,
-  EthersLiquityConnection
+  EthersLiquityConnection as EthersThresholdConnection
 } from "@liquity/lib-ethers";
 import { _VersionedLiquityDeployments } from "@liquity/lib-ethers/dist/src/contracts";
 
@@ -21,7 +21,7 @@ type ThresholdContextValue = {
   config: ThresholdConfig;
   account: string;
   provider: Provider;
-  threshold: EthersThresholdWithStore<BlockPolledThresholdStore>[];
+  threshold: Record<string, EthersThresholdWithStore<BlockPolledThresholdStore>>;
 };
 
 const ThresholdContext = createContext<ThresholdContextValue | undefined>(undefined);
@@ -50,7 +50,7 @@ const getConnections = async (
     chainId: number,
     setConnections: Function
   ) => {
-    const connectionsByChainId: any = [];
+    const connectionsByChainId = [];
     for (const [key, value] of Object.entries(result.versionedDeployments)) {
       connectionsByChainId.push(_connectByChainId(
         key, 
@@ -71,7 +71,8 @@ export const ThresholdProvider: React.FC<ThresholdProviderProps> = ({
 }) => {
   const { library: provider, account, chainId } = useWeb3React<Web3Provider>();
   const [config, setConfig] = useState<ThresholdConfig>();
-  const [connections, setConnections] = useState<EthersLiquityConnection[]>();
+  const [connections, setConnections] = useState<any[]>();
+  const [threshold, setThreshold] = useState<Record<string, EthersThresholdWithStore<BlockPolledThresholdStore>>>({})
 
   useEffect(() => {
     if (!chainId || !provider || !account || !config) {
@@ -93,19 +94,23 @@ export const ThresholdProvider: React.FC<ThresholdProviderProps> = ({
       if (connections.length > 0) {
         const { provider, chainId } = connections[0];
 
+        for (const connection of connections) {
+          const version = connection.deploymentVersion;
+          const ethersThresholdFromConnection = EthersThreshold._from(connection);
+          ethersThresholdFromConnection.store.logging = true;
+          setThreshold(prev => { return {...prev, [version]: ethersThresholdFromConnection}})
+        }
+        
         if (isBatchedProvider(provider) && provider.chainId !== chainId) {
           provider.chainId = chainId;
         }
-
         if (isWebSocketAugmentedProvider(provider)) {
           const network = getNetwork(chainId);
-
           if (network.name && supportedNetworks.includes(network.name) && config.infuraApiKey) {
             provider.openWebSocket(...wsParams(network.name, config.infuraApiKey));
           } else if (connections[0]._isDev) {
             provider.openWebSocket(`ws://${window.location.hostname}:8546`, chainId);
           }
-
           return () => {
             provider.closeWebSocket();
           };
@@ -128,13 +133,9 @@ export const ThresholdProvider: React.FC<ThresholdProviderProps> = ({
   if (!connections || chainId !== 5) {
     return unsupportedNetworkFallback ? <>{unsupportedNetworkFallback(chainId)}</> : null;
   }
-
-  const threshold = connections.map((connection: any) => {
-    return EthersThreshold._from(connection);
-  })
-
-  for (const thresholdInstance of threshold) {
-    thresholdInstance.store.logging = true;
+  
+  if (Object.keys(threshold).length !== connections.length) {
+    return <>{loader}</>;
   }
 
   return (

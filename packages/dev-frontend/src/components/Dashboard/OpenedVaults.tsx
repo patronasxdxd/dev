@@ -17,10 +17,7 @@ const select = ({
 
 
 export const OpenedVaults: React.FC<SystemStatsProps> = ({ variant = "mainCards" }) => {
-  // TODO
-  const {
-    numberOfTroves,
-  } = useThresholdSelector(1, select);
+  const thresholdSelector = useThresholdSelector(select);
 
   return (
     <Card {...{ variant }} sx={{ display: ['none', 'block'] }}>
@@ -29,7 +26,8 @@ export const OpenedVaults: React.FC<SystemStatsProps> = ({ variant = "mainCards"
         tooltip="The total number of active Vaults in the system." 
         imgSrc="./icons/opened-vaults.svg"
       >
-        {Decimal.from(numberOfTroves).prettify(0)}
+        {/* TODO needs to set dynamic versioning */}
+        {thresholdSelector && Decimal.from(thresholdSelector.v1.numberOfTroves).prettify(0)}
       </TopCard>
     </Card>
   );

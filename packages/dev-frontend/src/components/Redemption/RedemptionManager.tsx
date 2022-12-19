@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Flex, Card, Link } from "theme-ui";
 
-import { Decimal, Percent, LiquityStoreState as ThresholdStoreState, MINIMUM_COLLATERAL_RATIO } from "@liquity/lib-base";
+import { Decimal, Fees, Percent, Trove, LiquityStoreState as ThresholdStoreState, MINIMUM_COLLATERAL_RATIO } from "@liquity/lib-base";
 import { useLiquitySelector as useThresholdSelector} from "@liquity/lib-react";
 
 import { COIN } from "../../strings";
@@ -27,20 +27,34 @@ const select = ({ price, fees, total, thusdBalance }: ThresholdStoreState) => ({
 const transactionId = "redemption";
 
 export const RedemptionManager: React.FC = () => {
-  // TODO
-  const { price, fees, total, thusdBalance } = useThresholdSelector(1, select);
+  const thresholdSelector = useThresholdSelector(select);
+  const [price, setPrice] = useState(Decimal.ZERO);
+  const [total, setTotal] = useState<Trove>();
+  const [thusdBalance, setThusdBalance] = useState(Decimal.ZERO);
+  const [redemptionRate, setRedemptionRate] = useState<Decimal>(Decimal.ZERO);
   const [thusdAmount, setTHUSDAmount] = useState(Decimal.ZERO);
+  
   const [changePending, setChangePending] = useState(false);
   const editingState = useState<string>();
 
   const dirty = !thusdAmount.isZero;
   const ethAmount = thusdAmount.div(price);
-  const redemptionRate = fees.redemptionRate(thusdAmount.div(total.debt));
   const feePct = new Percent(redemptionRate);
   const ethFee = ethAmount.mul(redemptionRate);
-  const maxRedemptionRate = redemptionRate.add(0.001); // TODO slippage tolerance
+  const maxRedemptionRate = redemptionRate.add(0.001);
 
   const myTransactionState = useMyTransactionState(transactionId);
+
+  useEffect(() => {
+    if (thresholdSelector) {
+      // TODO needs to set dynamic versioning
+      const { price, fees, total, thusdBalance } = thresholdSelector.v1
+      setPrice(price)
+      setTotal(total)
+      setThusdBalance(thusdBalance)
+      setRedemptionRate(fees.redemptionRate(thusdAmount.div(total.debt)))
+    }
+  }, [thresholdSelector])
 
   useEffect(() => {
     if (
@@ -56,7 +70,7 @@ export const RedemptionManager: React.FC = () => {
     }
   }, [myTransactionState.type, setChangePending, setTHUSDAmount]);
 
-  const [canRedeem, description] = total.collateralRatioIsBelowMinimum(price)
+  const [canRedeem, description] = (total) && total.collateralRatioIsBelowMinimum(price)
     ? [
         false,
         <ErrorDescription>

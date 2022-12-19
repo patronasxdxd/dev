@@ -147,7 +147,7 @@ export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted]);
-
+  
   if (!timestamps || !tvl) {
     return <>{loader}</>
   };

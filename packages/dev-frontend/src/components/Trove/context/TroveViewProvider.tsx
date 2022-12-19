@@ -75,43 +75,69 @@ const getInitialView = (troveStatus: UserTroveStatus): TroveView => {
   return "NONE";
 };
 
-const select = ({ trove: { status } }: ThresholdStoreState) => status;
+const select = ({ trove: { status } } : ThresholdStoreState) => status;
 
-export const TroveViewProvider: React.FC = props => {
-  const { children } = props;
-    // TODO
-  const troveStatus = useThresholdSelector(1, select);
-  console.log('troveStatus: ', troveStatus)
+type TroveViewProps = {
+  loader: React.ReactNode;
+  children: React.ReactNode;
+};
 
-  const [view, setView] = useState<TroveView>(getInitialView(troveStatus));
-  const viewRef = useRef<TroveView>(view);
+export const TroveViewProvider = ({
+  loader,
+  children
+}: TroveViewProps): JSX.Element => {
+  const trovesStatus = useThresholdSelector(select);
+  console.log('trovesStatus: ', trovesStatus)
+  const [views, setViews] = useState<Record<string, TroveView>>({});
 
-  const dispatchEvent = useCallback((event: TroveEvent) => {
-    const nextView = transition(viewRef.current, event);
+  useEffect(() => {
+    if (!trovesStatus) {
+      return
+    }
+    for (const [version, troveStatus] of Object.entries(trovesStatus)) {
+      setViews(prev => { return {...prev, [version]: getInitialView(troveStatus)}})
+    }
+  }, [])
+  
+  const viewsRef = useRef<Record<string, TroveView>>(views);
+
+  const dispatchEvent = useCallback((event: TroveEvent, version: string) => {
+    const nextView = transition(viewsRef.current[version], event);
 
     console.log(
       "dispatchEvent() [current-view, event, next-view]",
-      viewRef.current,
+      viewsRef.current[version],
       event,
       nextView
     );
-    setView(nextView);
+    setViews(prev => { return {...prev, [version]: nextView}});
   }, []);
 
   useEffect(() => {
-    viewRef.current = view;
-  }, [view]);
+    viewsRef.current = views;
+  }, [views]);
 
   useEffect(() => {
-    const event = troveStatusEvents[troveStatus] ?? null;
-    if (event !== null) {
-      dispatchEvent(event);
+    if (!trovesStatus) {
+      return
     }
-  }, [troveStatus, dispatchEvent]);
+
+    for (const [version, troveStatus] of Object.entries(trovesStatus)) {
+      const event = troveStatusEvents[troveStatus] ?? null;
+      if (event !== null) {
+        dispatchEvent(event, version);
+      }
+    }
+  }, [trovesStatus, dispatchEvent]);
 
   const provider = {
-    view,
+    views,
     dispatchEvent
   };
+
+  if (!trovesStatus || Object.keys(views).length !== Object.keys(trovesStatus).length) {
+    return <>{loader}</>;
+  }
+
   return <TroveViewContext.Provider value={provider}>{children}</TroveViewContext.Provider>;
 };

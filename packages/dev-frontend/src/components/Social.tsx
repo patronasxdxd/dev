@@ -17,8 +17,7 @@ const select = ({ accountBalance, thusdBalance }: ThresholdStoreState) => ({
 
 export const Social: React.FC = () => {
   const { account } = useThreshold();
-    // TODO
-  const { accountBalance, thusdBalance } = useThresholdSelector(1, select);
+  const thresholdSelector = useThresholdSelector(select);
 
   return (
     <Box sx={{ display: ["none", "flex"] }}>
@@ -33,9 +32,10 @@ export const Social: React.FC = () => {
       </Flex>
       <Flex sx={{ alignItems: "center" }}>
         <Icon name="wallet" size="lg" />
-        {([
-          ["ETH", accountBalance],
-          [COIN, thusdBalance]
+        {thresholdSelector && ([
+          // TODO needs to set dynamic versioning
+          ["ETH", thresholdSelector.v1.accountBalance],
+          [COIN, thresholdSelector.v1.thusdBalance]
         ] as const).map(([currency, balance], i) => (
           <Flex key={i} sx={{ ml: 3, flexDirection: "column" }}>
             <Heading sx={{ fontSize: 1 }}>{currency}</Heading>

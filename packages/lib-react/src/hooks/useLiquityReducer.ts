@@ -17,6 +17,7 @@ export const useLiquityReducer = <S, A, T>(
   reduce: (state: S, action: A | LiquityStoreUpdate<T>) => S,
   init: (storeState: LiquityStoreState<T>) => S
 ): [S, (action: A | LiquityStoreUpdate<T>) => void] => {
+
   const stores = useLiquityStore<T>();
   const oldStore = useRef(stores[index]);
   const state = useRef(init(stores[index].state));

@@ -35,6 +35,5 @@ export const LiquityStoreProvider: React.FC<LiquityStoreProviderProps> = ({
   if (loadedStore.length !== thresholdStores.length) {
     return <>{loader}</>
   }
-
   return <LiquityStoreContext.Provider value={loadedStore}>{children}</LiquityStoreContext.Provider>;
 };

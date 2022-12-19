@@ -18,10 +18,11 @@ export const NoTrove: React.FC = props => {
   const { dispatchEvent } = useTroveView();
 
   const handleOpenTrove = useCallback(() => {
-    dispatchEvent("OPEN_TROVE_PRESSED");
+    // TODO needs to set dynamic versioning
+    dispatchEvent("OPEN_TROVE_PRESSED", "v1");
   }, [dispatchEvent]);
-  //TODO
-  const { erc20TokenBalance } = useThresholdSelector(1, select);
+  // TODO needs to set dynamic versioning
+  const { v1: { erc20TokenBalance } } = useThresholdSelector(select);
 
   return (
     <Card variant="mainCards">

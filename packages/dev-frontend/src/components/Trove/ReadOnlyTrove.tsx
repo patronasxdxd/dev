@@ -14,13 +14,15 @@ const select = ({ trove, price }: ThresholdStoreState) => ({ trove, price });
 export const ReadOnlyTrove: React.FC = () => {
   const { dispatchEvent } = useTroveView();
   const handleAdjustTrove = useCallback(() => {
-    dispatchEvent("ADJUST_TROVE_PRESSED");
+    // TODO needs to set dynamic versioning
+    dispatchEvent("ADJUST_TROVE_PRESSED", "v1");
   }, [dispatchEvent]);
   const handleCloseTrove = useCallback(() => {
-    dispatchEvent("CLOSE_TROVE_PRESSED");
+    // TODO needs to set dynamic versioning
+    dispatchEvent("CLOSE_TROVE_PRESSED", "v1");
   }, [dispatchEvent]);
-  // TODO
-  const { trove, price } = useThresholdSelector(1, select);
+  // TODO needs to set dynamic versioning
+  const { v1: { trove, price } } = useThresholdSelector(select);
 
   // console.log("READONLY TROVE", trove.collateral.prettify(4));
   return (

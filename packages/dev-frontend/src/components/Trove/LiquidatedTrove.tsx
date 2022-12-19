@@ -13,12 +13,12 @@ const select = ({ collateralSurplusBalance }: ThresholdStoreState) => ({
 });
 
 export const LiquidatedTrove: React.FC = () => {
-  // TODO
-  const { hasSurplusCollateral } = useThresholdSelector(1, select);
+  const { hasSurplusCollateral } = useThresholdSelector(select)[0];
   const { dispatchEvent } = useTroveView();
 
   const handleOpenTrove = useCallback(() => {
-    dispatchEvent("OPEN_TROVE_PRESSED");
+    // TODO needs to set dynamic versioning
+    dispatchEvent("OPEN_TROVE_PRESSED", "v1");
   }, [dispatchEvent]);
 
   return (

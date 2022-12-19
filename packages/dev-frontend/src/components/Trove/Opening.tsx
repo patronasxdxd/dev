@@ -49,7 +49,7 @@ export const Opening: React.FC = () => {
   // } = useThreshold();
   const { dispatchEvent } = useTroveView();
   // TODO
-  const { fees, price, erc20TokenBalance, validationContext } = useThresholdSelector(1, selector);
+  const { fees, price, erc20TokenBalance, validationContext } = useThresholdSelector(selector)[0];
   const borrowingRate = fees.borrowingRate();
   const editingState = useState<string>();
 
@@ -68,15 +68,15 @@ export const Opening: React.FC = () => {
   const collateralRatio =
     !collateral.isZero && !borrowAmount.isZero ? trove.collateralRatio(price) : undefined;
 
-  const [troveChange, description] = validateTroveChange(
-    EMPTY_TROVE,
-    trove,
-    borrowingRate,
-    validationContext
-  );
+   const [troveChange, description] = validateTroveChange(
+     EMPTY_TROVE,
+     trove,
+     borrowingRate,
+     validationContext
+   );
     
-  const stableTroveChange = useStableTroveChange(troveChange);
-  const { hasApproved, amountToApprove } = useValidationState(stableTroveChange);
+   const stableTroveChange = useStableTroveChange(troveChange);
+   const { hasApproved, amountToApprove } = useValidationState(stableTroveChange);
   
   const [gasEstimationState, setGasEstimationState] = useState<GasEstimationState>({ type: "idle" });
 
@@ -86,7 +86,8 @@ export const Opening: React.FC = () => {
     transactionState.type === "waitingForConfirmation";
 
   const handleCancelPressed = useCallback(() => {
-    dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED");
+    // TODO needs to set dynamic versioning
+    dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED", "v1");
   }, [dispatchEvent]);
 
   useEffect(() => {

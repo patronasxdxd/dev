@@ -159,7 +159,7 @@ type TroveManagerProps = {
 export const TroveManager: React.FC<TroveManagerProps> = ({ collateral, debt }) => {
     // TODO
   const [{ original, edited, changePending }, dispatch] = useThresholdReducer(1, reduce, init);
-  const { fees, validationContext } = useThresholdSelector(1, select);
+  const { v1: { fees, validationContext } } = useThresholdSelector(select);
 
   useEffect(() => {
     if (collateral !== undefined) {
@@ -183,7 +183,8 @@ export const TroveManager: React.FC<TroveManagerProps> = ({ collateral, debt }) 
   const { dispatchEvent } = useTroveView();
 
   const handleCancel = useCallback(() => {
-    dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED");
+    // TODO needs to set dynamic versioning
+    dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED", "v1");
   }, [dispatchEvent]);
 
   const openingNewTrove = original.isEmpty;
@@ -200,9 +201,11 @@ export const TroveManager: React.FC<TroveManagerProps> = ({ collateral, debt }) 
       dispatch({ type: "finishChange" });
     } else if (myTransactionState.type === "confirmedOneShot") {
       if (myTransactionState.id === `${transactionIdPrefix}closure`) {
-        dispatchEvent("TROVE_CLOSED");
+        // TODO needs to set dynamic versioning
+        dispatchEvent("TROVE_CLOSED", "v1");
       } else {
-        dispatchEvent("TROVE_ADJUSTED");
+        // TODO needs to set dynamic versioning
+        dispatchEvent("TROVE_ADJUSTED", "v1");
       }
     }
   }, [myTransactionState, dispatch, dispatchEvent]);

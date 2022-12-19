@@ -8,6 +8,7 @@ import { VaultCard } from "../components/Dashboard/VaultCard";
 import { StabilityPoolCard } from "../components/Dashboard/StabilityPoolCard";
 import { SystemStatsCard } from "../components/SystemStatsCard";
 import { useThreshold } from "../hooks/ThresholdContext";
+import { useTroveView } from "../components/Trove/context/TroveViewContext";
 import {
   LiquityStoreState as ThresholdStoreState,
   Decimal,
@@ -34,9 +35,8 @@ const selector = (state: ThresholdStoreState) => {
 };
 
 export const Dashboard = () => {
-  const { threshold } = useThreshold()
-  const thresholdSelector = useThresholdSelector(1, selector)
-
+  const { v1: { trove, fees, price, erc20TokenBalance } } = useThresholdSelector(selector)
+  console.log('fees: ', fees)
   return (
   <Container>
     <Heading as="h2" sx={{ mt: "2.5em", fontWeight: "semibold" }}>
@@ -60,10 +60,10 @@ export const Dashboard = () => {
         {/* <SystemStatsCard /> */}
       </Container>
       <Container variant="half">
-        {/* <VaultCard /> */}
+        <VaultCard />
       </Container>
       <Container variant="half">
-        {/* <StabilityPoolCard /> */}
+        <StabilityPoolCard />
       </Container>
     </Container>
   </Container>

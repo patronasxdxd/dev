@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Wallet } from "@ethersproject/wallet";
 
 import { Decimal, Difference, Trove } from "@liquity/lib-base";
@@ -13,7 +13,6 @@ type FunctionalPanelProps = {
 };
 
 export const FunctionalPanel: React.FC<FunctionalPanelProps> = ({ children, loader }) => {
-
   const { account, provider, threshold } = useThreshold();
 
   // For console tinkering ;-)
@@ -26,15 +25,15 @@ export const FunctionalPanel: React.FC<FunctionalPanelProps> = ({ children, load
     Difference,
     Wallet
   });
-
-  const thresholdStores = threshold.map((thresholdInstance) => {
-    return thresholdInstance.store;
-  })
+  
+  const thresholdStores = useMemo(() => {
+    return Object.values(threshold).map((thresholdStore) => thresholdStore.store)
+  }, [threshold])
 
   return (
     <>
       <ThresholdStoreProvider {...{ loader }} thresholdStores={thresholdStores}>
-        <TroveViewProvider>
+        <TroveViewProvider {...{ loader}}>
           {children}
         </TroveViewProvider>
       </ThresholdStoreProvider>
