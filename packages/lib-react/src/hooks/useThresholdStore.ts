@@ -2,10 +2,10 @@ import { useContext } from "react";
 
 import { LiquityStore as ThresholdStore} from "@liquity/lib-base";
 
-import { LiquityStoreContext } from "../components/LiquityStoreProvider";
+import { ThresholdStoreContext } from "../components/ThresholdStoreProvider";
 
-export const useLiquityStore = <T>(): ThresholdStore<T>[] => {
-  const stores = useContext(LiquityStoreContext);
+export const useThresholdStore = <T>(): ThresholdStore<T>[] => {
+  const stores = useContext(ThresholdStoreContext);
 
   if (!stores) {
     throw new Error("You must provide a ThresholdStore via ThresholdStoreProvider");

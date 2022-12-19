@@ -1,21 +1,21 @@
-import { LiquityStore } from "@liquity/lib-base";
-import { BlockPolledLiquityStore } from "@liquity/lib-ethers";
+import { LiquityStore as ThresholdStore } from "@liquity/lib-base";
+import { BlockPolledLiquityStore as BlockPolledThresholdStore } from "@liquity/lib-ethers";
 
 import React, { createContext, useEffect, useState } from "react";
 
-export const LiquityStoreContext = createContext<LiquityStore[] | undefined>(undefined);
+export const ThresholdStoreContext = createContext<ThresholdStore[] | undefined>(undefined);
 
-type LiquityStoreProviderProps = {
-  thresholdStores: BlockPolledLiquityStore[];
+type ThresholdStoreProviderProps = {
+  thresholdStores: BlockPolledThresholdStore[];
   loader?: React.ReactNode;
 };
 
-export const LiquityStoreProvider: React.FC<LiquityStoreProviderProps> = ({
+export const ThresholdStoreProvider: React.FC<ThresholdStoreProviderProps> = ({
   thresholdStores,
   loader,
   children
 }) => {
-  const [loadedStore, setLoadedStore] = useState<LiquityStore[]>([]); 
+  const [loadedStore, setLoadedStore] = useState<ThresholdStore[]>([]); 
 
   useEffect(() => {
     for (const thresholdStore of thresholdStores) {
@@ -35,5 +35,5 @@ export const LiquityStoreProvider: React.FC<LiquityStoreProviderProps> = ({
   if (loadedStore.length !== thresholdStores.length) {
     return <>{loader}</>
   }
-  return <LiquityStoreContext.Provider value={loadedStore}>{children}</LiquityStoreContext.Provider>;
+  return <ThresholdStoreContext.Provider value={loadedStore}>{children}</ThresholdStoreContext.Provider>;
 };

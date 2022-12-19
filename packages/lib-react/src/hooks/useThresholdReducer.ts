@@ -1,30 +1,30 @@
 import { useCallback, useEffect, useReducer, useRef } from "react";
 
-import { LiquityStoreState } from "@liquity/lib-base";
+import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
 
 import { equals } from "../utils/equals";
-import { useLiquityStore } from "./useLiquityStore";
+import { useThresholdStore } from "./useThresholdStore";
 
-export type LiquityStoreUpdate<T = unknown> = {
+export type ThresholdStoreUpdate<T = unknown> = {
   type: "updateStore";
-  newState: LiquityStoreState<T>;
-  oldState: LiquityStoreState<T>;
-  stateChange: Partial<LiquityStoreState<T>>;
+  newState: ThresholdStoreState<T>;
+  oldState: ThresholdStoreState<T>;
+  stateChange: Partial<ThresholdStoreState<T>>;
 };
 
-export const useLiquityReducer = <S, A, T>(
+export const useThresholdReducer = <S, A, T>(
   index: number,
-  reduce: (state: S, action: A | LiquityStoreUpdate<T>) => S,
-  init: (storeState: LiquityStoreState<T>) => S
-): [S, (action: A | LiquityStoreUpdate<T>) => void] => {
+  reduce: (state: S, action: A | ThresholdStoreUpdate<T>) => S,
+  init: (storeState: ThresholdStoreState<T>) => S
+): [S, (action: A | ThresholdStoreUpdate<T>) => void] => {
 
-  const stores = useLiquityStore<T>();
+  const stores = useThresholdStore<T>();
   const oldStore = useRef(stores[index]);
   const state = useRef(init(stores[index].state));
   const [, rerender] = useReducer(() => ({}), {});
 
   const dispatch = useCallback(
-    (action: A | LiquityStoreUpdate<T>) => {
+    (action: A | ThresholdStoreUpdate<T>) => {
       const newState = reduce(state.current, action);
 
       if (!equals(newState, state.current)) {
