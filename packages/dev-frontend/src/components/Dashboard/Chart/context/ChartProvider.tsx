@@ -136,7 +136,6 @@ export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader
 
         queryTVL(BlocksUrlByNetwork, ThresholdUrlByNetwork).then(
         (result) => {
-          if (!isMounted) return null;
           setTvl(result);
           return tvl;
         }

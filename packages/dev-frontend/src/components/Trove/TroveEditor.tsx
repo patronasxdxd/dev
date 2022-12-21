@@ -20,6 +20,7 @@ import { CollateralRatio } from "./CollateralRatio";
 import { InfoIcon } from "../InfoIcon";
 
 type TroveEditorProps = {
+  version: string,
   original: Trove;
   edited: Trove;
   fee: Decimal;
@@ -34,14 +35,14 @@ const select = ({ price }: LiquityStoreState) => ({ price });
 
 export const TroveEditor: React.FC<TroveEditorProps> = ({
   children,
+  version,
   original,
   edited,
   fee,
   borrowingRate,
   changePending
 }) => {
-  // TODO needs to set dynamic versioning
-  const { v1: { price } } = useThresholdSelector(select);
+  const { [ version ]: { price } } = useThresholdSelector(select);
 
   const feePct = new Percent(borrowingRate);
 

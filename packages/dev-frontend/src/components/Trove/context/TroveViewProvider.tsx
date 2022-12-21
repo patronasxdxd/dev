@@ -88,16 +88,23 @@ export const TroveViewProvider = ({
 }: TroveViewProps): JSX.Element => {
   const trovesStatus = useThresholdSelector(select);
   const [views, setViews] = useState<Record<string, TroveView>>({});
+  const [isMounted, setIsMounted] = useState<boolean>(true);
 
   useEffect(() => {
-    if (!trovesStatus) {
+    if (!trovesStatus || !isMounted) {
       return
     }
     for (const [version, troveStatus] of Object.entries(trovesStatus)) {
       setViews(prev => { return {...prev, [version]: getInitialView(troveStatus)}})
     }
+
+    return () => {
+      setIsMounted(false);
+      setViews({})
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+  
   
   const viewsRef = useRef<Record<string, TroveView>>(views);
 

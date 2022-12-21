@@ -11,15 +11,17 @@ const select = ({ collateralSurplusBalance }: ThresholdStoreState) => ({
   hasSurplusCollateral: !collateralSurplusBalance.isZero
 });
 
-export const RedeemedTrove: React.FC = () => {
-  // TODO needs to set dynamic versioning
-  const { v1: { hasSurplusCollateral } } = useThresholdSelector(select);
+type RedeemedTroveProps = {
+  version: string
+}
+
+export const RedeemedTrove = ({ version }: RedeemedTroveProps): JSX.Element => {
+  const { [version]: { hasSurplusCollateral } } = useThresholdSelector(select);
   const { dispatchEvent } = useTroveView();
 
   const handleOpenTrove = useCallback(() => {
-    // TODO needs to set dynamic versioning
-    dispatchEvent("OPEN_TROVE_PRESSED", "v1");
-  }, [dispatchEvent]);
+    dispatchEvent("OPEN_TROVE_PRESSED", version);
+  }, [dispatchEvent, version]);
 
   return (
     <Card variant="mainCards">
@@ -44,9 +46,8 @@ export const RedeemedTrove: React.FC = () => {
               ? "Please reclaim your remaining collateral before opening a new Trove."
               : `You can borrow ${ COIN } by opening a Trove.`}
           </InfoMessage>
-
           <Flex variant="layout.actions">
-            {hasSurplusCollateral && <CollateralSurplusAction />}
+            {hasSurplusCollateral && <CollateralSurplusAction version={version} />}
             {!hasSurplusCollateral && <Button onClick={handleOpenTrove} sx={{ width: "100%" }}>Open Trove</Button>}
           </Flex>
           <Flex sx={{ 
@@ -55,7 +56,9 @@ export const RedeemedTrove: React.FC = () => {
             fontWeight: "body",
             mt: "1.5em"
           }}>
-            <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+            <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">
+              Read about
+            </Link>
             in the documentation
           </Flex>
         </Flex>

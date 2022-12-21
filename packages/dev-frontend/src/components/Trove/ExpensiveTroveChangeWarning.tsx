@@ -11,6 +11,7 @@ export type GasEstimationState =
   | { type: "complete"; populatedTx: PopulatedEthersThresholdTransaction };
 
 type ExpensiveTroveChangeWarningParams = {
+  version: string,
   troveChange?: Exclude<TroveChange<Decimal>, { type: "invalidCreation" }>;
   maxBorrowingRate: Decimal;
   borrowingFeeDecayToleranceMinutes: number;
@@ -19,14 +20,14 @@ type ExpensiveTroveChangeWarningParams = {
 };
 
 export const ExpensiveTroveChangeWarning: React.FC<ExpensiveTroveChangeWarningParams> = ({
+  version,
   troveChange,
   maxBorrowingRate,
   borrowingFeeDecayToleranceMinutes,
   gasEstimationState,
   setGasEstimationState
 }) => {
-  // TODO needs to set dynamic versioning
-  const { threshold: { v1 } } = useThreshold();
+  const { threshold } = useThreshold();
   useEffect(() => {
     if (troveChange && troveChange.type !== "closure") {
       setGasEstimationState({ type: "inProgress" });
@@ -35,11 +36,11 @@ export const ExpensiveTroveChangeWarning: React.FC<ExpensiveTroveChangeWarningPa
 
       const timeoutId = setTimeout(async () => {
         const populatedTx = await (troveChange.type === "creation"
-          ? v1.populate.openTrove(troveChange.params, {
+          ? threshold[version].populate.openTrove(troveChange.params, {
               maxBorrowingRate,
               borrowingFeeDecayToleranceMinutes
             })
-          : v1.populate.adjustTrove(troveChange.params, {
+          : threshold[version].populate.adjustTrove(troveChange.params, {
               maxBorrowingRate,
               borrowingFeeDecayToleranceMinutes
             }));

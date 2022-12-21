@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "theme-ui";
 import { Decimal, LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
 import { useThresholdSelector} from "@liquity/lib-react";
@@ -9,17 +9,22 @@ type SystemStatsProps = {
   variant?: string;
 };
 
-const select = ({
+const selector = ({
   numberOfTroves,
 }: ThresholdStoreState) => ({
   numberOfTroves,
 });
 
-
 export const OpenedVaults: React.FC<SystemStatsProps> = ({ variant = "mainCards" }) => {
-  // TODO needs to set dynamic versioning
-  const { v1: { numberOfTroves } } = useThresholdSelector(select);
+  const thresholdSelector = useThresholdSelector(selector);
+  const [numberOfVaults, setNumberOfVaults] = useState(0)
 
+  useEffect(() => {
+    Object.keys(thresholdSelector).map(version => {
+      return setNumberOfVaults(prev => prev + thresholdSelector[version].numberOfTroves)
+    })
+  }, [thresholdSelector])
+  
   return (
     <Card {...{ variant }} sx={{ display: ['none', 'block'] }}>
       <TopCard
@@ -27,7 +32,7 @@ export const OpenedVaults: React.FC<SystemStatsProps> = ({ variant = "mainCards"
         tooltip="The total number of active Vaults in the system." 
         imgSrc="./icons/opened-vaults.svg"
       >
-        {Decimal.from(numberOfTroves).prettify(0)}
+        {Decimal.from(numberOfVaults).prettify(0)}
       </TopCard>
     </Card>
   );

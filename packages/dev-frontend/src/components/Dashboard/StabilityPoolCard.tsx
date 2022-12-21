@@ -16,7 +16,6 @@ const select = ({  thusdBalance }: ThresholdStoreState) => ({
 });
 
 export const StabilityPoolCard: React.FC<StabilityPoolCardProps> = ({ variant = "mainCards" }) => {
-  // TODO needs to set dynamic versioning
   const { v1: { thusdBalance } } = useThresholdSelector(select);
 
   return (

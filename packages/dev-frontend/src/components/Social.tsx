@@ -17,7 +17,6 @@ const select = ({ accountBalance, thusdBalance }: ThresholdStoreState) => ({
 
 export const Social: React.FC = () => {
   const { account } = useThreshold();
-  // TODO needs to set dynamic versioning
   const { v1: { accountBalance, thusdBalance }} = useThresholdSelector(select);
 
   return (

@@ -13,23 +13,25 @@ const select = ({ collateralSurplusBalance }: ThresholdStoreState) => ({
   collateralSurplusBalance
 });
 
-export const CollateralSurplusAction: React.FC = () => {
-  // TODO needs to set dynamic versioning
-  const { v1: { collateralSurplusBalance } } = useThresholdSelector(select);
+type CollateralSurplusActionProps = {
+  version: string
+}
+
+export const CollateralSurplusAction = ({ version }: CollateralSurplusActionProps): JSX.Element => {
+  const { [version]: { collateralSurplusBalance } } = useThresholdSelector(select);
   const {
-    threshold: { v1: { send: threshold } }
+    threshold: { [version]: { send: threshold } }
   } = useThreshold();
 
   const myTransactionId = "claim-coll-surplus";
   const myTransactionState = useMyTransactionState(myTransactionId);
 
   const { dispatchEvent } = useTroveView();
-  // TODO needs to set dynamic versioning
   useEffect(() => {
     if (myTransactionState.type === "confirmedOneShot") {
-      dispatchEvent("TROVE_SURPLUS_COLLATERAL_CLAIMED", "v1");
+      dispatchEvent("TROVE_SURPLUS_COLLATERAL_CLAIMED", version);
     }
-  }, [myTransactionState.type, dispatchEvent]);
+  }, [myTransactionState.type, dispatchEvent, version]);
 
   return myTransactionState.type === "waitingForApproval" ? (
     <Flex variant="layout.actions">
@@ -48,5 +50,5 @@ export const CollateralSurplusAction: React.FC = () => {
         <Button sx={{ mx: 2 }}>Claim {collateralSurplusBalance.prettify()} ETH</Button>
       </Transaction>
     </Flex>
-  ) : null;
+  ) : <></>;
 };

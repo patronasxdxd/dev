@@ -148,14 +148,14 @@ const transactionIdPrefix = "trove-";
 const transactionIdMatcher = new RegExp(`^${transactionIdPrefix}`);
 
 type TroveManagerProps = {
+  version: string,
   collateral?: Decimalish;
   debt?: Decimalish;
 };
 
-export const TroveManager: React.FC<TroveManagerProps> = ({ collateral, debt }) => {
-  // TODO needs to set dynamic versioning
+export const TroveManager: React.FC<TroveManagerProps> = ({ version, collateral, debt }) => {
   const [{ original, edited, changePending }, dispatch] = useThresholdReducer(1, reduce, init);
-  const { v1: { fees, validationContext } } = useThresholdSelector(select);
+  const { [version]: { fees, validationContext } } = useThresholdSelector(select);
 
   useEffect(() => {
     if (collateral !== undefined) {
@@ -179,9 +179,8 @@ export const TroveManager: React.FC<TroveManagerProps> = ({ collateral, debt }) 
   const { dispatchEvent } = useTroveView();
 
   const handleCancel = useCallback(() => {
-    // TODO needs to set dynamic versioning
-    dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED", "v1");
-  }, [dispatchEvent]);
+    dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED", version);
+  }, [dispatchEvent, version]);
 
   const openingNewTrove = original.isEmpty;
 
@@ -197,17 +196,16 @@ export const TroveManager: React.FC<TroveManagerProps> = ({ collateral, debt }) 
       dispatch({ type: "finishChange" });
     } else if (myTransactionState.type === "confirmedOneShot") {
       if (myTransactionState.id === `${transactionIdPrefix}closure`) {
-        // TODO needs to set dynamic versioning
-        dispatchEvent("TROVE_CLOSED", "v1");
+        dispatchEvent("TROVE_CLOSED", version);
       } else {
-        // TODO needs to set dynamic versioning
-        dispatchEvent("TROVE_ADJUSTED", "v1");
+        dispatchEvent("TROVE_ADJUSTED", version);
       }
     }
-  }, [myTransactionState, dispatch, dispatchEvent]);
+  }, [myTransactionState, dispatch, dispatchEvent, version]);
 
   return (
     <TroveEditor
+      version={version}
       original={original}
       edited={edited}
       fee={feeFrom(original, edited, borrowingRate)}
@@ -229,6 +227,7 @@ export const TroveManager: React.FC<TroveManagerProps> = ({ collateral, debt }) 
       <Flex variant="layout.actions" sx={{ flexDirection: "column" }}>
         {validChange ? (
           <TroveAction
+            version={version}
             transactionId={`${transactionIdPrefix}${validChange.type}`}
             change={validChange}
             maxBorrowingRate={maxBorrowingRate}

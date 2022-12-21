@@ -4,8 +4,14 @@ import { SystemStatsCard } from "../components/SystemStatsCard";
 import { InfoMessage } from "../components/InfoMessage";
 import { Vault } from "../components/Trove/Vault";
 import { COIN, FIRST_ERC20_COLLATERAL } from "../strings";
+import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
+import { useThresholdSelector } from "@liquity/lib-react";
+
+const selector = ({ trove }: ThresholdStoreState) => trove;
 
 export const VaultPage: React.FC = () => {
+  const thresholdSelector = useThresholdSelector(selector);
+  
   return (
     <Container variant="singlePage">
       <Heading as="h2" sx={{ ml: "1em", mt: "2.5em", fontWeight: "semibold" }}>
@@ -24,12 +30,16 @@ export const VaultPage: React.FC = () => {
         </Box>
       </Card>
       <Container variant="pageRow">
-        <Container variant="firstHalf">
-          <Vault />
-        </Container>
-        <Container variant="secondHalf">
-          <SystemStatsCard />
-        </Container>
+        {Object.keys(thresholdSelector).map((version, index) => 
+          <Box key={index} sx={{ width: ["100%", "100%", "50%"], pr: [0, "1em", "2em"] }}>
+            <Vault key={version} vault={thresholdSelector[version]} version={version} />
+          </Box>
+        )}
+        {Object.keys(thresholdSelector).length <= 1 && (
+          <Box sx={{ width: ["100%", "100%", "50%"], pr: [0, "1em", "2em"] }}>
+            <SystemStatsCard />
+          </Box>
+        )}
       </Container>
     </Container>
   );

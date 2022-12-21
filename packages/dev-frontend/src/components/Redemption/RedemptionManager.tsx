@@ -4,7 +4,7 @@ import { Box, Flex, Card, Link } from "theme-ui";
 import { Decimal, Percent, LiquityStoreState as ThresholdStoreState, MINIMUM_COLLATERAL_RATIO } from "@liquity/lib-base";
 import { useThresholdSelector } from "@liquity/lib-react";
 
-import { COIN } from "../../strings";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
 
 import { LoadingOverlay } from "../LoadingOverlay";
 import { EditableRow, StaticRow } from "../Trove/Editor";
@@ -121,7 +121,7 @@ export const RedemptionManager: React.FC = () => {
               inputId="redeem-fee"
               amount={ethFee.toString(4)}
               pendingAmount={feePct.toString(2)}
-              unit="ETH"
+              unit={FIRST_ERC20_COLLATERAL}
               infoIcon={
                 <InfoIcon
                   tooltip={

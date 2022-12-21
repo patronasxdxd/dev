@@ -7,33 +7,40 @@ import { Adjusting } from "./Adjusting";
 import { RedeemedTrove } from "./RedeemedTrove";
 import { useTroveView } from "./context/TroveViewContext";
 import { LiquidatedTrove } from "./LiquidatedTrove";
-import { Decimal } from "@liquity/lib-base";
+import { Decimal,  UserTrove } from "@liquity/lib-base";
 
-export const Vault: React.FC = props => {
+export type VaultProps = {
+  vault: UserTrove
+  version: string 
+  children?: React.ReactNode
+}
+
+export const Vault = (props: VaultProps): JSX.Element => {
+  const { version } = props;
   const { views } = useTroveView();
 
-  switch (views.v1) {
+  switch (views[version]) {
     // loading state not needed, as main app has a loading spinner that blocks render until the threshold backend data is available
     case "ACTIVE": {
-      return <ReadOnlyTrove {...props} />;
+      return <ReadOnlyTrove {...props} version={version} />;
     }
     case "ADJUSTING": {
-      return <Adjusting {...props} />;
+      return <Adjusting {...props} version={version} />;
     }
     case "CLOSING": {
-      return <TroveManager {...props} collateral={Decimal.ZERO} debt={Decimal.ZERO} />;
+      return <TroveManager {...props} collateral={Decimal.ZERO} debt={Decimal.ZERO} version={version} />;
     }
     case "OPENING": {
-      return <Opening {...props} />;
+      return <Opening {...props} version={version} />;
     }
     case "LIQUIDATED": {
-      return <LiquidatedTrove {...props} />;
+      return <LiquidatedTrove {...props} version={version} />;
     }
     case "REDEEMED": {
-      return <RedeemedTrove {...props} />;
+      return <RedeemedTrove {...props} version={version} />;
     }
     case "NONE": {
-      return <NoTrove {...props} />;
+      return <NoTrove {...props} version={version} />;
     }
   }
 };

@@ -14,15 +14,17 @@ const select = ({ erc20TokenBalance }: ThresholdStoreState) => ({
   erc20TokenBalance
 });
 
-export const NoTrove: React.FC = props => {
+type NoTroveProps = {
+  version: string
+}
+
+export const NoTrove = ({ version }: NoTroveProps): JSX.Element => {
   const { dispatchEvent } = useTroveView();
 
   const handleOpenTrove = useCallback(() => {
-    // TODO needs to set dynamic versioning
-    dispatchEvent("OPEN_TROVE_PRESSED", "v1");
-  }, [dispatchEvent]);
-  // TODO needs to set dynamic versioning
-  const { v1: { erc20TokenBalance } } = useThresholdSelector(select);
+    dispatchEvent("OPEN_TROVE_PRESSED", version);
+  }, [dispatchEvent, version]);
+  const { [version]: { erc20TokenBalance } } = useThresholdSelector(select);
 
   return (
     <Card variant="mainCards">
@@ -35,7 +37,9 @@ export const NoTrove: React.FC = props => {
           borderColor: "border"
         }}>
           Open a Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral { FIRST_ERC20_COLLATERAL } to it.</Card>} />
+          <InfoIcon size="sm" tooltip={<Card variant="tooltip">
+            To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral { FIRST_ERC20_COLLATERAL } to it.
+            </Card>} />
         </Flex>
         <Flex sx={{
           width: "100%",

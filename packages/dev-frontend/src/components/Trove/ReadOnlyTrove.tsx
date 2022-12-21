@@ -11,18 +11,20 @@ import { CollateralRatio } from "./CollateralRatio";
 
 const select = ({ trove, price }: ThresholdStoreState) => ({ trove, price });
 
-export const ReadOnlyTrove: React.FC = () => {
+type ReadOnlyTroveProps = {
+version: string
+}
+
+export const ReadOnlyTrove = ({ version }: ReadOnlyTroveProps): JSX.Element => {
   const { dispatchEvent } = useTroveView();
   const handleAdjustTrove = useCallback(() => {
-    // TODO needs to set dynamic versioning
-    dispatchEvent("ADJUST_TROVE_PRESSED", "v1");
-  }, [dispatchEvent]);
+    dispatchEvent("ADJUST_TROVE_PRESSED", version);
+  }, [dispatchEvent, version]);
   const handleCloseTrove = useCallback(() => {
-    // TODO needs to set dynamic versioning
-    dispatchEvent("CLOSE_TROVE_PRESSED", "v1");
-  }, [dispatchEvent]);
-  // TODO needs to set dynamic versioning
-  const { v1: { trove, price } } = useThresholdSelector(select);
+    dispatchEvent("CLOSE_TROVE_PRESSED", version);
+  }, [dispatchEvent, version]);
+
+  const { [version]: { trove, price } } = useThresholdSelector(select);
 
   return (
     <Card variant="mainCards">

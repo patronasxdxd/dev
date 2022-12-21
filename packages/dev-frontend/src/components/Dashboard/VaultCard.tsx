@@ -23,11 +23,9 @@ const vaultStatus = (view: TroveView) => {
 }
 
 export const VaultCard: React.FC<VaultCardProps> = ({ variant = "mainCards" }) => {
-  // TODO needs to set dynamic versioning
   const { views: { v1 } } = useTroveView();
-  // TODO needs to set dynamic versioning
   const {v1: { erc20TokenBalance }} = useThresholdSelector(select);
-
+  // TODO needs to add symbol
   return (
     <Card {...{ variant }}>
       <BottomCard

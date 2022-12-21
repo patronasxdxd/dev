@@ -42,22 +42,23 @@ const EMPTY_TROVE = new Trove(Decimal.ZERO, Decimal.ZERO);
 const TRANSACTION_ID = "trove-creation";
 const APPROVE_TRANSACTION_ID = "trove-approve";
 
-export const Opening: React.FC = () => {
-  // TODO needs to set dynamic versioning
+type OpeningProps = {
+  version: string
+}
+
+export const Opening = ({ version }: OpeningProps): JSX.Element => {
   const {
-    threshold: { v1: { send: threshold } }
+    threshold: { [ version ]: { send: threshold } }
   } = useThreshold();
   const { dispatchEvent } = useTroveView();
-  // TODO needs to set dynamic versioning
-  const { v1: { fees, price, erc20TokenBalance, validationContext }} = useThresholdSelector(selector);
+  const { [version]: { fees, price, erc20TokenBalance, validationContext }} = useThresholdSelector(selector);
   const borrowingRate = fees.borrowingRate();
   const editingState = useState<string>();
+  const [isMounted, setIsMounted] = useState<boolean>(true);
 
   const [collateral, setCollateral] = useState<Decimal>(Decimal.ZERO);
   const [borrowAmount, setBorrowAmount] = useState<Decimal>(Decimal.ZERO);
-
   const maxBorrowingRate = borrowingRate.add(0.005);
-
   const fee = borrowAmount.mul(borrowingRate);
   const feePct = new Percent(borrowingRate);
   const totalDebt = borrowAmount.add(THUSD_LIQUIDATION_RESERVE).add(fee);
@@ -76,8 +77,8 @@ export const Opening: React.FC = () => {
   );
     
   const stableTroveChange = useStableTroveChange(troveChange);
-  const { hasApproved, amountToApprove } = useValidationState(stableTroveChange);
-  
+  const { hasApproved, amountToApprove } = useValidationState(version, stableTroveChange);
+
   const [gasEstimationState, setGasEstimationState] = useState<GasEstimationState>({ type: "idle" });
 
   const transactionState = useMyTransactionState(TRANSACTION_ID);
@@ -86,14 +87,21 @@ export const Opening: React.FC = () => {
     transactionState.type === "waitingForConfirmation";
 
   const handleCancelPressed = useCallback(() => {
-    dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED", "v1");
-  }, [dispatchEvent]);
+    dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED", version);
+  }, [dispatchEvent, version]);
 
   useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
     if (!collateral.isZero && borrowAmount.isZero) {
       setBorrowAmount(THUSD_MINIMUM_NET_DEBT);
     }
-  }, [collateral, borrowAmount]);
+
+    return () => {
+      setIsMounted(false);
+    }
+  }, [collateral, borrowAmount, isMounted]);
 
   return (
     <Card variant="mainCards">
@@ -206,6 +214,7 @@ export const Opening: React.FC = () => {
       
           {hasApproved && (
             <ExpensiveTroveChangeWarning
+              version={version}
               troveChange={stableTroveChange}
               maxBorrowingRate={maxBorrowingRate}
               borrowingFeeDecayToleranceMinutes={60}
@@ -230,6 +239,7 @@ export const Opening: React.FC = () => {
                 </Button>
               ) : stableTroveChange ? (
               <TroveAction
+                version={version}
                 transactionId={TRANSACTION_ID}
                 change={stableTroveChange}
                 maxBorrowingRate={maxBorrowingRate}

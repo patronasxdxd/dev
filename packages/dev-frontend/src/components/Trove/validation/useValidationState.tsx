@@ -13,9 +13,8 @@ type VaultStakeValidation = {
   amountToApprove?: Decimal;
 };
 
-export const useValidationState = (stableTroveChange: ValidTroveChange | undefined): VaultStakeValidation => {
-  // TODO needs to set dynamic versioning
-  const { v1: { erc20TokenAllowance }} = useThresholdSelector(selector);
+export const useValidationState = (version: string, stableTroveChange: ValidTroveChange | undefined): VaultStakeValidation => {
+  const { [ version ]: { erc20TokenAllowance }} = useThresholdSelector(selector);
 
   const CollateralBN = stableTroveChange?.params.depositCollateral;
 

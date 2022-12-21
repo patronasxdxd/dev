@@ -5,22 +5,23 @@ import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
 import { useThresholdSelector} from "@liquity/lib-react";
 import { useTroveView } from "./context/TroveViewContext";
 import { COIN } from "../../strings";
-
 import { InfoMessage } from "../InfoMessage";
 
 const select = ({ collateralSurplusBalance }: ThresholdStoreState) => ({
   hasSurplusCollateral: !collateralSurplusBalance.isZero
 });
 
-export const LiquidatedTrove: React.FC = () => {
-  // TODO needs to set dynamic versioning
-  const { v1: { hasSurplusCollateral } } = useThresholdSelector(select);
+type LiquidatedTroveProps = {
+  version: string
+}
+
+export const LiquidatedTrove = ({ version }: LiquidatedTroveProps): JSX.Element => {
+  const { [version]: { hasSurplusCollateral } } = useThresholdSelector(select);
   const { dispatchEvent } = useTroveView();
 
   const handleOpenTrove = useCallback(() => {
-    // TODO needs to set dynamic versioning
-    dispatchEvent("OPEN_TROVE_PRESSED", "v1");
-  }, [dispatchEvent]);
+    dispatchEvent("OPEN_TROVE_PRESSED", version);
+  }, [dispatchEvent, version]);
 
   return (
     <Card variant="mainCards">
@@ -47,7 +48,7 @@ export const LiquidatedTrove: React.FC = () => {
           </InfoMessage>
 
           <Flex variant="layout.actions">
-            {hasSurplusCollateral && <CollateralSurplusAction />}
+            {hasSurplusCollateral && <CollateralSurplusAction version={version} />}
             {!hasSurplusCollateral && <Button onClick={handleOpenTrove} sx={{ width: "100%" }}>Open Trove</Button>}
           </Flex>
           <Flex sx={{ 

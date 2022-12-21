@@ -82,14 +82,16 @@ const applyUnsavedNetDebtChanges = (unsavedChanges: Difference, trove: Trove) =>
   return trove.netDebt;
 };
 
-export const Adjusting: React.FC = () => {
-  // TODO needs to set dynamic versioning
+type AdjustingProps = {
+  version: string
+}
+
+export const Adjusting = ({ version }: AdjustingProps): JSX.Element => {
   const {
-    threshold: { v1: { send: threshold } }
+    threshold: { [version]: { send: threshold } }
   } = useThreshold();
   const { dispatchEvent } = useTroveView();
-  // TODO needs to set dynamic versioning
-  const { v1: { trove, fees, price, erc20TokenBalance, validationContext } } = useThresholdSelector(selector);
+  const { [version]: { trove, fees, price, erc20TokenBalance, validationContext } } = useThresholdSelector(selector);
   const editingState = useState<string>();
   const previousTrove = useRef<Trove>(trove);
   const [collateral, setCollateral] = useState<Decimal>(trove.collateral);
@@ -98,12 +100,11 @@ export const Adjusting: React.FC = () => {
   const transactionState = useMyTransactionState(TRANSACTION_ID);
   const borrowingRate = fees.borrowingRate();
 
-  // TODO needs to set dynamic versioning
   useEffect(() => {
     if (transactionState.type === "confirmedOneShot") {
-      dispatchEvent("TROVE_ADJUSTED", "v1");
+      dispatchEvent("TROVE_ADJUSTED", version);
     }
-  }, [transactionState.type, dispatchEvent]);
+  }, [transactionState.type, dispatchEvent, version]);
 
   useEffect(() => {
     if (!previousTrove.current.collateral.eq(trove.collateral)) {
@@ -119,10 +120,9 @@ export const Adjusting: React.FC = () => {
     previousTrove.current = trove;
   }, [trove, collateral, netDebt]);
 
-  // TODO needs to set dynamic versioning
   const handleCancelPressed = useCallback(() => {
-    dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED", "v1");
-  }, [dispatchEvent]);
+    dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED", version);
+  }, [dispatchEvent, version]);
 
   const isDirty = !collateral.eq(trove.collateral) || !netDebt.eq(trove.netDebt);
   const isDebtIncrease = netDebt.gt(trove.netDebt);
@@ -150,7 +150,7 @@ export const Adjusting: React.FC = () => {
   );
 
   const stableTroveChange = useStableTroveChange(troveChange);
-  const { hasApproved, amountToApprove } = useValidationState(stableTroveChange);
+  const { hasApproved, amountToApprove } = useValidationState(version, stableTroveChange);
 
   const [gasEstimationState, setGasEstimationState] = useState<GasEstimationState>({ type: "idle" });
 
@@ -159,7 +159,7 @@ export const Adjusting: React.FC = () => {
     transactionState.type === "waitingForConfirmation";
 
   if (trove.status !== "open") {
-    return null;
+    return <></>;
   }
 
   return (
@@ -274,6 +274,7 @@ export const Adjusting: React.FC = () => {
 
           {hasApproved &&
           (<ExpensiveTroveChangeWarning
+            version={version}
             troveChange={stableTroveChange}
             maxBorrowingRate={maxBorrowingRate}
             borrowingFeeDecayToleranceMinutes={60}
@@ -293,6 +294,7 @@ export const Adjusting: React.FC = () => {
               </Transaction>
             : stableTroveChange ? (
               <TroveAction
+                version={version}
                 transactionId={TRANSACTION_ID}
                 change={stableTroveChange}
                 maxBorrowingRate={maxBorrowingRate}
