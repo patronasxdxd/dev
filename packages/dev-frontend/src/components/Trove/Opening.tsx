@@ -55,7 +55,6 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
   const borrowingRate = fees.borrowingRate();
   const editingState = useState<string>();
   const [isMounted, setIsMounted] = useState<boolean>(true);
-
   const [collateral, setCollateral] = useState<Decimal>(Decimal.ZERO);
   const [borrowAmount, setBorrowAmount] = useState<Decimal>(Decimal.ZERO);
   const maxBorrowingRate = borrowingRate.add(0.005);
@@ -91,13 +90,11 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
   }, [dispatchEvent, version]);
 
   useEffect(() => {
-    if (!isMounted) {
-      return;
+    if (isMounted) {
+      if (!collateral.isZero && borrowAmount.isZero) {
+        setBorrowAmount(THUSD_MINIMUM_NET_DEBT);
+      }
     }
-    if (!collateral.isZero && borrowAmount.isZero) {
-      setBorrowAmount(THUSD_MINIMUM_NET_DEBT);
-    }
-
     return () => {
       setIsMounted(false);
     }
@@ -107,16 +104,19 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
     <Card variant="mainCards">
       <Card variant="layout.columns">
         <Flex sx={{
+          justifyContent: "space-between",
           width: "100%",
           gap: 1,
           pb: "1em",
           borderBottom: 1, 
-          borderColor: "border",
+          borderColor: "border"
         }}>
-          Open a Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ FIRST_ERC20_COLLATERAL }) to it.</Card>} />
+          <Flex sx={{ gap: 1 }}>
+            Open a Vault
+            <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ FIRST_ERC20_COLLATERAL }) to it.</Card>} />
+          </Flex>
+          {FIRST_ERC20_COLLATERAL} Collateral
         </Flex>
-
         <Flex sx={{
           width: "100%",
           flexDirection: "column",
@@ -144,7 +144,6 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
             editedAmount={borrowAmount.toString(2)}
             setEditedAmount={(amount: string) => setBorrowAmount(Decimal.from(amount))}
           />
-
           <StaticRow
             label="Liquidation Reserve"
             inputId="trove-liquidation-reserve"
@@ -162,7 +161,6 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
               />
             }
           />
-
           <StaticRow
             label="Borrowing Fee"
             inputId="trove-borrowing-fee"
@@ -180,7 +178,6 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
               />
             }
           />
-
           <StaticRow
             label="Total debt"
             inputId="trove-total-debt"
@@ -203,15 +200,12 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
               />
             }
           />
-
           <CollateralRatio value={collateralRatio} />
-
           {description ?? (
             <ActionDescription title={`You haven't borrowed ${COIN} any yet`}>
               You can borrow {COIN} by opening a Vault
             </ActionDescription>
           )}
-      
           {hasApproved && (
             <ExpensiveTroveChangeWarning
               version={version}
@@ -222,7 +216,6 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
               setGasEstimationState={setGasEstimationState}
             />
           )}
-
           <Flex variant="layout.actions" sx={{ flexDirection: "column" }}>
             {!hasApproved && amountToApprove ? (
               <Transaction

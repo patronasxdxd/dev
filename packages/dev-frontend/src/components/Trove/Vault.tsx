@@ -7,10 +7,9 @@ import { Adjusting } from "./Adjusting";
 import { RedeemedTrove } from "./RedeemedTrove";
 import { useTroveView } from "./context/TroveViewContext";
 import { LiquidatedTrove } from "./LiquidatedTrove";
-import { Decimal,  UserTrove } from "@liquity/lib-base";
+import { Decimal } from "@liquity/lib-base";
 
 export type VaultProps = {
-  vault: UserTrove
   version: string 
   children?: React.ReactNode
 }

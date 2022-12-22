@@ -1,15 +1,15 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card, Flex, Button, Link, Input, ThemeUICSSProperties } from "theme-ui";
 import { StaticAmounts, Row } from "./Trove/Editor";
 import { useThreshold } from "../hooks/ThresholdContext";
 import { Transaction } from "./Transaction";
 import { InfoIcon } from "./InfoIcon";
+import { FIRST_ERC20_COLLATERAL } from "../strings";
 
 const inputId: string = "liquidate-vaults";
 
 const editableStyle: ThemeUICSSProperties = {
   backgroundColor: "terciary",
-
   px: "1.1em",
   py: "0.45em",
   border: 1,
@@ -22,7 +22,11 @@ const editableStyle: ThemeUICSSProperties = {
   fontSize: 3,
 };
 
-export const LiquidationManager = () => {
+type LiquidationManagerProps = {
+  version: string
+}
+
+export const LiquidationManager = ({ version }: LiquidationManagerProps) => {
   const { threshold } = useThreshold();
   const [numberOfTrovesToLiquidate, setNumberOfTrovesToLiquidate] = useState("90");
   const [editing, setEditing] = useState<string>();
@@ -31,14 +35,18 @@ export const LiquidationManager = () => {
     <Card variant="mainCards">
       <Card variant="layout.columns">
         <Flex sx={{
+          justifyContent: "space-between",
           width: "100%",
           gap: 1,
           pb: "1em",
           borderBottom: 1, 
           borderColor: "border"
         }}>
-          Liquidate
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">Vaults that fall under the minimum collateral ratio of 110% will be closed (liquidated). The debt of the Vault is canceled and absorbed by the Stability Pool and its collateral distributed among Stability Providers.</Card>} />
+          <Flex sx={{ gap: 1 }}>
+            Liquidate
+            <InfoIcon size="sm" tooltip={<Card variant="tooltip">Vaults that fall under the minimum collateral ratio of 110% will be closed (liquidated). The debt of the Vault is canceled and absorbed by the Stability Pool and its collateral distributed among Stability Providers.</Card>} />
+          </Flex>
+          {FIRST_ERC20_COLLATERAL} Collateral
         </Flex>
         <Flex sx={{
           width: "100%",
@@ -79,7 +87,6 @@ export const LiquidationManager = () => {
               />
             </>
           )}
-
           <Flex sx={{ ml: 2, alignItems: "center" }}>
             <Transaction
               id="batch-liquidate"
@@ -87,8 +94,7 @@ export const LiquidationManager = () => {
                 if (!numberOfTrovesToLiquidate) {
                   throw new Error("Invalid number");
                 }
-                // TODO needs to set dynamic versioning
-                return threshold.v1.send.liquidateUpTo(parseInt(numberOfTrovesToLiquidate, 10), overrides);
+                return threshold[version].send.liquidateUpTo(parseInt(numberOfTrovesToLiquidate, 10), overrides);
               }}
             >
               <Button sx={{ width: "100%" }}>Liquidate</Button>

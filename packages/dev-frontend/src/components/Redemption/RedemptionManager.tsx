@@ -24,11 +24,15 @@ const select = ({ price, fees, total, thusdBalance }: ThresholdStoreState) => ({
   thusdBalance
 });
 
+type RedemptionManagerProps = {
+  version: string
+}
+
 const transactionId = "redemption";
 
-export const RedemptionManager: React.FC = () => {
-  // TODO needs to set dynamic versioning
-  const { v1: { price, fees, total, thusdBalance } } = useThresholdSelector(select);
+export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Element => {
+  const { [version]: { price, fees, total, thusdBalance } } = useThresholdSelector(select);
+  const [isMounted, setIsMounted] = useState<boolean>(true);
   const [thusdAmount, setTHUSDAmount] = useState(Decimal.ZERO);
   const [changePending, setChangePending] = useState(false);
   const editingState = useState<string>();
@@ -43,6 +47,9 @@ export const RedemptionManager: React.FC = () => {
   const myTransactionState = useMyTransactionState(transactionId);
 
   useEffect(() => {
+    if (!isMounted) {
+      return
+    }
     if (
       myTransactionState.type === "waitingForApproval" ||
       myTransactionState.type === "waitingForConfirmation"
@@ -54,7 +61,11 @@ export const RedemptionManager: React.FC = () => {
       setTHUSDAmount(Decimal.ZERO);
       setChangePending(false);
     }
-  }, [myTransactionState.type, setChangePending, setTHUSDAmount]);
+
+    return () => { 
+      setIsMounted(false);
+    };
+  }, [myTransactionState.type, setChangePending, setTHUSDAmount, isMounted]);
 
   const [canRedeem, description] = total.collateralRatioIsBelowMinimum(price)
     ? [
@@ -90,15 +101,18 @@ export const RedemptionManager: React.FC = () => {
     <Card variant="mainCards">
       <Card variant="layout.columns">
         <Flex sx={{
+            justifyContent: "space-between",
             width: "100%",
             gap: 1,
             pb: "1em",
             borderBottom: 1, 
             borderColor: "border"
-        }}>
-          Redeem
-        </Flex>
-        
+          }}>
+            <Flex sx={{ gap: 1 }}>
+              Reedem
+            </Flex>
+            {FIRST_ERC20_COLLATERAL} Collateral
+          </Flex>
         <Flex sx={{
           width: "100%",
           flexDirection: "column",
@@ -141,6 +155,7 @@ export const RedemptionManager: React.FC = () => {
 
           <Flex variant="layout.actions">
             <RedemptionAction
+              version={version}
               transactionId={transactionId}
               disabled={!dirty || !canRedeem}
               thusdAmount={thusdAmount}

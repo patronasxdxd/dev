@@ -30,16 +30,20 @@ export const NoTrove = ({ version }: NoTroveProps): JSX.Element => {
     <Card variant="mainCards">
       <Card variant="layout.columns">
         <Flex sx={{
+          justifyContent: "space-between",
           width: "100%",
           gap: 1,
           pb: "1em",
           borderBottom: 1, 
           borderColor: "border"
         }}>
-          Open a Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">
-            To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral { FIRST_ERC20_COLLATERAL } to it.
-            </Card>} />
+          <Flex sx={{ gap: 1 }}>
+            Open a Vault
+            <InfoIcon size="sm" tooltip={<Card variant="tooltip">
+              To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral { FIRST_ERC20_COLLATERAL } to it.
+              </Card>} />
+          </Flex>
+            {FIRST_ERC20_COLLATERAL} Collateral
         </Flex>
         <Flex sx={{
           width: "100%",

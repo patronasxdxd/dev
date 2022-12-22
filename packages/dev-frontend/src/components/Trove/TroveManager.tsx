@@ -223,7 +223,6 @@ export const TroveManager: React.FC<TroveManagerProps> = ({ version, collateral,
             Adjust your Trove by modifying its collateral, debt, or both.
           </ActionDescription>
         ))}
-
       <Flex variant="layout.actions" sx={{ flexDirection: "column" }}>
         {validChange ? (
           <TroveAction

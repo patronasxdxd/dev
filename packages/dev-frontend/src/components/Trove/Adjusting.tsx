@@ -96,7 +96,6 @@ export const Adjusting = ({ version }: AdjustingProps): JSX.Element => {
   const previousTrove = useRef<Trove>(trove);
   const [collateral, setCollateral] = useState<Decimal>(trove.collateral);
   const [netDebt, setNetDebt] = useState<Decimal>(trove.netDebt);
-
   const transactionState = useMyTransactionState(TRANSACTION_ID);
   const borrowingRate = fees.borrowingRate();
 
@@ -166,17 +165,19 @@ export const Adjusting = ({ version }: AdjustingProps): JSX.Element => {
     <Card variant="mainCards">
       <Card variant="layout.columns">
         <Flex sx={{
+          justifyContent: "space-between",
           width: "100%",
           gap: 1,
           pb: "1em",
           borderBottom: 1, 
-          borderColor: "border",
-
+          borderColor: "border"
         }}>
-          Adjusting Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ FIRST_ERC20_COLLATERAL }) to it.</Card>} />
+          <Flex sx={{ gap: 1 }}>
+            Adjusting Vault
+            <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ FIRST_ERC20_COLLATERAL }) to it.</Card>} />
+          </Flex>
+          {FIRST_ERC20_COLLATERAL} Collateral
         </Flex>
-
         <Flex sx={{
           width: "100%",
           flexDirection: "column",

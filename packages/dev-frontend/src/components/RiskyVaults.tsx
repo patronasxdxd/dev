@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Box, Button, Card, Container, Flex, Image, Link, Text  } from "theme-ui";
 
 import {
@@ -15,7 +15,7 @@ import { useWeb3React } from "@web3-react/core";
 
 import { shortenAddress } from "../utils/shortenAddress";
 import { useThreshold } from "../hooks/ThresholdContext";
-import { COIN } from "../strings";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../strings";
 
 import { Icon } from "./Icon";
 import { Transaction } from "./Transaction";
@@ -23,6 +23,7 @@ import { Tooltip } from "./Tooltip";
 import { Abbreviation } from "./Abbreviation";
 
 const rowHeight = "40px";
+const pageSize = 10;
 
 const liquidatableInNormalMode = (trove: UserTrove, price: Decimal) =>
   [trove.collateralRatioIsBelowMinimum(price), "Collateral ratio not low enough"] as const;
@@ -46,7 +47,7 @@ const liquidatableInRecoveryMode = (
 };
 
 type RiskyVaultsProps = {
-  pageSize: number;
+  version: string
 };
 
 const select = ({
@@ -64,12 +65,10 @@ const select = ({
   blockTag
 });
 
-export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
+export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
   const { chainId } = useWeb3React<Web3Provider>();
-  console.log('chainId: ', chainId)
-  // TODO needs to set dynamic versioning
   const {
-    v1: {
+    [version]: {
       blockTag,
       numberOfTroves,
       recoveryMode,
@@ -79,11 +78,10 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
     }
   } = useThresholdSelector(select);
   const { threshold } = useThreshold();
-
+  const [isMounted, setIsMounted] = useState<boolean>(true);
   const [troves, setTroves] = useState<UserTrove[]>();
   const [reload, setReload] = useState({});
   const forceReload = useCallback(() => setReload({}), []);
-
   const [page, setPage] = useState(0);
   const numberOfPages = Math.ceil(numberOfTroves / pageSize) || 1;
   const clampedPage = Math.min(page, numberOfPages - 1);
@@ -107,29 +105,26 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
   }, [page, clampedPage]);
 
   useEffect(() => {
-    let mounted = true;
-    // TODO needs to set dynamic versioning
-    threshold.v1
-      .getTroves(
-        {
-          first: pageSize,
-          sortedBy: "ascendingCollateralRatio",
-          startingAt: clampedPage * pageSize
-        },
-        { blockTag }
-      )
-      .then(troves => {
-        if (mounted) {
-          setTroves(troves);
-        }
-      });
-
+    if (isMounted) {
+      threshold[version]
+        .getTroves(
+          {
+            first: pageSize,
+            sortedBy: "ascendingCollateralRatio",
+            startingAt: clampedPage * pageSize
+          },
+          { blockTag }
+        )
+        .then(troves => {
+            setTroves(troves);
+        });
+    }
     return () => {
-      mounted = false;
+      setIsMounted(false);
     };
     // Omit blockTag from deps on purpose
     // eslint-disable-next-line
-  }, [threshold, clampedPage, pageSize, reload]);
+  }, [threshold, clampedPage, pageSize, reload, isMounted]);
 
   useEffect(() => {
     forceReload();
@@ -154,7 +149,7 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
   }, [copied]);
 
   return (
-    <Container sx={{ pr: "2rem" }}>
+    <Container>
       <Card variant="mainCards">
         <Card variant="layout.columns">
           <Flex sx={{
@@ -170,6 +165,9 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
               Risky Vaults
             </Box>
             <Flex sx={{ alignItems: "center" }}>
+              <Flex>
+                {FIRST_ERC20_COLLATERAL} Collateral
+              </Flex>
               {numberOfTroves !== 0 && (
                 <>
                   <Abbreviation
@@ -194,9 +192,9 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
             </Flex>
           </Flex>
           {!troves || troves.length === 0 ? (
-            <Box sx={{ p: [2, 3] }}>
-              <Box sx={{ p: 4, fontSize: 3, textAlign: "center" }}>
-                {!troves ? "Loading..." : "There are no Troves yet"}
+            <Box sx={{ p: [2, 3], width: "100%" }}>
+              <Box sx={{ p: 4, fontSize: 3, textAlign: "center", justifyContent: "center" }}>
+                {!troves ? "Loading..." : "There are no Vaults yet"}
               </Box>
             </Box>
           ) : (
@@ -239,8 +237,8 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
                 <tbody>
                   {troves.map(
                     trove =>
-                      !trove.isEmpty && ( // making sure the Trove hasn't been liquidated
-                        // (TODO: remove check after we can fetch multiple Troves in one call)
+                      !trove.isEmpty && ( // making sure the Vault hasn't been liquidated
+                        // (TODO: remove check after we can fetch multiple Vault in one call)
                         <tr key={trove.ownerAddress} 
                           style={{
                             fontWeight: "bold"
@@ -278,7 +276,7 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
                             </Tooltip>
                             <Link 
                               variant="socialIcons" 
-                              href={(chainId === 3 && `https://ropsten.etherscan.io/address/${trove.ownerAddress}`) ||
+                              href={(chainId === 5 && `https://goerli.etherscan.io/address/${trove.ownerAddress}`) ||
                                 `https://etherscan.io/address/${trove.ownerAddress})`} 
                               target="_blank"
                             >
@@ -324,8 +322,7 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
                                     )
                                   : liquidatableInNormalMode(trove, price)
                               ]}
-                              // TODO needs to set dynamic versioning
-                              send={threshold.v1.send.liquidate.bind(threshold.v1.send, trove.ownerAddress)}
+                              send={threshold[version].send.liquidate.bind(threshold[version].send, trove.ownerAddress)}
                             >
                               <Button variant="dangerIcon">
                                 <Icon name="trash" />

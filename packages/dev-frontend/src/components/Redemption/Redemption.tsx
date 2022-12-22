@@ -1,5 +1,9 @@
 import { RedemptionManager } from "./RedemptionManager";
 
-export const Redemption = (): JSX.Element => {
-  return <RedemptionManager />;
+type RedemptionProps = {
+  version: string
+}
+
+export const Redemption = ({ version }: RedemptionProps): JSX.Element => {
+  return <RedemptionManager version={version} />;
 };

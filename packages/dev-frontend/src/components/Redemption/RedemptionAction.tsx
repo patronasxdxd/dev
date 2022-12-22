@@ -6,6 +6,7 @@ import { useThreshold } from "../../hooks/ThresholdContext";
 import { useTransactionFunction } from "../Transaction";
 
 type RedemptionActionProps = {
+  version: string,
   transactionId: string;
   disabled?: boolean;
   thusdAmount: Decimal;
@@ -13,14 +14,14 @@ type RedemptionActionProps = {
 };
 
 export const RedemptionAction: React.FC<RedemptionActionProps> = ({
+  version,
   transactionId,
   disabled,
   thusdAmount,
   maxRedemptionRate
 }) => {
-  // TODO needs to set dynamic versioning
   const {
-    threshold: { v1: { send: threshold } }
+    threshold: { [version]: { send: threshold } }
   } = useThreshold();
 
   const [sendTransaction] = useTransactionFunction(

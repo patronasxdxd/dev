@@ -156,6 +156,7 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
         }}>
           <SystemStat>
             {canSetPrice ? (
+              // TODO needs to set dynamic versioning
               <Flex sx={{ mb:1, alignItems: "center", height: "1.2em", }}>
                 <Input
                   variant="layout.balanceRow"

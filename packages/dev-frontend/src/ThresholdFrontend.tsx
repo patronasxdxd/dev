@@ -12,7 +12,7 @@ import { TransactionProvider } from "./components/Transaction";
 import { ChartProvider } from "./components/Dashboard/Chart/context/ChartProvider";
 import { FunctionalPanel } from "./components/FunctionalPanel";
 
-import { PageSwitcher } from "./pages/PageSwitcher";
+import { Dashboard } from "./pages/Dashboard";
 import { RedemptionPage } from "./pages/RedemptionPage";
 import { RiskyVaultsPage } from "./pages/RiskyVaultsPage";
 
@@ -24,7 +24,7 @@ type ThresholdFrontendProps = {
   loader?: React.ReactNode;
 };
 
-const UnsupportedMainnetFallback: React.FC = () => (
+const UnsupportedMainnetFallback = (): JSX.Element => (
   <Flex
     sx={{
       flexDirection: "column",
@@ -92,7 +92,7 @@ export const ThresholdFrontend: React.FC<ThresholdFrontendProps> = ({ loader }) 
                     <FunctionalPanel loader={loader}>
                       <Switch>
                         <Route path="/" exact>
-                          <PageSwitcher />
+                          <Dashboard />
                         </Route>
                         <Route path="/borrow" exact>
                           <VaultPage />

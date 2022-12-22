@@ -4,7 +4,7 @@ import { CollateralSurplusAction } from "../CollateralSurplusAction";
 import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
 import { useThresholdSelector} from "@liquity/lib-react";
 import { useTroveView } from "./context/TroveViewContext";
-import { COIN } from "../../strings";
+import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
 import { InfoMessage } from "../InfoMessage";
 
 const select = ({ collateralSurplusBalance }: ThresholdStoreState) => ({
@@ -27,14 +27,18 @@ export const RedeemedTrove = ({ version }: RedeemedTroveProps): JSX.Element => {
     <Card variant="mainCards">
       <Card variant="layout.columns">
         <Flex sx={{
-            width: "100%",
-            gap: 1,
-            pb: "1em",
-            borderBottom: 1, 
-            borderColor: "border",
-          }}>
-            Redeemed Vault
+          justifyContent: "space-between",
+          width: "100%",
+          gap: 1,
+          pb: "1em",
+          borderBottom: 1, 
+          borderColor: "border"
+        }}>
+          <Flex sx={{ gap: 1 }}>
+            Redeemed
           </Flex>
+          {FIRST_ERC20_COLLATERAL} Collateral
+        </Flex>
           <Flex sx={{
             width: "100%",
             flexDirection: "column",
