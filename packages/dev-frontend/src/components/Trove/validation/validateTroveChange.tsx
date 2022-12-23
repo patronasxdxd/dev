@@ -25,7 +25,7 @@ type TroveAdjustmentDescriptionParams = {
   params: TroveAdjustmentParams<Decimal>;
 };
 
-const TroveChangeDescription: React.FC<TroveAdjustmentDescriptionParams> = ({ params }) => (
+const TroveChangeDescription = ({ params }: TroveAdjustmentDescriptionParams): JSX.Element => (
   <ActionDescription>
     {params.depositCollateral && params.borrowTHUSD ? (
       <>

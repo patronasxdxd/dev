@@ -7,7 +7,7 @@ type ChartCardProps = {
   variant?: string;
 };
 
-export const Chart: React.FC<ChartCardProps> = ({ variant = "mainCards" }) => {
+export const Chart = ({ variant = "mainCards" }: ChartCardProps): JSX.Element => {
   return (
     <Card {...{ variant }}>
       <LineChart />

@@ -1,11 +1,10 @@
-import React from "react";
 import { useWeb3React } from "@web3-react/core";
 import { Text, Flex, Box, Image } from "theme-ui";
 
 import { shortenAddress } from "../utils/shortenAddress";
 import { injectedConnector } from "../connectors/injectedConnector";
 
-export const UserAccount: React.FC = () => {
+export const UserAccount = (): JSX.Element => {
   const { activate, deactivate,  active, account } = useWeb3React<unknown>();
 
   if (active) {

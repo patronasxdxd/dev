@@ -153,7 +153,7 @@ type TroveManagerProps = {
   debt?: Decimalish;
 };
 
-export const TroveManager: React.FC<TroveManagerProps> = ({ version, collateral, debt }) => {
+export const TroveManager = ({ version, collateral, debt }: TroveManagerProps): JSX.Element => {
   const [{ original, edited, changePending }, dispatch] = useThresholdReducer(1, reduce, init);
   const { [version]: { fees, validationContext } } = useThresholdSelector(select);
 

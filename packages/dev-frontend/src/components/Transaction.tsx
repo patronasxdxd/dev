@@ -88,7 +88,11 @@ const TransactionContext = React.createContext<
   [TransactionState, (state: TransactionState) => void] | undefined
 >(undefined);
 
-export const TransactionProvider: React.FC = ({ children }) => {
+type TransactionProviderProps = {
+  children: React.ReactNode
+}
+
+export const TransactionProvider = ({ children }: TransactionProviderProps): JSX.Element => {
   const transactionState = useState<TransactionState>({ type: "idle" });
   return (
     <TransactionContext.Provider value={transactionState}>{children}</TransactionContext.Provider>
@@ -264,7 +268,7 @@ type TransactionProgressDonutProps = {
   state: TransactionState["type"];
 };
 
-const TransactionProgressDonut: React.FC<TransactionProgressDonutProps> = ({ state }) => {
+const TransactionProgressDonut = ({ state }: TransactionProgressDonutProps): JSX.Element => {
   const [value, setValue] = useState(0);
   const maxValue = 1;
 
@@ -291,7 +295,7 @@ const TransactionProgressDonut: React.FC<TransactionProgressDonutProps> = ({ sta
   );
 };
 
-export const TransactionMonitor: React.FC = () => {
+export const TransactionMonitor = (): JSX.Element => {
   const { provider } = useThreshold();
   const [transactionState, setTransactionState] = useTransactionState();
 
@@ -404,7 +408,7 @@ export const TransactionMonitor: React.FC = () => {
   }, [transactionState.type, setTransactionState, id]);
 
   if (transactionState.type === "idle" || transactionState.type === "waitingForApproval") {
-    return null;
+    return <></>;
   }
 
   return (

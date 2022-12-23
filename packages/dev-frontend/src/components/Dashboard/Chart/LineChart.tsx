@@ -52,7 +52,7 @@ ChartJS.register({
   }
 });
 
-export const LineChart: React.FC = () => { 
+export const LineChart = (): JSX.Element => { 
 
   const [activeData, setActiveData] = useState<number | string>('-');
   const [activeLabel, setActiveLabel] = useState<string>();

@@ -12,7 +12,7 @@ type CollateralRatioProps = SxProp & {
   change?: Difference;
 };
 
-export const CollateralRatio: React.FC<CollateralRatioProps> = ({ value, change, sx }) => {
+export const CollateralRatio = ({ value, change, sx }: CollateralRatioProps): JSX.Element => {
   const collateralRatioPct = new Percent(value ?? { toString: () => "N/A" });
   const changePct = change && new Percent(change);
   return (

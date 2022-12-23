@@ -17,6 +17,7 @@ export type tvlData = {
 
 export type FunctionalPanelProps = {
   loader?: React.ReactNode;
+  children: React.ReactNode;
 };
 
 const fetchBlockByTimestamp = (timestamp: number, BlocksApiUrl: string) => {
@@ -119,7 +120,7 @@ async function fetchData(API_URL: string, query: string) {
   return response;
 };
 
-export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader })  => {
+export const ChartProvider = ({ children, loader }: FunctionalPanelProps): JSX.Element  => {
   const timestamps: Array<number> = createListOfTimestamps();
   const [tvl, setTvl] = useState<Array<tvlData>>();
   const [isMounted, setIsMounted] = useState<boolean>(true);

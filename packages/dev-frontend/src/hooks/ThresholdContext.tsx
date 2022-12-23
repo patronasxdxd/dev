@@ -26,6 +26,7 @@ type ThresholdContextValue = {
 const ThresholdContext = createContext<ThresholdContextValue | undefined>(undefined);
 
 type ThresholdProviderProps = {
+  children: React.ReactNode;
   loader?: React.ReactNode;
   unsupportedNetworkFallback?: (chainId: number) => React.ReactNode;
   unsupportedMainnetFallback?: React.ReactNode;
@@ -62,12 +63,12 @@ const getConnections = async (
     return setConnections(connectionsByChainId)
 }
 
-export const ThresholdProvider: React.FC<ThresholdProviderProps> = ({
+export const ThresholdProvider = ({
   children,
   loader,
   unsupportedNetworkFallback,
   unsupportedMainnetFallback
-}) => {
+}: ThresholdProviderProps): JSX.Element => {
   const { library: provider, account, chainId } = useWeb3React<Web3Provider>();
   const [config, setConfig] = useState<ThresholdConfig>();
   const [connections, setConnections] = useState<any[]>();
@@ -130,7 +131,7 @@ export const ThresholdProvider: React.FC<ThresholdProviderProps> = ({
 
   //Forcing goerli connection
   if (!connections || chainId !== 5) {
-    return unsupportedNetworkFallback ? <>{unsupportedNetworkFallback(chainId)}</> : null;
+    return unsupportedNetworkFallback ? <>{unsupportedNetworkFallback(chainId)}</> : <></>;
   }
   
   if (Object.keys(threshold).length !== connections.length) {

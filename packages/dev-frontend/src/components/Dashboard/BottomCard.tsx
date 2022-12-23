@@ -12,9 +12,10 @@ type BottomCardProps = {
   token: string;
   path: string;
   disabled?: boolean;
+  children: React.ReactNode
 };
 
-export const BottomCard: React.FC<BottomCardProps> = ({ 
+export const BottomCard = ({ 
   title, 
   tooltip, 
   action, 
@@ -22,7 +23,7 @@ export const BottomCard: React.FC<BottomCardProps> = ({
   path, 
   disabled,
   children
-}) => {
+}: BottomCardProps): JSX.Element => {
     return (
       <Card variant="layout.columns">
         <Flex sx={{

@@ -22,10 +22,9 @@ const vaultStatus = (view: TroveView) => {
   else return 'Open a Vault'
 }
 
-export const VaultCard: React.FC<VaultCardProps> = ({ variant = "mainCards" }) => {
+export const VaultCard = ({ variant = "mainCards" }: VaultCardProps): JSX.Element => {
   const { views: { v1 } } = useTroveView();
   const {v1: { erc20TokenBalance }} = useThresholdSelector(select);
-  // TODO needs to add symbol
   return (
     <Card {...{ variant }}>
       <BottomCard

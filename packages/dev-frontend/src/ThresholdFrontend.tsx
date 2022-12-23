@@ -44,7 +44,7 @@ const UnsupportedMainnetFallback = (): JSX.Element => (
   </Flex>
 );
 
-export const ThresholdFrontend: React.FC<ThresholdFrontendProps> = ({ loader }) => {
+export const ThresholdFrontend = ({ loader }: ThresholdFrontendProps): JSX.Element => {
   const unsupportedNetworkFallback = (chainId: number) => (
     <Flex
       sx={{

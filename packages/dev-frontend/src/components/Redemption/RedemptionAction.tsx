@@ -13,13 +13,13 @@ type RedemptionActionProps = {
   maxRedemptionRate: Decimal;
 };
 
-export const RedemptionAction: React.FC<RedemptionActionProps> = ({
+export const RedemptionAction = ({
   version,
   transactionId,
   disabled,
   thusdAmount,
   maxRedemptionRate
-}) => {
+}: RedemptionActionProps): JSX.Element => {
   const {
     threshold: { [version]: { send: threshold } }
   } = useThreshold();

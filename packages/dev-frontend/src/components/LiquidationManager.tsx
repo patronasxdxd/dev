@@ -6,8 +6,6 @@ import { Transaction } from "./Transaction";
 import { InfoIcon } from "./InfoIcon";
 import { FIRST_ERC20_COLLATERAL } from "../strings";
 
-const inputId: string = "liquidate-vaults";
-
 const editableStyle: ThemeUICSSProperties = {
   backgroundColor: "terciary",
   px: "1.1em",
@@ -26,7 +24,8 @@ type LiquidationManagerProps = {
   version: string
 }
 
-export const LiquidationManager = ({ version }: LiquidationManagerProps) => {
+export const LiquidationManager = ({ version }: LiquidationManagerProps): JSX.Element => {
+  const inputId: string = "liquidate-vaults";
   const { threshold } = useThreshold();
   const [numberOfTrovesToLiquidate, setNumberOfTrovesToLiquidate] = useState("90");
   const [editing, setEditing] = useState<string>();

@@ -20,6 +20,7 @@ import { CollateralRatio } from "./CollateralRatio";
 import { InfoIcon } from "../InfoIcon";
 
 type TroveEditorProps = {
+  children: React.ReactNode;
   version: string,
   original: Trove;
   edited: Trove;
@@ -33,7 +34,7 @@ type TroveEditorProps = {
 
 const select = ({ price }: LiquityStoreState) => ({ price });
 
-export const TroveEditor: React.FC<TroveEditorProps> = ({
+export const TroveEditor = ({
   children,
   version,
   original,
@@ -41,7 +42,7 @@ export const TroveEditor: React.FC<TroveEditorProps> = ({
   fee,
   borrowingRate,
   changePending
-}) => {
+}: TroveEditorProps): JSX.Element => {
   const { [ version ]: { price } } = useThresholdSelector(select);
 
   const feePct = new Percent(borrowingRate);

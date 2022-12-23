@@ -3,9 +3,10 @@ import { Box, Flex, Text } from "theme-ui";
 type InfoMessageProps = {
   title: string;
   icon?: React.ReactNode;
+  children: React.ReactNode
 };
 
-export const InfoMessage: React.FC<InfoMessageProps> = ({ title, children, icon }) => (
+export const InfoMessage = ({ title, children, icon }: InfoMessageProps): JSX.Element => (
   <Box sx={{ mx: 2, fontSize: "0.85em" }}>
     <Flex sx={{ alignItems: "center" }}>
       {icon && (

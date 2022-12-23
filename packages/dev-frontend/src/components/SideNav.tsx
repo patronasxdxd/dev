@@ -6,7 +6,7 @@ import { Link } from "./Link";
 
 const logoHeight = "32px";
 
-export const SideNav: React.FC = () => {
+export const SideNav = (): JSX.Element => {
   const [isVisible, setIsVisible] = useState(false);
   const overlay = useRef<HTMLDivElement>(null);
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, Flex, Box, Heading } from "theme-ui";
+import { Text, Flex, Box, Heading, jsx } from "theme-ui";
 
 import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
 import { useThresholdSelector } from "@liquity/lib-react";
@@ -15,7 +15,7 @@ const select = ({ accountBalance, thusdBalance }: ThresholdStoreState) => ({
   thusdBalance
 });
 
-export const Social: React.FC = () => {
+export const Social = (): JSX.Element => {
   const { account } = useThreshold();
   const { v1: { accountBalance, thusdBalance }} = useThresholdSelector(select);
 

@@ -19,14 +19,14 @@ type ExpensiveTroveChangeWarningParams = {
   setGasEstimationState: (newState: GasEstimationState) => void;
 };
 
-export const ExpensiveTroveChangeWarning: React.FC<ExpensiveTroveChangeWarningParams> = ({
+export const ExpensiveTroveChangeWarning = ({
   version,
   troveChange,
   maxBorrowingRate,
   borrowingFeeDecayToleranceMinutes,
   gasEstimationState,
   setGasEstimationState
-}) => {
+}: ExpensiveTroveChangeWarningParams): JSX.Element => {
   const { threshold } = useThreshold();
   useEffect(() => {
     if (troveChange && troveChange.type !== "closure") {
@@ -83,5 +83,5 @@ export const ExpensiveTroveChangeWarning: React.FC<ExpensiveTroveChangeWarningPa
     );
   }
 
-  return null;
+  return <></>;
 };

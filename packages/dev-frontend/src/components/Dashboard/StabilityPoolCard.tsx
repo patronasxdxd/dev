@@ -15,7 +15,7 @@ const select = ({  thusdBalance }: ThresholdStoreState) => ({
   thusdBalance
 });
 
-export const StabilityPoolCard: React.FC<StabilityPoolCardProps> = ({ variant = "mainCards" }) => {
+export const StabilityPoolCard = ({ variant = "mainCards" }: StabilityPoolCardProps): JSX.Element => {
   const { v1: { thusdBalance } } = useThresholdSelector(select);
 
   return (

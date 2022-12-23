@@ -10,9 +10,10 @@ import { TransactionMonitor } from "./Transaction";
 
 type FunctionalPanelProps = {
   loader?: React.ReactNode;
+  children: React.ReactNode;
 };
 
-export const FunctionalPanel: React.FC<FunctionalPanelProps> = ({ children, loader }) => {
+export const FunctionalPanel = ({ children, loader }: FunctionalPanelProps): JSX.Element => {
   const { account, provider, threshold } = useThreshold();
 
   // For console tinkering ;-)

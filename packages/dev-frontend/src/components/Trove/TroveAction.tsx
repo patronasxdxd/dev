@@ -6,6 +6,7 @@ import { useThreshold } from "../../hooks/ThresholdContext";
 import { useTransactionFunction } from "../Transaction";
 
 type TroveActionProps = {
+  children: React.ReactNode
   version: string,
   transactionId: string;
   change: Exclude<TroveChange<Decimal>, { type: "invalidCreation" }>;
@@ -13,14 +14,14 @@ type TroveActionProps = {
   borrowingFeeDecayToleranceMinutes: number;
 };
 
-export const TroveAction: React.FC<TroveActionProps> = ({
+export const TroveAction = ({
   children,
   version,
   transactionId,
   change,
   maxBorrowingRate,
   borrowingFeeDecayToleranceMinutes
-}) => {
+}: TroveActionProps): JSX.Element => {
   const { threshold } = useThreshold();
 
   const [sendTransaction] = useTransactionFunction(

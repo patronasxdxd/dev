@@ -133,20 +133,18 @@ export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
   const [copied, setCopied] = useState<string>();
 
   useEffect(() => {
-    if (copied !== undefined) {
-      let cancelled = false;
+    if (isMounted) {
+      if (copied !== undefined) {
+        setTimeout(() => {
+            setCopied(undefined);
+        }, 2000);
 
-      setTimeout(() => {
-        if (!cancelled) {
-          setCopied(undefined);
-        }
-      }, 2000);
-
-      return () => {
-        cancelled = true;
-      };
+        return () => {
+          setIsMounted(false);
+        };
+      }
     }
-  }, [copied]);
+  }, [copied, isMounted]);
 
   return (
     <Container>
@@ -164,7 +162,7 @@ export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
             <Box>
               Risky Vaults
             </Box>
-            <Flex sx={{ alignItems: "center" }}>
+            <Flex sx={{ alignItems: "center", gap: "0.5rem" }}>
               <Flex>
                 {FIRST_ERC20_COLLATERAL} Collateral
               </Flex>

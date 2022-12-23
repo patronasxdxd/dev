@@ -42,7 +42,7 @@ const select = ({
   pcvBalance
 });
 
-export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "info" }) => {
+export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps): JSX.Element => {
 
   // TODO needs to set dynamic versioning
   const {
