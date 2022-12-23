@@ -1,15 +1,15 @@
-import React from "react";
 import { Card } from "theme-ui";
-import { Percent, LiquityStoreState } from "@liquity/lib-base";
+import { Percent, LiquityStoreState, Decimal } from "@liquity/lib-base";
 import { useThresholdSelector } from "@liquity/lib-react";
 
 import { TopCard } from "./TopCard";
+import { useEffect, useState } from "react";
 
 type SystemStatsProps = {
   variant?: string;
 };
 
-const select = ({
+const selector = ({
   price,
   total
 }: LiquityStoreState) => ({
@@ -17,16 +17,28 @@ const select = ({
   total
 });
 
-export const ColRatio: React.FC<SystemStatsProps> = ({ variant = "mainCards" }) => {
-// TODO needs to set dynamic versioning
-  const {
-    v1: {
-      price,
-      total
-    }
-  } = useThresholdSelector(select);
+export const ColRatio = ({ variant = "mainCards" }: SystemStatsProps): JSX.Element => {
+  const thresholdSelector = useThresholdSelector(selector);
+  const [collateralRatioAvgPct, setCollateralRatioAvgPct] = useState(new Percent(Decimal.from(0)))
 
-  const totalCollateralRatioPct = new Percent(total.collateralRatio(price));
+  useEffect(() => {
+    let collateralRatio = Decimal.from(0)
+    const thresholdSelectorKeys = Object.keys(thresholdSelector)
+    
+    thresholdSelectorKeys.map(version => {
+      const versionedCollateralRatio = thresholdSelector[version].total.collateralRatio(thresholdSelector[version].price)
+      return collateralRatio = collateralRatio ===  Decimal.INFINITY || versionedCollateralRatio === Decimal.INFINITY
+        ? Decimal.INFINITY 
+        : collateralRatio.add(versionedCollateralRatio) 
+    })
+
+    const collateralRatioAvg = collateralRatio === Decimal.INFINITY 
+      ? Decimal.INFINITY 
+      : collateralRatio.div(thresholdSelectorKeys.length)
+    
+    setCollateralRatioAvgPct(new Percent(collateralRatioAvg))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <Card {...{ variant }}>
@@ -35,7 +47,7 @@ export const ColRatio: React.FC<SystemStatsProps> = ({ variant = "mainCards" }) 
         tooltip="The ratio of the Dollar value of the entire system collateral at the current ETH:USD price, to the entire system debt." 
         imgSrc="./icons/col-ratio.svg" 
       >
-        {totalCollateralRatioPct.prettify()}
+        {collateralRatioAvgPct && collateralRatioAvgPct.prettify()}
       </TopCard>
     </Card>
   );
