@@ -13,6 +13,6 @@ export const RiskyVaultsPage = (): JSX.Element => {
         link="https://github.com/Threshold-USD/dev"
       />
       <PageRow Component={LiquidationManager} />
-      <PageRow Component={RiskyVaults} />
+      <PageRow isWidthFull={true} Component={RiskyVaults} />
   </Container>
 };
