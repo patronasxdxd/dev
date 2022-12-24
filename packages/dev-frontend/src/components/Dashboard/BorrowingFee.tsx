@@ -52,7 +52,7 @@ export const BorrowingFee = ({ variant = "mainCards" }: BorrowingFeeProps): JSX.
   }, [borrowingRates, thresholdSelectorVersions])
 
   return (
-    <Card {...{ variant }} sx={{ display: ['none', 'block'] }}>
+    <Card {...{ variant }} sx={{ display: ['none', 'block'], width:"100%" }}>
       <TopCard 
         name={Object.keys(thresholdSelectorVersions).length > 1 ? "Borrowing Fee Avg." : "Borrowing Fee"}
         tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount, and is part of a Vault's debt." 

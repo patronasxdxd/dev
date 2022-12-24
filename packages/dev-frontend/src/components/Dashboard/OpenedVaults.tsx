@@ -26,7 +26,7 @@ export const OpenedVaults = ({ variant = "mainCards" }: SystemStatsProps): JSX.E
   }, [thresholdSelector])
   
   return (
-    <Card {...{ variant }} sx={{ display: ['none', 'block'] }}>
+    <Card {...{ variant }} sx={{ display: ['none', 'block'], width:"100%" }}>
       <TopCard
         name="Total Opened Vaults" 
         tooltip="The total number of active Vaults in the system." 

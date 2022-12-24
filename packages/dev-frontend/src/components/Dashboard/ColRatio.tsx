@@ -18,13 +18,12 @@ const selector = ({
 });
 
 export const ColRatio = ({ variant = "mainCards" }: SystemStatsProps): JSX.Element => {
-  const thresholdSelector = useThresholdSelector(selector);
+  const thresholdSelector = useThresholdSelector(selector)
+  const thresholdSelectorKeys = Object.keys(thresholdSelector)
   const [collateralRatioAvgPct, setCollateralRatioAvgPct] = useState(new Percent(Decimal.from(0)))
 
   useEffect(() => {
-    let collateralRatio = Decimal.from(0)
-    const thresholdSelectorKeys = Object.keys(thresholdSelector)
-    
+    let collateralRatio = Decimal.from(0)    
     thresholdSelectorKeys.map(version => {
       const versionedCollateralRatio = thresholdSelector[version].total.collateralRatio(thresholdSelector[version].price)
       return collateralRatio = collateralRatio ===  Decimal.INFINITY || versionedCollateralRatio === Decimal.INFINITY
@@ -41,9 +40,9 @@ export const ColRatio = ({ variant = "mainCards" }: SystemStatsProps): JSX.Eleme
   }, [])
 
   return (
-    <Card {...{ variant }}>
+    <Card {...{ variant }} sx={{ width:"100%"}}>
       <TopCard 
-        name="Total Col. Ratio" 
+        name={`${thresholdSelectorKeys.length > 1 ? "Col. Ratio Avg." : "Total Col. Ratio"}`}
         tooltip="The ratio of the Dollar value of the entire system collateral at the current ETH:USD price, to the entire system debt." 
         imgSrc="./icons/col-ratio.svg" 
       >

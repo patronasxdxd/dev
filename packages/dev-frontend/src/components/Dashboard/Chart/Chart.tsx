@@ -1,4 +1,3 @@
-import React from "react";
 import { Card } from "theme-ui";
 
 import { LineChart } from "./LineChart";

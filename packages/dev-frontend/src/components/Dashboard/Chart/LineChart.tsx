@@ -157,7 +157,7 @@ export const LineChart = (): JSX.Element => {
     ],
   };
   return (
-    <Card variant="layout.columns" style={{ height: "25em" }}>
+    <Card variant="layout.columns">
       <Flex sx={{
         width: "100%",
         gap: 1,
