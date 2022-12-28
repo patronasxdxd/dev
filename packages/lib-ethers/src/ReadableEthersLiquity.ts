@@ -256,6 +256,13 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return activePool.add(defaultPool);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getSymbol} */
+  getSymbol(overrides?: EthersCallOverrides): Promise<string> {
+    const { erc20 } = _getContracts(this.connection);
+
+    return erc20.symbol({ ...overrides });
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getStabilityDeposit} */
   async getStabilityDeposit(
     address?: string,
@@ -506,6 +513,14 @@ class _BlockPolledReadableEthersLiquity
 
   async getTotal(overrides?: EthersCallOverrides): Promise<Trove> {
     return this._blockHit(overrides) ? this.store.state.total : this._readable.getTotal(overrides);
+  }
+
+  async getSymbol(
+    overrides?: EthersCallOverrides
+  ): Promise<string> {
+    return this._blockHit(overrides)
+      ? this.store.state.symbol
+      : this._readable.getSymbol(overrides);
   }
 
   async getStabilityDeposit(

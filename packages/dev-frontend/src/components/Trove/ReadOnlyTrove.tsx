@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import { Card, Box, Flex, Button, Link } from "theme-ui";
 import { useThresholdSelector} from "@liquity/lib-react";
 import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
@@ -6,10 +6,10 @@ import { DisabledEditableRow } from "./Editor";
 import { useTroveView } from "./context/TroveViewContext";
 import { Icon } from "../Icon";
 import { InfoIcon } from "../InfoIcon";
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
+import { COIN } from "../../strings";
 import { CollateralRatio } from "./CollateralRatio";
 
-const select = ({ trove, price }: ThresholdStoreState) => ({ trove, price });
+const select = ({ trove, price, symbol }: ThresholdStoreState) => ({ trove, price, symbol });
 
 type ReadOnlyTroveProps = {
 version: string
@@ -24,7 +24,7 @@ export const ReadOnlyTrove = ({ version }: ReadOnlyTroveProps): JSX.Element => {
     dispatchEvent("CLOSE_TROVE_PRESSED", version);
   }, [dispatchEvent, version]);
 
-  const { [version]: { trove, price } } = useThresholdSelector(select);
+  const { [version]: { trove, price, symbol } } = useThresholdSelector(select);
 
   return (
     <Card variant="mainCards">
@@ -37,7 +37,7 @@ export const ReadOnlyTrove = ({ version }: ReadOnlyTroveProps): JSX.Element => {
           borderColor: "border",
         }}>
           Opened Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ FIRST_ERC20_COLLATERAL }) to it.</Card>} />
+          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ symbol }) to it.</Card>} />
         </Flex>
         <Flex sx={{
           width: "100%",
@@ -50,7 +50,7 @@ export const ReadOnlyTrove = ({ version }: ReadOnlyTroveProps): JSX.Element => {
               label="Collateral"
               inputId="trove-collateral"
               amount={trove.collateral.prettify(4)}
-              unit={ FIRST_ERC20_COLLATERAL }
+              unit={ symbol }
             />
 
             <DisabledEditableRow

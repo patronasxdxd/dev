@@ -12,7 +12,7 @@ import {
 } from "@liquity/lib-base";
 import { useThresholdSelector } from "@liquity/lib-react";
 
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
+import { COIN } from "../../strings";
 
 import { StaticRow } from "./Editor";
 import { LoadingOverlay } from "../LoadingOverlay";
@@ -32,7 +32,7 @@ type TroveEditorProps = {
   ) => void;
 };
 
-const select = ({ price }: LiquityStoreState) => ({ price });
+const select = ({ price, symbol }: LiquityStoreState) => ({ price, symbol });
 
 export const TroveEditor = ({
   children,
@@ -41,12 +41,11 @@ export const TroveEditor = ({
   edited,
   fee,
   borrowingRate,
-  changePending
+  changePending,
 }: TroveEditorProps): JSX.Element => {
-  const { [ version ]: { price } } = useThresholdSelector(select);
+  const { [ version ]: { price, symbol } } = useThresholdSelector(select);
 
   const feePct = new Percent(borrowingRate);
-
   const originalCollateralRatio = !original.isEmpty ? original.collateralRatio(price) : undefined;
   const collateralRatio = !edited.isEmpty ? edited.collateralRatio(price) : undefined;
   const collateralRatioChange = Difference.between(collateralRatio, originalCollateralRatio);
@@ -62,7 +61,7 @@ export const TroveEditor = ({
           borderColor: "border",
         }}>
           Opened Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ FIRST_ERC20_COLLATERAL }) to it.</Card>} />
+          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ symbol }) to it.</Card>} />
         </Flex>
 
         <Flex sx={{
@@ -75,7 +74,7 @@ export const TroveEditor = ({
             label="Collateral"
             inputId="trove-collateral"
             amount={edited.collateral.prettify(4)}
-            unit={ FIRST_ERC20_COLLATERAL }
+            unit={ symbol }
           />
           <StaticRow label="Debt" inputId="trove-debt" amount={edited.debt.prettify()} unit={COIN} />
           {original.isEmpty && (

@@ -17,7 +17,7 @@ import { Transaction, useMyTransactionState } from "../Transaction";
 import { useThreshold } from "../../hooks/ThresholdContext";
 import { TroveAction } from "./TroveAction";
 import { useTroveView } from "./context/TroveViewContext";
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
+import { COIN } from "../../strings";
 import { InfoIcon } from "../InfoIcon";
 import { LoadingOverlay } from "../LoadingOverlay";
 import { CollateralRatio } from "./CollateralRatio";
@@ -29,13 +29,14 @@ import {
 } from "./validation/validateTroveChange";
 
 const selector = (state: ThresholdStoreState) => {
-  const { trove, fees, price, erc20TokenBalance } = state;
+  const { trove, fees, price, erc20TokenBalance, symbol } = state;
   return {
     trove,
     fees,
     price,
     erc20TokenBalance,
-    validationContext: selectForTroveChangeValidation(state)
+    validationContext: selectForTroveChangeValidation(state),
+    symbol,
   };
 };
 
@@ -91,7 +92,7 @@ export const Adjusting = ({ version }: AdjustingProps): JSX.Element => {
     threshold: { [version]: { send: threshold } }
   } = useThreshold();
   const { dispatchEvent } = useTroveView();
-  const { [version]: { trove, fees, price, erc20TokenBalance, validationContext } } = useThresholdSelector(selector);
+  const { [version]: { trove, fees, price, erc20TokenBalance, symbol, validationContext } } = useThresholdSelector(selector);
   const editingState = useState<string>();
   const previousTrove = useRef<Trove>(trove);
   const [collateral, setCollateral] = useState<Decimal>(trove.collateral);
@@ -174,9 +175,9 @@ export const Adjusting = ({ version }: AdjustingProps): JSX.Element => {
         }}>
           <Flex sx={{ gap: 1 }}>
             Adjusting Vault
-            <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ FIRST_ERC20_COLLATERAL }) to it.</Card>} />
+            <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ symbol }) to it.</Card>} />
           </Flex>
-          {FIRST_ERC20_COLLATERAL} Collateral
+          { symbol } Collateral
         </Flex>
         <Flex sx={{
           width: "100%",
@@ -191,7 +192,7 @@ export const Adjusting = ({ version }: AdjustingProps): JSX.Element => {
             maxAmount={maxCollateral.toString()}
             maxedOut={collateralMaxedOut}
             editingState={editingState}
-            unit={ FIRST_ERC20_COLLATERAL }
+            unit={ symbol }
             editedAmount={collateral.toString(4)}
             setEditedAmount={(amount: string) => setCollateral(Decimal.from(amount))}
           />
@@ -291,7 +292,7 @@ export const Adjusting = ({ version }: AdjustingProps): JSX.Element => {
                 showFailure="asTooltip"
                 tooltipPlacement="bottom"
               >
-                <Button>Approve { FIRST_ERC20_COLLATERAL }</Button>
+                <Button>Approve { symbol }</Button>
               </Transaction>
             : stableTroveChange ? (
               <TroveAction

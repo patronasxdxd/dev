@@ -1,14 +1,15 @@
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import { Card, Button, Flex, Link } from "theme-ui";
 import { CollateralSurplusAction } from "../CollateralSurplusAction";
 import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
 import { useThresholdSelector} from "@liquity/lib-react";
 import { useTroveView } from "./context/TroveViewContext";
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
+import { COIN } from "../../strings";
 import { InfoMessage } from "../InfoMessage";
 
-const select = ({ collateralSurplusBalance }: ThresholdStoreState) => ({
-  hasSurplusCollateral: !collateralSurplusBalance.isZero
+const select = ({ collateralSurplusBalance, symbol }: ThresholdStoreState) => ({
+  hasSurplusCollateral: !collateralSurplusBalance.isZero,
+  symbol
 });
 
 type LiquidatedTroveProps = {
@@ -16,7 +17,7 @@ type LiquidatedTroveProps = {
 }
 
 export const LiquidatedTrove = ({ version }: LiquidatedTroveProps): JSX.Element => {
-  const { [version]: { hasSurplusCollateral } } = useThresholdSelector(select);
+  const { [version]: { hasSurplusCollateral, symbol } } = useThresholdSelector(select);
   const { dispatchEvent } = useTroveView();
 
   const handleOpenTrove = useCallback(() => {
@@ -37,7 +38,7 @@ export const LiquidatedTrove = ({ version }: LiquidatedTroveProps): JSX.Element 
           <Flex sx={{ gap: 1 }}>
             Liquidated Vault
           </Flex>
-          {FIRST_ERC20_COLLATERAL} Collateral
+          {symbol} Collateral
         </Flex>
         <Flex sx={{
           width: "100%",

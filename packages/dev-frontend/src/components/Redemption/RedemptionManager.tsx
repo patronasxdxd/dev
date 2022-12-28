@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Flex, Card, Link } from "theme-ui";
 
 import { Decimal, Percent, LiquityStoreState as ThresholdStoreState, MINIMUM_COLLATERAL_RATIO } from "@liquity/lib-base";
 import { useThresholdSelector } from "@liquity/lib-react";
 
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
+import { COIN } from "../../strings";
 
 import { LoadingOverlay } from "../LoadingOverlay";
 import { EditableRow, StaticRow } from "../Trove/Editor";
@@ -17,11 +17,12 @@ import { InfoIcon } from "../InfoIcon";
 
 const mcrPercent = new Percent(MINIMUM_COLLATERAL_RATIO).toString(0);
 
-const select = ({ price, fees, total, thusdBalance }: ThresholdStoreState) => ({
+const select = ({ price, fees, total, thusdBalance, symbol }: ThresholdStoreState) => ({
   price,
   fees,
   total,
-  thusdBalance
+  thusdBalance,
+  symbol
 });
 
 type RedemptionManagerProps = {
@@ -31,7 +32,7 @@ type RedemptionManagerProps = {
 const transactionId = "redemption";
 
 export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Element => {
-  const { [version]: { price, fees, total, thusdBalance } } = useThresholdSelector(select);
+  const { [version]: { price, fees, total, thusdBalance, symbol } } = useThresholdSelector(select);
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [thusdAmount, setTHUSDAmount] = useState(Decimal.ZERO);
   const [changePending, setChangePending] = useState(false);
@@ -111,7 +112,7 @@ export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Elem
             <Flex sx={{ gap: 1 }}>
               Reedem
             </Flex>
-            {FIRST_ERC20_COLLATERAL} Collateral
+            { symbol } Collateral
           </Flex>
         <Flex sx={{
           width: "100%",
@@ -135,7 +136,7 @@ export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Elem
               inputId="redeem-fee"
               amount={ethFee.toString(4)}
               pendingAmount={feePct.toString(2)}
-              unit={FIRST_ERC20_COLLATERAL}
+              unit={ symbol }
               infoIcon={
                 <InfoIcon
                   tooltip={

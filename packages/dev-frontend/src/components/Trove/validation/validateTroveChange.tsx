@@ -13,7 +13,7 @@ import {
   TroveCreationParams
 } from "@liquity/lib-base";
 
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../../strings";
+import { COIN,  } from "../../../strings";
 
 import { ActionDescription, Amount } from "../../ActionDescription";
 import { ErrorDescription } from "../../ErrorDescription";
@@ -23,13 +23,14 @@ const ccrPercent = new Percent(CRITICAL_COLLATERAL_RATIO).toString(0);
 
 type TroveAdjustmentDescriptionParams = {
   params: TroveAdjustmentParams<Decimal>;
+  symbol: string;
 };
 
-const TroveChangeDescription = ({ params }: TroveAdjustmentDescriptionParams): JSX.Element => (
+const TroveChangeDescription = ({ params, symbol }: TroveAdjustmentDescriptionParams): JSX.Element => (
   <ActionDescription>
     {params.depositCollateral && params.borrowTHUSD ? (
       <>
-        You will deposit <Amount>{params.depositCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount> and receive{" "}
+        You will deposit <Amount>{params.depositCollateral.prettify()} { symbol }</Amount> and receive{" "}
         <Amount>
           {params.borrowTHUSD.prettify()} {COIN}
         </Amount>
@@ -40,29 +41,29 @@ const TroveChangeDescription = ({ params }: TroveAdjustmentDescriptionParams): J
         <Amount>
           {params.repayTHUSD.prettify()} {COIN}
         </Amount>{" "}
-        and receive <Amount>{params.withdrawCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount>
+        and receive <Amount>{params.withdrawCollateral.prettify()} { symbol }</Amount>
       </>
     ) : params.depositCollateral && params.repayTHUSD ? (
       <>
-        You will deposit <Amount>{params.depositCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount> and pay{" "}
+        You will deposit <Amount>{params.depositCollateral.prettify()} { symbol }</Amount> and pay{" "}
         <Amount>
           {params.repayTHUSD.prettify()} {COIN}
         </Amount>
       </>
     ) : params.borrowTHUSD && params.withdrawCollateral ? (
       <>
-        You will receive <Amount>{params.withdrawCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount> and{" "}
+        You will receive <Amount>{params.withdrawCollateral.prettify()} { symbol }</Amount> and{" "}
         <Amount>
           {params.borrowTHUSD.prettify()} {COIN}
         </Amount>
       </>
     ) : params.depositCollateral ? (
       <>
-        You will deposit <Amount>{params.depositCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount>
+        You will deposit <Amount>{params.depositCollateral.prettify()} { symbol }</Amount>
       </>
     ) : params.withdrawCollateral ? (
       <>
-        You will receive <Amount>{params.withdrawCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount>
+        You will receive <Amount>{params.withdrawCollateral.prettify()} { symbol }</Amount>
       </>
     ) : params.borrowTHUSD ? (
       <>
@@ -88,8 +89,9 @@ export const selectForTroveChangeValidation = ({
   total,
   erc20TokenBalance,
   thusdBalance,
-  numberOfTroves
-}: ThresholdStoreState) => ({ price, total, erc20TokenBalance, thusdBalance, numberOfTroves });
+  numberOfTroves,
+  symbol,
+}: ThresholdStoreState) => ({ price, total, erc20TokenBalance, thusdBalance, numberOfTroves, symbol });
 
 type TroveChangeValidationSelectedState = ReturnType<typeof selectForTroveChangeValidation>;
 
@@ -104,12 +106,12 @@ export const validateTroveChange = (
   originalTrove: Trove,
   adjustedTrove: Trove,
   borrowingRate: Decimal,
-  selectedState: TroveChangeValidationSelectedState
+  selectedState: TroveChangeValidationSelectedState,
 ): [
   validChange: Exclude<TroveChange<Decimal>, { type: "invalidCreation" }> | undefined,
   description: JSX.Element | undefined
 ] => {
-  const { total, price } = selectedState;
+  const { total, price, symbol } = selectedState;
   const change = originalTrove.whatChanged(adjustedTrove, borrowingRate);
   if (!change) {
     return [undefined, undefined];
@@ -157,7 +159,7 @@ export const validateTroveChange = (
     return [undefined, errorDescription];
   }
 
-  return [change, <TroveChangeDescription params={change.params} />];
+  return [change, <TroveChangeDescription params={change.params} symbol={symbol} />];
 };
 
 const validateTroveCreation = (
@@ -167,7 +169,8 @@ const validateTroveCreation = (
     recoveryMode,
     wouldTriggerRecoveryMode,
     erc20TokenBalance,
-    price
+    price,
+    symbol
   }: TroveChangeValidationContext
 ): JSX.Element | null => {
   if (borrowTHUSD.lt(THUSD_MINIMUM_NET_DEBT)) {
@@ -214,7 +217,7 @@ const validateTroveCreation = (
     return (
       <ErrorDescription>
         The amount you're trying to deposit exceeds your balance by{" "}
-        <Amount>{depositCollateral.sub(erc20TokenBalance).prettify()} { FIRST_ERC20_COLLATERAL }</Amount>.
+        <Amount>{depositCollateral.sub(erc20TokenBalance).prettify()} { symbol }</Amount>.
       </ErrorDescription>
     );
   }

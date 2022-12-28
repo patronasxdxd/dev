@@ -210,6 +210,11 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     return this._readable.getTotal(overrides);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getSymbol} */
+  getSymbol(overrides?: EthersCallOverrides): Promise<string> {
+    return this._readable.getSymbol(overrides);
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getStabilityDeposit} */
   getStabilityDeposit(address?: string, overrides?: EthersCallOverrides): Promise<StabilityDeposit> {
     return this._readable.getStabilityDeposit(address, overrides);

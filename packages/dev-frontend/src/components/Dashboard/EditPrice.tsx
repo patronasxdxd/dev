@@ -3,7 +3,6 @@ import { useThresholdSelector } from "@liquity/lib-react";
 import { useState } from "react";
 import { Button, Flex, Input, ThemeUICSSProperties } from "theme-ui";
 import { useThreshold } from "../../hooks/ThresholdContext";
-import { FIRST_ERC20_COLLATERAL } from "../../strings";
 import { SystemStat } from "../SystemStat";
 import { Transaction } from "../Transaction";
 
@@ -25,13 +24,15 @@ type EditPriceProps = {
 
 const selector = ({
   price,
+  symbol,
 }: ThresholdStoreState) => ({
   price,
+  symbol,
 });
 
 export const EditPrice = ({ version }: EditPriceProps): JSX.Element => {
   const thresholdSelector = useThresholdSelector(selector)
-  const { price } = thresholdSelector[version]
+  const { price, symbol } = thresholdSelector[version]
   const { threshold } = useThreshold();
   const canSetPrice = threshold.v1.connection._priceFeedIsTestnet
   const [editedPrice, setEditedPrice] = useState(price.toString(2))
@@ -46,7 +47,7 @@ export const EditPrice = ({ version }: EditPriceProps): JSX.Element => {
         borderBottom: 1,
         borderColor: "border"
       }}>
-        { FIRST_ERC20_COLLATERAL } Price
+        { symbol } Price
       </Flex>
       <SystemStat>
         {canSetPrice ? (

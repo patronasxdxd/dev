@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Box, Card, Flex } from "theme-ui";
 import { Decimal, Percent, LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
 import { useThresholdSelector } from "@liquity/lib-react";
-import { COIN, FIRST_ERC20_COLLATERAL } from '../strings';
+import { COIN } from '../strings';
 
 import { SystemStat } from "./SystemStat";
 import { EditPrice } from "./Dashboard/EditPrice";
@@ -18,7 +18,8 @@ const selector = ({
   thusdInStabilityPool,
   borrowingRate,
   redemptionRate,
-  pcvBalance
+  pcvBalance,
+  symbol,
 }: ThresholdStoreState) => ({
   numberOfTroves,
   price,
@@ -26,7 +27,8 @@ const selector = ({
   thusdInStabilityPool,
   borrowingRate,
   redemptionRate,
-  pcvBalance
+  pcvBalance,
+  symbol,
 });
 
 export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps): JSX.Element => {
@@ -79,7 +81,7 @@ export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps): JSX
           gap: "1em"
         }}>
           <SystemStat
-            info={`Borrowing Fee ${thresholdSelectorKeys.length > 1 && "Avg."}`}
+            info={`Borrowing Fee ${ thresholdSelectorKeys.length > 1 && "Avg." }`}
             tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount, and is part of a Vault's debt."
           >
             {borrowingFeeAvgPct && borrowingFeeAvgPct.toString(2)}
@@ -93,10 +95,10 @@ export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps): JSX
           {thresholdSelectorKeys.map((version, index) => (
             <SystemStat
               key={index}
-              info={`${FIRST_ERC20_COLLATERAL} deposited collateral`}
-              tooltip={`The Total Value Locked (TVL) is the total value of ${ FIRST_ERC20_COLLATERAL } locked as collateral in the system.`}
+              info={`${ thresholdSelector[version].symbol } deposited collateral`}
+              tooltip={`The Total Value Locked (TVL) is the total value of ${ thresholdSelector[version].symbol } locked as collateral in the system.`}
             >
-              {thresholdSelector[version].total.collateral.shorten()} { FIRST_ERC20_COLLATERAL }
+              {thresholdSelector[version].total.collateral.shorten()} { thresholdSelector[version].symbol }
             </SystemStat>
           ))}
           <SystemStat
@@ -120,7 +122,7 @@ export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps): JSX
           {thresholdSelectorKeys.forEach((version) => {
             thresholdSelector[version].total.collateralRatioIsBelowCritical(thresholdSelector[version].price) &&
               <SystemStat
-                info={`${FIRST_ERC20_COLLATERAL} Recovery Mode`}
+                info={`${ thresholdSelector[version].symbol } Recovery Mode`}
                 tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Trove's debt. Operations are also restricted that would negatively impact the TCR."
               >
                 <Box color="danger">Yes</Box>

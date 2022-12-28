@@ -100,6 +100,13 @@ export class _CachedReadableLiquity<T extends unknown[]>
     );
   }
 
+  async getSymbol(...extraParams: T): Promise<string> {
+    return (
+      this._cache.getSymbol(...extraParams) ??
+      this._readable.getSymbol(...extraParams)
+    );
+  }
+
   async getTHUSDInStabilityPool(...extraParams: T): Promise<Decimal> {
     return (
       this._cache.getTHUSDInStabilityPool(...extraParams) ??

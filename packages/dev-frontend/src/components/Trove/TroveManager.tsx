@@ -11,7 +11,6 @@ import { useMyTransactionState } from "../Transaction";
 import { TroveEditor } from "./TroveEditor";
 import { TroveAction } from "./TroveAction";
 import { useTroveView } from "./context/TroveViewContext";
-import { FIRST_ERC20_COLLATERAL } from "../../strings";
 
 import {
   selectForTroveChangeValidation,
@@ -68,7 +67,6 @@ const reduce = (state: TroveManagerState, action: TroveManagerAction): TroveMana
           return removeMinimumDebt(newState);
         }
       }
-
       return newState;
     }
 
@@ -141,7 +139,8 @@ const feeFrom = (original: Trove, edited: Trove, borrowingRate: Decimal): Decima
 
 const select = (state: ThresholdStoreState) => ({
   fees: state.fees,
-  validationContext: selectForTroveChangeValidation(state)
+  validationContext: selectForTroveChangeValidation(state),
+  symbol: state.symbol
 });
 
 const transactionIdPrefix = "trove-";
@@ -155,7 +154,7 @@ type TroveManagerProps = {
 
 export const TroveManager = ({ version, collateral, debt }: TroveManagerProps): JSX.Element => {
   const [{ original, edited, changePending }, dispatch] = useThresholdReducer(1, reduce, init);
-  const { [version]: { fees, validationContext } } = useThresholdSelector(select);
+  const { [version]: { fees, validationContext, symbol } } = useThresholdSelector(select);
 
   useEffect(() => {
     if (collateral !== undefined) {
@@ -173,7 +172,7 @@ export const TroveManager = ({ version, collateral, debt }: TroveManagerProps): 
     original,
     edited,
     borrowingRate,
-    validationContext
+    validationContext,
   );
 
   const { dispatchEvent } = useTroveView();
@@ -216,7 +215,7 @@ export const TroveManager = ({ version, collateral, debt }: TroveManagerProps): 
       {description ??
         (openingNewTrove ? (
           <ActionDescription>
-            Start by entering the amount of { FIRST_ERC20_COLLATERAL } you'd like to deposit as collateral.
+            Start by entering the amount of { symbol } you'd like to deposit as collateral.
           </ActionDescription>
         ) : (
           <ActionDescription>

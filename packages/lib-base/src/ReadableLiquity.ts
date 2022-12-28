@@ -80,6 +80,11 @@ export interface ReadableLiquity {
   getTotal(): Promise<Trove>;
 
   /**
+   * Get the ERC20 token's symbol .
+   */
+  getSymbol(): Promise<string>;
+
+  /**
    * Get the current state of a Stability Deposit.
    *
    * @param address - Address that owns the Stability Deposit.

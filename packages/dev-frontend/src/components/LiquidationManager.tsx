@@ -4,7 +4,8 @@ import { StaticAmounts, Row } from "./Trove/Editor";
 import { useThreshold } from "../hooks/ThresholdContext";
 import { Transaction } from "./Transaction";
 import { InfoIcon } from "./InfoIcon";
-import { FIRST_ERC20_COLLATERAL } from "../strings";
+import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
+import { useThresholdSelector } from "@liquity/lib-react";
 
 const editableStyle: ThemeUICSSProperties = {
   backgroundColor: "terciary",
@@ -24,9 +25,14 @@ type LiquidationManagerProps = {
   version: string
 }
 
+const selector = ({ symbol }: ThresholdStoreState) => ({
+  symbol
+});
+
 export const LiquidationManager = ({ version }: LiquidationManagerProps): JSX.Element => {
   const inputId: string = "liquidate-vaults";
   const { threshold } = useThreshold();
+  const { [version]: { symbol } } = useThresholdSelector(selector);
   const [numberOfTrovesToLiquidate, setNumberOfTrovesToLiquidate] = useState("90");
   const [editing, setEditing] = useState<string>();
 
@@ -45,7 +51,7 @@ export const LiquidationManager = ({ version }: LiquidationManagerProps): JSX.El
             Liquidate
             <InfoIcon size="sm" tooltip={<Card variant="tooltip">Vaults that fall under the minimum collateral ratio of 110% will be closed (liquidated). The debt of the Vault is canceled and absorbed by the Stability Pool and its collateral distributed among Stability Providers.</Card>} />
           </Flex>
-          {FIRST_ERC20_COLLATERAL} Collateral
+          {symbol} Collateral
         </Flex>
         <Flex sx={{
           width: "100%",

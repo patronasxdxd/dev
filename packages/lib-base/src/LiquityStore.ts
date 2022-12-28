@@ -64,6 +64,9 @@ export interface LiquityStoreBaseState {
    */
   troveBeforeRedistribution: TroveWithPendingRedistribution;
 
+  /** token's ERC20 symbol. */
+  symbol: string;
+
   /** User's stability deposit. */
   stabilityDeposit: StabilityDeposit;
 
@@ -356,6 +359,8 @@ export abstract class LiquityStore<T = unknown> {
         baseState.troveBeforeRedistribution,
         baseStateUpdate.troveBeforeRedistribution
       ),
+
+      symbol: baseState.symbol,
 
       stabilityDeposit: this._updateIfChanged(
         equals,

@@ -15,7 +15,7 @@ import { useWeb3React } from "@web3-react/core";
 
 import { shortenAddress } from "../utils/shortenAddress";
 import { useThreshold } from "../hooks/ThresholdContext";
-import { COIN, FIRST_ERC20_COLLATERAL } from "../strings";
+import { COIN } from "../strings";
 
 import { Icon } from "./Icon";
 import { Transaction } from "./Transaction";
@@ -55,14 +55,16 @@ const select = ({
   price,
   total,
   thusdInStabilityPool,
-  blockTag
+  blockTag,
+  symbol
 }: BlockPolledThresholdStoreState) => ({
   numberOfTroves,
   price,
   recoveryMode: total.collateralRatioIsBelowCritical(price),
   totalCollateralRatio: total.collateralRatio(price),
   thusdInStabilityPool,
-  blockTag
+  blockTag,
+  symbol
 });
 
 export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
@@ -74,7 +76,8 @@ export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
       recoveryMode,
       totalCollateralRatio,
       thusdInStabilityPool,
-      price
+      price,
+      symbol,
     }
   } = useThresholdSelector(select);
   const { threshold } = useThreshold();
@@ -164,7 +167,7 @@ export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
             </Box>
             <Flex sx={{ alignItems: "center", gap: "0.5rem" }}>
               <Flex>
-                {FIRST_ERC20_COLLATERAL} Collateral
+                {symbol} Collateral
               </Flex>
               {numberOfTroves !== 0 && (
                 <>
