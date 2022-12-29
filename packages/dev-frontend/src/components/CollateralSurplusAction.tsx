@@ -7,7 +7,7 @@ import { useThresholdSelector } from "@liquity/lib-react";
 import { useThreshold } from "../hooks/ThresholdContext";
 
 import { Transaction, useMyTransactionState } from "./Transaction";
-import { useTroveView } from "./Trove/context/TroveViewContext";
+import { useVaultView } from "./Vault/context/VaultViewContext";
 
 const select = ({ collateralSurplusBalance }: ThresholdStoreState) => ({
   collateralSurplusBalance
@@ -26,10 +26,10 @@ export const CollateralSurplusAction = ({ version }: CollateralSurplusActionProp
   const myTransactionId = "claim-coll-surplus";
   const myTransactionState = useMyTransactionState(myTransactionId);
 
-  const { dispatchEvent } = useTroveView();
+  const { dispatchEvent } = useVaultView();
   useEffect(() => {
     if (myTransactionState.type === "confirmedOneShot") {
-      dispatchEvent("TROVE_SURPLUS_COLLATERAL_CLAIMED", version);
+      dispatchEvent("VAULT_SURPLUS_COLLATERAL_CLAIMED", version);
     }
   }, [myTransactionState.type, dispatchEvent, version]);
 
@@ -46,6 +46,7 @@ export const CollateralSurplusAction = ({ version }: CollateralSurplusActionProp
       <Transaction
         id={myTransactionId}
         send={threshold.claimCollateralSurplus.bind(threshold, undefined)}
+        version={version}
       >
         <Button sx={{ mx: 2 }}>Claim {collateralSurplusBalance.prettify()} ETH</Button>
       </Transaction>

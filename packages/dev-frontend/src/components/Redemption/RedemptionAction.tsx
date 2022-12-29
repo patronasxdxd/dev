@@ -26,7 +26,8 @@ export const RedemptionAction = ({
 
   const [sendTransaction] = useTransactionFunction(
     transactionId,
-    threshold.redeemTHUSD.bind(threshold, thusdAmount, maxRedemptionRate)
+    threshold.redeemTHUSD.bind(threshold, thusdAmount, maxRedemptionRate),
+    version
   );
 
   return (

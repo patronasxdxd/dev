@@ -13,11 +13,12 @@ export type ThresholdStoreUpdate<T = unknown> = {
 };
 
 export const useThresholdReducer = <S, A, T>(
-  index: number,
+  version: string,
   reduce: (state: S, action: A | ThresholdStoreUpdate<T>) => S,
   init: (storeState: ThresholdStoreState<T>) => S
 ): [S, (action: A | ThresholdStoreUpdate<T>) => void] => {
-
+  const indexString = version.substring(1);
+  const index = parseInt(indexString, 10) - 1;
   const stores = useThresholdStore<T>();
   const oldStore = useRef(stores[index]);
   const state = useRef(init(stores[index].state));

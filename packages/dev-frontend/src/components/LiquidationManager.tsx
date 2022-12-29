@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, Flex, Button, Link, Input, ThemeUICSSProperties } from "theme-ui";
-import { StaticAmounts, Row } from "./Trove/Editor";
+import { StaticAmounts, Row } from "./Vault/Editor";
 import { useThreshold } from "../hooks/ThresholdContext";
 import { Transaction } from "./Transaction";
 import { InfoIcon } from "./InfoIcon";
@@ -33,7 +33,7 @@ export const LiquidationManager = ({ version }: LiquidationManagerProps): JSX.El
   const inputId: string = "liquidate-vaults";
   const { threshold } = useThreshold();
   const { [version]: { symbol } } = useThresholdSelector(selector);
-  const [numberOfTrovesToLiquidate, setNumberOfTrovesToLiquidate] = useState("90");
+  const [numberOfTrovesToLiquidate, setNumberOfVaultsToLiquidate] = useState("90");
   const [editing, setEditing] = useState<string>();
 
   return (
@@ -68,7 +68,7 @@ export const LiquidationManager = ({ version }: LiquidationManagerProps): JSX.El
                 min="1"
                 step="1"
                 value={numberOfTrovesToLiquidate}
-                onChange={e => setNumberOfTrovesToLiquidate(e.target.value)}
+                onChange={e => setNumberOfVaultsToLiquidate(e.target.value)}
                 onBlur={() => {
                   setEditing(undefined);
                 }}
@@ -101,6 +101,7 @@ export const LiquidationManager = ({ version }: LiquidationManagerProps): JSX.El
                 }
                 return threshold[version].send.liquidateUpTo(parseInt(numberOfTrovesToLiquidate, 10), overrides);
               }}
+              version={version}
             >
               <Button sx={{ width: "100%" }}>Liquidate</Button>
             </Transaction>

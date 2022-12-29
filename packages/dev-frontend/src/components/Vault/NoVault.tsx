@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { Box, Button, Card, Flex, Link } from "theme-ui";
-import { useTroveView } from "./context/TroveViewContext";
+import { useVaultView } from "./context/VaultViewContext";
 
 import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
 import { useThresholdSelector} from "@liquity/lib-react";
@@ -14,15 +14,14 @@ const select = ({ erc20TokenBalance, symbol }: ThresholdStoreState) => ({
   erc20TokenBalance, symbol
 });
 
-type NoTroveProps = {
+type NoVaultProps = {
   version: string
 }
 
-export const NoTrove = ({ version }: NoTroveProps): JSX.Element => {
-  const { dispatchEvent } = useTroveView();
-
-  const handleOpenTrove = useCallback(() => {
-    dispatchEvent("OPEN_TROVE_PRESSED", version);
+export const NoVault = ({ version }: NoVaultProps): JSX.Element => {
+  const { dispatchEvent } = useVaultView();
+  const handleOpenVault = useCallback(() => {
+    dispatchEvent("OPEN_VAULT_PRESSED", version);
   }, [dispatchEvent, version]);
   const { [version]: { erc20TokenBalance, symbol } } = useThresholdSelector(select);
 
@@ -64,7 +63,7 @@ export const NoTrove = ({ version }: NoTroveProps): JSX.Element => {
               { symbol }
             </Box>
           </Flex>
-          <Button onClick={handleOpenTrove} sx={{ mt: 2, width: "100%" }}>
+          <Button onClick={handleOpenVault} sx={{ mt: 2, width: "100%" }}>
             Open a Vault
           </Button>
           <Flex sx={{ 

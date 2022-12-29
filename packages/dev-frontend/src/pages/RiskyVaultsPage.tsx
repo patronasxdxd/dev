@@ -9,7 +9,7 @@ export const RiskyVaultsPage = (): JSX.Element => {
       <PageHeading
         heading="Risky Vaults"
         descriptionTitle="Liquidations"
-        description="Liquidation is expected to be carried out by bots. Early on you may be able to manually liquidate Troves, but as the system matures this will become less likely."
+        description="Liquidation is expected to be carried out by bots. Early on you may be able to manually liquidate Vaults, but as the system matures this will become less likely."
         link="https://github.com/Threshold-USD/dev"
       />
       <PageRow Component={LiquidationManager} />

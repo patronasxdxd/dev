@@ -5,7 +5,7 @@ import {
   Percent,
   MINIMUM_COLLATERAL_RATIO,
   CRITICAL_COLLATERAL_RATIO,
-  UserTrove,
+  UserTrove as UserVault,
   Decimal
 } from "@liquity/lib-base";
 import { BlockPolledLiquityStoreState as BlockPolledThresholdStoreState } from "@liquity/lib-ethers";
@@ -25,24 +25,24 @@ import { Abbreviation } from "./Abbreviation";
 const rowHeight = "40px";
 const pageSize = 10;
 
-const liquidatableInNormalMode = (trove: UserTrove, price: Decimal) =>
-  [trove.collateralRatioIsBelowMinimum(price), "Collateral ratio not low enough"] as const;
+const liquidatableInNormalMode = (vault: UserVault, price: Decimal) =>
+  [vault.collateralRatioIsBelowMinimum(price), "Collateral ratio not low enough"] as const;
 
 const liquidatableInRecoveryMode = (
-  trove: UserTrove,
+  vault: UserVault,
   price: Decimal,
   totalCollateralRatio: Decimal,
   thusdInStabilityPool: Decimal
 ) => {
-  const collateralRatio = trove.collateralRatio(price);
+  const collateralRatio = vault.collateralRatio(price);
 
   if (collateralRatio.gte(MINIMUM_COLLATERAL_RATIO) && collateralRatio.lt(totalCollateralRatio)) {
     return [
-      trove.debt.lte(thusdInStabilityPool),
+      vault.debt.lte(thusdInStabilityPool),
       "There's not enough thUSD in the Stability pool to cover the debt"
     ] as const;
   } else {
-    return liquidatableInNormalMode(trove, price);
+    return liquidatableInNormalMode(vault, price);
   }
 };
 
@@ -82,7 +82,7 @@ export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
   } = useThresholdSelector(select);
   const { threshold } = useThreshold();
   const [isMounted, setIsMounted] = useState<boolean>(true);
-  const [troves, setTroves] = useState<UserTrove[]>();
+  const [vaults, setVaults] = useState<UserVault[]>();
   const [reload, setReload] = useState({});
   const forceReload = useCallback(() => setReload({}), []);
   const [page, setPage] = useState(0);
@@ -118,8 +118,8 @@ export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
           },
           { blockTag }
         )
-        .then(troves => {
-            setTroves(troves);
+        .then(vaults => {
+            setVaults(vaults);
         });
     }
     return () => {
@@ -192,10 +192,10 @@ export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
               )}
             </Flex>
           </Flex>
-          {!troves || troves.length === 0 ? (
+          {!vaults || vaults.length === 0 ? (
             <Box sx={{ p: [2, 3], width: "100%" }}>
               <Box sx={{ p: 4, fontSize: 3, textAlign: "center", justifyContent: "center" }}>
-                {!troves ? "Loading..." : "There are no Vaults yet"}
+                {!vaults ? "Loading..." : "There are no Vaults yet"}
               </Box>
             </Box>
           ) : (
@@ -236,11 +236,11 @@ export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
                   </tr>
                 </thead>
                 <tbody>
-                  {troves.map(
-                    trove =>
-                      !trove.isEmpty && ( // making sure the Vault hasn't been liquidated
+                  {vaults.map(
+                    vault =>
+                      !vault.isEmpty && ( // making sure the Vault hasn't been liquidated
                         // (TODO: remove check after we can fetch multiple Vault in one call)
-                        <tr key={trove.ownerAddress} 
+                        <tr key={vault.ownerAddress} 
                           style={{
                             fontWeight: "bold"
                           }}>
@@ -251,7 +251,7 @@ export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
                               height: rowHeight,
                             }}
                           >
-                            <Tooltip message={trove.ownerAddress} placement="top">
+                            <Tooltip message={vault.ownerAddress} placement="top">
                               <Text
                                 variant="address"
                                 sx={{
@@ -260,7 +260,7 @@ export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
                                   position: "relative"
                                 }}
                               >
-                                {shortenAddress(trove.ownerAddress)}
+                                {shortenAddress(vault.ownerAddress)}
                                 <Box
                                   sx={{
                                     display: ["block", "none"],
@@ -277,21 +277,21 @@ export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
                             </Tooltip>
                             <Link 
                               variant="socialIcons" 
-                              href={(chainId === 5 && `https://goerli.etherscan.io/address/${trove.ownerAddress}`) ||
-                                `https://etherscan.io/address/${trove.ownerAddress})`} 
+                              href={(chainId === 5 && `https://goerli.etherscan.io/address/${vault.ownerAddress}`) ||
+                                `https://etherscan.io/address/${vault.ownerAddress})`} 
                               target="_blank"
                             >
                               <Image src="./icons/external-link.svg" />
                             </Link>
                           </td>
                           <td>
-                            <Abbreviation short={trove.collateral.shorten()}>
-                              {trove.collateral.prettify(4)}
+                            <Abbreviation short={vault.collateral.shorten()}>
+                              {vault.collateral.prettify(4)}
                             </Abbreviation>
                           </td>
                           <td>
-                            <Abbreviation short={trove.debt.shorten()}>
-                              {trove.debt.prettify()}
+                            <Abbreviation short={vault.debt.shorten()}>
+                              {vault.debt.prettify()}
                             </Abbreviation>
                           </td>
                           <td>
@@ -307,23 +307,24 @@ export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
                               >
                                 {new Percent(collateralRatio).prettify()}
                               </Text>
-                            ))(trove.collateralRatio(price))}
+                            ))(vault.collateralRatio(price))}
                           </td>
                           <td>
                             <Transaction
-                              id={`liquidate-${trove.ownerAddress}`}
+                              id={`liquidate-${vault.ownerAddress}`}
                               tooltip="Liquidate"
                               requires={[
                                 recoveryMode
                                   ? liquidatableInRecoveryMode(
-                                      trove,
+                                      vault,
                                       price,
                                       totalCollateralRatio,
                                       thusdInStabilityPool
                                     )
-                                  : liquidatableInNormalMode(trove, price)
+                                  : liquidatableInNormalMode(vault, price)
                               ]}
-                              send={threshold[version].send.liquidate.bind(threshold[version].send, trove.ownerAddress)}
+                              send={threshold[version].send.liquidate.bind(threshold[version].send, vault.ownerAddress)}
+                              version={version}
                             >
                               <Button variant="dangerIcon">
                                 <Icon name="trash" />

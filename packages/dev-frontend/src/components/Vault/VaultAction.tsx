@@ -1,27 +1,27 @@
 import { Button } from "theme-ui";
 
-import { Decimal, TroveChange } from "@liquity/lib-base";
+import { Decimal, TroveChange as VaultChange } from "@liquity/lib-base";
 
 import { useThreshold } from "../../hooks/ThresholdContext";
 import { useTransactionFunction } from "../Transaction";
 
-type TroveActionProps = {
+type VaultActionProps = {
   children: React.ReactNode
   version: string,
   transactionId: string;
-  change: Exclude<TroveChange<Decimal>, { type: "invalidCreation" }>;
+  change: Exclude<VaultChange<Decimal>, { type: "invalidCreation" }>;
   maxBorrowingRate: Decimal;
   borrowingFeeDecayToleranceMinutes: number;
 };
 
-export const TroveAction = ({
+export const VaultAction = ({
   children,
   version,
   transactionId,
   change,
   maxBorrowingRate,
   borrowingFeeDecayToleranceMinutes
-}: TroveActionProps): JSX.Element => {
+}: VaultActionProps): JSX.Element => {
   const { threshold } = useThreshold();
 
   const [sendTransaction] = useTransactionFunction(
@@ -36,7 +36,8 @@ export const TroveAction = ({
       : threshold[version].send.adjustTrove.bind(threshold[version].send, change.params, {
           maxBorrowingRate,
           borrowingFeeDecayToleranceMinutes
-        })
+        }),
+    version
   );
 
   return <Button onClick={sendTransaction}>{children}</Button>;

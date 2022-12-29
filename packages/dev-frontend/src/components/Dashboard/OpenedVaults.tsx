@@ -17,13 +17,14 @@ const selector = ({
 
 export const OpenedVaults = ({ variant = "mainCards" }: SystemStatsProps): JSX.Element => {
   const thresholdSelector = useThresholdSelector(selector);
-  const [numberOfVaults, setNumberOfVaults] = useState(0)
+  const [numberOfTroves, setNumberOfVaults] = useState(0)
 
   useEffect(() => {
     Object.keys(thresholdSelector).map(version => {
       return setNumberOfVaults(prev => prev + thresholdSelector[version].numberOfTroves)
     })
-  }, [thresholdSelector])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   
   return (
     <Card {...{ variant }} sx={{ display: ['none', 'block'], width:"100%" }}>
@@ -32,7 +33,7 @@ export const OpenedVaults = ({ variant = "mainCards" }: SystemStatsProps): JSX.E
         tooltip="The total number of active Vaults in the system." 
         imgSrc="./icons/opened-vaults.svg"
       >
-        {Decimal.from(numberOfVaults).prettify(0)}
+        {Decimal.from(numberOfTroves).prettify(0)}
       </TopCard>
     </Card>
   );

@@ -15,7 +15,7 @@ export const RedemptionPage = (): JSX.Element => {
             <br/>
             Most of the time you will get a better rate for converting { COIN } to the collateral on Uniswap  or other exchanges.
             <br/>
-            Note: Redemption is not for repaying your loan. To repay your loan, adjust your Trove on the Dashboard.
+            Note: Redemption is not for repaying your loan. To repay your loan, adjust your Vault on the Dashboard.
           </>
         }
         link="https://github.com/Threshold-USD/dev"

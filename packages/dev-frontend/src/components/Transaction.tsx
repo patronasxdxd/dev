@@ -41,38 +41,45 @@ const fastProgress = {
 
 type TransactionIdle = {
   type: "idle";
+  version?: string;
 };
 
 type TransactionFailed = {
   type: "failed";
   id: string;
   error: Error;
+  version?: string;
 };
 
 type TransactionWaitingForApproval = {
   type: "waitingForApproval";
   id: string;
+  version?: string;
 };
 
 type TransactionCancelled = {
   type: "cancelled";
   id: string;
+  version?: string;
 };
 
 type TransactionWaitingForConfirmations = {
   type: "waitingForConfirmation";
   id: string;
   tx: SentTransaction;
+  version?: string;
 };
 
 type TransactionConfirmed = {
   type: "confirmed";
   id: string;
+  version?: string;
 };
 
 type TransactionConfirmedOneShot = {
   type: "confirmedOneShot";
   id: string;
+  version?: string;
 };
 
 type TransactionState =
@@ -114,8 +121,8 @@ export const useMyTransactionState = (myId: string | RegExp): TransactionState =
 
   return transactionState.type !== "idle" &&
     (typeof myId === "string" ? transactionState.id === myId : transactionState.id.match(myId))
-    ? transactionState
-    : { type: "idle" };
+    ? { ...transactionState, version: transactionState.version }
+    : { type: "idle", version: transactionState.version };
 };
 
 const hasMessage = (error: unknown): error is { message: string } =>
@@ -146,17 +153,19 @@ type TransactionProps<C> = {
   showFailure?: "asTooltip" | "asChildText";
   requires?: readonly (readonly [boolean, string])[];
   send: TransactionFunction;
+  version: string,
   children: C;
 };
 
 export const useTransactionFunction = (
   id: string,
-  send: TransactionFunction
+  send: TransactionFunction,
+  version: string,
 ): [sendTransaction: () => Promise<void>, transactionState: TransactionState] => {
   const [transactionState, setTransactionState] = useTransactionState();
 
   const sendTransaction = useCallback(async () => {
-    setTransactionState({ type: "waitingForApproval", id });
+    setTransactionState({ type: "waitingForApproval", id, version });
 
     try {
       const tx = await send();
@@ -164,17 +173,20 @@ export const useTransactionFunction = (
       setTransactionState({
         type: "waitingForConfirmation",
         id,
-        tx
+        tx, 
+        version
       });
     } catch (error) {
       if (hasMessage(error) && error.message.includes("User denied transaction signature")) {
-        setTransactionState({ type: "cancelled", id });
+        setTransactionState({ type: "cancelled", id, version });
       }
       else if (hasMessage(error) && error.message.includes("nothing to liquidate")) {
         setTransactionState({
           type: "failed",
           id,
-          error: new Error("There are no vaults under-collateralized to liquidate") });
+          error: new Error("There are no vaults under-collateralized to liquidate"),
+          version
+        });
       }
       else {
         console.error(error);
@@ -182,11 +194,12 @@ export const useTransactionFunction = (
         setTransactionState({
           type: "failed",
           id,
-          error: new Error("Failed to send transaction (try again)")
+          error: new Error("Failed to send transaction (try again)"),
+          version,
         });
       }
     }
-  }, [send, id, setTransactionState]);
+  }, [send, id, version, setTransactionState]);
 
   return [sendTransaction, transactionState];
 };
@@ -198,9 +211,10 @@ export function Transaction<C extends React.ReactElement<ButtonlikeProps & Hover
   showFailure,
   requires,
   send,
+  version,
   children
 }: TransactionProps<C>) {
-  const [sendTransaction, transactionState] = useTransactionFunction(id, send);
+  const [sendTransaction, transactionState] = useTransactionFunction(id, send, version);
   const trigger = React.Children.only<C>(children);
 
   const failureReasons = (requires || [])
@@ -269,16 +283,25 @@ type TransactionProgressDonutProps = {
 };
 
 const TransactionProgressDonut = ({ state }: TransactionProgressDonutProps): JSX.Element => {
+  const [isMounted, setIsMounted] = useState<boolean>(true);
   const [value, setValue] = useState(0);
   const maxValue = 1;
 
   useEffect(() => {
+    if (!isMounted) {
+      return
+    }
+
     if (state === "confirmed") {
       setTimeout(() => setValue(maxValue), 40);
     } else {
       setTimeout(() => setValue(maxValue * 0.67), 20);
     }
-  }, [state]);
+
+    return () => { 
+      setIsMounted(false);
+    };
+  }, [state, isMounted]);
 
   return state === "confirmed" ? (
     <Donut {...{ value, maxValue, ...fastProgress }}>
@@ -296,6 +319,7 @@ const TransactionProgressDonut = ({ state }: TransactionProgressDonutProps): JSX
 };
 
 export const TransactionMonitor = (): JSX.Element => {
+  const [isMounted, setIsMounted] = useState<boolean>(true);
   const { provider } = useThreshold();
   const [transactionState, setTransactionState] = useTransactionState();
 
@@ -303,6 +327,10 @@ export const TransactionMonitor = (): JSX.Element => {
   const tx = transactionState.type === "waitingForConfirmation" ? transactionState.tx : undefined;
 
   useEffect(() => {
+    if (!isMounted) {
+      return
+    }
+
     if (id && tx) {
       let cancelled = false;
       let finished = false;
@@ -380,9 +408,10 @@ export const TransactionMonitor = (): JSX.Element => {
           console.log(`Cancel monitoring tx ${txHash}`);
           cancelled = true;
         }
+        setIsMounted(false);
       };
     }
-  }, [provider, id, tx, setTransactionState]);
+  }, [provider, id, tx, setTransactionState, isMounted]);
 
   useEffect(() => {
     if (transactionState.type === "confirmedOneShot" && id) {

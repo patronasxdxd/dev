@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
-import { Decimal, TroveChange } from "@liquity/lib-base";
+import { Decimal, TroveChange as VaultChange } from "@liquity/lib-base";
 import { PopulatedEthersLiquityTransaction as PopulatedEthersThresholdTransaction } from "@liquity/lib-ethers";
 
 import { useThreshold } from "../../hooks/ThresholdContext";
@@ -10,37 +10,37 @@ export type GasEstimationState =
   | { type: "idle" | "inProgress" }
   | { type: "complete"; populatedTx: PopulatedEthersThresholdTransaction };
 
-type ExpensiveTroveChangeWarningParams = {
+type ExpensiveVaultChangeWarningParams = {
   version: string,
-  troveChange?: Exclude<TroveChange<Decimal>, { type: "invalidCreation" }>;
+  vaultChange?: Exclude<VaultChange<Decimal>, { type: "invalidCreation" }>;
   maxBorrowingRate: Decimal;
   borrowingFeeDecayToleranceMinutes: number;
   gasEstimationState: GasEstimationState;
   setGasEstimationState: (newState: GasEstimationState) => void;
 };
 
-export const ExpensiveTroveChangeWarning = ({
+export const ExpensiveVaultChangeWarning = ({
   version,
-  troveChange,
+  vaultChange,
   maxBorrowingRate,
   borrowingFeeDecayToleranceMinutes,
   gasEstimationState,
   setGasEstimationState
-}: ExpensiveTroveChangeWarningParams): JSX.Element => {
+}: ExpensiveVaultChangeWarningParams): JSX.Element => {
   const { threshold } = useThreshold();
   useEffect(() => {
-    if (troveChange && troveChange.type !== "closure") {
+    if (vaultChange && vaultChange.type !== "closure") {
       setGasEstimationState({ type: "inProgress" });
 
       let cancelled = false;
 
       const timeoutId = setTimeout(async () => {
-        const populatedTx = await (troveChange.type === "creation"
-          ? threshold[version].populate.openTrove(troveChange.params, {
+        const populatedTx = await (vaultChange.type === "creation"
+          ? threshold[version].populate.openTrove(vaultChange.params, {
               maxBorrowingRate,
               borrowingFeeDecayToleranceMinutes
             })
-          : threshold[version].populate.adjustTrove(troveChange.params, {
+          : threshold[version].populate.adjustTrove(vaultChange.params, {
               maxBorrowingRate,
               borrowingFeeDecayToleranceMinutes
             }));
@@ -62,22 +62,22 @@ export const ExpensiveTroveChangeWarning = ({
       setGasEstimationState({ type: "idle" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [troveChange]);
+  }, [vaultChange]);
 
   if (
-    troveChange &&
+    vaultChange &&
     gasEstimationState.type === "complete" &&
     gasEstimationState.populatedTx.gasHeadroom !== undefined &&
     gasEstimationState.populatedTx.gasHeadroom >= 200000
   ) {
-    return troveChange.type === "creation" ? (
+    return vaultChange.type === "creation" ? (
       <Warning>
-        The cost of opening a Trove in this collateral ratio range is rather high. To lower it,
+        The cost of opening a Vault in this collateral ratio range is rather high. To lower it,
         choose a slightly different collateral ratio.
       </Warning>
     ) : (
       <Warning>
-        The cost of adjusting a Trove into this collateral ratio range is rather high. To lower it,
+        The cost of adjusting a Vault into this collateral ratio range is rather high. To lower it,
         choose a slightly different collateral ratio.
       </Warning>
     );

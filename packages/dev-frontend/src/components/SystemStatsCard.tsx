@@ -39,8 +39,12 @@ export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps): JSX
   const [thusdInStabilityPool, setThusdInStabilityPool] = useState(Decimal.from(0))
   const [thusdSupply, setThusdSupply] = useState(Decimal.from(0))
   const [pcvBalance, setPcvBalance] = useState(Decimal.from(0))
+  const [isMounted, setIsMounted] = useState<boolean>(true);
 
   useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
     let borrowingFee = Decimal.from(0)
     let thusdSupply = Decimal.from(0)
 
@@ -48,17 +52,21 @@ export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps): JSX
       const versionedThresholdSelector = thresholdSelector[version]
 
       borrowingFee = borrowingFee.add(versionedThresholdSelector.borrowingRate)
-      setTotalVaults(prev => prev + totalVaults)
-      setThusdInStabilityPool(prev => prev.add(thusdInStabilityPool))
-      setPcvBalance(prev => prev.add(pcvBalance))
+      setTotalVaults(prev => prev + versionedThresholdSelector.numberOfTroves)
+      setThusdInStabilityPool(prev => prev.add(versionedThresholdSelector.thusdInStabilityPool))
+      setPcvBalance(prev => prev.add(versionedThresholdSelector.pcvBalance))
       thusdSupply = thusdSupply.add(versionedThresholdSelector.total.debt)
     })
 
     const borrowingfeeAvg = borrowingFee.div(thresholdSelectorKeys.length)
     setBorrowingFeeAvgPct(new Percent(borrowingfeeAvg))
     setThusdSupply(thusdSupply)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+
+    return () => {
+      setIsMounted(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted])
 
   return (
     <Card {...{ variant }}>
@@ -123,7 +131,7 @@ export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps): JSX
             thresholdSelector[version].total.collateralRatioIsBelowCritical(thresholdSelector[version].price) &&
               <SystemStat
                 info={`${ thresholdSelector[version].symbol } Recovery Mode`}
-                tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Trove's debt. Operations are also restricted that would negatively impact the TCR."
+                tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Vault's debt. Operations are also restricted that would negatively impact the TCR."
               >
                 <Box color="danger">Yes</Box>
               </SystemStat>

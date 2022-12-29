@@ -21,7 +21,7 @@ export const BorrowingFee = ({ variant = "mainCards" }: BorrowingFeeProps): JSX.
   const [borrowingRates, setBorrowingRates] = useState<Record<string, Decimal>>({});
 
   useEffect(() => {
-    if (thresholdSelectorVersions || isMounted) {
+    if (thresholdSelectorVersions && isMounted) {
       for (const [version, { borrowingRate }] of Object.entries(thresholdSelectorVersions)) {
         setBorrowingRates(prev => { return {...prev, [version]: borrowingRate}})
       }

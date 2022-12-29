@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Box, Card, Flex } from "theme-ui";
-
 import { useTvl } from "./context/ChartContext";
 import { tvlData } from "./context/ChartProvider";
 

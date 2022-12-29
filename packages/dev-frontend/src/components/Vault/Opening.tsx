@@ -1,32 +1,32 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Card, Flex, Link, Spinner } from "theme-ui";
 import {
   LiquityStoreState as ThresholdStoreState,
   Decimal,
-  Trove,
+  Trove as Vault,
   THUSD_LIQUIDATION_RESERVE,
   THUSD_MINIMUM_NET_DEBT,
   Percent
 } from "@liquity/lib-base";
 import { useThresholdSelector } from "@liquity/lib-react";
 
-import { useStableTroveChange } from "../../hooks/useStableTroveChange";
+import { useStableVaultChange } from "../../hooks/useStableVaultChange";
 import { useValidationState } from "./validation/useValidationState";
 import { ActionDescription } from "../ActionDescription";
 import { Transaction, useMyTransactionState } from "../Transaction";
 import { useThreshold } from "../../hooks/ThresholdContext";
-import { TroveAction } from "./TroveAction";
-import { useTroveView } from "./context/TroveViewContext";
+import { VaultAction } from "./VaultAction";
+import { useVaultView } from "./context/VaultViewContext";
 import { COIN } from "../../strings";
 import { InfoIcon } from "../InfoIcon";
 import { LoadingOverlay } from "../LoadingOverlay";
 import { CollateralRatio } from "./CollateralRatio";
 import { EditableRow, StaticRow } from "./Editor";
-import { ExpensiveTroveChangeWarning, GasEstimationState } from "./ExpensiveTroveChangeWarning";
+import { ExpensiveVaultChangeWarning, GasEstimationState } from "./ExpensiveVaultChangeWarning";
 import {
-  selectForTroveChangeValidation,
-  validateTroveChange
-} from "./validation/validateTroveChange";
+  selectForVaultChangeValidation,
+  validateVaultChange
+} from "./validation/validateVaultChange";
 
 const selector = (state: ThresholdStoreState) => {
   const { fees, price, erc20TokenBalance, symbol } = state;
@@ -34,14 +34,14 @@ const selector = (state: ThresholdStoreState) => {
     fees,
     price,
     erc20TokenBalance,
-    validationContext: selectForTroveChangeValidation(state),
+    validationContext: selectForVaultChangeValidation(state),
     symbol
   };
 };
 
-const EMPTY_TROVE = new Trove(Decimal.ZERO, Decimal.ZERO);
-const TRANSACTION_ID = "trove-creation";
-const APPROVE_TRANSACTION_ID = "trove-approve";
+const EMPTY_VAULT = new Vault(Decimal.ZERO, Decimal.ZERO);
+const TRANSACTION_ID = "vault-creation";
+const APPROVE_TRANSACTION_ID = "vault-approve";
 
 type OpeningProps = {
   version: string
@@ -51,7 +51,7 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
   const {
     threshold: { [ version ]: { send: threshold } }
   } = useThreshold();
-  const { dispatchEvent } = useTroveView();
+  const { dispatchEvent } = useVaultView();
   const { [version]: { fees, price, erc20TokenBalance, validationContext, symbol }} = useThresholdSelector(selector);
   const borrowingRate = fees.borrowingRate();
   const editingState = useState<string>();
@@ -63,21 +63,21 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
   const feePct = new Percent(borrowingRate);
   const totalDebt = borrowAmount.add(THUSD_LIQUIDATION_RESERVE).add(fee);
   const isDirty = !collateral.isZero || !borrowAmount.isZero;
-  const trove = isDirty ? new Trove(collateral, totalDebt) : EMPTY_TROVE;
+  const trove = isDirty ? new Vault(collateral, totalDebt) : EMPTY_VAULT;
   const maxCollateral = erc20TokenBalance;
   const collateralMaxedOut = collateral.eq(maxCollateral);
   const collateralRatio =
     !collateral.isZero && !borrowAmount.isZero ? trove.collateralRatio(price) : undefined;
 
-  const [troveChange, description] = validateTroveChange(
-    EMPTY_TROVE,
+  const [vaultChange, description] = validateVaultChange(
+    EMPTY_VAULT,
     trove,
     borrowingRate,
     validationContext
   );
     
-  const stableTroveChange = useStableTroveChange(troveChange);
-  const { hasApproved, amountToApprove } = useValidationState(version, stableTroveChange);
+  const stableVaultChange = useStableVaultChange(vaultChange);
+  const { hasApproved, amountToApprove } = useValidationState(version, stableVaultChange);
 
   const [gasEstimationState, setGasEstimationState] = useState<GasEstimationState>({ type: "idle" });
 
@@ -87,7 +87,7 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
     transactionState.type === "waitingForConfirmation";
 
   const handleCancelPressed = useCallback(() => {
-    dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED", version);
+    dispatchEvent("CANCEL_ADJUST_VAULT_PRESSED", version);
   }, [dispatchEvent, version]);
 
   useEffect(() => {
@@ -126,7 +126,7 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
         }}>
           <EditableRow
             label="Collateral"
-            inputId="trove-collateral"
+            inputId="vault-collateral"
             amount={collateral.prettify(4)}
             maxAmount={maxCollateral.toString()}
             maxedOut={collateralMaxedOut}
@@ -138,7 +138,7 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
 
           <EditableRow
             label="Borrow"
-            inputId="trove-borrow-amount"
+            inputId="vault-borrow-amount"
             amount={borrowAmount.prettify()}
             unit={COIN}
             editingState={editingState}
@@ -147,15 +147,15 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
           />
           <StaticRow
             label="Liquidation Reserve"
-            inputId="trove-liquidation-reserve"
+            inputId="vault-liquidation-reserve"
             amount={`${THUSD_LIQUIDATION_RESERVE}`}
             unit={COIN}
             infoIcon={
               <InfoIcon
                 tooltip={
                   <Card variant="tooltip" sx={{ width: "200px" }}>
-                    An amount set aside to cover the liquidator’s gas costs if your Trove needs to be
-                    liquidated. The amount increases your debt and is refunded if you close your Trove
+                    An amount set aside to cover the liquidator’s gas costs if your Vault needs to be
+                    liquidated. The amount increases your debt and is refunded if you close your Vault
                     by fully paying off its net debt.
                   </Card>
                 }
@@ -164,7 +164,7 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
           />
           <StaticRow
             label="Borrowing Fee"
-            inputId="trove-borrowing-fee"
+            inputId="vault-borrowing-fee"
             amount={fee.prettify(2)}
             pendingAmount={feePct.toString(2)}
             unit={COIN}
@@ -181,14 +181,14 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
           />
           <StaticRow
             label="Total debt"
-            inputId="trove-total-debt"
+            inputId="vault-total-debt"
             amount={totalDebt.prettify(2)}
             unit={COIN}
             infoIcon={
               <InfoIcon
                 tooltip={
                   <Card variant="tooltip" sx={{ width: "240px" }}>
-                    The total amount of { COIN } your Trove will hold.{" "}
+                    The total amount of { COIN } your Vault will hold.{" "}
                     {isDirty && (
                       <>
                         You will need to repay {totalDebt.sub(THUSD_LIQUIDATION_RESERVE).prettify(2)}{" "}
@@ -208,9 +208,9 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
             </ActionDescription>
           )}
           {hasApproved && (
-            <ExpensiveTroveChangeWarning
+            <ExpensiveVaultChangeWarning
               version={version}
-              troveChange={stableTroveChange}
+              vaultChange={stableVaultChange}
               maxBorrowingRate={maxBorrowingRate}
               borrowingFeeDecayToleranceMinutes={60}
               gasEstimationState={gasEstimationState}
@@ -224,6 +224,7 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
                 send={threshold.approveErc20.bind(threshold, amountToApprove)}
                 showFailure="asTooltip"
                 tooltipPlacement="bottom"
+                version={version}
               >
                 <Button>Approve { symbol }</Button>
               </Transaction>
@@ -231,16 +232,16 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
                 <Button disabled>
                   <Spinner size="24px" sx={{ color: "background" }} />
                 </Button>
-              ) : stableTroveChange ? (
-              <TroveAction
+              ) : stableVaultChange ? (
+              <VaultAction
                 version={version}
                 transactionId={TRANSACTION_ID}
-                change={stableTroveChange}
+                change={stableVaultChange}
                 maxBorrowingRate={maxBorrowingRate}
                 borrowingFeeDecayToleranceMinutes={60}
               >
                 Confirm
-              </TroveAction>
+              </VaultAction>
             ) : (
               <Button disabled>Confirm</Button>
             )}

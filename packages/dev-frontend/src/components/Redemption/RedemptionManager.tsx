@@ -7,7 +7,7 @@ import { useThresholdSelector } from "@liquity/lib-react";
 import { COIN } from "../../strings";
 
 import { LoadingOverlay } from "../LoadingOverlay";
-import { EditableRow, StaticRow } from "../Trove/Editor";
+import { EditableRow, StaticRow } from "../Vault/Editor";
 import { ActionDescription, Amount } from "../ActionDescription";
 import { ErrorDescription } from "../ErrorDescription";
 import { useMyTransactionState } from "../Transaction";
@@ -52,9 +52,11 @@ export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Elem
       return
     }
     if (
-      myTransactionState.type === "waitingForApproval" ||
-      myTransactionState.type === "waitingForConfirmation"
+      (myTransactionState.type === "waitingForApproval" ||
+      myTransactionState.type === "waitingForConfirmation") &&
+      myTransactionState.version === version
     ) {
+      console.log(myTransactionState.version === version)
       setChangePending(true);
     } else if (myTransactionState.type === "failed" || myTransactionState.type === "cancelled") {
       setChangePending(false);
@@ -66,7 +68,7 @@ export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Elem
     return () => { 
       setIsMounted(false);
     };
-  }, [myTransactionState.type, setChangePending, setTHUSDAmount, isMounted]);
+  }, [myTransactionState.type, myTransactionState.version, setChangePending, setTHUSDAmount, isMounted, version]);
 
   const [canRedeem, description] = total.collateralRatioIsBelowMinimum(price)
     ? [

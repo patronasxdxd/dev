@@ -1,5 +1,5 @@
 import { Container } from "theme-ui";
-import { Vault } from "../components/Trove/Vault";
+import { Vault } from "../components/Vault/Vault";
 import { COIN } from "../strings";
 import { PageRow } from "../components/PageRow";
 import { PageHeading } from "../components/PageHeading";

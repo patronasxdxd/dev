@@ -2,8 +2,8 @@ import { Card } from "theme-ui";
 
 import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
 import { useThresholdSelector } from "@liquity/lib-react";
-import { TroveView } from "../Trove/context/types";
-import { useTroveView } from "../Trove/context/TroveViewContext";
+import { VaultView } from "../Vault/context/types";
+import { useVaultView } from "../Vault/context/VaultViewContext";
 
 import { BottomCard } from "./BottomCard";
 
@@ -15,13 +15,13 @@ const selector = ({ erc20TokenBalance, symbol }: ThresholdStoreState) => ({
   erc20TokenBalance, symbol
 });
 
-const vaultStatus = (view: TroveView) => {
+const vaultStatus = (view: VaultView) => {
   if (view === 'ACTIVE') return 'Adjust Vault'
   else return 'Open a Vault'
 }
 
 export const VaultCard = ({ variant = "mainCards" }: VaultCardProps): JSX.Element => {
-  const { views: { v1 } } = useTroveView();
+  const { views: { v1 } } = useVaultView();
   const {v1: { erc20TokenBalance, symbol }} = useThresholdSelector(selector);
   
   return (
@@ -33,7 +33,7 @@ export const VaultCard = ({ variant = "mainCards" }: VaultCardProps): JSX.Elemen
         token={ symbol }
         path='/borrow'
       >
-        {erc20TokenBalance.eq(0) ? erc20TokenBalance.prettify() : '--'}
+        {erc20TokenBalance.eq(0) ? '--' : erc20TokenBalance.prettify()}
       </BottomCard>
     </Card>
   );

@@ -3,7 +3,7 @@ import { Card, Button, Flex, Link } from "theme-ui";
 import { CollateralSurplusAction } from "../CollateralSurplusAction";
 import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
 import { useThresholdSelector} from "@liquity/lib-react";
-import { useTroveView } from "./context/TroveViewContext";
+import { useVaultView } from "./context/VaultViewContext";
 import { COIN } from "../../strings";
 import { InfoMessage } from "../InfoMessage";
 
@@ -12,16 +12,16 @@ const select = ({ collateralSurplusBalance, symbol }: ThresholdStoreState) => ({
   symbol
 });
 
-type LiquidatedTroveProps = {
+type LiquidatedVaultProps = {
   version: string
 }
 
-export const LiquidatedTrove = ({ version }: LiquidatedTroveProps): JSX.Element => {
+export const LiquidatedVault = ({ version }: LiquidatedVaultProps): JSX.Element => {
   const { [version]: { hasSurplusCollateral, symbol } } = useThresholdSelector(select);
-  const { dispatchEvent } = useTroveView();
+  const { dispatchEvent } = useVaultView();
 
-  const handleOpenTrove = useCallback(() => {
-    dispatchEvent("OPEN_TROVE_PRESSED", version);
+  const handleOpenVault = useCallback(() => {
+    dispatchEvent("OPEN_VAULT_PRESSED", version);
   }, [dispatchEvent, version]);
 
   return (
@@ -46,15 +46,15 @@ export const LiquidatedTrove = ({ version }: LiquidatedTroveProps): JSX.Element 
           px: ["1em", 0, "1.7em"],
           mt: 4
         }}>
-          <InfoMessage title="Your Trove has been liquidated.">
+          <InfoMessage title="Your Vault has been liquidated.">
             {hasSurplusCollateral
-              ? "Please reclaim your remaining collateral before opening a new Trove."
-              : `You can borrow ${ COIN } by opening a Trove.`}
+              ? "Please reclaim your remaining collateral before opening a new Vault."
+              : `You can borrow ${ COIN } by opening a Vault.`}
           </InfoMessage>
 
           <Flex variant="layout.actions">
             {hasSurplusCollateral && <CollateralSurplusAction version={version} />}
-            {!hasSurplusCollateral && <Button onClick={handleOpenTrove} sx={{ width: "100%" }}>Open Trove</Button>}
+            {!hasSurplusCollateral && <Button onClick={handleOpenVault} sx={{ width: "100%" }}>Open Vault</Button>}
           </Flex>
           <Flex sx={{ 
             justifyContent: "center",

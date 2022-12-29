@@ -6,7 +6,7 @@ import {
   Difference,
   Decimalish,
   Decimal,
-  Trove,
+  Trove as Vault,
   LiquityStoreState,
   THUSD_LIQUIDATION_RESERVE
 } from "@liquity/lib-base";
@@ -19,11 +19,11 @@ import { LoadingOverlay } from "../LoadingOverlay";
 import { CollateralRatio } from "./CollateralRatio";
 import { InfoIcon } from "../InfoIcon";
 
-type TroveEditorProps = {
+type VaultEditorProps = {
   children: React.ReactNode;
   version: string,
-  original: Trove;
-  edited: Trove;
+  original: Vault;
+  edited: Vault;
   fee: Decimal;
   borrowingRate: Decimal;
   changePending: boolean;
@@ -34,7 +34,7 @@ type TroveEditorProps = {
 
 const select = ({ price, symbol }: LiquityStoreState) => ({ price, symbol });
 
-export const TroveEditor = ({
+export const VaultEditor = ({
   children,
   version,
   original,
@@ -42,7 +42,7 @@ export const TroveEditor = ({
   fee,
   borrowingRate,
   changePending,
-}: TroveEditorProps): JSX.Element => {
+}: VaultEditorProps): JSX.Element => {
   const { [ version ]: { price, symbol } } = useThresholdSelector(select);
 
   const feePct = new Percent(borrowingRate);
@@ -72,24 +72,24 @@ export const TroveEditor = ({
         }}>
           <StaticRow
             label="Collateral"
-            inputId="trove-collateral"
+            inputId="vault-collateral"
             amount={edited.collateral.prettify(4)}
             unit={ symbol }
           />
-          <StaticRow label="Debt" inputId="trove-debt" amount={edited.debt.prettify()} unit={COIN} />
+          <StaticRow label="Debt" inputId="vault-debt" amount={edited.debt.prettify()} unit={COIN} />
           {original.isEmpty && (
             <StaticRow
               label="Liquidation Reserve"
-              inputId="trove-liquidation-reserve"
+              inputId="vault-liquidation-reserve"
               amount={`${THUSD_LIQUIDATION_RESERVE}`}
               unit={COIN}
               infoIcon={
                 <InfoIcon
                   tooltip={
                     <Card variant="tooltip" sx={{ width: "200px" }}>
-                      An amount set aside to cover the liquidator’s gas costs if your Trove needs to be
+                      An amount set aside to cover the liquidator’s gas costs if your Vault needs to be
                       liquidated. The amount increases your debt and is refunded if you close your
-                      Trove by fully paying off its net debt.
+                      Vault by fully paying off its net debt.
                     </Card>
                   }
                 />
@@ -98,7 +98,7 @@ export const TroveEditor = ({
           )}
           <StaticRow
             label="Borrowing Fee"
-            inputId="trove-borrowing-fee"
+            inputId="vault-borrowing-fee"
             amount={fee.toString(2)}
             pendingAmount={feePct.toString(2)}
             unit={COIN}

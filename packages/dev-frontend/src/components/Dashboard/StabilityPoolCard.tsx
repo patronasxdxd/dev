@@ -1,4 +1,3 @@
-import React from "react";
 import { Card } from "theme-ui";
 import { COIN } from "../../strings";
 

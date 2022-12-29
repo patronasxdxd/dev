@@ -1,4 +1,3 @@
-import React from "react";
 import { Flex, Card, SxProp } from "theme-ui";
 
 import { CRITICAL_COLLATERAL_RATIO, Decimal, Difference, Percent } from "@liquity/lib-base";
@@ -20,7 +19,7 @@ export const CollateralRatio = ({ value, change, sx }: CollateralRatioProps): JS
       <Flex sx={{ ...sx }}>
         <StaticRow
           label="Collateral ratio"
-          inputId="trove-collateral-ratio"
+          inputId="vault-collateral-ratio"
           amount={collateralRatioPct.prettify()}
           color={
             value?.gt(CRITICAL_COLLATERAL_RATIO)

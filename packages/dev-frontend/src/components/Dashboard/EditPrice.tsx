@@ -73,6 +73,7 @@ export const EditPrice = ({ version }: EditPriceProps): JSX.Element => {
                 }
                 return threshold[version].send.setPrice(Decimal.from(editedPrice), overrides);
               }}
+              version={version}
             >
               <Button sx={{
                 ml: 1,

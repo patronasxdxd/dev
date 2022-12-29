@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
 import { Wallet } from "@ethersproject/wallet";
 
-import { Decimal, Difference, Trove } from "@liquity/lib-base";
+import { Decimal, Difference, Trove as Vault } from "@liquity/lib-base";
 import { ThresholdStoreProvider } from "@liquity/lib-react";
 
 import { useThreshold } from "../hooks/ThresholdContext";
-import { TroveViewProvider } from "./Trove/context/TroveViewProvider";
+import { VaultViewProvider } from "./Vault/context/VaultViewProvider";
 import { TransactionMonitor } from "./Transaction";
 
 type FunctionalPanelProps = {
@@ -21,7 +21,7 @@ export const FunctionalPanel = ({ children, loader }: FunctionalPanelProps): JSX
     account,
     provider,
     threshold,
-    Trove,
+    Vault,
     Decimal,
     Difference,
     Wallet
@@ -34,9 +34,9 @@ export const FunctionalPanel = ({ children, loader }: FunctionalPanelProps): JSX
   return (
     <>
       <ThresholdStoreProvider {...{ loader }} thresholdStores={thresholdStores}>
-        <TroveViewProvider {...{ loader}}>
+        <VaultViewProvider {...{ loader}}>
           {children}
-        </TroveViewProvider>
+        </VaultViewProvider>
       </ThresholdStoreProvider>
       <TransactionMonitor />
     </>            

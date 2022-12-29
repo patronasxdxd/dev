@@ -1,5 +1,4 @@
-import React from "react";
-import { Text, Flex, Box, Heading, jsx } from "theme-ui";
+import { Text, Flex, Box, Heading } from "theme-ui";
 
 import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
 import { useThresholdSelector } from "@liquity/lib-react";
