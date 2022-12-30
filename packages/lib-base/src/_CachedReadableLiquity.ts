@@ -107,6 +107,13 @@ export class _CachedReadableLiquity<T extends unknown[]>
     );
   }
 
+  async getCollateralAddress(...extraParams: T): Promise<string> {
+    return (
+      this._cache.getCollateralAddress(...extraParams) ??
+      this._readable.getCollateralAddress(...extraParams)
+    );
+  }
+
   async getTHUSDInStabilityPool(...extraParams: T): Promise<Decimal> {
     return (
       this._cache.getTHUSDInStabilityPool(...extraParams) ??

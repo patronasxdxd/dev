@@ -85,6 +85,11 @@ export interface ReadableLiquity {
   getSymbol(): Promise<string>;
 
   /**
+   * Get the collateral address of the BorrowersOperations contract.
+   */
+  getCollateralAddress(): Promise<string>;
+
+  /**
    * Get the current state of a Stability Deposit.
    *
    * @param address - Address that owns the Stability Deposit.

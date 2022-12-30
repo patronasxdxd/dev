@@ -29,11 +29,12 @@ import {
 } from "./validation/validateVaultChange";
 
 const selector = (state: ThresholdStoreState) => {
-  const { trove, fees, price, erc20TokenBalance, symbol } = state;
+  const { trove, fees, price, collateralAddress, erc20TokenBalance, symbol } = state;
   return {
     trove,
     fees,
     price,
+    collateralAddress,
     erc20TokenBalance,
     validationContext: selectForVaultChangeValidation(state),
     symbol,
@@ -92,7 +93,7 @@ export const Adjusting = ({ version }: AdjustingProps): JSX.Element => {
     threshold: { [version]: { send: threshold } }
   } = useThreshold();
   const { dispatchEvent } = useVaultView();
-  const { [version]: { trove, fees, price, erc20TokenBalance, symbol, validationContext } } = useThresholdSelector(selector);
+  const { [version]: { trove, fees, price, collateralAddress, erc20TokenBalance, symbol, validationContext } } = useThresholdSelector(selector);
   const editingState = useState<string>();
   const previousVault = useRef<Vault>(trove);
   const [collateral, setCollateral] = useState<Decimal>(trove.collateral);
@@ -274,7 +275,7 @@ export const Adjusting = ({ version }: AdjustingProps): JSX.Element => {
             </ActionDescription>
           )}
 
-          {hasApproved &&
+          {(hasApproved || !collateralAddress) &&
           (<ExpensiveVaultChangeWarning
             version={version}
             vaultChange={stableVaultChange}
@@ -285,7 +286,7 @@ export const Adjusting = ({ version }: AdjustingProps): JSX.Element => {
           />)}
 
           <Flex variant="layout.actions" sx={{ flexDirection: "column" }}>
-            {!hasApproved && amountToApprove ?
+            {collateralAddress && !hasApproved && amountToApprove ?
               <Transaction
                 id={APPROVE_TRANSACTION_ID}
                 send={threshold.approveErc20.bind(threshold, amountToApprove)}

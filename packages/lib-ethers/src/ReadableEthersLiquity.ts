@@ -263,6 +263,13 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return erc20.symbol({ ...overrides });
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getCollateralAddress} */
+  getCollateralAddress(overrides?: EthersCallOverrides): Promise<string> {
+    const { borrowerOperations } = _getContracts(this.connection);
+
+    return borrowerOperations.collateralAddress({ ...overrides });
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getStabilityDeposit} */
   async getStabilityDeposit(
     address?: string,
@@ -521,6 +528,14 @@ class _BlockPolledReadableEthersLiquity
     return this._blockHit(overrides)
       ? this.store.state.symbol
       : this._readable.getSymbol(overrides);
+  }
+
+  async getCollateralAddress(
+    overrides?: EthersCallOverrides
+  ): Promise<string> {
+    return this._blockHit(overrides)
+      ? this.store.state.collateralAddress
+      : this._readable.getCollateralAddress(overrides);
   }
 
   async getStabilityDeposit(

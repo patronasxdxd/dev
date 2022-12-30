@@ -67,6 +67,9 @@ export interface LiquityStoreBaseState {
   /** token's ERC20 symbol. */
   symbol: string;
 
+  /** BorrowersOperations contract collateral address. */
+  collateralAddress: string;
+
   /** User's stability deposit. */
   stabilityDeposit: StabilityDeposit;
 
@@ -361,6 +364,8 @@ export abstract class LiquityStore<T = unknown> {
       ),
 
       symbol: baseState.symbol,
+
+      collateralAddress: baseState.collateralAddress,
 
       stabilityDeposit: this._updateIfChanged(
         equals,

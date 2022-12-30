@@ -102,6 +102,7 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
       pcvBalance: this._readable.getPCVBalance({ blockTag }),
       _riskiestTroveBeforeRedistribution: this._getRiskiestTroveBeforeRedistribution({ blockTag }),
       symbol: this._readable.getSymbol({ blockTag }),
+      collateralAddress: this._readable.getCollateralAddress({ blockTag }),
       ...(userAddress
         ? {
             accountBalance: this._provider.getBalance(userAddress, blockTag).then(decimalify),
