@@ -9,8 +9,8 @@ import { useThreshold } from "../hooks/ThresholdContext";
 import { Transaction, useMyTransactionState } from "./Transaction";
 import { useVaultView } from "./Vault/context/VaultViewContext";
 
-const select = ({ collateralSurplusBalance }: ThresholdStoreState) => ({
-  collateralSurplusBalance
+const select = ({ collateralSurplusBalance, symbol }: ThresholdStoreState) => ({
+  collateralSurplusBalance, symbol
 });
 
 type CollateralSurplusActionProps = {
@@ -18,7 +18,7 @@ type CollateralSurplusActionProps = {
 }
 
 export const CollateralSurplusAction = ({ version }: CollateralSurplusActionProps): JSX.Element => {
-  const { [version]: { collateralSurplusBalance } } = useThresholdSelector(select);
+  const { [version]: { collateralSurplusBalance, symbol } } = useThresholdSelector(select);
   const {
     threshold: { [version]: { send: threshold } }
   } = useThreshold();
@@ -48,7 +48,7 @@ export const CollateralSurplusAction = ({ version }: CollateralSurplusActionProp
         send={threshold.claimCollateralSurplus.bind(threshold, undefined)}
         version={version}
       >
-        <Button sx={{ mx: 2 }}>Claim {collateralSurplusBalance.prettify()} ETH</Button>
+        <Button sx={{ mx: 2 }}>Claim {collateralSurplusBalance.prettify()} {symbol}</Button>
       </Transaction>
     </Flex>
   ) : <></>;

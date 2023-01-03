@@ -92,7 +92,7 @@ export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Elem
     : [
         true,
         <ActionDescription>
-          You will receive <Amount>{ethAmount.sub(ethFee).prettify(4)} ETH</Amount> in exchange for{" "}
+          You will receive <Amount>{ethAmount.sub(ethFee).prettify(4)} {symbol}</Amount> in exchange for{" "}
           <Amount>
             {thusdAmount.prettify()} {COIN}
           </Amount>
@@ -143,7 +143,7 @@ export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Elem
                 <InfoIcon
                   tooltip={
                     <Card variant="tooltip" sx={{ minWidth: "240px" }}>
-                      The Redemption Fee is charged as a percentage of the redeemed Ether. The Redemption
+                      The Redemption Fee is charged as a percentage of the redeemed collateral. The Redemption
                       Fee depends on thUSD redemption volumes and is 0.5% at minimum.
                     </Card>
                   }

@@ -221,7 +221,7 @@ export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
                     <th style={{ verticalAlign: "top" }}>Owner</th>
                     <th>
                       <Abbreviation short="Coll.">Collateral</Abbreviation>
-                      <Box sx={{ fontSize: [0, 1], fontWeight: "body" }}>ETH</Box>
+                      <Box sx={{ fontSize: [0, 1], fontWeight: "body" }}>{symbol}</Box>
                     </th>
                     <th>
                       Debt

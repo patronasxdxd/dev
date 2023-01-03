@@ -65,7 +65,7 @@ export const EditPrice = ({ version }: EditPriceProps): JSX.Element => {
             />
             <Transaction
               id="set-price"
-              tooltip="Set the WETH price in the testnet"
+              tooltip="Set the collateral price in the testnet"
               tooltipPlacement="bottom"
               send={overrides => {
                 if (!editedPrice) {
