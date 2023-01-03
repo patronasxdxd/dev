@@ -39,19 +39,19 @@ const wsParams = (network: string, infuraApiKey: string): [string, string] => [
 
 const supportedNetworks = ["homestead", "goerli"];
 
-const getDeploymentVersions = async (chainId: number): Promise<{versionedDeployments: _VersionedLiquityDeployments}> => {
+const getDeploymentVersions = async (chainId: number): Promise<_VersionedLiquityDeployments> => {
   return await _getVersionedDeployments(chainId === 1 ? 'mainnet' : 'goerli');
 }
 
 const getConnections = async (
-    result: { versionedDeployments: _VersionedLiquityDeployments; }, 
+    versionedDeployments: _VersionedLiquityDeployments, 
     provider: Web3Provider, 
     account: string, 
     chainId: number,
     setConnections: Function
   ) => {
     const connectionsByChainId = [];
-    for (const [key, value] of Object.entries(result.versionedDeployments)) {
+    for (const [key, value] of Object.entries(versionedDeployments)) {
       connectionsByChainId.push(_connectByChainId(
         key, 
         value, 

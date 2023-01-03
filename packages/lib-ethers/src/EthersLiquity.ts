@@ -28,13 +28,13 @@ import {
 } from "@liquity/lib-base";
 
 import {
-  deployments,
   EthersLiquityConnection,
   EthersLiquityConnectionOptionalParams,
   EthersLiquityStoreOption,
   getProviderAndSigner,
   UnsupportedNetworkError,
   _connect,
+  _getVersionedDeployments,
   _usingStore
 } from "./EthersLiquityConnection";
 
@@ -145,9 +145,10 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
   ): Promise<EthersLiquity> {
     const [provider, signer] = getProviderAndSigner(signerOrProvider);
     const chainId = (await provider.getNetwork()).chainId
+    const versionedDeployments = await _getVersionedDeployments(chainId === 1 ? 'mainnet': 'goerli')
 
     const importedDeployment: _LiquityDeploymentJSON =
-    deployments[chainId] ?? panic(new UnsupportedNetworkError(chainId));
+    versionedDeployments.v1 ?? panic(new UnsupportedNetworkError(chainId));
 
     return EthersLiquity._from(await _connect(DEPLOYMENT_VERSION_FOR_TESTING, importedDeployment, provider, signer, optionalParams));
   }

@@ -1,10 +1,6 @@
 import { Block, BlockTag } from "@ethersproject/abstract-provider";
 import { Signer } from "@ethersproject/abstract-signer";
 
-import devOrNull from "../deployments/dev.json";
-import goerli from "../deployments/goerli.json";
-import mainnet from "../deployments/mainnet.json";
-
 import { numberify, panic } from "./_utils";
 import { EthersProvider, EthersSigner } from "./types";
 
@@ -17,17 +13,6 @@ import {
 } from "./contracts";
 
 import { _connectToMulticall, _Multicall } from "./_Multicall";
-
-const dev = devOrNull as _LiquityDeploymentJSON | null;
-
-export const deployments: {
-  [chainId: number]: _LiquityDeploymentJSON | undefined;
-} = {
-  [mainnet.chainId]: mainnet,
-  [goerli.chainId]: goerli,
-
-  ...(dev !== null ? { [dev.chainId]: dev } : {})
-};
 
 declare const brand: unique symbol;
 
@@ -297,10 +282,10 @@ export function _connectByChainId(
 }
 
 /** @internal */
-export async function _getVersionedDeployments(network: string): Promise<{versionedDeployments: _VersionedLiquityDeployments}> {
+export async function _getVersionedDeployments(network: string): Promise<_VersionedLiquityDeployments> {
   const versionedDeployments: _VersionedLiquityDeployments = {};
 
-  for (let i = 1; i < 10; i++) {
+  for (let i = 1; i < 100; i++) {
     import(`../deployments/default/eth/v${i.toString()}/${network}.json`)
       .then((deployment) => {
         versionedDeployments['v'+i] = deployment;
@@ -309,9 +294,8 @@ export async function _getVersionedDeployments(network: string): Promise<{versio
         return err
       })
   }
-  return {
-    versionedDeployments: versionedDeployments
-  };
+  return versionedDeployments
+  ;
 }
 
 /** @internal */
