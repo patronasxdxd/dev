@@ -10,18 +10,15 @@ import "./Interfaces/IPCV.sol";
 import "./Dependencies/LiquityMath.sol";
 import "./Interfaces/ITHUSDToken.sol";
 import "./Dependencies/IERC20.sol";
+import "./B.Protocol/BAMM.sol";
 
 contract PCV is IPCV, Ownable, CheckContract, BaseMath {
 
     // --- Data ---
     string constant public NAME = "PCV";
 
-    mapping( address => uint) public stakes;
-
-    uint256 public F_ETH;  // Running sum of ETH fees
-    uint256 public F_THUSD; // Running sum of THUSD fees
-
     ITHUSDToken public thusdToken;
+    IERC20 public collateralERC20;
 
     address public troveManagerAddress;
     address public borrowerOperationsAddress;
@@ -34,7 +31,8 @@ contract PCV is IPCV, Ownable, CheckContract, BaseMath {
         address _thusdTokenAddress,
         address _troveManagerAddress,
         address _borrowerOperationsAddress,
-        address _activePoolAddress
+        address _activePoolAddress,
+        address _collateralERC20
     )
         external
         onlyOwner
@@ -44,45 +42,68 @@ contract PCV is IPCV, Ownable, CheckContract, BaseMath {
         checkContract(_troveManagerAddress);
         checkContract(_borrowerOperationsAddress);
         checkContract(_activePoolAddress);
+        if (_collateralERC20 != address(0)) {
+            checkContract(_collateralERC20);
+        }
 
         thusdToken = ITHUSDToken(_thusdTokenAddress);
         troveManagerAddress = _troveManagerAddress;
         borrowerOperationsAddress = _borrowerOperationsAddress;
         activePoolAddress = _activePoolAddress;
+        collateralERC20 = IERC20(_collateralERC20);
 
         emit THUSDTokenAddressSet(_thusdTokenAddress);
         emit TroveManagerAddressSet(_troveManagerAddress);
         emit BorrowerOperationsAddressSet(_borrowerOperationsAddress);
         emit ActivePoolAddressSet(_activePoolAddress);
+        emit CollateralAddressSet(_collateralERC20);
 
         _renounceOwnership();
     }
 
-    // --- Reward-per-unit-staked increase functions. Called by Liquity core contracts ---
+    // --- Backstop protocol ---
 
-    function increaseF_ETH(uint256 _ETHFee) external override {
-        _requireCallerIsTroveManager();
-
-        F_ETH += _ETHFee;
-        emit F_ETHUpdated(F_ETH);
+    function depositToBAMM(address payable _bammAddress, uint256 _thusdAmount) external override onlyOwner {
+        require(_thusdAmount <= thusdToken.balanceOf(address(this)), "PCV: not enough tokens");
+        thusdToken.approve(_bammAddress, _thusdAmount);
+        BAMM(_bammAddress).deposit(_thusdAmount);
+        
+        emit BAMMDeposit(_bammAddress, _thusdAmount);     
     }
 
-    function increaseF_THUSD(uint256 _THUSDFee) external override {
-        _requireCallerIsBorrowerOperations();
+    function withdrawFromBAMM(address payable _bammAddress, uint256 _numShares) external override onlyOwner {
+        require(_numShares <= BAMM(_bammAddress).balanceOf(address(this)), "PCV: not enough shares");
+        BAMM(_bammAddress).withdraw(_numShares);
+        
+        emit BAMMWithdraw(_bammAddress, _numShares); 
+    }
 
-        F_THUSD += _THUSDFee;
-        emit F_THUSDUpdated(F_THUSD);
+    // --- Maintain thUSD and collateral ---
+
+    function withdrawTHUSD(address _recepient, uint256 _thusdAmount) external override onlyOwner {
+        require(_thusdAmount <= thusdToken.balanceOf(address(this)), "PCV: not enough tokens");
+        require(thusdToken.transfer(_recepient, _thusdAmount), "PCV: sending thUSD failed");
+        
+        emit THUSDWithdraw(_recepient, _thusdAmount); 
+    }
+
+    function withdrawCollateral(address _recepient, uint256 _collateralAmount) external override onlyOwner {
+        if (address(collateralERC20) == address(0)) {
+            // ETH
+            require(_collateralAmount <= address(this).balance, "PCV: not enough ETH");
+            (bool success, ) = _recepient.call{ value: _collateralAmount }(""); // re-entry is fine here
+            require(success, "PCV: sending ETH failed");
+        } else {
+            // ERC20
+            require(_collateralAmount <= collateralERC20.balanceOf(address(this)), "PCV: not enough collateral");
+            bool success = collateralERC20.transfer(_recepient, _collateralAmount);
+            require(success, "PCV: sending collateral failed");
+        }
+        
+        emit CollateralWithdraw(_recepient, _collateralAmount); 
     }
 
     // --- 'require' functions ---
-
-    function _requireCallerIsTroveManager() internal view {
-        require(msg.sender == troveManagerAddress, "PCV: caller is not TroveM");
-    }
-
-    function _requireCallerIsBorrowerOperations() internal view {
-        require(msg.sender == borrowerOperationsAddress, "PCV: caller is not BorrowerOps");
-    }
 
      function _requireCallerIsActivePool() internal view {
         require(msg.sender == activePoolAddress, "PCV: caller is not ActivePool");
@@ -90,5 +111,6 @@ contract PCV is IPCV, Ownable, CheckContract, BaseMath {
 
     receive() external payable {
         _requireCallerIsActivePool();
+        require(address(collateralERC20) == address(0), "PCV: collateral must be ERC20 token");
     }
 }

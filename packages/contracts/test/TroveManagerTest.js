@@ -39,15 +39,15 @@ contract('TroveManager', async accounts => {
   let defaultPool
   let borrowerOperations
   let hintHelpers
+  let erc20
 
   let contracts
 
-  const getOpenTroveTotalDebt = async (thusdAmount) => th.getOpenTroveTotalDebt(contracts, thusdAmount)
   const getOpenTroveTHUSDAmount = async (totalDebt) => th.getOpenTroveTHUSDAmount(contracts, totalDebt)
-  const getActualDebtFromComposite = async (compositeDebt) => th.getActualDebtFromComposite(compositeDebt, contracts)
   const getNetBorrowingAmount = async (debtWithFee) => th.getNetBorrowingAmount(contracts, debtWithFee)
   const openTrove = async (params) => th.openTrove(contracts, params)
   const withdrawTHUSD = async (params) => th.withdrawTHUSD(contracts, params)
+  const getCollateralBalance = async (address) => th.getCollateralBalance(erc20, address)
 
   beforeEach(async () => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
@@ -65,6 +65,7 @@ contract('TroveManager', async accounts => {
     borrowerOperations = contracts.borrowerOperations
     hintHelpers = contracts.hintHelpers
     pcv = contracts.pcv
+    erc20 = contracts.erc20
 
     await deploymentHelper.connectCoreContracts(contracts)
   })
@@ -3542,8 +3543,8 @@ contract('TroveManager', async accounts => {
     assert.equal(await troveManager.baseRate(), '0')
 
     // Check PCV ETH-fees before is zero
-    const F_ETH_Before = await pcv.F_ETH()
-    assert.equal(F_ETH_Before, '0')
+    const PCV_ETH_Before = await getCollateralBalance(pcv.address)
+    assert.equal(PCV_ETH_Before, '0')
 
     const A_balanceBefore = await thusdToken.balanceOf(A)
 
@@ -3558,8 +3559,8 @@ contract('TroveManager', async accounts => {
     assert.isTrue(baseRate_1.gt(toBN('0')))
 
     // Check PCV ETH-fees after is non-zero
-    const F_ETH_After = await pcv.F_ETH()
-    assert.isTrue(F_ETH_After.gt('0'))
+    const PCV_ETH_After = await getCollateralBalance(pcv.address)
+    assert.isTrue(PCV_ETH_After.gt('0'))
   })
 
   it("redeemCollateral(): a redemption made at a non-zero base rate send a non-zero ETHFee to PCV contract", async () => {
@@ -3629,7 +3630,7 @@ contract('TroveManager', async accounts => {
     assert.isTrue(baseRate_1.gt(toBN('0')))
 
     // Check PCV ETH-fees before is zero
-    const F_ETH_Before = await pcv.F_ETH()
+    const PCV_ETH_Before = await getCollateralBalance(pcv.address)
 
     // B redeems 10 THUSD
     await th.redeemCollateral(B, contracts, dec(10, 18))
@@ -3637,10 +3638,10 @@ contract('TroveManager', async accounts => {
     // Check B's balance has decreased by 10 THUSD
     assert.equal(await thusdToken.balanceOf(B), B_balanceBefore.sub(toBN(dec(10, 18))).toString())
 
-    const F_ETH_After = await pcv.F_ETH()
+    const PCV_ETH_After = await getCollateralBalance(pcv.address)
 
     // check PCV balance has increased
-    assert.isTrue(F_ETH_After.gt(F_ETH_Before))
+    assert.isTrue(PCV_ETH_After.gt(PCV_ETH_Before))
   })
 
   it("redeemCollateral(): a redemption sends the ETH remainder (ETHDrawn - ETHFee) to the redeemer", async () => {

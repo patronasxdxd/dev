@@ -61,7 +61,6 @@ contract('TroveManager', async accounts => {
     collSurplusPool = contracts.collSurplusPool
     borrowerOperations = contracts.borrowerOperations
     hintHelpers = contracts.hintHelpers
-    pcv = contracts.pcv
 
     await deploymentHelper.connectCoreContracts(contracts)
   })

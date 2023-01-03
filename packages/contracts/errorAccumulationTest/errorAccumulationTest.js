@@ -29,7 +29,6 @@ contract('TroveManager', async accounts => {
     stabilityPool = contracts.stabilityPool
     defaultPool = contracts.defaultPool
     borrowerOperations = contracts.borrowerOperations
-    pcv = contracts.pcv
 
     await deploymentHelper.connectCoreContracts(contracts)
   })

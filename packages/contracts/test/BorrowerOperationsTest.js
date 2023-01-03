@@ -44,7 +44,6 @@ contract('BorrowerOperations', async accounts => {
 
     const getOpenTroveTHUSDAmount = async (totalDebt) => th.getOpenTroveTHUSDAmount(contracts, totalDebt)
     const getNetBorrowingAmount = async (debtWithFee) => th.getNetBorrowingAmount(contracts, debtWithFee)
-    const getActualDebtFromComposite = async (compositeDebt) => th.getActualDebtFromComposite(compositeDebt, contracts)
     const openTrove = async (params) => th.openTrove(contracts, params)
     const getTroveEntireColl = async (trove) => th.getTroveEntireColl(contracts, trove)
     const getTroveEntireDebt = async (trove) => th.getTroveEntireDebt(contracts, trove)
@@ -1112,14 +1111,14 @@ contract('BorrowerOperations', async accounts => {
       const baseRate_1 = await troveManager.baseRate()
       assert.equal(baseRate_1, '0')
 
-      const F_THUSD_Before = await pcv.F_THUSD()
+      const PCV_THUSD_Before = await thusdToken.balanceOf(pcv.address)
 
       // D withdraws THUSD
       await borrowerOperations.withdrawTHUSD(th._100pct, dec(37, 18), D, D, { from: D })
 
       // Check THUSD balance after > 0
-      const F_THUSD_After = await pcv.F_THUSD()
-      assert.isTrue(F_THUSD_After.gt('0'))
+      const PCV_THUSD_After = await thusdToken.balanceOf(pcv.address)
+      assert.isTrue(PCV_THUSD_After.gt('0'))
     })
 
     it("withdrawTHUSD(): borrowing at zero base rate sends debt request to user", async () => {
@@ -1890,14 +1889,14 @@ contract('BorrowerOperations', async accounts => {
       th.fastForwardTime(7200, web3.currentProvider)
 
       // Check staking THUSD balance before == 0
-      const F_THUSD_Before = await pcv.F_THUSD()
+      const PCV_THUSD_Before =await thusdToken.balanceOf(pcv.address)
 
       // D adjusts trove
       await adjustTroveWrapper(th._100pct, 0, dec(37, 18), true, 0, D, D)
 
       // Check staking THUSD balance increases
-      const F_THUSD_After = await pcv.F_THUSD()
-      assert.isTrue(F_THUSD_After.gt(F_THUSD_Before))
+      const PCV_THUSD_After =await thusdToken.balanceOf(pcv.address)
+      assert.isTrue(PCV_THUSD_After.gt(PCV_THUSD_Before))
     })
 
     it("adjustTrove(): Borrowing at zero base rate sends total requested THUSD to the user", async () => {
@@ -3427,8 +3426,8 @@ contract('BorrowerOperations', async accounts => {
 
     it("openTrove(): Borrowing at non-zero base rate increases the PCV contract THUSD fees", async () => {
       // Check contract THUSD fees-per-unit-staked is zero
-      const F_THUSD_Before = await pcv.F_THUSD()
-      assert.equal(F_THUSD_Before, '0')
+      const PCV_THUSD_Before =await thusdToken.balanceOf(pcv.address)
+      assert.equal(PCV_THUSD_Before, '0')
 
       await openTrove({ extraTHUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
       await openTrove({ extraTHUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: A } })
@@ -3450,8 +3449,8 @@ contract('BorrowerOperations', async accounts => {
       await openTrove({ extraTHUSDAmount: toBN(dec(37, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: D } })
 
       // Check contract THUSD fees has increased
-      const F_THUSD_After = await pcv.F_THUSD()
-      assert.isTrue(F_THUSD_After.gt(F_THUSD_Before))
+      const PCV_THUSD_After =await thusdToken.balanceOf(pcv.address)
+      assert.isTrue(PCV_THUSD_After.gt(PCV_THUSD_Before))
     })
 
     it("openTrove(): Borrowing at non-zero base rate sends requested amount to the user", async () => {
@@ -3501,14 +3500,14 @@ contract('BorrowerOperations', async accounts => {
       th.fastForwardTime(7200, web3.currentProvider)
 
       // Check THUSD reward
-      const F_THUSD_Before = await pcv.F_THUSD()
+      const PCV_THUSD_Before =await thusdToken.balanceOf(pcv.address)
 
       // D opens trove
       await openTrove({ extraTHUSDAmount: toBN(dec(37, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: D } })
 
       // Check THUSD reward
-      const F_THUSD_After = await pcv.F_THUSD()
-      assert.isTrue(F_THUSD_After.gt(F_THUSD_Before))
+      const PCV_THUSD_After =await thusdToken.balanceOf(pcv.address)
+      assert.isTrue(PCV_THUSD_After.gt(PCV_THUSD_Before))
     })
 
     it("openTrove(): Borrowing at zero base rate charges minimum fee", async () => {

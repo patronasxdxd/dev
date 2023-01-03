@@ -123,7 +123,7 @@ contract('All functions with onlyOwner modifier', async accounts => {
 
   describe('PCV', async accounts => {
     it("setAddresses(): reverts when called by non-owner, with wrong addresses, or twice", async () => {
-      await testSetAddresses(pcv, 4)
+      await testSetAddresses(pcv, 5, 5)
     })
   })
 })

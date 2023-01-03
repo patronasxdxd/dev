@@ -382,7 +382,6 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOpe
         _requireUserAcceptsFee(THUSDFee, _THUSDAmount, _maxFeePercentage);
 
         // Send fee to PCV contract
-        pcv.increaseF_THUSD(THUSDFee);
         _thusdToken.mint(pcvAddress, THUSDFee);
         return THUSDFee;
     }
