@@ -422,13 +422,48 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
   })
 
   describe('PCV', async accounts => {
-    // FIXME
-    it.skip("increaseF_THUSD(): reverts when caller is not TroveManager", async () => {
+    it("receive(): reverts when caller is not ActivePool", async () => {
       try {
-        const txAlice = await pcv.increaseF_THUSD(dec(1, 18), { from: alice })
-
+        await web3.eth.sendTransaction({ from: alice, to: pcv.address, value: 100 })
       } catch (err) {
         assert.include(err.message, "revert")
+        assert.include(err.message, "PCV: caller is not ActivePool")
+      }
+    })
+
+    it("depositToBAMM(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.depositToBAMM(alice, 1, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("withdrawFromBAMM(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.withdrawFromBAMM(alice, 1, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("withdrawTHUSD(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.withdrawTHUSD(alice, 1, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("withdrawCollateral(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.withdrawCollateral(alice, 1, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
       }
     })
   })

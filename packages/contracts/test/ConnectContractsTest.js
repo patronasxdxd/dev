@@ -13,6 +13,7 @@ contract('Deployment script - Sets correct contract addresses dependencies after
   let functionCaller
   let borrowerOperations
   let pcv
+  let erc20
   let lockupContractFactory
 
   before(async () => {
@@ -28,6 +29,7 @@ contract('Deployment script - Sets correct contract addresses dependencies after
     functionCaller = contracts.functionCaller
     borrowerOperations = contracts.borrowerOperations
     pcv = contracts.pcv
+    erc20 = contracts.erc20
 
     await deploymentHelper.connectCoreContracts(contracts)
   })
@@ -277,6 +279,14 @@ contract('Deployment script - Sets correct contract addresses dependencies after
 
     const recordedBorrowerOperationsAddress = await pcv.borrowerOperationsAddress()
     assert.equal(borrowerOperationsAddress, recordedBorrowerOperationsAddress)
+  })
+
+  // Sets BorrowerOperations in PCV
+  it('Sets the correct collateral address in PCV', async () => {
+    const collateralAddress = erc20.address
+
+    const recordedCollateralAddress = await pcv.collateralERC20()
+    assert.equal(collateralAddress, recordedCollateralAddress)
   })
 
 })
