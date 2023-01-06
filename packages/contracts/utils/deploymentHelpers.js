@@ -147,6 +147,16 @@ class DeploymentHelper {
       delay
     )
     testerContracts.pcv = await PCV.new()
+    
+    let index = 0;
+    for (const account of accounts) {
+      await testerContracts.erc20.mint(account, await web3.eth.getBalance(account))
+      index++;
+
+      if (index >= 50)
+        break;
+    }
+
     return testerContracts
   }
 

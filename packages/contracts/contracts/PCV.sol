@@ -2,17 +2,14 @@
 
 pragma solidity ^0.8.10;
 
-import "./Dependencies/BaseMath.sol";
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
-import "./Dependencies/console.sol";
 import "./Interfaces/IPCV.sol";
-import "./Dependencies/LiquityMath.sol";
 import "./Interfaces/ITHUSDToken.sol";
 import "./Dependencies/IERC20.sol";
 import "./B.Protocol/BAMM.sol";
 
-contract PCV is IPCV, Ownable, CheckContract, BaseMath {
+contract PCV is IPCV, Ownable, CheckContract {
 
     // --- Data ---
     string constant public NAME = "PCV";
@@ -26,6 +23,7 @@ contract PCV is IPCV, Ownable, CheckContract, BaseMath {
 
     // --- Functions ---
 
+    // TODO maybe move to constructor?
     function setAddresses
     (
         address _thusdTokenAddress,
@@ -38,6 +36,7 @@ contract PCV is IPCV, Ownable, CheckContract, BaseMath {
         onlyOwner
         override
     {
+        require(address(thusdToken) == address(0), "PCV: contacts already set");
         checkContract(_thusdTokenAddress);
         checkContract(_troveManagerAddress);
         checkContract(_borrowerOperationsAddress);
@@ -57,8 +56,6 @@ contract PCV is IPCV, Ownable, CheckContract, BaseMath {
         emit BorrowerOperationsAddressSet(_borrowerOperationsAddress);
         emit ActivePoolAddressSet(_activePoolAddress);
         emit CollateralAddressSet(_collateralERC20);
-
-        _renounceOwnership();
     }
 
     // --- Backstop protocol ---
@@ -103,14 +100,5 @@ contract PCV is IPCV, Ownable, CheckContract, BaseMath {
         emit CollateralWithdraw(_recepient, _collateralAmount); 
     }
 
-    // --- 'require' functions ---
-
-     function _requireCallerIsActivePool() internal view {
-        require(msg.sender == activePoolAddress, "PCV: caller is not ActivePool");
-    }
-
-    receive() external payable {
-        _requireCallerIsActivePool();
-        require(address(collateralERC20) == address(0), "PCV: collateral must be ERC20 token");
-    }
+    receive() external payable {}
 }

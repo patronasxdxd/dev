@@ -164,7 +164,7 @@ contract('PCV receives fees tests', async accounts => {
 
   })
 
-  it("receive(): reverts when it receives ETH from an address that is not the Active Pool",  async () => {
+  it.skip("receive(): reverts when it receives ETH from an address that is not the Active Pool",  async () => {
     const ethSendTxPromise1 = web3.eth.sendTransaction({to: pcv.address, from: A, value: dec(1, 'ether')})
     const ethSendTxPromise2 = web3.eth.sendTransaction({to: pcv.address, from: owner, value: dec(1, 'ether')})
 

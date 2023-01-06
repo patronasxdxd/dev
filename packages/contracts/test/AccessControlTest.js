@@ -422,7 +422,7 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
   })
 
   describe('PCV', async accounts => {
-    it("receive(): reverts when caller is not ActivePool", async () => {
+    it.skip("receive(): reverts when caller is not ActivePool", async () => {
       try {
         await web3.eth.sendTransaction({ from: alice, to: pcv.address, value: 100 })
       } catch (err) {
