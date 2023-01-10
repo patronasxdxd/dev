@@ -328,7 +328,6 @@ contract('BAMM', async accounts => {
 
         await bamm.withdraw(0, { from: D })
 
-        console.log("share:", (await bamm.share.call()).toString())
         console.log("stake D:", (await bamm.stake(D)).toString())
         console.log("stake E:", (await bamm.stake(E)).toString())
 
@@ -343,7 +342,6 @@ contract('BAMM', async accounts => {
 
         await th.fastForwardTime(timeValues.SECONDS_IN_ONE_HOUR, web3.currentProvider)      
 
-        console.log("share:", (await bamm.share()).toString())
         console.log("stake D:", (await bamm.stake(D)).toString())
         console.log("stake E:", (await bamm.stake(E)).toString())
         console.log("stake F:", (await bamm.stake(F)).toString())
@@ -356,7 +354,6 @@ contract('BAMM', async accounts => {
         await bamm.withdraw(0, { from: E })
         await bamm.withdraw(0, { from: F })               
         
-        console.log("share:", (await bamm.share()).toString())
         console.log("stake D:", (await bamm.stake(D)).toString())
         console.log("stake E:", (await bamm.stake(E)).toString())
         console.log("stake F:", (await bamm.stake(F)).toString())
