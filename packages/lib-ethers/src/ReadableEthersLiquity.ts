@@ -334,6 +334,13 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return erc20.allowance(address, borrowerOperations.address, { ...overrides }).then(decimalify);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.checkMintList} */
+  checkMintList(overrides?: EthersCallOverrides): Promise<boolean> {
+    const { thusdToken, borrowerOperations } = _getContracts(this.connection);
+
+    return thusdToken.mintList(borrowerOperations.address, { ...overrides });
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getCollateralSurplusBalance} */
   getCollateralSurplusBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     address ??= _requireAddress(this.connection);
@@ -575,6 +582,12 @@ class _BlockPolledReadableEthersLiquity
     return this._userHit(address, overrides)
       ? this.store.state.erc20TokenAllowance
       : this._readable.getErc20TokenAllowance(address, overrides);
+  }
+
+  async checkMintList(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._blockHit(overrides)
+      ? this.store.state.mintList
+      : this._readable.checkMintList(overrides);
   }
 
   async getCollateralSurplusBalance(

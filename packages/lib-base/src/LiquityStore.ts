@@ -73,6 +73,9 @@ export interface LiquityStoreBaseState {
   /** User's stability deposit. */
   stabilityDeposit: StabilityDeposit;
 
+  /** MintList validation. */
+  mintList: boolean;
+
   /** @internal */
   _feesInNormalMode: Fees;
 
@@ -366,6 +369,8 @@ export abstract class LiquityStore<T = unknown> {
       symbol: baseState.symbol,
 
       collateralAddress: baseState.collateralAddress,
+
+      mintList: baseState.mintList,
 
       stabilityDeposit: this._updateIfChanged(
         equals,

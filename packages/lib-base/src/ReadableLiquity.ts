@@ -128,6 +128,13 @@ export interface ReadableLiquity {
   getErc20TokenAllowance(address?: string): Promise<Decimal>;
 
   /**
+   * Check if a certain address is on the thUSD contract mintList.
+   *
+   * @param address - Address of the BorrowersOpertaions contract
+   */
+  checkMintList(): Promise<boolean>;
+
+  /**
    * Get the amount of leftover collateral available for withdrawal by an address.
    *
    * @remarks

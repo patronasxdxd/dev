@@ -149,6 +149,13 @@ export class _CachedReadableLiquity<T extends unknown[]>
     );
   }
 
+  async checkMintList(...extraParams: T): Promise<boolean> {
+    return (
+      this._cache.checkMintList(...extraParams) ??
+      this._readable.checkMintList(...extraParams)
+    );
+  }
+
   async getCollateralSurplusBalance(address?: string, ...extraParams: T): Promise<Decimal> {
     return (
       this._cache.getCollateralSurplusBalance(address, ...extraParams) ??
