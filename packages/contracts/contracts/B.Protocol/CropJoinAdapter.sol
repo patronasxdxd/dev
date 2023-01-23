@@ -4,8 +4,8 @@ pragma solidity ^0.8.10;
 
 // NOTE! - this is not an ERC20 token. transfer is not supported.
 contract CropJoinAdapter {
-    string constant public name = "B.AMM THUSD-ETH";
-    string constant public symbol = "THUSDETH";
+    string constant public name = "B.AMM THUSD-COLLATERAL";
+    string constant public symbol = "THUSDCOLL";
     uint256 constant public decimals = 18;
     
     uint256     public total;                  // total gems       [wad]

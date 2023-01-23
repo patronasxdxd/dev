@@ -84,7 +84,7 @@ contract BorrowerWrappersScript is BorrowerOperationsScript, ETHTransferScript, 
         uint256 collBalanceAfter = address(this).balance;
         uint256 claimedCollateral = collBalanceAfter - collBalanceBefore;
 
-        // Add claimed ETH to trove, get more THUSD and stake it into the Stability Pool
+        // Add claimed collateral to trove, get more THUSD and stake it into the Stability Pool
         if (claimedCollateral > 0) {
             _requireUserHasTrove(address(this));
             uint256 THUSDAmount = _getNetTHUSDAmount(claimedCollateral);

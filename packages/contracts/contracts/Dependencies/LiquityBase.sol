@@ -51,7 +51,7 @@ contract LiquityBase is BaseMath, ILiquityBase {
         return _debt - THUSD_GAS_COMPENSATION;
     }
 
-    // Return the amount of ETH to be drawn from a trove's collateral and sent as gas compensation.
+    // Return the amount of collateral to be drawn from a trove's collateral and sent as gas compensation.
     function _getCollGasCompensation(uint256 _entireColl) internal pure returns (uint) {
         return _entireColl / PERCENT_DIVISOR;
     }

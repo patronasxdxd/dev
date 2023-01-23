@@ -587,7 +587,7 @@ contract('BAMM', async accounts => {
         const expectedPoolBalance = toBN(dec(6105, 18)).sub(priceWithFee.feeTHusdAmount)
         assert.equal(expectedPoolBalance.toString(), (await stabilityPool.getCompoundedTHUSDDeposit(bamm.address)).toString())
 
-        // check eth balance
+        // check collateral balance
         const balance = await getCollateralBalance(dest)
         assert.isTrue(balance.eq(priceWithFee.collateralAmount))
 

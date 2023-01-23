@@ -56,7 +56,7 @@ contract CollSurplusPool is Ownable, CheckContract, ICollSurplusPool {
     }
 
     /* Returns the collateral state variable at ActivePool address.
-       Not necessarily equal to the raw collateral balance - ether can be forcibly sent to contracts. */
+       Not necessarily equal to the raw collateral balance - collateral can be forcibly sent to contracts. */
     function getCollateralBalance() external view override returns (uint) {
         return collateral;
     }

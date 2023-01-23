@@ -58,7 +58,7 @@ contract DefaultPool is Ownable, CheckContract, IDefaultPool {
     /*
     * Returns the collateral state variable.
     *
-    * Not necessarily equal to the the contract's raw collateral balance - ether can be forcibly sent to contracts.
+    * Not necessarily equal to the the contract's raw collateral balance - collateral can be forcibly sent to contracts.
     */
     function getCollateralBalance() external view override returns (uint) {
         return collateral;
