@@ -27,7 +27,7 @@ export const Dashboard = (): JSX.Element => (
         <Chart />
       </Container>
       <Container variant="oneThird">
-        <SystemStatsCard />
+        <SystemStatsCard IsPriceEditable={true} />
       </Container>
       <Container variant="half">
         <VaultCard />

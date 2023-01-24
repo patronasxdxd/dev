@@ -23,13 +23,14 @@ const editableStyle: ThemeUICSSProperties = {
 
 type LiquidationManagerProps = {
   version: string
+  isMintList: boolean
 }
 
 const selector = ({ symbol }: ThresholdStoreState) => ({
   symbol
 });
 
-export const LiquidationManager = ({ version }: LiquidationManagerProps): JSX.Element => {
+export const LiquidationManager = ({ version, isMintList }: LiquidationManagerProps): JSX.Element => {
   const inputId: string = "liquidate-vaults";
   const { threshold } = useThreshold();
   const { [version]: { symbol } } = useThresholdSelector(selector);

@@ -10,12 +10,13 @@ import { LiquidatedVault } from "./LiquidatedVault";
 import { Decimal } from "@liquity/lib-base";
 
 export type VaultProps = {
-  version: string 
+  version: string
+  isMintList: boolean
   children?: React.ReactNode
 }
 
 export const Vault = (props: VaultProps): JSX.Element => {
-  const { version } = props;
+  const { version, isMintList } = props;
   const { views } = useVaultView();
 
   switch (views[version]) {
@@ -33,13 +34,13 @@ export const Vault = (props: VaultProps): JSX.Element => {
       return <Opening {...props} version={version} />;
     }
     case "LIQUIDATED": {
-      return <LiquidatedVault {...props} version={version} />;
+      return <LiquidatedVault {...props} version={version} isMintList={isMintList} />;
     }
     case "REDEEMED": {
       return <RedeemedVault {...props} version={version} />;
     }
     case "NONE": {
-      return <NoVault {...props} version={version} />;
+      return <NoVault {...props} version={version} isMintList={isMintList} />;
     }
   }
 };

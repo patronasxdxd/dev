@@ -9,6 +9,7 @@ import { EditPrice } from "./Dashboard/EditPrice";
 
 type SystemStatsCardProps = {
   variant?: string;
+  IsPriceEditable?: boolean
 };
 
 const selector = ({
@@ -31,7 +32,7 @@ const selector = ({
   symbol,
 });
 
-export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps): JSX.Element => {
+export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemStatsCardProps): JSX.Element => {
   const thresholdSelector = useThresholdSelector(selector)
   const thresholdSelectorKeys = Object.keys(thresholdSelector)
   const [borrowingFeeAvgPct, setBorrowingFeeAvgPct] = useState(new Percent(Decimal.from(0)))
@@ -69,7 +70,7 @@ export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps): JSX
   }, [isMounted])
 
   return (
-    <Card {...{ variant }}>
+    <Card {...{ variant }} sx={{ width: "100%" }}>
       <Card variant="layout.columns">
         <Flex sx={{
           width: "100%",
@@ -142,9 +143,11 @@ export const SystemStatsCard = ({ variant = "info" }: SystemStatsCardProps): JSX
           fontSize: "0.9em",
           pb: 3
         }}>
-          {Object.keys(thresholdSelector).map((version, index) => {
-            return <EditPrice key={index} version={version} />
-          })}
+          {IsPriceEditable === true &&
+            Object.keys(thresholdSelector).map((version, index) => {
+              return <EditPrice key={index} version={version} />
+            })
+          }
         </Flex>
       </Card>
     </Card>

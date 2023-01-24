@@ -14,9 +14,10 @@ const select = ({ collateralSurplusBalance, symbol }: ThresholdStoreState) => ({
 
 type LiquidatedVaultProps = {
   version: string
+  isMintList: boolean
 }
 
-export const LiquidatedVault = ({ version }: LiquidatedVaultProps): JSX.Element => {
+export const LiquidatedVault = ({ version, isMintList }: LiquidatedVaultProps): JSX.Element => {
   const { [version]: { hasSurplusCollateral, symbol } } = useThresholdSelector(select);
   const { dispatchEvent } = useVaultView();
 
@@ -54,7 +55,10 @@ export const LiquidatedVault = ({ version }: LiquidatedVaultProps): JSX.Element 
 
           <Flex variant="layout.actions">
             {hasSurplusCollateral && <CollateralSurplusAction version={version} />}
-            {!hasSurplusCollateral && <Button onClick={handleOpenVault} sx={{ width: "100%" }}>Open Vault</Button>}
+            {!hasSurplusCollateral && 
+            isMintList === false 
+            ? <Button sx={{ mt: 2, width: "100%" }} disabled={ true }>Open a Vault</Button>
+            : <Button onClick={handleOpenVault} sx={{ width: "100%" }}>Open Vault</Button>}
           </Flex>
           <Flex sx={{ 
             justifyContent: "center",

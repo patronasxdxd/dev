@@ -48,6 +48,7 @@ const liquidatableInRecoveryMode = (
 
 type RiskyVaultsProps = {
   version: string
+  isMintList: boolean
 };
 
 const select = ({
@@ -67,7 +68,7 @@ const select = ({
   symbol
 });
 
-export const RiskyVaults = ({ version }: RiskyVaultsProps): JSX.Element => {
+export const RiskyVaults = ({ version, isMintList }: RiskyVaultsProps): JSX.Element => {
   const { chainId } = useWeb3React<Web3Provider>();
   const {
     [version]: {

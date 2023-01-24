@@ -16,9 +16,10 @@ const select = ({ erc20TokenBalance, symbol }: ThresholdStoreState) => ({
 
 type NoVaultProps = {
   version: string
+  isMintList: boolean
 }
 
-export const NoVault = ({ version }: NoVaultProps): JSX.Element => {
+export const NoVault = ({ version, isMintList }: NoVaultProps): JSX.Element => {
   const { dispatchEvent } = useVaultView();
   const handleOpenVault = useCallback(() => {
     dispatchEvent("OPEN_VAULT_PRESSED", version);
@@ -63,9 +64,11 @@ export const NoVault = ({ version }: NoVaultProps): JSX.Element => {
               { symbol }
             </Box>
           </Flex>
-          <Button onClick={handleOpenVault} sx={{ mt: 2, width: "100%" }}>
-            Open a Vault
-          </Button>
+          {
+            isMintList === false
+            ? <Button sx={{ mt: 2, width: "100%" }} disabled={ true }>Open a Vault</Button>
+            : <Button onClick={handleOpenVault} sx={{ mt: 2, width: "100%" }}>Open a Vault</Button>
+          }
           <Flex sx={{ 
             alignSelf: "center",
             fontSize: 11,
