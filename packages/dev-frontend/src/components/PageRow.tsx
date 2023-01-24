@@ -42,7 +42,7 @@ export const PageRow = ({ Component, isWidthFull }: PageRowProps ): JSX.Element 
   }, [])
 
   return <Flex sx={{ flexDirection: "column", flexWrap: "wrap", }}>
-    <Heading as="h3" sx={{ marginTop: "2em" }}>Active Collaterals</Heading>
+    <Heading as="h3" sx={{ marginTop: "2em" }}>{approvedVersions.length > 0 && "Active Collaterals"}</Heading>
     <Container variant="pageRow">
       {approvedVersions.map((version, index) => 
         <Box key={index} sx={{ width: ["100%", "100%", isWidthFull ? "100%" : "50%"], pr: [0, "1em", "2em"] }}>
@@ -55,7 +55,7 @@ export const PageRow = ({ Component, isWidthFull }: PageRowProps ): JSX.Element 
         </Container>
       )}
     </Container>
-    <Heading as="h3" sx={{ marginTop: "3em" }}>Non-active Collaterals</Heading>
+    <Heading as="h3" sx={{ marginTop: "3em" }}>{notApprovedVersions.length > 0 && "Non-active Collaterals"}</Heading>
     <Container variant="pageRow">
       {notApprovedVersions.map((version, index) => 
         <Box key={index} sx={{ width: ["100%", "100%", isWidthFull ? "100%" : "50%"], pr: [0, "1em", "2em"] }}>
