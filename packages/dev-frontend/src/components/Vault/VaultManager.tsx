@@ -241,13 +241,18 @@ export const VaultManager = ({ version, collateral, debt }: VaultManagerProps): 
         </Button>
       </Flex>
       <Flex sx={{ 
-        justifyContent: "center",
+        alignSelf: "center",
         fontSize: 11,
         fontWeight: "body",
-        mt: "1.5em"
+        justifyContent: "space-between",
+        width: "100%",
+        px: "1em"
       }}>
-        <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
-        in the documentation
+        <Flex>
+          <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+          in the documentation
+        </Flex>
+        <Flex>Deployment version: {version}</Flex>
       </Flex>
     </VaultEditor>
   );

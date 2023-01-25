@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Box, Button, Card, Flex, Link } from "theme-ui";
+import { Box, Button, Card, Flex, Link, Text } from "theme-ui";
 import { useVaultView } from "./context/VaultViewContext";
 
 import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
@@ -49,12 +49,15 @@ export const NoVault = ({ version, isMintList }: NoVaultProps): JSX.Element => {
           width: "100%",
           flexDirection: "column",
           px: ["1em", 0, "1.6em"],
+          pb: "1em",
           gap: "1em"
         }}>
-          <ActionDescription title={`You haven't borrowed ${ COIN } any yet`}>
-            You can borrow { COIN } by opening a vault.
+          <ActionDescription title={`You haven't borrowed any ${ COIN } yet`}>
+            {isMintList === true && (
+              `You can borrow ${ COIN } by opening a vault.`
+            )}
           </ActionDescription>
-          { symbol } available 
+          { symbol } available
           <Flex variant="layout.balanceRow">
             <GenericIcon imgSrc="./icons/threshold-icon.svg" height={"18px"} />
             <Box sx={{ fontSize: 3 }}>
@@ -73,9 +76,15 @@ export const NoVault = ({ version, isMintList }: NoVaultProps): JSX.Element => {
             alignSelf: "center",
             fontSize: 11,
             fontWeight: "body",
+            justifyContent: "space-between",
+            width: "100%",
+            px: "1em"
           }}>
-            <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
-            in the documentation
+            <Flex>
+              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+              in the documentation
+            </Flex>
+            <Flex>Deployment version: {version}</Flex>
           </Flex>
         </Flex>
       </Card>

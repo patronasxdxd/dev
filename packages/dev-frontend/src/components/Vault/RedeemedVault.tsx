@@ -44,6 +44,7 @@ export const RedeemedVault = ({ version }: RedeemedVaultProps): JSX.Element => {
             width: "100%",
             flexDirection: "column",
             px: ["1em", 0, "1.7em"],
+            pb: "1em",
             mt: 4
           }}>
           <InfoMessage title="Your Vault has been redeemed.">
@@ -56,15 +57,18 @@ export const RedeemedVault = ({ version }: RedeemedVaultProps): JSX.Element => {
             {!hasSurplusCollateral && <Button onClick={handleOpenVault} sx={{ width: "100%" }}>Open Vault</Button>}
           </Flex>
           <Flex sx={{ 
-            justifyContent: "center",
+            alignSelf: "center",
             fontSize: 11,
             fontWeight: "body",
-            mt: "1.5em"
+            justifyContent: "space-between",
+            width: "100%",
+            px: "1em"
           }}>
-            <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">
-              Read about
-            </Link>
-            in the documentation
+            <Flex>
+              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+              in the documentation
+            </Flex>
+            <Flex>Deployment version: {version}</Flex>
           </Flex>
         </Flex>
       </Card>
