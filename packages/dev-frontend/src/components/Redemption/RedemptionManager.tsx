@@ -120,6 +120,7 @@ export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Elem
           width: "100%",
           flexDirection: "column",
           px: ["1em", 0, "1.6em"],
+          pb: "1em"
         }}>
           <EditableRow
             label="Redeem"
@@ -169,10 +170,16 @@ export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Elem
             alignSelf: "center",
             fontSize: 11,
             fontWeight: "body",
+            justifyContent: "space-between",
+            width: "100%",
+            px: "1em",
             mt: 3
           }}>
-            <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
-            in the documentation
+            <Flex>
+              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+              in the documentation
+            </Flex>
+            <Flex>Deployment version: {version}</Flex>
           </Flex>
         </Flex>
         {changePending && <LoadingOverlay />}

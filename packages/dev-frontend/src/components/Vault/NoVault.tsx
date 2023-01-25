@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Box, Button, Card, Flex, Link, Text } from "theme-ui";
+import { Box, Button, Card, Flex, Link } from "theme-ui";
 import { useVaultView } from "./context/VaultViewContext";
 
 import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
