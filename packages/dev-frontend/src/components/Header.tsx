@@ -6,8 +6,11 @@ import { UserAccount } from "./UserAccount";
 
 const logoHeight: string = "32px";
 
-export const Header: React.FC = ({ children }) => {
+type HeaderProps = {
+  children: React.ReactNode
+}
 
+export const Header = ({ children }: HeaderProps): JSX.Element => {
   return (
     <Container variant="header">
       <Link variant="logo" to="/">

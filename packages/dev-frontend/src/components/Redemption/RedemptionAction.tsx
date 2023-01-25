@@ -2,29 +2,32 @@ import { Button } from "theme-ui";
 
 import { Decimal } from "@liquity/lib-base";
 
-import { useLiquity } from "../../hooks/LiquityContext";
+import { useThreshold } from "../../hooks/ThresholdContext";
 import { useTransactionFunction } from "../Transaction";
 
 type RedemptionActionProps = {
+  version: string,
   transactionId: string;
   disabled?: boolean;
   thusdAmount: Decimal;
   maxRedemptionRate: Decimal;
 };
 
-export const RedemptionAction: React.FC<RedemptionActionProps> = ({
+export const RedemptionAction = ({
+  version,
   transactionId,
   disabled,
   thusdAmount,
   maxRedemptionRate
-}) => {
+}: RedemptionActionProps): JSX.Element => {
   const {
-    liquity: { send: liquity }
-  } = useLiquity();
+    threshold: { [version]: { send: threshold } }
+  } = useThreshold();
 
   const [sendTransaction] = useTransactionFunction(
     transactionId,
-    liquity.redeemTHUSD.bind(liquity, thusdAmount, maxRedemptionRate)
+    threshold.redeemTHUSD.bind(threshold, thusdAmount, maxRedemptionRate),
+    version
   );
 
   return (

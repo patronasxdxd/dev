@@ -530,7 +530,6 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOpe
         internal
         view
     {
-
         /*
          * If contract has been removed from the thUSD mintlist remove the adjustment restrictions
          */

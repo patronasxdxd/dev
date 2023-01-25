@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Flex, Card, Link } from "theme-ui";
 
-import { Decimal, Percent, LiquityStoreState, MINIMUM_COLLATERAL_RATIO } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { Decimal, Percent, LiquityStoreState as ThresholdStoreState, MINIMUM_COLLATERAL_RATIO } from "@liquity/lib-base";
+import { useThresholdSelector } from "@liquity/lib-react";
 
 import { COIN } from "../../strings";
 
 import { LoadingOverlay } from "../LoadingOverlay";
-import { EditableRow, StaticRow } from "../Trove/Editor";
+import { EditableRow, StaticRow } from "../Vault/Editor";
 import { ActionDescription, Amount } from "../ActionDescription";
 import { ErrorDescription } from "../ErrorDescription";
 import { useMyTransactionState } from "../Transaction";
@@ -17,17 +17,23 @@ import { InfoIcon } from "../InfoIcon";
 
 const mcrPercent = new Percent(MINIMUM_COLLATERAL_RATIO).toString(0);
 
-const select = ({ price, fees, total, thusdBalance }: LiquityStoreState) => ({
+const select = ({ price, fees, total, thusdBalance, symbol }: ThresholdStoreState) => ({
   price,
   fees,
   total,
-  thusdBalance
+  thusdBalance,
+  symbol
 });
+
+type RedemptionManagerProps = {
+  version: string
+}
 
 const transactionId = "redemption";
 
-export const RedemptionManager: React.FC = () => {
-  const { price, fees, total, thusdBalance } = useLiquitySelector(select);
+export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Element => {
+  const { [version]: { price, fees, total, thusdBalance, symbol } } = useThresholdSelector(select);
+  const [isMounted, setIsMounted] = useState<boolean>(true);
   const [thusdAmount, setTHUSDAmount] = useState(Decimal.ZERO);
   const [changePending, setChangePending] = useState(false);
   const editingState = useState<string>();
@@ -42,10 +48,15 @@ export const RedemptionManager: React.FC = () => {
   const myTransactionState = useMyTransactionState(transactionId);
 
   useEffect(() => {
+    if (!isMounted) {
+      return
+    }
     if (
-      myTransactionState.type === "waitingForApproval" ||
-      myTransactionState.type === "waitingForConfirmation"
+      (myTransactionState.type === "waitingForApproval" ||
+      myTransactionState.type === "waitingForConfirmation") &&
+      myTransactionState.version === version
     ) {
+      console.log(myTransactionState.version === version)
       setChangePending(true);
     } else if (myTransactionState.type === "failed" || myTransactionState.type === "cancelled") {
       setChangePending(false);
@@ -53,7 +64,11 @@ export const RedemptionManager: React.FC = () => {
       setTHUSDAmount(Decimal.ZERO);
       setChangePending(false);
     }
-  }, [myTransactionState.type, setChangePending, setTHUSDAmount]);
+
+    return () => { 
+      setIsMounted(false);
+    };
+  }, [myTransactionState.type, myTransactionState.version, setChangePending, setTHUSDAmount, isMounted, version]);
 
   const [canRedeem, description] = total.collateralRatioIsBelowMinimum(price)
     ? [
@@ -77,7 +92,7 @@ export const RedemptionManager: React.FC = () => {
     : [
         true,
         <ActionDescription>
-          You will receive <Amount>{ethAmount.sub(ethFee).prettify(4)} ETH</Amount> in exchange for{" "}
+          You will receive <Amount>{ethAmount.sub(ethFee).prettify(4)} {symbol}</Amount> in exchange for{" "}
           <Amount>
             {thusdAmount.prettify()} {COIN}
           </Amount>
@@ -89,19 +104,23 @@ export const RedemptionManager: React.FC = () => {
     <Card variant="mainCards">
       <Card variant="layout.columns">
         <Flex sx={{
+            justifyContent: "space-between",
             width: "100%",
             gap: 1,
             pb: "1em",
             borderBottom: 1, 
             borderColor: "border"
-        }}>
-          Redeem
-        </Flex>
-        
+          }}>
+            <Flex sx={{ gap: 1 }}>
+              Reedem
+            </Flex>
+            { symbol } Collateral
+          </Flex>
         <Flex sx={{
           width: "100%",
           flexDirection: "column",
           px: ["1em", 0, "1.6em"],
+          pb: "1em"
         }}>
           <EditableRow
             label="Redeem"
@@ -120,12 +139,12 @@ export const RedemptionManager: React.FC = () => {
               inputId="redeem-fee"
               amount={ethFee.toString(4)}
               pendingAmount={feePct.toString(2)}
-              unit="ETH"
+              unit={ symbol }
               infoIcon={
                 <InfoIcon
                   tooltip={
                     <Card variant="tooltip" sx={{ minWidth: "240px" }}>
-                      The Redemption Fee is charged as a percentage of the redeemed Ether. The Redemption
+                      The Redemption Fee is charged as a percentage of the redeemed collateral. The Redemption
                       Fee depends on thUSD redemption volumes and is 0.5% at minimum.
                     </Card>
                   }
@@ -140,6 +159,7 @@ export const RedemptionManager: React.FC = () => {
 
           <Flex variant="layout.actions">
             <RedemptionAction
+              version={version}
               transactionId={transactionId}
               disabled={!dirty || !canRedeem}
               thusdAmount={thusdAmount}
@@ -150,10 +170,16 @@ export const RedemptionManager: React.FC = () => {
             alignSelf: "center",
             fontSize: 11,
             fontWeight: "body",
+            justifyContent: "space-between",
+            width: "100%",
+            px: "1em",
             mt: 3
           }}>
-            <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
-            in the documentation
+            <Flex>
+              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+              in the documentation
+            </Flex>
+            <Flex>Deployment version: {version}</Flex>
           </Flex>
         </Flex>
         {changePending && <LoadingOverlay />}

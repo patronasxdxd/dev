@@ -80,6 +80,16 @@ export interface ReadableLiquity {
   getTotal(): Promise<Trove>;
 
   /**
+   * Get the ERC20 token's symbol .
+   */
+  getSymbol(): Promise<string>;
+
+  /**
+   * Get the collateral address of the BorrowersOperations contract.
+   */
+  getCollateralAddress(): Promise<string>;
+
+  /**
    * Get the current state of a Stability Deposit.
    *
    * @param address - Address that owns the Stability Deposit.
@@ -116,6 +126,13 @@ export interface ReadableLiquity {
    * @param address - Address holding the Erc20 tokens.
    */
   getErc20TokenAllowance(address?: string): Promise<Decimal>;
+
+  /**
+   * Check if a certain address is on the thUSD contract mintList.
+   *
+   * @param address - Address of the BorrowersOpertaions contract
+   */
+  checkMintList(): Promise<boolean>;
 
   /**
    * Get the amount of leftover collateral available for withdrawal by an address.

@@ -8,7 +8,7 @@ export type InfoIconProps = Pick<TippyProps, "placement"> &
     tooltip: React.ReactNode;
   };
 
-export const InfoIcon: React.FC<InfoIconProps> = ({ placement = "right", tooltip, size = "1x" }) => {
+export const InfoIcon = ({ placement = "right", tooltip, size = "1x" }: InfoIconProps): JSX.Element => {
   return (
     <Tippy interactive={true} placement={placement} content={tooltip} maxWidth="268px">
       <span>

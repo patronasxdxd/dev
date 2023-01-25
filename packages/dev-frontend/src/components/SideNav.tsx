@@ -6,7 +6,7 @@ import { Link } from "./Link";
 
 const logoHeight = "32px";
 
-export const SideNav: React.FC = () => {
+export const SideNav = (): JSX.Element => {
   const [isVisible, setIsVisible] = useState(false);
   const overlay = useRef<HTMLDivElement>(null);
 
@@ -38,7 +38,7 @@ export const SideNav: React.FC = () => {
         <GenericIcon imgSrc="./threshold-usd-icon.svg" height={logoHeight} p={2} />
         <Box as="nav" sx={{ m: 3, mt: 1, p: 0 }} onClick={() => setIsVisible(false)}>
           <Link to="/">Dashboard</Link>
-          <Link to="/risky-troves">Risky Troves</Link>
+          <Link to="/risky-vault">Risky Vaults</Link>
           <Link to="/redemption">Redemption</Link>
         </Box>
       </Flex>

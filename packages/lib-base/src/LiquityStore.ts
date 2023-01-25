@@ -64,8 +64,17 @@ export interface LiquityStoreBaseState {
    */
   troveBeforeRedistribution: TroveWithPendingRedistribution;
 
+  /** token's ERC20 symbol. */
+  symbol: string;
+
+  /** BorrowersOperations contract collateral address. */
+  collateralAddress: string;
+
   /** User's stability deposit. */
   stabilityDeposit: StabilityDeposit;
+
+  /** MintList validation. */
+  mintList: boolean;
 
   /** @internal */
   _feesInNormalMode: Fees;
@@ -356,6 +365,12 @@ export abstract class LiquityStore<T = unknown> {
         baseState.troveBeforeRedistribution,
         baseStateUpdate.troveBeforeRedistribution
       ),
+
+      symbol: baseState.symbol,
+
+      collateralAddress: baseState.collateralAddress,
+
+      mintList: baseState.mintList,
 
       stabilityDeposit: this._updateIfChanged(
         equals,

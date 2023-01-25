@@ -24,6 +24,8 @@ export class _CachedReadableLiquity<T extends unknown[]> implements _ReadableLiq
     // (undocumented)
     getStabilityDeposit(address?: string, ...extraParams: T): Promise<StabilityDeposit>;
     // (undocumented)
+    getSymbol(...extraParams: T): Promise<string>;
+    // (undocumented)
     getTHUSDBalance(address?: string, ...extraParams: T): Promise<Decimal>;
     // (undocumented)
     getTHUSDInStabilityPool(...extraParams: T): Promise<Decimal>;
@@ -246,6 +248,7 @@ export interface LiquityStoreBaseState {
     // @internal (undocumented)
     _riskiestTroveBeforeRedistribution: TroveWithPendingRedistribution;
     stabilityDeposit: StabilityDeposit;
+    symbol: string;
     thusdBalance: Decimal;
     thusdInStabilityPool: Decimal;
     total: Trove;
@@ -411,6 +414,7 @@ export interface ReadableLiquity {
     getPCVBalance(): Promise<Decimal>;
     getPrice(): Promise<Decimal>;
     getStabilityDeposit(address?: string): Promise<StabilityDeposit>;
+    getSymbol(): Promise<string>;
     getTHUSDBalance(address?: string): Promise<Decimal>;
     getTHUSDInStabilityPool(): Promise<Decimal>;
     getTotal(): Promise<Trove>;

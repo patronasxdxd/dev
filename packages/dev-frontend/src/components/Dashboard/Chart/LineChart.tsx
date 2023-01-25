@@ -1,8 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Box, Card, Flex } from "theme-ui";
-
-import { FIRST_ERC20_COLLATERAL } from '../../../strings';
-
 import { useTvl } from "./context/ChartContext";
 import { tvlData } from "./context/ChartProvider";
 
@@ -19,6 +16,8 @@ import {
   ScriptableContext
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
+import { useThresholdSelector } from "@liquity/lib-react";
 
 ChartJS.register(
   CategoryScale,
@@ -52,12 +51,18 @@ ChartJS.register({
   }
 });
 
-export const LineChart: React.FC = () => { 
+const selector = ({
+  symbol,
+}: ThresholdStoreState) => ({
+  symbol,
+});
 
+export const LineChart = (): JSX.Element => { 
   const [activeData, setActiveData] = useState<number | string>('-');
   const [activeLabel, setActiveLabel] = useState<string>();
   const [chartData, setChartData] = useState<Array<tvlData>>();
   const [chartLabels, setChartLabels] = useState<Array<number>>();
+  const {v1: { symbol }} = useThresholdSelector(selector);
 
   useTvl().then((result) => {
     const { tvl , timestamps } = result;
@@ -157,7 +162,7 @@ export const LineChart: React.FC = () => {
     ],
   };
   return (
-    <Card variant="layout.columns" style={{ height: "25em" }}>
+    <Card variant="layout.columns">
       <Flex sx={{
         width: "100%",
         gap: 1,
@@ -186,7 +191,7 @@ export const LineChart: React.FC = () => {
             fontWeight: "bold", 
             color: "text"
           }}>
-            {activeData} {activeData > 0 && ` ${ FIRST_ERC20_COLLATERAL }` }
+            {activeData} {activeData > 0 && ` ${ symbol }` }
           </Flex>
           <Flex sx={{ 
             position: "absolute",

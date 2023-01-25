@@ -1,74 +1,76 @@
-import React, { useState, useEffect } from "react";
-import { Box, Button, Card, Flex, Input, ThemeUICSSProperties } from "theme-ui";
-import { Decimal, Percent, LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
-import { COIN, FIRST_ERC20_COLLATERAL } from '../strings';
-import { useLiquity } from "../hooks/LiquityContext";
+import { useState, useEffect } from "react";
+import { Box, Card, Flex } from "theme-ui";
+import { Decimal, Percent, LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
+import { useThresholdSelector } from "@liquity/lib-react";
+import { COIN } from '../strings';
 
 import { SystemStat } from "./SystemStat";
-import { Transaction } from "./Transaction";
+import { EditPrice } from "./Dashboard/EditPrice";
 
 type SystemStatsCardProps = {
   variant?: string;
+  IsPriceEditable?: boolean
 };
 
-const editableStyle: ThemeUICSSProperties = {
-  bg: "white",
-  px: "1.1em",
-  py: "0.3em",
-  border: 1,
-  borderColor: "border",
-  borderRadius: 8,
-  flexGrow: 1,
-  pl: 3,
-  boxShadow: 0
-};
-
-const select = ({
+const selector = ({
   numberOfTroves,
   price,
   total,
   thusdInStabilityPool,
   borrowingRate,
   redemptionRate,
-  pcvBalance
-}: LiquityStoreState) => ({
+  pcvBalance,
+  symbol,
+}: ThresholdStoreState) => ({
   numberOfTroves,
   price,
   total,
   thusdInStabilityPool,
   borrowingRate,
   redemptionRate,
-  pcvBalance
+  pcvBalance,
+  symbol,
 });
 
-export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "info" }) => {
-
-  const {
-    liquity: {
-      send: liquity,
-      connection: { _priceFeedIsTestnet: canSetPrice }
-    }
-  } = useLiquity();
-
-  const {
-    numberOfTroves,
-    price,
-    total,
-    borrowingRate,
-    thusdInStabilityPool,
-    pcvBalance
-  } = useLiquitySelector(select);
-
-  const [editedPrice, setEditedPrice] = useState(price.toString(2));
-  const borrowingFeePct = new Percent(borrowingRate);
+export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemStatsCardProps): JSX.Element => {
+  const thresholdSelector = useThresholdSelector(selector)
+  const thresholdSelectorKeys = Object.keys(thresholdSelector)
+  const [borrowingFeeAvgPct, setBorrowingFeeAvgPct] = useState(new Percent(Decimal.from(0)))
+  const [totalVaults, setTotalVaults] = useState(0)
+  const [thusdInStabilityPool, setThusdInStabilityPool] = useState(Decimal.from(0))
+  const [thusdSupply, setThusdSupply] = useState(Decimal.from(0))
+  const [pcvBalance, setPcvBalance] = useState(Decimal.from(0))
+  const [isMounted, setIsMounted] = useState<boolean>(true);
 
   useEffect(() => {
-    setEditedPrice(price.toString(2));
-  }, [price]);
+    if (!isMounted) {
+      return;
+    }
+    let borrowingFee = Decimal.from(0)
+    let thusdSupply = Decimal.from(0)
+
+    thresholdSelectorKeys.forEach(version => {
+      const versionedThresholdSelector = thresholdSelector[version]
+
+      borrowingFee = borrowingFee.add(versionedThresholdSelector.borrowingRate)
+      setTotalVaults(prev => prev + versionedThresholdSelector.numberOfTroves)
+      setThusdInStabilityPool(prev => prev.add(versionedThresholdSelector.thusdInStabilityPool))
+      setPcvBalance(prev => prev.add(versionedThresholdSelector.pcvBalance))
+      thusdSupply = thusdSupply.add(versionedThresholdSelector.total.debt)
+    })
+
+    const borrowingfeeAvg = borrowingFee.div(thresholdSelectorKeys.length)
+    setBorrowingFeeAvgPct(new Percent(borrowingfeeAvg))
+    setThusdSupply(thusdSupply)
+
+    return () => {
+      setIsMounted(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted])
 
   return (
-    <Card {...{ variant }}>
+    <Card {...{ variant }} sx={{ width: "100%" }}>
       <Card variant="layout.columns">
         <Flex sx={{
           width: "100%",
@@ -88,23 +90,26 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
           gap: "1em"
         }}>
           <SystemStat
-            info="Borrowing Fee"
+            info={`Borrowing Fee ${ thresholdSelectorKeys.length > 1 && "Avg." }`}
             tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount, and is part of a Vault's debt."
           >
-            {borrowingFeePct.toString(2)}
-          </SystemStat>
+            {borrowingFeeAvgPct && borrowingFeeAvgPct.toString(2)}
+          </SystemStat>    
           <SystemStat
-            info="Vaults"
+            info="Total Vaults"
             tooltip="The total number of active Vaults in the system."
           >
-              {Decimal.from(numberOfTroves).prettify(0)}
+            {Decimal.from(totalVaults).prettify(0)}
           </SystemStat>
-          <SystemStat
-            info="TVL"
-            tooltip={`The Total Value Locked (TVL) is the total value of Ether locked as collateral in the system, given in ${ FIRST_ERC20_COLLATERAL } and USD.`}
-          >
-            {total.collateral.shorten()} { FIRST_ERC20_COLLATERAL }
-          </SystemStat>
+          {thresholdSelectorKeys.map((version, index) => (
+            <SystemStat
+              key={index}
+              info={`${ thresholdSelector[version].symbol } deposited collateral`}
+              tooltip={`The Total Value Locked (TVL) is the total value of ${ thresholdSelector[version].symbol } locked as collateral in the system.`}
+            >
+              {thresholdSelector[version].total.collateral.shorten()} { thresholdSelector[version].symbol }
+            </SystemStat>
+          ))}
           <SystemStat
             info={`${ COIN } in Stability Pool`}
             tooltip={`The total ${ COIN } currently held in the Stability Pool, expressed as an amount and a fraction of the ${ COIN } supply.`}
@@ -116,77 +121,33 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
             tooltip={`The total ${ COIN } currently held in the PCV, expressed as an amount and a fraction of the ${ COIN } supply.`}
           >
             {pcvBalance.prettify()}
-          </SystemStat>
+          </SystemStat>             
           <SystemStat
             info={`${ COIN } Supply`}
             tooltip={`The total ${ COIN } minted by the Threshold USD Protocol.`}
           >
-            {total.debt.shorten()}
+            {thusdSupply.shorten()}
           </SystemStat>
-          {total.collateralRatioIsBelowCritical(price) &&
-            (<SystemStat
-              info="Recovery Mode"
-              tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Trove's debt. Operations are also restricted that would negatively impact the TCR."
-            >
-              {total.collateralRatioIsBelowCritical(price) ? <Box color="danger">Yes</Box> : "No"}
-            </SystemStat>)
-          }
-        </Flex>
-        <Flex sx={{
-          width: "100%",
-          gap: 1,
-          pt: 4,
-          pb: 2,
-          borderBottom: 1,
-          borderColor: "border"
-        }}>
-          { FIRST_ERC20_COLLATERAL } Price
+          {thresholdSelectorKeys.forEach((version) => {
+            thresholdSelector[version].total.collateralRatioIsBelowCritical(thresholdSelector[version].price) &&
+              <SystemStat
+                info={`${ thresholdSelector[version].symbol } Recovery Mode`}
+                tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Vault's debt. Operations are also restricted that would negatively impact the TCR."
+              >
+                <Box color="danger">Yes</Box>
+              </SystemStat>
+          })}
         </Flex>
         <Flex sx={{
           width: "100%",
           fontSize: "0.9em",
-          pt: 14,
           pb: 3
         }}>
-          <SystemStat>
-            {canSetPrice ? (
-              <Flex sx={{ mb:1, alignItems: "center", height: "1.2em", }}>
-                <Input
-                  variant="layout.balanceRow"
-                  sx={{
-                  ...editableStyle,
-                  }}
-                  type="number"
-                  step="any"
-                  value={editedPrice}
-                  onChange={e => setEditedPrice(e.target.value)}
-                />
-                <Transaction
-                  id="set-price"
-                  tooltip="Set"
-                  tooltipPlacement="bottom"
-                  send={overrides => {
-                    if (!editedPrice) {
-                      throw new Error("Invalid price");
-                    }
-                    return liquity.setPrice(Decimal.from(editedPrice), overrides);
-                  }}
-                >
-                  <Button sx={{
-                    ml: 3,
-                    width: "1rem",
-                    height: "1rem",
-                    borderRadius: 6,
-                    top: 0
-                  }}>
-                    Set
-                  </Button>
-                </Transaction>
-              </Flex>
-            ) : (
-              price.toString(2)
-            )}
-          </SystemStat>
+          {IsPriceEditable === true &&
+            Object.keys(thresholdSelector).map((version, index) => {
+              return <EditPrice key={index} version={version} />
+            })
+          }
         </Flex>
       </Card>
     </Card>

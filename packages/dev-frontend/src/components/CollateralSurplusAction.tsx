@@ -1,34 +1,37 @@
 import React, { useEffect } from "react";
 import { Button, Flex, Spinner } from "theme-ui";
 
-import { LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
+import { useThresholdSelector } from "@liquity/lib-react";
 
-import { useLiquity } from "../hooks/LiquityContext";
+import { useThreshold } from "../hooks/ThresholdContext";
 
 import { Transaction, useMyTransactionState } from "./Transaction";
-import { useTroveView } from "./Trove/context/TroveViewContext";
+import { useVaultView } from "./Vault/context/VaultViewContext";
 
-const select = ({ collateralSurplusBalance }: LiquityStoreState) => ({
-  collateralSurplusBalance
+const select = ({ collateralSurplusBalance, symbol }: ThresholdStoreState) => ({
+  collateralSurplusBalance, symbol
 });
 
-export const CollateralSurplusAction: React.FC = () => {
-  const { collateralSurplusBalance } = useLiquitySelector(select);
+type CollateralSurplusActionProps = {
+  version: string
+}
+
+export const CollateralSurplusAction = ({ version }: CollateralSurplusActionProps): JSX.Element => {
+  const { [version]: { collateralSurplusBalance, symbol } } = useThresholdSelector(select);
   const {
-    liquity: { send: liquity }
-  } = useLiquity();
+    threshold: { [version]: { send: threshold } }
+  } = useThreshold();
 
   const myTransactionId = "claim-coll-surplus";
   const myTransactionState = useMyTransactionState(myTransactionId);
 
-  const { dispatchEvent } = useTroveView();
-
+  const { dispatchEvent } = useVaultView();
   useEffect(() => {
     if (myTransactionState.type === "confirmedOneShot") {
-      dispatchEvent("TROVE_SURPLUS_COLLATERAL_CLAIMED");
+      dispatchEvent("VAULT_SURPLUS_COLLATERAL_CLAIMED", version);
     }
-  }, [myTransactionState.type, dispatchEvent]);
+  }, [myTransactionState.type, dispatchEvent, version]);
 
   return myTransactionState.type === "waitingForApproval" ? (
     <Flex variant="layout.actions">
@@ -42,10 +45,11 @@ export const CollateralSurplusAction: React.FC = () => {
     <Flex variant="layout.actions">
       <Transaction
         id={myTransactionId}
-        send={liquity.claimCollateralSurplus.bind(liquity, undefined)}
+        send={threshold.claimCollateralSurplus.bind(threshold, undefined)}
+        version={version}
       >
-        <Button sx={{ mx: 2 }}>Claim {collateralSurplusBalance.prettify()} ETH</Button>
+        <Button sx={{ mx: 2 }}>Claim {collateralSurplusBalance.prettify()} {symbol}</Button>
       </Transaction>
     </Flex>
-  ) : null;
+  ) : <></>;
 };

@@ -1,5 +1,7 @@
 import { BlockTag } from "@ethersproject/abstract-provider";
 
+import { panic, DEPLOYMENT_VERSION_FOR_TESTING } from "./_utils";
+
 import {
   CollateralGainTransferDetails,
   Decimal,
@@ -29,7 +31,10 @@ import {
   EthersLiquityConnection,
   EthersLiquityConnectionOptionalParams,
   EthersLiquityStoreOption,
+  getProviderAndSigner,
+  UnsupportedNetworkError,
   _connect,
+  _getVersionedDeployments,
   _usingStore
 } from "./EthersLiquityConnection";
 
@@ -49,6 +54,7 @@ import {
 import { ReadableEthersLiquity, ReadableEthersLiquityWithStore } from "./ReadableEthersLiquity";
 import { SendableEthersLiquity } from "./SendableEthersLiquity";
 import { BlockPolledLiquityStore } from "./BlockPolledLiquityStore";
+import { _LiquityDeploymentJSON } from "./contracts"
 
 /**
  * Thrown by {@link EthersLiquity} in case of transaction failure.
@@ -137,7 +143,14 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     signerOrProvider: EthersSigner | EthersProvider,
     optionalParams?: EthersLiquityConnectionOptionalParams
   ): Promise<EthersLiquity> {
-    return EthersLiquity._from(await _connect(signerOrProvider, optionalParams));
+    const [provider, signer] = getProviderAndSigner(signerOrProvider);
+    const chainId = (await provider.getNetwork()).chainId
+    const versionedDeployments = await _getVersionedDeployments(chainId === 1 ? 'mainnet': 'goerli')
+
+    const importedDeployment: _LiquityDeploymentJSON =
+    versionedDeployments.v1 ?? panic(new UnsupportedNetworkError(chainId));
+
+    return EthersLiquity._from(await _connect(DEPLOYMENT_VERSION_FOR_TESTING, importedDeployment, provider, signer, optionalParams));
   }
 
   /**
@@ -198,6 +211,16 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     return this._readable.getTotal(overrides);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getSymbol} */
+  getSymbol(overrides?: EthersCallOverrides): Promise<string> {
+    return this._readable.getSymbol(overrides);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getCollateralAddress} */
+  getCollateralAddress(overrides?: EthersCallOverrides): Promise<string> {
+    return this._readable.getCollateralAddress(overrides);
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getStabilityDeposit} */
   getStabilityDeposit(address?: string, overrides?: EthersCallOverrides): Promise<StabilityDeposit> {
     return this._readable.getStabilityDeposit(address, overrides);
@@ -226,6 +249,11 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getErc20TokenAllowance} */
   getErc20TokenAllowance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     return this._readable.getErc20TokenAllowance(address, overrides);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.checkMintList} */
+  checkMintList(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._readable.checkMintList(overrides);
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getCollateralSurplusBalance} */

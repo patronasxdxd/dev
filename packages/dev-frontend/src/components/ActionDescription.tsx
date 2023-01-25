@@ -3,10 +3,11 @@ import { Box, Flex, Text } from "theme-ui";
 import { GenericIcon } from "./GenericIcon";
 
 type ActionDescriptionProps = {
+  children: React.ReactNode
   title?: string;
 };
 
-export const ActionDescription: React.FC<ActionDescriptionProps> = ({ title, children }) => (
+export const ActionDescription = ({ title, children }: ActionDescriptionProps): JSX.Element => (
   <Box
     sx={{
       display: "flex",
@@ -32,6 +33,10 @@ export const ActionDescription: React.FC<ActionDescriptionProps> = ({ title, chi
   </Box>
 );
 
-export const Amount: React.FC = ({ children }) => (
+type AmountProps = {
+  children: React.ReactNode
+}
+
+export const Amount = ({ children }: AmountProps): JSX.Element => (
   <Text sx={{ whiteSpace: "nowrap" }}>{children}</Text>
 );

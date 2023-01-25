@@ -4,20 +4,31 @@
 
 ```ts
 
+import { BigNumber } from '@ethersproject/bignumber';
 import { BigNumberish } from '@ethersproject/bignumber';
 import { BlockTag } from '@ethersproject/abstract-provider';
+import { BytesLike } from '@ethersproject/bytes';
+import { CallOverrides } from '@ethersproject/contracts';
 import { CollateralGainTransferDetails } from '@liquity/lib-base';
+import { Contract } from '@ethersproject/contracts';
+import { ContractInterface } from '@ethersproject/contracts';
+import { ContractTransaction } from '@ethersproject/contracts';
 import { Decimal } from '@liquity/lib-base';
 import { Decimalish } from '@liquity/lib-base';
 import { ErrorCode } from '@ethersproject/logger';
+import { EventFilter } from '@ethersproject/contracts';
 import { FailedReceipt } from '@liquity/lib-base';
 import { Fees } from '@liquity/lib-base';
 import { LiquidationDetails } from '@liquity/lib-base';
 import { LiquityReceipt } from '@liquity/lib-base';
 import { LiquityStore } from '@liquity/lib-base';
 import { LiquityStoreState } from '@liquity/lib-base';
+import { Log } from '@ethersproject/abstract-provider';
+import { LogDescription } from '@ethersproject/abi';
 import { MinedReceipt } from '@liquity/lib-base';
 import { ObservableLiquity } from '@liquity/lib-base';
+import { Overrides } from '@ethersproject/contracts';
+import { PayableOverrides } from '@ethersproject/contracts';
 import { PopulatableLiquity } from '@liquity/lib-base';
 import { PopulatedLiquityTransaction } from '@liquity/lib-base';
 import { PopulatedRedemption } from '@liquity/lib-base';
@@ -74,14 +85,14 @@ export interface BorrowingOperationOptionalParams {
 }
 
 // @internal (undocumented)
-export function _connectByChainId<T>(provider: EthersProvider, signer: EthersSigner | undefined, chainId: number, optionalParams: EthersLiquityConnectionOptionalParams & {
+export function _connectByChainId<T>(version: string, deployment: _LiquityDeploymentJSON, provider: EthersProvider, signer: EthersSigner | undefined, chainId: number, optionalParams: EthersLiquityConnectionOptionalParams & {
     useStore: T;
 }): EthersLiquityConnection & {
     useStore: T;
 };
 
 // @internal (undocumented)
-export function _connectByChainId(provider: EthersProvider, signer: EthersSigner | undefined, chainId: number, optionalParams?: EthersLiquityConnectionOptionalParams): EthersLiquityConnection;
+export function _connectByChainId(version: string, deployment: _LiquityDeploymentJSON, provider: EthersProvider, signer: EthersSigner | undefined, chainId: number, optionalParams?: EthersLiquityConnectionOptionalParams): EthersLiquityConnection;
 
 // @public
 export interface EthersCallOverrides {
@@ -144,6 +155,8 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     // (undocumented)
     getStabilityDeposit(address?: string, overrides?: EthersCallOverrides): Promise<StabilityDeposit>;
     // (undocumented)
+    getSymbol(overrides?: EthersCallOverrides): Promise<string>;
+    // (undocumented)
     getTHUSDBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal>;
     // (undocumented)
     getTHUSDInStabilityPool(overrides?: EthersCallOverrides): Promise<Decimal>;
@@ -196,6 +209,7 @@ export interface EthersLiquityConnection extends EthersLiquityConnectionOptional
     readonly addresses: Record<string, string>;
     readonly chainId: number;
     readonly deploymentDate: Date;
+    readonly deploymentVersion: string;
     // @internal (undocumented)
     readonly _isDev: boolean;
     // @internal (undocumented)
@@ -261,6 +275,35 @@ export type EthersTransactionReceipt = TransactionReceipt;
 
 // @public
 export type EthersTransactionResponse = TransactionResponse;
+
+// @internal (undocumented)
+export function _getVersionedDeployments(network: string): Promise<{
+    versionedDeployments: _VersionedLiquityDeployments;
+}>;
+
+// @internal (undocumented)
+export type _LiquityContractAddresses = Record<_LiquityContractsKey, string>;
+
+// @internal (undocumented)
+export type _LiquityContractsKey = keyof _LiquityContracts;
+
+// @internal (undocumented)
+export interface _LiquityDeploymentJSON {
+    // (undocumented)
+    readonly addresses: _LiquityContractAddresses;
+    // (undocumented)
+    readonly chainId: number;
+    // (undocumented)
+    readonly deploymentDate: number;
+    // (undocumented)
+    readonly _isDev: boolean;
+    // (undocumented)
+    readonly _priceFeedIsTestnet: boolean;
+    // (undocumented)
+    readonly startBlock: number;
+    // (undocumented)
+    readonly version: string;
+}
 
 // @alpha (undocumented)
 export class ObservableEthersLiquity implements ObservableLiquity {
@@ -419,6 +462,8 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     // (undocumented)
     getStabilityDeposit(address?: string, overrides?: EthersCallOverrides): Promise<StabilityDeposit>;
     // (undocumented)
+    getSymbol(overrides?: EthersCallOverrides): Promise<string>;
+    // (undocumented)
     getTHUSDBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal>;
     // (undocumented)
     getTHUSDInStabilityPool(overrides?: EthersCallOverrides): Promise<Decimal>;
@@ -516,6 +561,9 @@ export class UnsupportedNetworkError extends Error {
     constructor(chainId: number);
     readonly chainId: number;
 }
+
+// @internal (undocumented)
+export type _VersionedLiquityDeployments = Record<string, _LiquityDeploymentJSON>;
 
 
 // (No @packageDocumentation comment for this package)

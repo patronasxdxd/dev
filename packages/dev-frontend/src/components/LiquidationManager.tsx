@@ -1,15 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card, Flex, Button, Link, Input, ThemeUICSSProperties } from "theme-ui";
-import { StaticAmounts, Row } from "./Trove/Editor";
-import { useLiquity } from "../hooks/LiquityContext";
+import { StaticAmounts, Row } from "./Vault/Editor";
+import { useThreshold } from "../hooks/ThresholdContext";
 import { Transaction } from "./Transaction";
 import { InfoIcon } from "./InfoIcon";
-
-const inputId: string = "liquidate-vaults";
+import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
+import { useThresholdSelector } from "@liquity/lib-react";
 
 const editableStyle: ThemeUICSSProperties = {
   backgroundColor: "terciary",
-
   px: "1.1em",
   py: "0.45em",
   border: 1,
@@ -22,26 +21,38 @@ const editableStyle: ThemeUICSSProperties = {
   fontSize: 3,
 };
 
-export const LiquidationManager: React.FC = () => {
-  const {
-    liquity: { send: liquity }
-  } = useLiquity();
-  const [numberOfTrovesToLiquidate, setNumberOfTrovesToLiquidate] = useState("90");
-  
+type LiquidationManagerProps = {
+  version: string
+  isMintList: boolean
+}
+
+const selector = ({ symbol }: ThresholdStoreState) => ({
+  symbol
+});
+
+export const LiquidationManager = ({ version, isMintList }: LiquidationManagerProps): JSX.Element => {
+  const inputId: string = "liquidate-vaults";
+  const { threshold } = useThreshold();
+  const { [version]: { symbol } } = useThresholdSelector(selector);
+  const [numberOfTrovesToLiquidate, setNumberOfVaultsToLiquidate] = useState("90");
   const [editing, setEditing] = useState<string>();
 
   return (
     <Card variant="mainCards">
       <Card variant="layout.columns">
         <Flex sx={{
+          justifyContent: "space-between",
           width: "100%",
           gap: 1,
           pb: "1em",
           borderBottom: 1, 
           borderColor: "border"
         }}>
-          Liquidate
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">Vaults that fall under the minimum collateral ratio of 110% will be closed (liquidated). The debt of the Vault is canceled and absorbed by the Stability Pool and its collateral distributed among Stability Providers.</Card>} />
+          <Flex sx={{ gap: 1 }}>
+            Liquidate
+            <InfoIcon size="sm" tooltip={<Card variant="tooltip">Vaults that fall under the minimum collateral ratio of 110% will be closed (liquidated). The debt of the Vault is canceled and absorbed by the Stability Pool and its collateral distributed among Stability Providers.</Card>} />
+          </Flex>
+          {symbol} Collateral
         </Flex>
         <Flex sx={{
           width: "100%",
@@ -58,7 +69,7 @@ export const LiquidationManager: React.FC = () => {
                 min="1"
                 step="1"
                 value={numberOfTrovesToLiquidate}
-                onChange={e => setNumberOfTrovesToLiquidate(e.target.value)}
+                onChange={e => setNumberOfVaultsToLiquidate(e.target.value)}
                 onBlur={() => {
                   setEditing(undefined);
                 }}
@@ -82,7 +93,6 @@ export const LiquidationManager: React.FC = () => {
               />
             </>
           )}
-
           <Flex sx={{ ml: 2, alignItems: "center" }}>
             <Transaction
               id="batch-liquidate"
@@ -90,8 +100,9 @@ export const LiquidationManager: React.FC = () => {
                 if (!numberOfTrovesToLiquidate) {
                   throw new Error("Invalid number");
                 }
-                return liquity.liquidateUpTo(parseInt(numberOfTrovesToLiquidate, 10), overrides);
+                return threshold[version].send.liquidateUpTo(parseInt(numberOfTrovesToLiquidate, 10), overrides);
               }}
+              version={version}
             >
               <Button sx={{ width: "100%" }}>Liquidate</Button>
             </Transaction>
@@ -100,10 +111,16 @@ export const LiquidationManager: React.FC = () => {
             alignSelf: "center",
             fontSize: 11,
             fontWeight: "body",
+            justifyContent: "space-between",
+            width: "100%",
+            px: "1em",
             mt: 2
           }}>
-            <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
-            in the documentation
+            <Flex>
+              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+              in the documentation
+            </Flex>
+            <Flex>Deployment version: {version}</Flex>
           </Flex>
         </Flex>
       </Card>

@@ -1,6 +1,5 @@
 import React from "react";
 import { Box, Flex, Spinner } from "theme-ui";
-
 import { Dialog } from "./Dialog";
 
 type WaitingDialogProps = {
@@ -9,16 +8,17 @@ type WaitingDialogProps = {
   waitReason: React.ReactNode;
   cancelLabel?: string;
   onCancel: () => void;
+  children: React.ReactNode
 };
 
-export const WaitingDialog: React.FC<WaitingDialogProps> = ({
+export const WaitingDialog = ({
   title,
   icon,
   waitReason,
   cancelLabel,
   onCancel,
   children
-}) => (
+}: WaitingDialogProps): JSX.Element => (
   <Dialog title={title} icon={icon} cancelLabel={cancelLabel} onCancel={onCancel}>
     {children}
     <Box sx={{ px: [3, 4], pb: [3, 4] }}>
