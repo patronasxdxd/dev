@@ -1,48 +1,50 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { Flex, Button, Card, Link } from "theme-ui";
 import {
-  LiquityStoreState,
+  LiquityStoreState as ThresholdStoreState,
   Decimal,
-  Trove,
+  Trove as Vault,
   THUSD_LIQUIDATION_RESERVE,
   Percent,
   Difference
 } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { useThresholdSelector } from "@liquity/lib-react";
 
-import { useStableTroveChange } from "../../hooks/useStableTroveChange";
+import { useStableVaultChange } from "../../hooks/useStableVaultChange";
 import { useValidationState } from "./validation/useValidationState";
 import { ActionDescription } from "../ActionDescription";
 import { Transaction, useMyTransactionState } from "../Transaction";
-import { useLiquity } from "../../hooks/LiquityContext";
-import { TroveAction } from "./TroveAction";
-import { useTroveView } from "./context/TroveViewContext";
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
+import { useThreshold } from "../../hooks/ThresholdContext";
+import { VaultAction } from "./VaultAction";
+import { useVaultView } from "./context/VaultViewContext";
+import { COIN } from "../../strings";
 import { InfoIcon } from "../InfoIcon";
 import { LoadingOverlay } from "../LoadingOverlay";
 import { CollateralRatio } from "./CollateralRatio";
 import { EditableRow, StaticRow } from "./Editor";
-import { ExpensiveTroveChangeWarning, GasEstimationState } from "./ExpensiveTroveChangeWarning";
+import { ExpensiveVaultChangeWarning, GasEstimationState } from "./ExpensiveVaultChangeWarning";
 import {
-  selectForTroveChangeValidation,
-  validateTroveChange
-} from "./validation/validateTroveChange";
+  selectForVaultChangeValidation,
+  validateVaultChange
+} from "./validation/validateVaultChange";
 
-const selector = (state: LiquityStoreState) => {
-  const { trove, fees, price, erc20TokenBalance } = state;
+const selector = (state: ThresholdStoreState) => {
+  const { trove, fees, price, collateralAddress, erc20TokenBalance, symbol } = state;
   return {
     trove,
     fees,
     price,
+    collateralAddress,
     erc20TokenBalance,
-    validationContext: selectForTroveChangeValidation(state)
+    validationContext: selectForVaultChangeValidation(state),
+    symbol,
   };
 };
 
-const TRANSACTION_ID = "trove-adjustment";
-const APPROVE_TRANSACTION_ID = "trove-approve";
+const TRANSACTION_ID = "vault-adjustment";
+const APPROVE_TRANSACTION_ID = "vault-approve";
 
-const feeFrom = (original: Trove, edited: Trove, borrowingRate: Decimal): Decimal => {
+const feeFrom = (original: Vault, edited: Vault, borrowingRate: Decimal): Decimal => {
   const change = original.whatChanged(edited, borrowingRate);
 
   if (change && change.type !== "invalidCreation" && change.params.borrowTHUSD) {
@@ -52,101 +54,104 @@ const feeFrom = (original: Trove, edited: Trove, borrowingRate: Decimal): Decima
   }
 };
 
-const applyUnsavedCollateralChanges = (unsavedChanges: Difference, trove: Trove) => {
+const applyUnsavedCollateralChanges = (unsavedChanges: Difference, vault: Vault) => {
   if (unsavedChanges.absoluteValue) {
     if (unsavedChanges.positive) {
-      return trove.collateral.add(unsavedChanges.absoluteValue);
+      return vault.collateral.add(unsavedChanges.absoluteValue);
     }
     if (unsavedChanges.negative) {
-      if (unsavedChanges.absoluteValue.lt(trove.collateral)) {
-        return trove.collateral.sub(unsavedChanges.absoluteValue);
+      if (unsavedChanges.absoluteValue.lt(vault.collateral)) {
+        return vault.collateral.sub(unsavedChanges.absoluteValue);
       }
     }
-    return trove.collateral;
+    return vault.collateral;
   }
-  return trove.collateral;
+  return vault.collateral;
 };
 
-const applyUnsavedNetDebtChanges = (unsavedChanges: Difference, trove: Trove) => {
+const applyUnsavedNetDebtChanges = (unsavedChanges: Difference, vault: Vault) => {
   if (unsavedChanges.absoluteValue) {
     if (unsavedChanges.positive) {
-      return trove.netDebt.add(unsavedChanges.absoluteValue);
+      return vault.netDebt.add(unsavedChanges.absoluteValue);
     }
     if (unsavedChanges.negative) {
-      if (unsavedChanges.absoluteValue.lt(trove.netDebt)) {
-        return trove.netDebt.sub(unsavedChanges.absoluteValue);
+      if (unsavedChanges.absoluteValue.lt(vault.netDebt)) {
+        return vault.netDebt.sub(unsavedChanges.absoluteValue);
       }
     }
-    return trove.netDebt;
+    return vault.netDebt;
   }
-  return trove.netDebt;
+  return vault.netDebt;
 };
 
-export const Adjusting: React.FC = () => {
+type AdjustingProps = {
+  version: string
+}
+
+export const Adjusting = ({ version }: AdjustingProps): JSX.Element => {
   const {
-    liquity: { send: liquity }
-  } = useLiquity();
-  const { dispatchEvent } = useTroveView();
-  const { trove, fees, price, erc20TokenBalance, validationContext } = useLiquitySelector(selector);
+    threshold: { [version]: { send: threshold } }
+  } = useThreshold();
+  const { dispatchEvent } = useVaultView();
+  const { [version]: { trove, fees, price, collateralAddress, erc20TokenBalance, symbol, validationContext } } = useThresholdSelector(selector);
   const editingState = useState<string>();
-  const previousTrove = useRef<Trove>(trove);
+  const previousVault = useRef<Vault>(trove);
   const [collateral, setCollateral] = useState<Decimal>(trove.collateral);
   const [netDebt, setNetDebt] = useState<Decimal>(trove.netDebt);
-
   const transactionState = useMyTransactionState(TRANSACTION_ID);
   const borrowingRate = fees.borrowingRate();
 
   useEffect(() => {
     if (transactionState.type === "confirmedOneShot") {
-      dispatchEvent("TROVE_ADJUSTED");
+      dispatchEvent("VAULT_ADJUSTED", version);
     }
-  }, [transactionState.type, dispatchEvent]);
+  }, [transactionState.type, dispatchEvent, version]);
 
   useEffect(() => {
-    if (!previousTrove.current.collateral.eq(trove.collateral)) {
-      const unsavedChanges = Difference.between(collateral, previousTrove.current.collateral);
+    if (!previousVault.current.collateral.eq(trove.collateral)) {
+      const unsavedChanges = Difference.between(collateral, previousVault.current.collateral);
       const nextCollateral = applyUnsavedCollateralChanges(unsavedChanges, trove);
       setCollateral(nextCollateral);
     }
-    if (!previousTrove.current.netDebt.eq(trove.netDebt)) {
-      const unsavedChanges = Difference.between(netDebt, previousTrove.current.netDebt);
+    if (!previousVault.current.netDebt.eq(trove.netDebt)) {
+      const unsavedChanges = Difference.between(netDebt, previousVault.current.netDebt);
       const nextNetDebt = applyUnsavedNetDebtChanges(unsavedChanges, trove);
       setNetDebt(nextNetDebt);
     }
-    previousTrove.current = trove;
+    previousVault.current = trove;
   }, [trove, collateral, netDebt]);
 
   const handleCancelPressed = useCallback(() => {
-    dispatchEvent("CANCEL_ADJUST_TROVE_PRESSED");
-  }, [dispatchEvent]);
+    dispatchEvent("CANCEL_ADJUST_VAULT_PRESSED", version);
+  }, [dispatchEvent, version]);
 
   const isDirty = !collateral.eq(trove.collateral) || !netDebt.eq(trove.netDebt);
   const isDebtIncrease = netDebt.gt(trove.netDebt);
   const debtIncreaseAmount = isDebtIncrease ? netDebt.sub(trove.netDebt) : Decimal.ZERO;
 
   const fee = isDebtIncrease
-    ? feeFrom(trove, new Trove(trove.collateral, trove.debt.add(debtIncreaseAmount)), borrowingRate)
+    ? feeFrom(trove, new Vault(trove.collateral, trove.debt.add(debtIncreaseAmount)), borrowingRate)
     : Decimal.ZERO;
   const totalDebt = netDebt.add(THUSD_LIQUIDATION_RESERVE).add(fee);
   const maxBorrowingRate = borrowingRate.add(0.005);
-  const updatedTrove = isDirty ? new Trove(collateral, totalDebt) : trove;
+  const updatedVault = isDirty ? new Vault(collateral, totalDebt) : trove;
   const feePct = new Percent(borrowingRate);
   const availableErc20 = erc20TokenBalance;
   const maxCollateral = trove.collateral.add(availableErc20);
   const collateralMaxedOut = collateral.eq(maxCollateral);
   const collateralRatio =
-    !collateral.isZero && !netDebt.isZero ? updatedTrove.collateralRatio(price) : undefined;
+    !collateral.isZero && !netDebt.isZero ? updatedVault.collateralRatio(price) : undefined;
   const collateralRatioChange = Difference.between(collateralRatio, trove.collateralRatio(price));
 
-  const [troveChange, description] = validateTroveChange(
+  const [troveChange, description] = validateVaultChange(
     trove,
-    updatedTrove,
+    updatedVault,
     borrowingRate,
     validationContext
   );
 
-  const stableTroveChange = useStableTroveChange(troveChange);
-  const { hasApproved, amountToApprove } = useValidationState(stableTroveChange);
+  const stableVaultChange = useStableVaultChange(troveChange);
+  const { hasApproved, amountToApprove } = useValidationState(version, stableVaultChange);
 
   const [gasEstimationState, setGasEstimationState] = useState<GasEstimationState>({ type: "idle" });
 
@@ -155,45 +160,48 @@ export const Adjusting: React.FC = () => {
     transactionState.type === "waitingForConfirmation";
 
   if (trove.status !== "open") {
-    return null;
+    return <></>;
   }
 
   return (
     <Card variant="mainCards">
       <Card variant="layout.columns">
         <Flex sx={{
+          justifyContent: "space-between",
           width: "100%",
           gap: 1,
           pb: "1em",
           borderBottom: 1, 
-          borderColor: "border",
-
+          borderColor: "border"
         }}>
-          Adjusting Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ FIRST_ERC20_COLLATERAL }) to it.</Card>} />
+          <Flex sx={{ gap: 1 }}>
+            Adjusting Vault
+            <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ symbol }) to it.</Card>} />
+          </Flex>
+          { symbol } Collateral
         </Flex>
-
         <Flex sx={{
           width: "100%",
           flexDirection: "column",
           px: ["1em", 0, "1.7em"],
+          pb: "1em",
           mt: 2
         }}>
           <EditableRow
             label="Collateral"
-            inputId="trove-collateral"
+            inputId="vault-collateral"
             amount={collateral.prettify(4)}
             maxAmount={maxCollateral.toString()}
             maxedOut={collateralMaxedOut}
             editingState={editingState}
-            unit={ FIRST_ERC20_COLLATERAL }
+            unit={ symbol }
             editedAmount={collateral.toString(4)}
             setEditedAmount={(amount: string) => setCollateral(Decimal.from(amount))}
           />
 
           <EditableRow
             label="Net debt"
-            inputId="trove-net-debt-amount"
+            inputId="vault-net-debt-amount"
             amount={netDebt.prettify()}
             unit={COIN}
             editingState={editingState}
@@ -203,15 +211,15 @@ export const Adjusting: React.FC = () => {
 
           <StaticRow
             label="Liquidation Reserve"
-            inputId="trove-liquidation-reserve"
+            inputId="vault-liquidation-reserve"
             amount={`${THUSD_LIQUIDATION_RESERVE}`}
             unit={COIN}
             infoIcon={
               <InfoIcon
                 tooltip={
                   <Card variant="tooltip" sx={{ width: "200px" }}>
-                    An amount set aside to cover the liquidator’s gas costs if your Trove needs to be
-                    liquidated. The amount increases your debt and is refunded if you close your Trove
+                    An amount set aside to cover the liquidator’s gas costs if your Vault needs to be
+                    liquidated. The amount increases your debt and is refunded if you close your Vault
                     by fully paying off its net debt.
                   </Card>
                 }
@@ -221,7 +229,7 @@ export const Adjusting: React.FC = () => {
 
           <StaticRow
             label="Borrowing Fee"
-            inputId="trove-borrowing-fee"
+            inputId="vault-borrowing-fee"
             amount={fee.prettify(2)}
             pendingAmount={feePct.toString(2)}
             unit={COIN}
@@ -239,14 +247,14 @@ export const Adjusting: React.FC = () => {
 
           <StaticRow
             label="Total debt"
-            inputId="trove-total-debt"
+            inputId="vault-total-debt"
             amount={totalDebt.prettify(2)}
             unit={COIN}
             infoIcon={
               <InfoIcon
                 tooltip={
                   <Card variant="tooltip" sx={{ width: "240px" }}>
-                    The total amount of { COIN } your Trove will hold.{" "}
+                    The total amount of { COIN } your Vault will hold.{" "}
                     {isDirty && (
                       <>
                         You will need to repay {totalDebt.sub(THUSD_LIQUIDATION_RESERVE).prettify(2)}{" "}
@@ -264,13 +272,14 @@ export const Adjusting: React.FC = () => {
 
           {description ?? (
             <ActionDescription>
-              Adjust your Trove by modifying its collateral, debt, or both.
+              Adjust your Vault by modifying its collateral, debt, or both.
             </ActionDescription>
           )}
 
-          {hasApproved &&
-          (<ExpensiveTroveChangeWarning
-            troveChange={stableTroveChange}
+          {(hasApproved || !collateralAddress) &&
+          (<ExpensiveVaultChangeWarning
+            version={version}
+            vaultChange={stableVaultChange}
             maxBorrowingRate={maxBorrowingRate}
             borrowingFeeDecayToleranceMinutes={60}
             gasEstimationState={gasEstimationState}
@@ -278,24 +287,26 @@ export const Adjusting: React.FC = () => {
           />)}
 
           <Flex variant="layout.actions" sx={{ flexDirection: "column" }}>
-            {!hasApproved && amountToApprove ?
+            {collateralAddress && !hasApproved && amountToApprove ?
               <Transaction
                 id={APPROVE_TRANSACTION_ID}
-                send={liquity.approveErc20.bind(liquity, amountToApprove)}
+                send={threshold.approveErc20.bind(threshold, amountToApprove)}
                 showFailure="asTooltip"
                 tooltipPlacement="bottom"
+                version={version}
               >
-                <Button>Approve { FIRST_ERC20_COLLATERAL }</Button>
+                <Button>Approve { symbol }</Button>
               </Transaction>
-            : stableTroveChange ? (
-              <TroveAction
+            : stableVaultChange ? (
+              <VaultAction
+                version={version}
                 transactionId={TRANSACTION_ID}
-                change={stableTroveChange}
+                change={stableVaultChange}
                 maxBorrowingRate={maxBorrowingRate}
                 borrowingFeeDecayToleranceMinutes={60}
               >
                 Confirm
-              </TroveAction>
+              </VaultAction>
             ) : (
               <Button disabled>Confirm</Button>
             )}
@@ -303,13 +314,18 @@ export const Adjusting: React.FC = () => {
               Cancel
             </Button>
             <Flex sx={{ 
-              justifyContent: "center",
+              alignSelf: "center",
               fontSize: 11,
               fontWeight: "body",
-              mt: "1.5em"
+              justifyContent: "space-between",
+              width: "100%",
+              px: "1em"
             }}>
-              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
-              in the documentation
+              <Flex>
+                <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+                in the documentation
+              </Flex>
+              <Flex>Deployment version: {version}</Flex>
             </Flex>
           </Flex>
         </Flex>

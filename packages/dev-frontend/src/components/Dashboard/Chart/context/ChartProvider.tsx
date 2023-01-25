@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { createClient } from "urql";
 import { ChartContext } from "./ChartContext";
 
-import { useLiquity } from "../../../../hooks/LiquityContext";
+import { useThreshold } from "../../../../hooks/ThresholdContext";
 
 export type BlockObject = {
   number?: string, 
@@ -17,6 +17,7 @@ export type tvlData = {
 
 export type FunctionalPanelProps = {
   loader?: React.ReactNode;
+  children: React.ReactNode;
 };
 
 const fetchBlockByTimestamp = (timestamp: number, BlocksApiUrl: string) => {
@@ -119,12 +120,12 @@ async function fetchData(API_URL: string, query: string) {
   return response;
 };
 
-export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader })  => {
+export const ChartProvider = ({ children, loader }: FunctionalPanelProps): JSX.Element  => {
   const timestamps: Array<number> = createListOfTimestamps();
   const [tvl, setTvl] = useState<Array<tvlData>>();
   const [isMounted, setIsMounted] = useState<boolean>(true);
 
-  const { config, provider } = useLiquity();
+  const { config, provider } = useThreshold();
   const { BlocksApiUrl, ThresholdUsdApiUrl } = config;
 
   useEffect(() => {
@@ -136,7 +137,6 @@ export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader
 
         queryTVL(BlocksUrlByNetwork, ThresholdUrlByNetwork).then(
         (result) => {
-          if (!isMounted) return null;
           setTvl(result);
           return tvl;
         }
@@ -147,7 +147,7 @@ export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted]);
-
+  
   if (!timestamps || !tvl) {
     return <>{loader}</>
   };

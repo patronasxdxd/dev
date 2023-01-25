@@ -1,42 +1,26 @@
-import React from "react";
-import { Box, Card, Container, Heading, Link, Paragraph } from "theme-ui";
-import { SystemStatsCard } from "../components/SystemStatsCard";
+import { Container} from "theme-ui";
 import { Redemption } from "../components/Redemption/Redemption";
-import { InfoMessage } from "../components/InfoMessage";
-import { COIN, FIRST_ERC20_COLLATERAL } from "../strings";
+import { PageRow } from "../components/PageRow";
+import { PageHeading } from "../components/PageHeading";
+import { COIN } from "../strings";
 
-export const RedemptionPage: React.FC = () => {
+export const RedemptionPage = (): JSX.Element => {
   return (
     <Container variant="singlePage">
-      <Heading as="h2" sx={{ ml: "1em", mt: "2.5em", fontWeight: "semibold" }}>
-        Redeem
-      </Heading>
-      <Card sx={{ mr: [0, "2em"] }}>
-        <Box sx={{ px: "2.5em", py: "1.5em" }}>
-          <InfoMessage title="About this functionality">
-            <Paragraph sx={{ mb: "0.5em" }}>
-              Redemptions are expected to be carried out by bots when arbitrage opportunities emerge.
-            </Paragraph>
-            <Paragraph sx={{ mb: "0.5em" }}>
-              Most of the time you will get a better rate for converting { COIN } to { FIRST_ERC20_COLLATERAL } on Uniswap  or other exchanges.
-            </Paragraph>
-            <Paragraph sx={{ mb: "0.5em" }}>
-              Note: Redemption is not for repaying your loan. To repay your loan, adjust your Trove on the Dashboard.
-            </Paragraph>
-            <Link variant="infoLink" href="https://github.com/Threshold-USD/dev" target="_blank">
-              Read more
-            </Link>
-          </InfoMessage>
-        </Box>
-      </Card>
-      <Container variant="pageRow">
-        <Container variant="firstHalf">
-          <Redemption />
-        </Container>
-        <Container variant="secondHalf">
-          <SystemStatsCard />
-        </Container>
-      </Container>
+      <PageHeading
+        heading="Redeem"
+        description={
+          <>
+            Redemptions are expected to be carried out by bots when arbitrage opportunities emerge.
+            <br/>
+            Most of the time you will get a better rate for converting { COIN } to the collateral on Uniswap  or other exchanges.
+            <br/>
+            Note: Redemption is not for repaying your loan. To repay your loan, adjust your Vault on the Dashboard.
+          </>
+        }
+        link="https://github.com/Threshold-USD/dev"
+      />
+      <PageRow Component={Redemption} />
     </Container>
   );
 };

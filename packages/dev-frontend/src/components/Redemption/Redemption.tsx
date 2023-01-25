@@ -1,5 +1,10 @@
 import { RedemptionManager } from "./RedemptionManager";
 
-export const Redemption: React.FC = () => {
-  return <RedemptionManager />;
+type RedemptionProps = {
+  version: string
+  isMintList: boolean
+}
+
+export const Redemption = ({ version, isMintList }: RedemptionProps): JSX.Element => {
+  return <RedemptionManager version={version} />;
 };

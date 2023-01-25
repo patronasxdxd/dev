@@ -2,18 +2,18 @@ import {
   Decimal,
   THUSD_MINIMUM_DEBT,
   THUSD_MINIMUM_NET_DEBT,
-  Trove,
-  TroveAdjustmentParams,
-  TroveChange,
+  Trove as Vault,
+  TroveAdjustmentParams as VaultAdjustmentParams,
+  TroveChange as VaultChange,
   Percent,
   MINIMUM_COLLATERAL_RATIO,
   CRITICAL_COLLATERAL_RATIO,
-  LiquityStoreState,
-  TroveClosureParams,
-  TroveCreationParams
+  LiquityStoreState as ThresholdStoreState,
+  TroveClosureParams as VaultClosureParams,
+  TroveCreationParams as VaultCreationParams
 } from "@liquity/lib-base";
 
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../../strings";
+import { COIN,  } from "../../../strings";
 
 import { ActionDescription, Amount } from "../../ActionDescription";
 import { ErrorDescription } from "../../ErrorDescription";
@@ -21,15 +21,16 @@ import { ErrorDescription } from "../../ErrorDescription";
 const mcrPercent = new Percent(MINIMUM_COLLATERAL_RATIO).toString(0);
 const ccrPercent = new Percent(CRITICAL_COLLATERAL_RATIO).toString(0);
 
-type TroveAdjustmentDescriptionParams = {
-  params: TroveAdjustmentParams<Decimal>;
+type VaultAdjustmentDescriptionParams = {
+  params: VaultAdjustmentParams<Decimal>;
+  symbol: string;
 };
 
-const TroveChangeDescription: React.FC<TroveAdjustmentDescriptionParams> = ({ params }) => (
+const VaultChangeDescription = ({ params, symbol }: VaultAdjustmentDescriptionParams): JSX.Element => (
   <ActionDescription>
     {params.depositCollateral && params.borrowTHUSD ? (
       <>
-        You will deposit <Amount>{params.depositCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount> and receive{" "}
+        You will deposit <Amount>{params.depositCollateral.prettify()} { symbol }</Amount> and receive{" "}
         <Amount>
           {params.borrowTHUSD.prettify()} {COIN}
         </Amount>
@@ -40,29 +41,29 @@ const TroveChangeDescription: React.FC<TroveAdjustmentDescriptionParams> = ({ pa
         <Amount>
           {params.repayTHUSD.prettify()} {COIN}
         </Amount>{" "}
-        and receive <Amount>{params.withdrawCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount>
+        and receive <Amount>{params.withdrawCollateral.prettify()} { symbol }</Amount>
       </>
     ) : params.depositCollateral && params.repayTHUSD ? (
       <>
-        You will deposit <Amount>{params.depositCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount> and pay{" "}
+        You will deposit <Amount>{params.depositCollateral.prettify()} { symbol }</Amount> and pay{" "}
         <Amount>
           {params.repayTHUSD.prettify()} {COIN}
         </Amount>
       </>
     ) : params.borrowTHUSD && params.withdrawCollateral ? (
       <>
-        You will receive <Amount>{params.withdrawCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount> and{" "}
+        You will receive <Amount>{params.withdrawCollateral.prettify()} { symbol }</Amount> and{" "}
         <Amount>
           {params.borrowTHUSD.prettify()} {COIN}
         </Amount>
       </>
     ) : params.depositCollateral ? (
       <>
-        You will deposit <Amount>{params.depositCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount>
+        You will deposit <Amount>{params.depositCollateral.prettify()} { symbol }</Amount>
       </>
     ) : params.withdrawCollateral ? (
       <>
-        You will receive <Amount>{params.withdrawCollateral.prettify()} { FIRST_ERC20_COLLATERAL }</Amount>
+        You will receive <Amount>{params.withdrawCollateral.prettify()} { symbol }</Amount>
       </>
     ) : params.borrowTHUSD ? (
       <>
@@ -83,57 +84,58 @@ const TroveChangeDescription: React.FC<TroveAdjustmentDescriptionParams> = ({ pa
   </ActionDescription>
 );
 
-export const selectForTroveChangeValidation = ({
+export const selectForVaultChangeValidation = ({
   price,
   total,
   erc20TokenBalance,
   thusdBalance,
-  numberOfTroves
-}: LiquityStoreState) => ({ price, total, erc20TokenBalance, thusdBalance, numberOfTroves });
+  numberOfTroves,
+  symbol,
+}: ThresholdStoreState) => ({ price, total, erc20TokenBalance, thusdBalance, numberOfTroves, symbol });
 
-type TroveChangeValidationSelectedState = ReturnType<typeof selectForTroveChangeValidation>;
+type VaultChangeValidationSelectedState = ReturnType<typeof selectForVaultChangeValidation>;
 
-interface TroveChangeValidationContext extends TroveChangeValidationSelectedState {
-  originalTrove: Trove;
-  resultingTrove: Trove;
+interface VaultChangeValidationContext extends VaultChangeValidationSelectedState {
+  originalVault: Vault;
+  resultingVault: Vault;
   recoveryMode: boolean;
   wouldTriggerRecoveryMode: boolean;
 }
 
-export const validateTroveChange = (
-  originalTrove: Trove,
-  adjustedTrove: Trove,
+export const validateVaultChange = (
+  originalVault: Vault,
+  adjustedVault: Vault,
   borrowingRate: Decimal,
-  selectedState: TroveChangeValidationSelectedState
+  selectedState: VaultChangeValidationSelectedState,
 ): [
-  validChange: Exclude<TroveChange<Decimal>, { type: "invalidCreation" }> | undefined,
+  validChange: Exclude<VaultChange<Decimal>, { type: "invalidCreation" }> | undefined,
   description: JSX.Element | undefined
 ] => {
-  const { total, price } = selectedState;
-  const change = originalTrove.whatChanged(adjustedTrove, borrowingRate);
+  const { total, price, symbol } = selectedState;
+  const change = originalVault.whatChanged(adjustedVault, borrowingRate);
   if (!change) {
     return [undefined, undefined];
   }
 
-  // Reapply change to get the exact state the Trove will end up in (which could be slightly
+  // Reapply change to get the exact state the Vault will end up in (which could be slightly
   // different from `edited` due to imprecision).
-  const resultingTrove = originalTrove.apply(change, borrowingRate);
+  const resultingVault = originalVault.apply(change, borrowingRate);
   const recoveryMode = total.collateralRatioIsBelowCritical(price);
   const wouldTriggerRecoveryMode = total
-    .subtract(originalTrove)
-    .add(resultingTrove)
+    .subtract(originalVault)
+    .add(resultingVault)
     .collateralRatioIsBelowCritical(price);
 
-  const context: TroveChangeValidationContext = {
+  const context: VaultChangeValidationContext = {
     ...selectedState,
-    originalTrove,
-    resultingTrove,
+    originalVault,
+    resultingVault,
     recoveryMode,
     wouldTriggerRecoveryMode
   };
 
   if (change.type === "invalidCreation") {
-    // Trying to create a Trove with negative net debt
+    // Trying to create a Vault with negative net debt
     return [
       undefined,
       <ErrorDescription>
@@ -148,27 +150,28 @@ export const validateTroveChange = (
 
   const errorDescription =
     change.type === "creation"
-      ? validateTroveCreation(change.params, context)
+      ? validateVaultCreation(change.params, context)
       : change.type === "closure"
-      ? validateTroveClosure(change.params, context)
-      : validateTroveAdjustment(change.params, context);
+      ? validateVaultClosure(change.params, context)
+      : validateVaultAdjustment(change.params, context);
 
   if (errorDescription) {
     return [undefined, errorDescription];
   }
 
-  return [change, <TroveChangeDescription params={change.params} />];
+  return [change, <VaultChangeDescription params={change.params} symbol={symbol} />];
 };
 
-const validateTroveCreation = (
-  { depositCollateral, borrowTHUSD }: TroveCreationParams<Decimal>,
+const validateVaultCreation = (
+  { depositCollateral, borrowTHUSD }: VaultCreationParams<Decimal>,
   {
-    resultingTrove,
+    resultingVault,
     recoveryMode,
     wouldTriggerRecoveryMode,
     erc20TokenBalance,
-    price
-  }: TroveChangeValidationContext
+    price,
+    symbol
+  }: VaultChangeValidationContext
 ): JSX.Element | null => {
   if (borrowTHUSD.lt(THUSD_MINIMUM_NET_DEBT)) {
     return (
@@ -183,16 +186,16 @@ const validateTroveCreation = (
   }
 
   if (recoveryMode) {
-    if (!resultingTrove.isOpenableInRecoveryMode(price)) {
+    if (!resultingVault.isOpenableInRecoveryMode(price)) {
       return (
         <ErrorDescription>
-          You're not allowed to open a Trove with less than <Amount>{ccrPercent}</Amount> Collateral
-          Ratio during recovery mode. Please increase your Trove's Collateral Ratio.
+          You're not allowed to open a Vault with less than <Amount>{ccrPercent}</Amount> Collateral
+          Ratio during recovery mode. Please increase your Vault's Collateral Ratio.
         </ErrorDescription>
       );
     }
   } else {
-    if (resultingTrove.collateralRatioIsBelowMinimum(price)) {
+    if (resultingVault.collateralRatioIsBelowMinimum(price)) {
       return (
         <ErrorDescription>
           Collateral ratio must be at least <Amount>{mcrPercent}</Amount>.
@@ -203,8 +206,8 @@ const validateTroveCreation = (
     if (wouldTriggerRecoveryMode) {
       return (
         <ErrorDescription>
-          You're not allowed to open a Trove that would cause the Total Collateral Ratio to fall
-          below <Amount>{ccrPercent}</Amount>. Please increase your Trove's Collateral Ratio.
+          You're not allowed to open a Vault that would cause the Total Collateral Ratio to fall
+          below <Amount>{ccrPercent}</Amount>. Please increase your Vault's Collateral Ratio.
         </ErrorDescription>
       );
     }
@@ -214,7 +217,7 @@ const validateTroveCreation = (
     return (
       <ErrorDescription>
         The amount you're trying to deposit exceeds your balance by{" "}
-        <Amount>{depositCollateral.sub(erc20TokenBalance).prettify()} { FIRST_ERC20_COLLATERAL }</Amount>.
+        <Amount>{depositCollateral.sub(erc20TokenBalance).prettify()} { symbol }</Amount>.
       </ErrorDescription>
     );
   }
@@ -222,17 +225,17 @@ const validateTroveCreation = (
   return null;
 };
 
-const validateTroveAdjustment = (
-  { depositCollateral, withdrawCollateral, borrowTHUSD, repayTHUSD }: TroveAdjustmentParams<Decimal>,
+const validateVaultAdjustment = (
+  { depositCollateral, withdrawCollateral, borrowTHUSD, repayTHUSD }: VaultAdjustmentParams<Decimal>,
   {
-    originalTrove,
-    resultingTrove,
+    originalVault,
+    resultingVault,
     recoveryMode,
     wouldTriggerRecoveryMode,
     price,
     erc20TokenBalance,
     thusdBalance
-  }: TroveChangeValidationContext
+  }: VaultChangeValidationContext
 ): JSX.Element | null => {
   if (recoveryMode) {
     if (withdrawCollateral) {
@@ -244,7 +247,7 @@ const validateTroveAdjustment = (
     }
 
     if (borrowTHUSD) {
-      if (resultingTrove.collateralRatioIsBelowCritical(price)) {
+      if (resultingVault.collateralRatioIsBelowCritical(price)) {
         return (
           <ErrorDescription>
             Your collateral ratio must be at least <Amount>{ccrPercent}</Amount> to borrow during
@@ -253,7 +256,7 @@ const validateTroveAdjustment = (
         );
       }
 
-      if (resultingTrove.collateralRatio(price).lt(originalTrove.collateralRatio(price))) {
+      if (resultingVault.collateralRatio(price).lt(originalVault.collateralRatio(price))) {
         return (
           <ErrorDescription>
             You're not allowed to decrease your collateral ratio during recovery mode.
@@ -262,7 +265,7 @@ const validateTroveAdjustment = (
       }
     }
   } else {
-    if (resultingTrove.collateralRatioIsBelowMinimum(price)) {
+    if (resultingVault.collateralRatioIsBelowMinimum(price)) {
       return (
         <ErrorDescription>
           Collateral ratio must be at least <Amount>{mcrPercent}</Amount>.
@@ -274,14 +277,14 @@ const validateTroveAdjustment = (
       return (
         <ErrorDescription>
           The adjustment you're trying to make would cause the Total Collateral Ratio to fall below{" "}
-          <Amount>{ccrPercent}</Amount>. Please increase your Trove's Collateral Ratio.
+          <Amount>{ccrPercent}</Amount>. Please increase your Vault's Collateral Ratio.
         </ErrorDescription>
       );
     }
   }
 
   if (repayTHUSD) {
-    if (resultingTrove.debt.lt(THUSD_MINIMUM_DEBT)) {
+    if (resultingVault.debt.lt(THUSD_MINIMUM_DEBT)) {
       return (
         <ErrorDescription>
           Total debt must be at least{" "}
@@ -318,19 +321,19 @@ const validateTroveAdjustment = (
   return null;
 };
 
-const validateTroveClosure = (
-  { repayTHUSD }: TroveClosureParams<Decimal>,
+const validateVaultClosure = (
+  { repayTHUSD }: VaultClosureParams<Decimal>,
   {
     recoveryMode,
     wouldTriggerRecoveryMode,
     numberOfTroves,
     thusdBalance
-  }: TroveChangeValidationContext
+  }: VaultChangeValidationContext
 ): JSX.Element | null => {
   if (numberOfTroves === 1) {
     return (
       <ErrorDescription>
-        You're not allowed to close your Trove when there are no other Troves in the system.
+        You're not allowed to close your Vault when there are no other Vaults in the system.
       </ErrorDescription>
     );
   }
@@ -338,7 +341,7 @@ const validateTroveClosure = (
   if (recoveryMode) {
     return (
       <ErrorDescription>
-        You're not allowed to close your Trove during recovery mode.
+        You're not allowed to close your Vault during recovery mode.
       </ErrorDescription>
     );
   }
@@ -350,7 +353,7 @@ const validateTroveClosure = (
         <Amount>
           {repayTHUSD.sub(thusdBalance).prettify()} {COIN}
         </Amount>{" "}
-        more to close your Trove.
+        more to close your Vault.
       </ErrorDescription>
     );
   }
@@ -358,7 +361,7 @@ const validateTroveClosure = (
   if (wouldTriggerRecoveryMode) {
     return (
       <ErrorDescription>
-        You're not allowed to close a Trove if it would cause the Total Collateralization Ratio to
+        You're not allowed to close a Vault if it would cause the Total Collateralization Ratio to
         fall below <Amount>{ccrPercent}</Amount>. Please wait until the Total Collateral Ratio
         increases.
       </ErrorDescription>

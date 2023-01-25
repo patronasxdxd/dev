@@ -5,7 +5,7 @@ import { Icon } from "./Icon";
 import { ExternalLinks } from "./ExternalLinks";
 import { UserAccount } from "./UserAccount";
 
-export const Nav: React.FC = () => {
+export const Nav = (): JSX.Element => {
   return (
     <Box sx={{
       display: "flex",

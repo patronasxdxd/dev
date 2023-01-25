@@ -62,20 +62,19 @@ const connectionReducer: React.Reducer<ConnectionState, ConnectionAction> = (sta
         type: "inactive"
       };
   }
-
   console.warn("Ignoring connectionReducer action:");
   console.log(action);
   console.log("  in state:");
   console.log(state);
-
   return state;
 };
 
 type WalletConnectorProps = {
   loader?: React.ReactNode;
+  children: React.ReactNode
 };
 
-export const WalletConnector: React.FC<WalletConnectorProps> = ({ children, loader }) => {
+export const WalletConnector = ({ children, loader }: WalletConnectorProps): JSX.Element => {
   const { activate, deactivate, active, error } = useWeb3React<unknown>();
   const triedAuthorizedConnection = useAuthorizedConnection();
   const [connectionState, dispatch] = useReducer(connectionReducer, { type: "inactive" });

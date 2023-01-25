@@ -8,7 +8,7 @@ import { getConfig } from "./config";
 import theme from "./theme";
 
 import { DisposableWalletProvider } from "./testUtils/DisposableWalletProvider";
-import { LiquityFrontend } from "./LiquityFrontend";
+import { ThresholdFrontend } from "./ThresholdFrontend";
 
 if (window.ethereum) {
   // Silence MetaMask warning in console
@@ -31,7 +31,11 @@ getConfig().then(config => {
   Object.assign(window, { config });
 });
 
-const EthersWeb3ReactProvider: React.FC = ({ children }) => {
+type EthersWeb3ReactProviderProps = {
+  children: React.ReactNode;
+}
+
+const EthersWeb3ReactProvider= ({ children }: EthersWeb3ReactProviderProps): JSX.Element => {
   return (
     <Web3ReactProvider getLibrary={provider => new BatchedWebSocketAugmentedWeb3Provider(provider)}>
       {children}
@@ -49,7 +53,7 @@ const App = () => {
   return (
     <EthersWeb3ReactProvider>
       <ThemeProvider theme={theme}>
-        <LiquityFrontend loader={loader} />
+        <ThresholdFrontend loader={loader} />
       </ThemeProvider>
     </EthersWeb3ReactProvider>
   );

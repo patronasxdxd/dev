@@ -12,19 +12,19 @@ import { TransactionProvider } from "./components/Transaction";
 import { ChartProvider } from "./components/Dashboard/Chart/context/ChartProvider";
 import { FunctionalPanel } from "./components/FunctionalPanel";
 
-import { PageSwitcher } from "./pages/PageSwitcher";
+import { Dashboard } from "./pages/Dashboard";
 import { RedemptionPage } from "./pages/RedemptionPage";
 import { RiskyVaultsPage } from "./pages/RiskyVaultsPage";
 
 import { VaultPage } from "./pages/VaultPage";
 
-import { LiquityProvider } from "./hooks/LiquityContext";
+import { ThresholdProvider } from "./hooks/ThresholdContext";
 
-type LiquityFrontendProps = {
+type ThresholdFrontendProps = {
   loader?: React.ReactNode;
 };
 
-const UnsupportedMainnetFallback: React.FC = () => (
+const UnsupportedMainnetFallback = (): JSX.Element => (
   <Flex
     sx={{
       flexDirection: "column",
@@ -44,7 +44,7 @@ const UnsupportedMainnetFallback: React.FC = () => (
   </Flex>
 );
 
-export const LiquityFrontend: React.FC<LiquityFrontendProps> = ({ loader }) => {
+export const ThresholdFrontend = ({ loader }: ThresholdFrontendProps): JSX.Element => {
   const unsupportedNetworkFallback = (chainId: number) => (
     <Flex
       sx={{
@@ -82,7 +82,7 @@ export const LiquityFrontend: React.FC<LiquityFrontendProps> = ({ loader }) => {
             }}
           >
             <WalletConnector loader={loader}>
-              <LiquityProvider
+              <ThresholdProvider
                 loader={loader}
                 unsupportedNetworkFallback={unsupportedNetworkFallback}
                 unsupportedMainnetFallback={<UnsupportedMainnetFallback />}
@@ -92,7 +92,7 @@ export const LiquityFrontend: React.FC<LiquityFrontendProps> = ({ loader }) => {
                     <FunctionalPanel loader={loader}>
                       <Switch>
                         <Route path="/" exact>
-                          <PageSwitcher />
+                          <Dashboard />
                         </Route>
                         <Route path="/borrow" exact>
                           <VaultPage />
@@ -110,7 +110,7 @@ export const LiquityFrontend: React.FC<LiquityFrontendProps> = ({ loader }) => {
                     </FunctionalPanel>
                   </TransactionProvider>
                 </ChartProvider>
-              </LiquityProvider>
+              </ThresholdProvider>
             </WalletConnector>
           </Container>
         </Flex>

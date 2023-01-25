@@ -8,7 +8,7 @@ import { VaultCard } from "../components/Dashboard/VaultCard";
 import { StabilityPoolCard } from "../components/Dashboard/StabilityPoolCard";
 import { SystemStatsCard } from "../components/SystemStatsCard";
 
-export const Dashboard: React.FC = () => (
+export const Dashboard = (): JSX.Element => (
   <Container>
     <Heading as="h2" sx={{ mt: "2.5em", fontWeight: "semibold" }}>
       Dashboard
@@ -27,7 +27,7 @@ export const Dashboard: React.FC = () => (
         <Chart />
       </Container>
       <Container variant="oneThird">
-        <SystemStatsCard />
+        <SystemStatsCard IsPriceEditable={true} />
       </Container>
       <Container variant="half">
         <VaultCard />

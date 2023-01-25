@@ -1,8 +1,10 @@
-import React from "react";
 import { Container } from "theme-ui";
 
-export const SideBar: React.FC = ({ children }) => {
+type SideBarProps = {
+  children: React.ReactNode
+}
 
+export const SideBar = ({ children }: SideBarProps): JSX.Element => {
   return (
     <Container variant="sideBar">
       {children}

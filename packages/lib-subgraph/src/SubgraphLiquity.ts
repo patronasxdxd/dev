@@ -249,6 +249,14 @@ export class SubgraphLiquity implements ReadableLiquity, ObservableLiquity {
     return total.watch(this.client, onTotalChanged, undefined);
   }
 
+  getSymbol(): Promise<string> {
+    throw new Error("Method not implemented.");
+  }
+
+  getCollateralAddress(): Promise<string> {
+    throw new Error("Method not implemented.");
+  }
+
   getStabilityDeposit(address?: string): Promise<StabilityDeposit> {
     throw new Error("Method not implemented.");
   }
@@ -281,6 +289,10 @@ export class SubgraphLiquity implements ReadableLiquity, ObservableLiquity {
   }
 
   getErc20TokenAllowance(address?: string): Promise<Decimal> {
+    throw new Error("Method not implemented.");
+  }
+
+  checkMintList(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
 

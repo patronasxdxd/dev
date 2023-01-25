@@ -471,6 +471,7 @@ const theme: Theme = {
     },
 
     oneThird: {
+      display: "flex",
       pr: cardGapX,
       width: ["100%", "100%", "33%"]
     },

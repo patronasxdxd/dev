@@ -2,6 +2,8 @@ import { BigNumber } from "@ethersproject/bignumber";
 
 import { Decimal } from "@liquity/lib-base";
 
+export const DEPLOYMENT_VERSION_FOR_TESTING = "v1"
+
 export const numberify = (bigNumber: BigNumber): number => bigNumber.toNumber();
 
 export const decimalify = (bigNumber: BigNumber): Decimal =>

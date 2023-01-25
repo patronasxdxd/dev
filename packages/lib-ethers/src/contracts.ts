@@ -177,12 +177,12 @@ export const _priceFeedIsTestnet = (
 ): priceFeed is PriceFeedTestnet => "setPrice" in priceFeed;
 
 /** @internal */
-type LiquityContractsKey = keyof _LiquityContracts;
+export type _LiquityContractsKey = keyof _LiquityContracts;
 
 /** @internal */
-export type _LiquityContractAddresses = Record<LiquityContractsKey, string>;
+export type _LiquityContractAddresses = Record<_LiquityContractsKey, string>;
 
-type LiquityContractAbis = Record<LiquityContractsKey, JsonFragment[]>;
+type LiquityContractAbis = Record<_LiquityContractsKey, JsonFragment[]>;
 
 const getAbi = (priceFeedIsTestnet: boolean): LiquityContractAbis => ({
   activePool: activePoolAbi,
@@ -202,12 +202,12 @@ const getAbi = (priceFeedIsTestnet: boolean): LiquityContractAbis => ({
 });
 
 const mapLiquityContracts = <T, U>(
-  contracts: Record<LiquityContractsKey, T>,
-  f: (t: T, key: LiquityContractsKey) => U
+  contracts: Record<_LiquityContractsKey, T>,
+  f: (t: T, key: _LiquityContractsKey) => U
 ) =>
   Object.fromEntries(
-    Object.entries(contracts).map(([key, t]) => [key, f(t, key as LiquityContractsKey)])
-  ) as Record<LiquityContractsKey, U>;
+    Object.entries(contracts).map(([key, t]) => [key, f(t, key as _LiquityContractsKey)])
+  ) as Record<_LiquityContractsKey, U>;
 
 /** @internal */
 export interface _LiquityDeploymentJSON {
@@ -219,6 +219,9 @@ export interface _LiquityDeploymentJSON {
   readonly _priceFeedIsTestnet: boolean;
   readonly _isDev: boolean;
 }
+
+/** @internal */
+export type _VersionedLiquityDeployments = Record<string, _LiquityDeploymentJSON>
 
 /** @internal */
 export const _connectToContracts = (

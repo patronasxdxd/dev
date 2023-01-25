@@ -87,6 +87,6 @@ export type IconProps = Pick<FontAwesomeIconProps, "style" | "size" | "color" | 
   name: IconName;
 };
 
-export const Icon: React.FC<IconProps> = ({ name, style, ...rest }) => (
+export const Icon = ({ name, style, ...rest }: IconProps): JSX.Element => (
   <FontAwesomeIcon style={style} icon={getIcon(name)} {...rest} />
 );

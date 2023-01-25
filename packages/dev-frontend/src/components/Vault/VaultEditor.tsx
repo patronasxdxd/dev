@@ -6,22 +6,24 @@ import {
   Difference,
   Decimalish,
   Decimal,
-  Trove,
+  Trove as Vault,
   LiquityStoreState,
   THUSD_LIQUIDATION_RESERVE
 } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { useThresholdSelector } from "@liquity/lib-react";
 
-import { COIN, FIRST_ERC20_COLLATERAL } from "../../strings";
+import { COIN } from "../../strings";
 
 import { StaticRow } from "./Editor";
 import { LoadingOverlay } from "../LoadingOverlay";
 import { CollateralRatio } from "./CollateralRatio";
 import { InfoIcon } from "../InfoIcon";
 
-type TroveEditorProps = {
-  original: Trove;
-  edited: Trove;
+type VaultEditorProps = {
+  children: React.ReactNode;
+  version: string,
+  original: Vault;
+  edited: Vault;
   fee: Decimal;
   borrowingRate: Decimal;
   changePending: boolean;
@@ -30,20 +32,20 @@ type TroveEditorProps = {
   ) => void;
 };
 
-const select = ({ price }: LiquityStoreState) => ({ price });
+const select = ({ price, symbol }: LiquityStoreState) => ({ price, symbol });
 
-export const TroveEditor: React.FC<TroveEditorProps> = ({
+export const VaultEditor = ({
   children,
+  version,
   original,
   edited,
   fee,
   borrowingRate,
-  changePending
-}) => {
-  const { price } = useLiquitySelector(select);
+  changePending,
+}: VaultEditorProps): JSX.Element => {
+  const { [ version ]: { price, symbol } } = useThresholdSelector(select);
 
   const feePct = new Percent(borrowingRate);
-
   const originalCollateralRatio = !original.isEmpty ? original.collateralRatio(price) : undefined;
   const collateralRatio = !edited.isEmpty ? edited.collateralRatio(price) : undefined;
   const collateralRatioChange = Difference.between(collateralRatio, originalCollateralRatio);
@@ -59,7 +61,7 @@ export const TroveEditor: React.FC<TroveEditorProps> = ({
           borderColor: "border",
         }}>
           Opened Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ FIRST_ERC20_COLLATERAL }) to it.</Card>} />
+          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ symbol }) to it.</Card>} />
         </Flex>
 
         <Flex sx={{
@@ -70,36 +72,33 @@ export const TroveEditor: React.FC<TroveEditorProps> = ({
         }}>
           <StaticRow
             label="Collateral"
-            inputId="trove-collateral"
+            inputId="vault-collateral"
             amount={edited.collateral.prettify(4)}
-            unit={ FIRST_ERC20_COLLATERAL }
+            unit={ symbol }
           />
-
-          <StaticRow label="Debt" inputId="trove-debt" amount={edited.debt.prettify()} unit={COIN} />
-
+          <StaticRow label="Debt" inputId="vault-debt" amount={edited.debt.prettify()} unit={COIN} />
           {original.isEmpty && (
             <StaticRow
               label="Liquidation Reserve"
-              inputId="trove-liquidation-reserve"
+              inputId="vault-liquidation-reserve"
               amount={`${THUSD_LIQUIDATION_RESERVE}`}
               unit={COIN}
               infoIcon={
                 <InfoIcon
                   tooltip={
                     <Card variant="tooltip" sx={{ width: "200px" }}>
-                      An amount set aside to cover the liquidator’s gas costs if your Trove needs to be
+                      An amount set aside to cover the liquidator’s gas costs if your Vault needs to be
                       liquidated. The amount increases your debt and is refunded if you close your
-                      Trove by fully paying off its net debt.
+                      Vault by fully paying off its net debt.
                     </Card>
                   }
                 />
               }
             />
           )}
-
           <StaticRow
             label="Borrowing Fee"
-            inputId="trove-borrowing-fee"
+            inputId="vault-borrowing-fee"
             amount={fee.toString(2)}
             pendingAmount={feePct.toString(2)}
             unit={COIN}
@@ -114,12 +113,9 @@ export const TroveEditor: React.FC<TroveEditorProps> = ({
               />
             }
           />
-
           <CollateralRatio value={collateralRatio} change={collateralRatioChange} />
-
           {children}
         </Flex>
-
         {changePending && <LoadingOverlay />}
       </Card>
     </Card>

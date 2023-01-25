@@ -6,7 +6,7 @@ type GenericIconProps = React.ComponentProps<typeof Box> & {
   imgSrc: string;
 };
 
-export const GenericIcon: React.FC<GenericIconProps> = ({ imgSrc, height, ...boxProps }) => (
+export const GenericIcon = ({ imgSrc, height, ...boxProps }: GenericIconProps): JSX.Element => (
   <Box sx={{ lineHeight: 0 }} {...boxProps}>
     <Image src={imgSrc} sx={{ height }} />
   </Box>

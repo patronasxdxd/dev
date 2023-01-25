@@ -15,13 +15,19 @@ import {
 
 import { MultiTroveGetter } from "../types";
 
-import { decimalify, panic } from "./_utils";
+import { decimalify, panic, DEPLOYMENT_VERSION_FOR_TESTING } from "./_utils";
 import { EthersCallOverrides, EthersProvider, EthersSigner } from "./types";
 
 import {
+  _LiquityDeploymentJSON
+} from "./contracts"
+import {
+  _getVersionedDeployments,
   EthersLiquityConnection,
   EthersLiquityConnectionOptionalParams,
   EthersLiquityStoreOption,
+  getProviderAndSigner,
+  UnsupportedNetworkError,
   _connect,
   _getBlockTimestamp,
   _getContracts,
@@ -125,7 +131,13 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     signerOrProvider: EthersSigner | EthersProvider,
     optionalParams?: EthersLiquityConnectionOptionalParams
   ): Promise<ReadableEthersLiquity> {
-    return ReadableEthersLiquity._from(await _connect(signerOrProvider, optionalParams));
+    const [provider, signer] = getProviderAndSigner(signerOrProvider);
+    const chainId = (await provider.getNetwork()).chainId
+    const versionedDeployments = await _getVersionedDeployments(chainId === 1 ? 'mainnet': 'goerli')
+    const importedDeployment: _LiquityDeploymentJSON =
+    versionedDeployments.v1 ?? panic(new UnsupportedNetworkError(chainId));
+
+    return ReadableEthersLiquity._from(await _connect(DEPLOYMENT_VERSION_FOR_TESTING, importedDeployment, provider, signer, optionalParams));
   }
 
   /**
@@ -244,6 +256,20 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return activePool.add(defaultPool);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getSymbol} */
+  getSymbol(overrides?: EthersCallOverrides): Promise<string> {
+    const { erc20 } = _getContracts(this.connection);
+
+    return erc20.symbol({ ...overrides });
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getCollateralAddress} */
+  getCollateralAddress(overrides?: EthersCallOverrides): Promise<string> {
+    const { borrowerOperations } = _getContracts(this.connection);
+
+    return borrowerOperations.collateralAddress({ ...overrides });
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getStabilityDeposit} */
   async getStabilityDeposit(
     address?: string,
@@ -306,6 +332,13 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     const { erc20, borrowerOperations } = _getContracts(this.connection);
 
     return erc20.allowance(address, borrowerOperations.address, { ...overrides }).then(decimalify);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.checkMintList} */
+  checkMintList(overrides?: EthersCallOverrides): Promise<boolean> {
+    const { thusdToken, borrowerOperations } = _getContracts(this.connection);
+
+    return thusdToken.mintList(borrowerOperations.address, { ...overrides });
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getCollateralSurplusBalance} */
@@ -496,6 +529,22 @@ class _BlockPolledReadableEthersLiquity
     return this._blockHit(overrides) ? this.store.state.total : this._readable.getTotal(overrides);
   }
 
+  async getSymbol(
+    overrides?: EthersCallOverrides
+  ): Promise<string> {
+    return this._blockHit(overrides)
+      ? this.store.state.symbol
+      : this._readable.getSymbol(overrides);
+  }
+
+  async getCollateralAddress(
+    overrides?: EthersCallOverrides
+  ): Promise<string> {
+    return this._blockHit(overrides)
+      ? this.store.state.collateralAddress
+      : this._readable.getCollateralAddress(overrides);
+  }
+
   async getStabilityDeposit(
     address?: string,
     overrides?: EthersCallOverrides
@@ -533,6 +582,12 @@ class _BlockPolledReadableEthersLiquity
     return this._userHit(address, overrides)
       ? this.store.state.erc20TokenAllowance
       : this._readable.getErc20TokenAllowance(address, overrides);
+  }
+
+  async checkMintList(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._blockHit(overrides)
+      ? this.store.state.mintList
+      : this._readable.checkMintList(overrides);
   }
 
   async getCollateralSurplusBalance(

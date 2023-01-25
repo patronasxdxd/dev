@@ -1,7 +1,7 @@
 import { Flex, Image, Link } from "theme-ui";
 import { Icon } from "./Icon";
 
-export const ExternalLinks: React.FC = () => {
+export const ExternalLinks = (): JSX.Element => {
   return (
     <>
       <Link variant="nav" href="https://github.com/Threshold-USD/dev" target="_blank">

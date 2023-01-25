@@ -8,9 +8,10 @@ type RowProps = SxProp & {
   labelId?: string;
   labelFor?: string;
   infoIcon?: React.ReactNode;
+  children?: React.ReactNode;
 };
 
-export const Row: React.FC<RowProps> = ({ sx, label, labelId, labelFor, infoIcon, children }) => {
+export const Row = ({ sx, label, labelId, labelFor, infoIcon, children }: RowProps): JSX.Element => {
   return (
     <Flex sx={{ alignItems: "start", flexDirection: "column" }}>
       <Label
@@ -40,7 +41,7 @@ type PendingAmountProps = {
   value: string;
 };
 
-const PendingAmount: React.FC<PendingAmountProps & SxProp> = ({ sx, value }) => (
+const PendingAmount = ({ sx, value }: PendingAmountProps & SxProp): JSX.Element => (
   <Text {...{ sx }}>
     (
     {value === "++" ? (
@@ -71,9 +72,10 @@ type StaticAmountsProps = {
   pendingAmount?: string;
   pendingColor?: string;
   onClick?: () => void;
+  children?: React.ReactNode;
 };
 
-export const StaticAmounts: React.FC<StaticAmountsProps & SxProp> = ({
+export const StaticAmounts = ({
   sx,
   inputId,
   labelledBy,
@@ -83,7 +85,7 @@ export const StaticAmounts: React.FC<StaticAmountsProps & SxProp> = ({
   pendingColor,
   onClick,
   children
-}) => {
+}: StaticAmountsProps & SxProp): JSX.Element => {
   return (
     <Flex
       id={inputId}
@@ -157,13 +159,13 @@ const editableStyle: ThemeUICSSProperties = {
 
 type StaticRowProps = RowProps & StaticAmountsProps;
 
-export const StaticRow: React.FC<StaticRowProps> = ({
+export const StaticRow = ({
   label,
   labelId,
   labelFor,
   infoIcon,
   ...props
-}) => (
+}: StaticRowProps): JSX.Element => (
   <Row {...{ label, labelId, labelFor, infoIcon }} sx={{ fontSize: "0.9em", color: "text", fontWeight: "bold", mt: 3 }}>
     <StaticAmounts {...props} />
   </Row>
@@ -173,7 +175,7 @@ type DisabledEditableRowProps = Omit<StaticAmountsProps, "labelledBy" | "onClick
   label: string;
 };
 
-export const DisabledEditableRow: React.FC<DisabledEditableRowProps> = ({
+export const DisabledEditableRow = ({
   inputId,
   label,
   unit,
@@ -181,7 +183,7 @@ export const DisabledEditableRow: React.FC<DisabledEditableRowProps> = ({
   color,
   pendingAmount,
   pendingColor
-}) => (
+}: DisabledEditableRowProps): JSX.Element => (
   <Row labelId={`${inputId}-label`} {...{ label, unit }}>
     <StaticAmounts
       sx={{ ...editableStyle, boxShadow: 0 }}
@@ -200,7 +202,7 @@ type EditableRowProps = DisabledEditableRowProps & {
   infoIcon?: React.ReactNode;
 };
 
-export const EditableRow: React.FC<EditableRowProps> = ({
+export const EditableRow = ({
   label,
   inputId,
   unit,
@@ -214,7 +216,7 @@ export const EditableRow: React.FC<EditableRowProps> = ({
   maxAmount,
   maxedOut,
   infoIcon
-}) => {
+}: EditableRowProps): JSX.Element => {
   const [editing, setEditing] = editingState;
   const [invalid, setInvalid] = useState(false);
 

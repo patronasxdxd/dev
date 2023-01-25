@@ -11,6 +11,7 @@ type DialogProps = {
   icon?: React.ReactNode;
   cancelLabel?: string;
   onCancel: () => void;
+  children: React.ReactNode
 };
 
 const iconFromIntent = (intent: DialogIntent | undefined) => {
@@ -27,14 +28,14 @@ const iconFromIntent = (intent: DialogIntent | undefined) => {
   return null;
 };
 
-export const Dialog: React.FC<DialogProps> = ({
+export const Dialog = ({
   intent,
   title,
   icon,
   cancelLabel,
   onCancel,
   children
-}) => (
+}: DialogProps): JSX.Element => (
   <Card sx={{ p: 0, borderRadius: "4px" }}>
     {intent ? <Box sx={{ height: "4px", bg: intent, borderRadius: "3px 3px 0 0" }} /> : null}
     <Flex

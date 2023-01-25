@@ -100,6 +100,20 @@ export class _CachedReadableLiquity<T extends unknown[]>
     );
   }
 
+  async getSymbol(...extraParams: T): Promise<string> {
+    return (
+      this._cache.getSymbol(...extraParams) ??
+      this._readable.getSymbol(...extraParams)
+    );
+  }
+
+  async getCollateralAddress(...extraParams: T): Promise<string> {
+    return (
+      this._cache.getCollateralAddress(...extraParams) ??
+      this._readable.getCollateralAddress(...extraParams)
+    );
+  }
+
   async getTHUSDInStabilityPool(...extraParams: T): Promise<Decimal> {
     return (
       this._cache.getTHUSDInStabilityPool(...extraParams) ??
@@ -132,6 +146,13 @@ export class _CachedReadableLiquity<T extends unknown[]>
     return (
       this._cache.getErc20TokenAllowance(address, ...extraParams) ??
       this._readable.getErc20TokenAllowance(address, ...extraParams)
+    );
+  }
+
+  async checkMintList(...extraParams: T): Promise<boolean> {
+    return (
+      this._cache.checkMintList(...extraParams) ??
+      this._readable.checkMintList(...extraParams)
     );
   }
 
