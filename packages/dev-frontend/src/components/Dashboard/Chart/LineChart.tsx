@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Box, Card, Flex } from "theme-ui";
+import { Box, Card, Flex, useColorMode } from "theme-ui";
+
 import { useTvl } from "./context/ChartContext";
-import { tvlData } from "./context/ChartProvider";
+import { tvlData, TimestampsObject } from "./context/ChartProvider";
 
 import {
   Chart as ChartJS,
@@ -13,11 +14,12 @@ import {
   Tooltip,
   Legend,
   Filler,
-  ScriptableContext
+  ScriptableContext,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
 import { useThresholdSelector } from "@liquity/lib-react";
+import { useHover } from "../../../utils/hooks";
 
 ChartJS.register(
   CategoryScale,
@@ -33,7 +35,8 @@ ChartJS.register(
 ChartJS.register({
   id: 'uniqueid',
   beforeDraw: function (chart: any, _easing: any) {
-    if (chart.tooltip._active && chart.tooltip._active.length) {
+
+    if (chart?.tooltip?._active && chart?.tooltip?._active.length) {
       const ctx = chart.ctx;
       const activePoint = chart.tooltip._active[0];
       const x = activePoint.element.x;
@@ -58,24 +61,28 @@ const selector = ({
 });
 
 export const LineChart = (): JSX.Element => { 
+  const [hoverRef, isHovered] = useHover<HTMLDivElement>();
+  
+  const [colorMode] = useColorMode();
   const [activeData, setActiveData] = useState<number | string>('-');
-  const [activeLabel, setActiveLabel] = useState<string>();
+  const [activeLabel, setActiveLabel] = useState<string>('-');
   const [chartData, setChartData] = useState<Array<tvlData>>();
-  const [chartLabels, setChartLabels] = useState<Array<number>>();
   const {v1: { symbol }} = useThresholdSelector(selector);
+  const [chartLabels, setChartLabels] = useState<Array<TimestampsObject>>();
 
   useTvl().then((result) => {
+    if (!result) return null;
     const { tvl , timestamps } = result;
-    setChartData(tvl)
-    setChartLabels(timestamps)
+    setChartData(tvl);
+    setChartLabels(timestamps);
   });
 
   const labels: Array<{[date: string]: string}> = [];
 
-  chartLabels?.map((label: number) => {
-    const date = new Date(label * 1000) // convert timestamp to date;
+  chartLabels?.map((timestamp: TimestampsObject) => {
+    const date = new Date(timestamp.localTimestamp * 1000) // convert timestamp to date;
     const day = date.getUTCDate();
-    const month = date.toLocaleString('default', { month: 'long' })
+    const month = date.toLocaleString('default', { month: 'long' });
     const year = date.getUTCFullYear();
 
     return labels.push({[day]: `${month} ${day}, ${year}`})
@@ -94,10 +101,11 @@ export const LineChart = (): JSX.Element => {
       y: {
         display: false,
         drawTicks: false,
+        beginAtZero: true
       }, 
       x: {
         ticks: {
-          padding: 15,
+          padding: 12,
           autoSkip: true,
           maxTicksLimit: 20,
           font: {
@@ -135,7 +143,7 @@ export const LineChart = (): JSX.Element => {
       const labelIndex = labels[index];
       const activeLabel = labelIndex && Object.values(labelIndex)[0];
       setActiveData(activeData ? activeData : '-');
-      setActiveLabel(activeLabel && activeLabel)
+      setActiveLabel(activeLabel ?? '-')
     }
   };
   
@@ -149,13 +157,13 @@ export const LineChart = (): JSX.Element => {
         lineTension: 0.4,
         label: 'TVL',
         data: chartData?.map((tvl: tvlData) => tvl?.totalCollateral),
-        borderColor: '#20cb9d',
-        pointBackgroundColor: '#20cb9d',
+        borderColor: colorMode === "dark" ? "#7d00ff" : colorMode === "darkGrey" ? "#f3f3f3b8" : "#20cb9d",
+        pointBackgroundColor: colorMode === 'dark' ? "#7d00ff" : colorMode === "darkGrey" ? "#f3f3f3b8" : "#20cb9d",
         backgroundColor: (context: ScriptableContext<"line">) => {
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-          gradient.addColorStop(0, "#28c39b40");
-          gradient.addColorStop(1, "#ffffff40");
+          gradient.addColorStop(0, colorMode === "dark" ? "#7c00fd8c" : colorMode === "darkGrey" ? "#e5e5e5b8" : "#28c39b40");
+          gradient.addColorStop(1, colorMode === "dark" ? "#7d00ff00" : colorMode === "darkGrey" ? "#f3f3f321" :  "#ffffff40");
           return gradient;
         },
       },
@@ -182,7 +190,7 @@ export const LineChart = (): JSX.Element => {
         <Box style={{
           height: "18.5em",
           marginTop: "2.5em",
-          marginBottom: "3em"
+          paddingBottom: "2.5em"
         }}>
           <Flex sx={{ 
             position: "absolute", 
@@ -191,21 +199,26 @@ export const LineChart = (): JSX.Element => {
             fontWeight: "bold", 
             color: "text"
           }}>
-            {activeData} {activeData > 0 && ` ${ symbol }` }
+            {isHovered ? activeData : '-'} {isHovered && activeData > 0 && ` ${ symbol }` }
           </Flex>
           <Flex sx={{ 
-            position: "absolute",
             fontSize: ".9em",
+            marginBottom: "1.5em"
           }}>
-            {activeLabel}
+            {isHovered ? activeLabel : '-'}
           </Flex>
-          <Line options={{
-            ...options,
-            interaction: {
-              mode: 'index',
-              intersect: false,
-            }
-          }}  data={data} />
+          <Box sx={{height: "100%"}} ref={hoverRef}>
+            <Line 
+              options={{
+                ...options,
+                interaction: {
+                  mode: 'index',
+                  intersect: false,
+                }
+              }}  
+              data={data} 
+            />
+          </Box>
         </Box>
       </Flex>
     </Card>

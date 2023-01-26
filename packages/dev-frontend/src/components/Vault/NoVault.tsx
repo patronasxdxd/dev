@@ -5,7 +5,7 @@ import { useVaultView } from "./context/VaultViewContext";
 import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
 import { useThresholdSelector} from "@liquity/lib-react";
 
-import { COIN } from "../../strings";
+import { COIN } from "../../utils/constants";
 import { ActionDescription } from "../ActionDescription";
 import { GenericIcon } from "../GenericIcon";
 import { InfoIcon } from "../InfoIcon";
@@ -34,6 +34,7 @@ export const NoVault = ({ version, isMintList }: NoVaultProps): JSX.Element => {
           width: "100%",
           gap: 1,
           pb: "1em",
+          px: ["2em", 0],
           borderBottom: 1, 
           borderColor: "border"
         }}>

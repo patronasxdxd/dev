@@ -1,19 +1,15 @@
 import { createContext, useContext } from "react";
-import { tvlData } from "./ChartProvider"
+import { tvlData, TimestampsObject } from "./ChartProvider"
 
 type ChartContextType = {
   tvl: Array<tvlData>;
-  timestamps: Array<number>;
+  timestamps: Array<TimestampsObject>;
 };
 
 export const ChartContext = createContext<ChartContextType | null>(null);
 
-export const useTvl = async (): Promise<ChartContextType> => {
+export const useTvl = async (): Promise<ChartContextType | null> => {
   const context: ChartContextType | null = useContext(ChartContext);
-
-  if (context === null) {
-    throw new Error("You must add a <ChartProvider> into the React tree");
-  }
-
+  
   return context;
 };

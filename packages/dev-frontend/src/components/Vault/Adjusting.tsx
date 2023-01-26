@@ -17,7 +17,7 @@ import { Transaction, useMyTransactionState } from "../Transaction";
 import { useThreshold } from "../../hooks/ThresholdContext";
 import { VaultAction } from "./VaultAction";
 import { useVaultView } from "./context/VaultViewContext";
-import { COIN } from "../../strings";
+import { COIN } from "../../utils/constants";
 import { InfoIcon } from "../InfoIcon";
 import { LoadingOverlay } from "../LoadingOverlay";
 import { CollateralRatio } from "./CollateralRatio";
@@ -171,6 +171,7 @@ export const Adjusting = ({ version }: AdjustingProps): JSX.Element => {
           width: "100%",
           gap: 1,
           pb: "1em",
+          px: ["2em", 0],
           borderBottom: 1, 
           borderColor: "border"
         }}>

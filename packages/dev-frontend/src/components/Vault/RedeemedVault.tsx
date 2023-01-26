@@ -4,7 +4,7 @@ import { CollateralSurplusAction } from "../CollateralSurplusAction";
 import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
 import { useThresholdSelector} from "@liquity/lib-react";
 import { useVaultView } from "./context/VaultViewContext";
-import { COIN } from "../../strings";
+import { COIN } from "../../utils/constants";
 import { InfoMessage } from "../InfoMessage";
 
 const select = ({ collateralSurplusBalance, symbol }: ThresholdStoreState) => ({
@@ -32,6 +32,7 @@ export const RedeemedVault = ({ version }: RedeemedVaultProps): JSX.Element => {
           width: "100%",
           gap: 1,
           pb: "1em",
+          px: ["2em", 0],
           borderBottom: 1, 
           borderColor: "border"
         }}>
