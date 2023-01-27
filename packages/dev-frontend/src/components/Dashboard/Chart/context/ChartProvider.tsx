@@ -166,12 +166,11 @@ export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader
     }
   
   useEffect(() => {
-    if (isMounted) {
-      getTVLData();
-      setInterval(() => {
-        getTVLData();
-      }, 90000); //Fetch TVL every 90 seconds
+    if (!isMounted) {
+      return
     };
+
+    getTVLData();
     return () => {
       setIsMounted(false);
     };
