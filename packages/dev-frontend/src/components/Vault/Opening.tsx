@@ -257,7 +257,8 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
             fontWeight: "body",
             justifyContent: "space-between",
             width: "100%",
-            px: "1em"
+            px: "1em",
+            pt: "1em"
           }}>
             <Flex>
               <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>

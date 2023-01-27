@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Card, Flex, useColorMode } from "theme-ui";
-
 import { useTvl } from "./context/ChartContext";
-import { tvlData, TimestampsObject } from "./context/ChartProvider";
+import { TimestampsObject, tvlData } from "./context/ChartProvider";
 
 import {
   Chart as ChartJS,
@@ -17,8 +16,7 @@ import {
   ScriptableContext,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
-import { useThresholdSelector } from "@liquity/lib-react";
+import { Decimal } from "@liquity/lib-base";
 import { useHover } from "../../../utils/hooks";
 
 ChartJS.register(
@@ -35,7 +33,6 @@ ChartJS.register(
 ChartJS.register({
   id: 'uniqueid',
   beforeDraw: function (chart: any, _easing: any) {
-
     if (chart?.tooltip?._active && chart?.tooltip?._active.length) {
       const ctx = chart.ctx;
       const activePoint = chart.tooltip._active[0];
@@ -54,28 +51,49 @@ ChartJS.register({
   }
 });
 
-const selector = ({
-  symbol,
-}: ThresholdStoreState) => ({
-  symbol,
-});
-
-export const LineChart = (): JSX.Element => { 
+export const LineChart = (): JSX.Element => {
+  const [isMounted, setIsMounted] = useState<boolean>(true);
   const [hoverRef, isHovered] = useHover<HTMLDivElement>();
-  
   const [colorMode] = useColorMode();
   const [activeData, setActiveData] = useState<number | string>('-');
+  const [tvl, setTvl] = useState<{ [key: string]: tvlData[]; }>({});
+  const [loadedChart, setLoadedChart] = useState<boolean>(false);
+  const [timestamps, setTimestamps] = useState<Array<TimestampsObject>>([]);
   const [activeLabel, setActiveLabel] = useState<string>('-');
-  const [chartData, setChartData] = useState<Array<tvlData>>();
-  const {v1: { symbol }} = useThresholdSelector(selector);
+  const [chartData, setChartData] = useState<Array<Decimal>>([]);
   const [chartLabels, setChartLabels] = useState<Array<TimestampsObject>>();
 
-  useTvl().then((result) => {
-    if (!result) return null;
-    const { tvl , timestamps } = result;
-    setChartData(tvl);
-    setChartLabels(timestamps);
-  });
+  useTvl()
+    .then((result) => {
+      if (result === null) {
+        return
+      }
+      setTvl(result.tvl)
+      setTimestamps(result.timestamps)
+      setLoadedChart(true)
+    })
+
+  useEffect(() => {
+    if (!isMounted || !loadedChart) {
+      return
+    }
+    let historicalTvl: Decimal[] = []
+    for (const [version] of Object.entries(tvl)) {
+      tvl[version].forEach((versionedTvl, index) => {
+        if (historicalTvl[index] === undefined) {
+          historicalTvl[index] = Decimal.from(0)
+        }
+        historicalTvl[index] = versionedTvl.totalCollateral.add(historicalTvl[index])
+      });
+    }
+    setChartLabels(timestamps)
+    setChartData(historicalTvl)
+
+    return () => { 
+      setIsMounted(false);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted, loadedChart])
 
   const labels: Array<{[date: string]: string}> = [];
 
@@ -156,7 +174,7 @@ export const LineChart = (): JSX.Element => {
         fill: "start",
         lineTension: 0.4,
         label: 'TVL',
-        data: chartData?.map((tvl: tvlData) => tvl?.totalCollateral),
+        data: chartData.map((decimal) => decimal.prettify(2)),
         borderColor: colorMode === "dark" ? "#7d00ff" : colorMode === "darkGrey" ? "#f3f3f3b8" : "#20cb9d",
         pointBackgroundColor: colorMode === 'dark' ? "#7d00ff" : colorMode === "darkGrey" ? "#f3f3f3b8" : "#20cb9d",
         backgroundColor: (context: ScriptableContext<"line">) => {
@@ -199,7 +217,7 @@ export const LineChart = (): JSX.Element => {
             fontWeight: "bold", 
             color: "text"
           }}>
-            {isHovered ? activeData : '-'} {isHovered && activeData > 0 && ` ${ symbol }` }
+            {isHovered && activeData > 0 && `$`}{isHovered ? activeData : '-'} 
           </Flex>
           <Flex sx={{ 
             fontSize: ".9em",

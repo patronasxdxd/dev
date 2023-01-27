@@ -4,6 +4,8 @@ import { createClient } from "urql";
 import { ChartContext } from "./ChartContext";
 
 import { useThreshold } from "../../../../hooks/ThresholdContext";
+import { Decimal } from "@liquity/lib-base";
+import { fetchCoinGeckoPrice } from "./fetchCoinGeckoPrice";
 
 export type TimestampsObject = {
   universalTimestamp: number, 
@@ -14,7 +16,7 @@ export type BlockObject = {
   __typename?: string
 };
 export type tvlData = {
-  totalCollateral: number, 
+  totalCollateral: Decimal, 
   blockNumber: number
 };
 export type FunctionalPanelProps = {
@@ -73,38 +75,54 @@ export const createListOfTimestamps = (): Array<TimestampsObject> => {
 
 export const queryBlocksByTimestamps = async (timestamps: Array<TimestampsObject>, blocksApiUrl: string): Promise<Array<BlockObject>> => {
   const Blocks = timestamps.map(async (timestamp): Promise<BlockObject> => {
-    const blocksData = await fetchBlockByTimestamp(timestamp.universalTimestamp, blocksApiUrl);
+    const blocksData = await fetchBlockByTimestamp(timestamp.universalTimestamp, blocksApiUrl)
     return blocksData.data.blocks[0];
   })
   return Promise.all(Blocks);
 };
 
 export const queryTvlByBlocks = async (blocks: Array<BlockObject>, thresholdUsdApiUrl: string): Promise<Array<tvlData>> => {
-  const tvlData: Array<Promise<tvlData>> = blocks.map(async (block) => {
+  const tvlData = blocks.map(async (block) => {
     const blockNumber: number = Number(block.number);
     return fetchTvlByBlock(blockNumber, thresholdUsdApiUrl)
-    .then((result) => {
-      const tvlValue: tvlData = result.data ? {
-        totalCollateral: Number(result.data.systemStates[0].totalCollateral), 
-        blockNumber: blockNumber
-      } : {
-        totalCollateral: 0, 
-        blockNumber: blockNumber
-      };
-      return tvlValue;
-    })
+      .then((result) => {
+        if (!result.data?.systemStates[0]) {
+          return { totalCollateral: Decimal.from(0), blockNumber }
+        }
+        const { totalCollateral } = result.data.systemStates[0]
+        const parsedTotalCollateral = parseInt(totalCollateral)
+
+        return {totalCollateral: Decimal.from(parsedTotalCollateral), blockNumber}
+      })
+      .catch((error) => {
+        console.error('queryTvlByBlocks error: ', error)
+        return { totalCollateral: Decimal.from(0), blockNumber }
+      })
   });
+
   return Promise.all(tvlData);
 };
 
-export const queryTvl = async (blocksApiUrl: string, thresholdUsdApiUrl: string):  Promise<Array<tvlData>> => {
+export const queryTvl = async (blocksApiUrl: string, thresholdUsdApiUrl: string, coingeckoId: string):  Promise<Array<tvlData>> => {
   const timestamps: Array<TimestampsObject> = createListOfTimestamps();
-  return queryBlocksByTimestamps(timestamps, blocksApiUrl).then(
-    async (blocks) => {
-      const tvl = await queryTvlByBlocks(blocks, thresholdUsdApiUrl);
-      return tvl;
-    }
-  );
+  return queryBlocksByTimestamps(timestamps, blocksApiUrl)
+    .then(
+      async (blocks) => {
+        const historicalTvl = await queryTvlByBlocks(blocks, thresholdUsdApiUrl);
+        const pricedHistoricalTvl = await calculateTvlPrice(historicalTvl, coingeckoId)
+        return pricedHistoricalTvl;
+      }
+    )
+};
+
+export const calculateTvlPrice = async (historicalTvl: Array<tvlData>, coingeckoId: string): Promise<Array<tvlData>> => {
+  const { tokenPriceUSD } = await fetchCoinGeckoPrice(coingeckoId);
+  const pricedHistoricalTvl = historicalTvl.map((tvl) => {
+    const { totalCollateral, blockNumber } = tvl
+    const pricedTvl = totalCollateral.mul(tokenPriceUSD)
+    return { totalCollateral: pricedTvl, blockNumber }
+  })
+  return pricedHistoricalTvl;
 };
 
 async function fetchData(API_URL: string, query: string) {
@@ -118,25 +136,28 @@ async function fetchData(API_URL: string, query: string) {
 export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader })  => {
   const timestamps: Array<TimestampsObject> = createListOfTimestamps();
   const [ isTVLDataAvailable , setisTVLDataAvailable ] = useState<boolean>(true);
-  const [ tvl, setTvl ] = useState<Array<tvlData>>();
+  const [ tvl, setTvl ] = useState<{ [key: string]: tvlData[] }>({});
   const [ isMounted, setIsMounted ] = useState<boolean>(true);
-  const { config, provider } = useThreshold();
-  const { blocksApiUrl, thresholdUsdApiUrl } = config;
+  const { threshold, config, provider } = useThreshold();
+  const { blocksApiUrl, thresholdUsdApiUrl, coingeckoIdsByVersion } = config;
 
   const getTVLData = () => {
-    if (!blocksApiUrl || !thresholdUsdApiUrl) {
+    if (!blocksApiUrl || !thresholdUsdApiUrl || !coingeckoIdsByVersion) {
       console.error(`You must add a config.json file into the public source folder.`)
+      setisTVLDataAvailable(false)
       return;
     }
     return provider.getNetwork()
       .then((network) => {
         const networkName = network.name === 'homestead' ? 'ethereum' : network.name;
         const blocksUrlByNetwork = `https://${blocksApiUrl}/${networkName}-blocks`;
-        const thresholdUrlByNetwork = `https://${thresholdUsdApiUrl}/${networkName}-thresholdusd`;
-        return queryTvl(blocksUrlByNetwork, thresholdUrlByNetwork)
-          .then((result) => {
-            setTvl(result)
-          });
+        for (const [version] of Object.entries(threshold)) {
+          const thresholdUrlByNetwork = `https://${thresholdUsdApiUrl}/${version}-${networkName}-thresholdusd`;
+          queryTvl(blocksUrlByNetwork, thresholdUrlByNetwork, (coingeckoIdsByVersion as {[key: string]: string})[version])
+            .then((result) => {
+              setTvl((prev) => { return {...prev, [version]: result} })
+            })
+        }
       })
       .catch((error) => {
         setisTVLDataAvailable(false);
@@ -161,7 +182,7 @@ export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader
     return <>{children}</>
   };
 
-  if (!timestamps || !tvl) {
+  if (!timestamps || Object.keys(tvl).length !== Object.keys(threshold).length) {
     return <>{loader}</>
   };
 

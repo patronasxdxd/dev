@@ -48,29 +48,30 @@ export const RedeemedVault = ({ version }: RedeemedVaultProps): JSX.Element => {
             pb: "1em",
             mt: 4
           }}>
-          <InfoMessage title="Your Vault has been redeemed.">
-            {hasSurplusCollateral
-              ? "Please reclaim your remaining collateral before opening a new Vault."
-              : `You can borrow ${ COIN } by opening a Vault.`}
-          </InfoMessage>
-          <Flex variant="layout.actions">
-            {hasSurplusCollateral && <CollateralSurplusAction version={version} />}
-            {!hasSurplusCollateral && <Button onClick={handleOpenVault} sx={{ width: "100%" }}>Open Vault</Button>}
-          </Flex>
-          <Flex sx={{ 
-            alignSelf: "center",
-            fontSize: 11,
-            fontWeight: "body",
-            justifyContent: "space-between",
-            width: "100%",
-            px: "1em"
-          }}>
-            <Flex>
-              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
-              in the documentation
+            <InfoMessage title="Your Vault has been redeemed.">
+              {hasSurplusCollateral
+                ? "Please reclaim your remaining collateral before opening a new Vault."
+                : `You can borrow ${ COIN } by opening a Vault.`}
+            </InfoMessage>
+            <Flex variant="layout.actions">
+              {hasSurplusCollateral && <CollateralSurplusAction version={version} />}
+              {!hasSurplusCollateral && <Button onClick={handleOpenVault} sx={{ width: "100%" }}>Open Vault</Button>}
             </Flex>
-            <Flex>Deployment version: {version}</Flex>
-          </Flex>
+            <Flex sx={{ 
+              alignSelf: "center",
+              fontSize: 11,
+              fontWeight: "body",
+              justifyContent: "space-between",
+              width: "100%",
+              px: "1em",
+              pt: "1em"
+            }}>
+              <Flex>
+                <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+                in the documentation
+              </Flex>
+              <Flex>Deployment version: {version}</Flex>
+            </Flex>
         </Flex>
       </Card>
     </Card>
