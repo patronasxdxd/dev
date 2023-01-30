@@ -6,30 +6,26 @@ interface IPCV {
 
     // --- Events --
     event THUSDTokenAddressSet(address _thusdTokenAddress);
-    event TroveManagerAddressSet(address _troveManager);
-    event BorrowerOperationsAddressSet(address _borrowerOperationsAddress);
-    event ActivePoolAddressSet(address _activePoolAddress);
-    event CollateralAddressSet(address _bammAddress);
+    event CollateralAddressSet(address _collateralAddress);
+    event BAMMAddressSet(address _bammAddress);
+    event RolesSet(address _council, address _treasury);
 
-    event BAMMDeposit(address _bammAddress, uint256 _thusdAmount);
-    event BAMMWithdraw(address _bammAddress, uint256 _numShares);
+    event BAMMDeposit(uint256 _thusdAmount);
+    event BAMMWithdraw(uint256 _numShares);
     event THUSDWithdraw(address _recepient, uint256 _thusdAmount);
     event CollateralWithdraw(address _recepient, uint256 _collateralAmount);
 
 
     // --- Functions ---
 
-    function setAddresses
-    (
-        address _thusdTokenAddress,
-        address _troveManagerAddress,
-        address _borrowerOperationsAddress,
-        address _activePoolAddress,
-        address _collateralERC20
-    )  external;
+    function debtToPay() external returns(uint256);
+    function requireOnlyCouncilOrTreasury(address _sender) external view;
 
-    function depositToBAMM(address payable _bammAddress, uint256 _thusdAmount) external;
-    function withdrawFromBAMM(address payable _bammAddress, uint256 _numShares) external;
+    function setAddresses(address _thusdTokenAddress, address _collateralERC20) external;
+    function initialize(address payable _bammAddress) external;
+
+    function depositToBAMM(uint256 _thusdAmount) external;
+    function withdrawFromBAMM(uint256 _numShares) external;
     function withdrawTHUSD(address _recepient, uint256 _thusdAmount) external;
     function withdrawCollateral(address _recepient, uint256 _collateralAmount) external;
 

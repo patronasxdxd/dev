@@ -16,75 +16,89 @@ contract PCV is IPCV, Ownable, CheckContract {
 
     ITHUSDToken public thusdToken;
     IERC20 public collateralERC20;
+    BAMM public bamm;
 
-    address public troveManagerAddress;
-    address public borrowerOperationsAddress;
-    address public activePoolAddress;
+    // TODO ideal initialization in constructor/setAddresses
+    uint256 public debtToPay;
+    bool public isInitialized;
+
+    address public council;
+    address public treasury;
+
+    modifier onlyAfterLoanPaid() {
+        require(isInitialized && debtToPay == 0, "PCV: debt must be paid");
+        _;
+    }
+
+    modifier onlyCouncilOrTreasury() {
+        requireOnlyCouncilOrTreasury(msg.sender);
+        _;
+    }
 
     // --- Functions ---
 
     // TODO maybe move to constructor?
-    function setAddresses
-    (
-        address _thusdTokenAddress,
-        address _troveManagerAddress,
-        address _borrowerOperationsAddress,
-        address _activePoolAddress,
-        address _collateralERC20
-    )
+    function setAddresses(address _thusdTokenAddress, address _collateralERC20)
         external
-        onlyOwner
         override
+        onlyOwner
     {
         require(address(thusdToken) == address(0), "PCV: contacts already set");
         checkContract(_thusdTokenAddress);
-        checkContract(_troveManagerAddress);
-        checkContract(_borrowerOperationsAddress);
-        checkContract(_activePoolAddress);
         if (_collateralERC20 != address(0)) {
             checkContract(_collateralERC20);
         }
 
         thusdToken = ITHUSDToken(_thusdTokenAddress);
-        troveManagerAddress = _troveManagerAddress;
-        borrowerOperationsAddress = _borrowerOperationsAddress;
-        activePoolAddress = _activePoolAddress;
         collateralERC20 = IERC20(_collateralERC20);
 
         emit THUSDTokenAddressSet(_thusdTokenAddress);
-        emit TroveManagerAddressSet(_troveManagerAddress);
-        emit BorrowerOperationsAddressSet(_borrowerOperationsAddress);
-        emit ActivePoolAddressSet(_activePoolAddress);
         emit CollateralAddressSet(_collateralERC20);
+    }
+
+    // --- Initialization ---
+
+    function initialize(address payable _bammAddress) external override onlyOwner {
+        require(!isInitialized, "PCV: already initialized");
+        checkContract(_bammAddress);
+        bamm = BAMM(_bammAddress);
+        emit CollateralAddressSet(_bammAddress);
+
+        debtToPay = thusdToken.balanceOf(address(this));
+        require(debtToPay > 0, "PCV: not enough tokens to bootstrap");
+
+        depositToBAMM(debtToPay);
+
+        isInitialized = true;
     }
 
     // --- Backstop protocol ---
 
-    function depositToBAMM(address payable _bammAddress, uint256 _thusdAmount) external override onlyOwner {
+    function depositToBAMM(uint256 _thusdAmount) public override onlyCouncilOrTreasury {
         require(_thusdAmount <= thusdToken.balanceOf(address(this)), "PCV: not enough tokens");
-        thusdToken.approve(_bammAddress, _thusdAmount);
-        BAMM(_bammAddress).deposit(_thusdAmount);
+        thusdToken.approve(address(bamm), _thusdAmount);
+        bamm.deposit(_thusdAmount);
         
-        emit BAMMDeposit(_bammAddress, _thusdAmount);     
+        emit BAMMDeposit(_thusdAmount);     
     }
 
-    function withdrawFromBAMM(address payable _bammAddress, uint256 _numShares) external override onlyOwner {
-        require(_numShares <= BAMM(_bammAddress).balanceOf(address(this)), "PCV: not enough shares");
-        BAMM(_bammAddress).withdraw(_numShares);
+    function withdrawFromBAMM(uint256 _numShares) external override onlyCouncilOrTreasury {
+        require(_numShares <= bamm.balanceOf(address(this)), "PCV: not enough shares");
+        bamm.withdraw(_numShares);
         
-        emit BAMMWithdraw(_bammAddress, _numShares); 
+        emit BAMMWithdraw(_numShares); 
     }
 
     // --- Maintain thUSD and collateral ---
 
-    function withdrawTHUSD(address _recepient, uint256 _thusdAmount) external override onlyOwner {
+    function withdrawTHUSD(address _recepient, uint256 _thusdAmount) external override onlyAfterLoanPaid onlyCouncilOrTreasury {
         require(_thusdAmount <= thusdToken.balanceOf(address(this)), "PCV: not enough tokens");
         require(thusdToken.transfer(_recepient, _thusdAmount), "PCV: sending thUSD failed");
         
         emit THUSDWithdraw(_recepient, _thusdAmount); 
     }
 
-    function withdrawCollateral(address _recepient, uint256 _collateralAmount) external override onlyOwner {
+    function withdrawCollateral(address _recepient, uint256 _collateralAmount) external override onlyAfterLoanPaid onlyCouncilOrTreasury {
         if (address(collateralERC20) == address(0)) {
             // ETH
             require(_collateralAmount <= address(this).balance, "PCV: not enough ETH");
@@ -98,6 +112,16 @@ contract PCV is IPCV, Ownable, CheckContract {
         }
         
         emit CollateralWithdraw(_recepient, _collateralAmount); 
+    }
+
+    function requireOnlyCouncilOrTreasury(address _sender) public override view {
+        require(_sender == council || _sender == treasury, "PCV: caller must be council or treasury");
+    }
+
+    function setRoles(address _council, address _treasury) external onlyOwner {
+        council = _council;
+        treasury = _treasury;
+        emit RolesSet(council, treasury);
     }
 
     receive() external payable {}
