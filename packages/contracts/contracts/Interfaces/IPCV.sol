@@ -6,6 +6,7 @@ interface IPCV {
 
     // --- Events --
     event THUSDTokenAddressSet(address _thusdTokenAddress);
+    event BorrowerOperationsAddressSet(address _borrowerOperationsAddress);
     event CollateralAddressSet(address _collateralAddress);
     event BAMMAddressSet(address _bammAddress);
     event RolesSet(address _council, address _treasury);
@@ -15,13 +16,14 @@ interface IPCV {
     event THUSDWithdraw(address _recepient, uint256 _thusdAmount);
     event CollateralWithdraw(address _recepient, uint256 _collateralAmount);
 
+    event PCVDebtPaid(uint256 _paidDebt);
 
     // --- Functions ---
 
     function debtToPay() external returns(uint256);
-    function requireOnlyCouncilOrTreasury(address _sender) external view;
+    function payDebt(uint256 _thusdToBurn) external;
 
-    function setAddresses(address _thusdTokenAddress, address _collateralERC20) external;
+    function setAddresses(address _thusdTokenAddress, address _borrowerOperations, address _collateralERC20) external;
     function initialize(address payable _bammAddress) external;
 
     function depositToBAMM(uint256 _thusdAmount) external;

@@ -1,7 +1,7 @@
 const deploymentHelper = require("../utils/deploymentHelpers.js")
 const { TestHelper: th, MoneyValues: mv } = require("../utils/testHelpers.js")
 
-const GasPool = artifacts.require("./GasPool.sol")
+const Dummy = artifacts.require("./Dummy.sol")
 const BorrowerOperationsTester = artifacts.require("./BorrowerOperationsTester.sol")
 
 contract('All functions with onlyOwner modifier', async accounts => {
@@ -18,7 +18,6 @@ contract('All functions with onlyOwner modifier', async accounts => {
   let borrowerOperations
 
   let pcv
-  let lockupContractFactory
 
   before(async () => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
@@ -51,7 +50,7 @@ contract('All functions with onlyOwner modifier', async accounts => {
   }
 
   const testSetAddresses = async (contract, numberOfAddresses, collateralAddressNumber = 0) => {
-    const dumbContract = await GasPool.new()
+    const dumbContract = await Dummy.new()
     const params = Array(numberOfAddresses).fill(dumbContract.address)
 
     // Attempt call from alice
@@ -101,7 +100,7 @@ contract('All functions with onlyOwner modifier', async accounts => {
 
   describe('SortedTroves', async accounts => {
     it("setParams(): reverts when called by non-owner, with wrong addresses, or twice", async () => {
-      const dumbContract = await GasPool.new()
+      const dumbContract = await Dummy.new()
       const params = [10000001, dumbContract.address, dumbContract.address]
 
       // Attempt call from alice
@@ -123,7 +122,7 @@ contract('All functions with onlyOwner modifier', async accounts => {
 
   describe('PCV', async accounts => {
     it("setAddresses(): reverts when called by non-owner, with wrong addresses, or twice", async () => {
-      await testSetAddresses(pcv, 5, 5)
+      await testSetAddresses(pcv, 3, 3)
     })
   })
 })

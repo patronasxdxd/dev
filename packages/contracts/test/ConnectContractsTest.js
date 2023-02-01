@@ -249,28 +249,12 @@ contract('Deployment script - Sets correct contract addresses dependencies after
 
   // --- PCV ---
 
-  // Sets ActivePool in PCV
-  it('Sets the correct ActivePool address in PCV', async () => {
-    const activePoolAddress = activePool.address
-
-    const recordedActivePoolAddress = await pcv.activePoolAddress()
-    assert.equal(activePoolAddress, recordedActivePoolAddress)
-  })
-
   // Sets THUSDToken in PCV
-  it('Sets the correct ActivePool address in PCV', async () => {
+  it('Sets the correct thUSD token address in PCV', async () => {
     const thusdTokenAddress = thusdToken.address
 
     const recordedTHUSDTokenAddress = await pcv.thusdToken()
     assert.equal(thusdTokenAddress, recordedTHUSDTokenAddress)
-  })
-
-  // Sets TroveManager in PCV
-  it('Sets the correct ActivePool address in PCV', async () => {
-    const troveManagerAddress = troveManager.address
-
-    const recordedTroveManagerAddress = await pcv.troveManagerAddress()
-    assert.equal(troveManagerAddress, recordedTroveManagerAddress)
   })
 
   // Sets BorrowerOperations in PCV
@@ -281,7 +265,7 @@ contract('Deployment script - Sets correct contract addresses dependencies after
     assert.equal(borrowerOperationsAddress, recordedBorrowerOperationsAddress)
   })
 
-  // Sets BorrowerOperations in PCV
+  // Sets Collateral address in PCV
   it('Sets the correct collateral address in PCV', async () => {
     const collateralAddress = erc20.address
 

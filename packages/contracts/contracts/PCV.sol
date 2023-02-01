@@ -8,6 +8,7 @@ import "./Interfaces/IPCV.sol";
 import "./Interfaces/ITHUSDToken.sol";
 import "./Dependencies/IERC20.sol";
 import "./B.Protocol/BAMM.sol";
+import "./BorrowerOperations.sol";
 
 contract PCV is IPCV, Ownable, CheckContract {
 
@@ -15,6 +16,7 @@ contract PCV is IPCV, Ownable, CheckContract {
     string constant public NAME = "PCV";
 
     ITHUSDToken public thusdToken;
+    BorrowerOperations public borrowerOperations;
     IERC20 public collateralERC20;
     BAMM public bamm;
 
@@ -31,28 +33,31 @@ contract PCV is IPCV, Ownable, CheckContract {
     }
 
     modifier onlyCouncilOrTreasury() {
-        requireOnlyCouncilOrTreasury(msg.sender);
+        require(msg.sender == council || msg.sender == treasury, "PCV: caller must be council or treasury");
         _;
     }
 
     // --- Functions ---
 
     // TODO maybe move to constructor?
-    function setAddresses(address _thusdTokenAddress, address _collateralERC20)
+    function setAddresses(address _thusdTokenAddress, address _borrowerOperations, address _collateralERC20)
         external
         override
         onlyOwner
     {
         require(address(thusdToken) == address(0), "PCV: contacts already set");
         checkContract(_thusdTokenAddress);
+        checkContract(_borrowerOperations);
         if (_collateralERC20 != address(0)) {
             checkContract(_collateralERC20);
         }
 
         thusdToken = ITHUSDToken(_thusdTokenAddress);
         collateralERC20 = IERC20(_collateralERC20);
+        borrowerOperations = BorrowerOperations(_borrowerOperations);
 
         emit THUSDTokenAddressSet(_thusdTokenAddress);
+        emit BorrowerOperationsAddressSet(_borrowerOperations);
         emit CollateralAddressSet(_collateralERC20);
     }
 
@@ -67,7 +72,9 @@ contract PCV is IPCV, Ownable, CheckContract {
         debtToPay = thusdToken.balanceOf(address(this));
         require(debtToPay > 0, "PCV: not enough tokens to bootstrap");
 
-        depositToBAMM(debtToPay);
+        thusdToken.approve(address(bamm), debtToPay);
+        bamm.deposit(debtToPay);
+        emit BAMMDeposit(debtToPay);  
 
         isInitialized = true;
     }
@@ -114,8 +121,13 @@ contract PCV is IPCV, Ownable, CheckContract {
         emit CollateralWithdraw(_recepient, _collateralAmount); 
     }
 
-    function requireOnlyCouncilOrTreasury(address _sender) public override view {
-        require(_sender == council || _sender == treasury, "PCV: caller must be council or treasury");
+    function payDebt(uint256 _thusdToBurn) external override onlyCouncilOrTreasury {
+        require(debtToPay > 0, "PCV: debt has already paid");
+        require(_thusdToBurn <= thusdToken.balanceOf(address(this)), "PCV: not enough tokens");
+        uint256 thusdToBurn = LiquityMath._min(_thusdToBurn, debtToPay);
+        debtToPay -= thusdToBurn;
+        borrowerOperations.burnDebtFromPCV(thusdToBurn);
+        emit PCVDebtPaid(thusdToBurn);
     }
 
     function setRoles(address _council, address _treasury) external onlyOwner {

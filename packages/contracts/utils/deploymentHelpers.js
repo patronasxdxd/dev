@@ -343,9 +343,7 @@ class DeploymentHelper {
 
     await contracts.pcv.setAddresses(
       contracts.thusdToken.address,
-      contracts.troveManager.address,
       contracts.borrowerOperations.address,
-      contracts.activePool.address,
       contracts.erc20.address
     )
 

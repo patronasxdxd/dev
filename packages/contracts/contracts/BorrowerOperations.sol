@@ -82,7 +82,6 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOpe
     }
 
     event TroveUpdated(address indexed _borrower, uint256 _debt, uint256 _coll, uint256 stake, BorrowerOperation operation);
-    event PCVDebtPaid(uint256 _paidDebt);
     // --- Dependency setters ---
 
     function setAddresses(
@@ -144,18 +143,15 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOpe
         emit PCVAddressChanged(_pcvAddress);
         emit CollateralAddressChanged(_collateralAddress);
 
-        thusdToken.mint(pcvAddress, PCV_BOOTSTRAP_LOAN);
+        thusdToken.mint(_pcvAddress, PCV_BOOTSTRAP_LOAN);
 
         _renounceOwnership();
     }
 
-    /// Pay debt on PCV behalf
-    function payPCVDebt(uint256 _thUSDtoBurn) external {
-        pcv.requireOnlyCouncilOrTreasury(msg.sender);
-        require(_thUSDtoBurn <= thusdToken.balanceOf(address(pcv)), "BorrowerOperations: not enough tokens to burn");
-        uint256 thUSDtoBurn = LiquityMath._min(_thUSDtoBurn, pcv.debtToPay());
-        thusdToken.burn(address(pcv), thUSDtoBurn);
-        emit PCVDebtPaid(thUSDtoBurn);
+    /// Burn debt on PCV behalf
+    function burnDebtFromPCV(uint256 _thusdToBurn) external {
+        require(msg.sender == address(pcv), "BorrowerOperations: caller must be PCV");
+        thusdToken.burn(address(pcv), _thusdToBurn);
     }
 
     // --- Borrower Trove Operations ---
