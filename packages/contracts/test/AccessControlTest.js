@@ -1,6 +1,7 @@
 const deploymentHelper = require("../utils/deploymentHelpers.js")
 const testHelpers = require("../utils/testHelpers.js")
 const TroveManagerTester = artifacts.require("TroveManagerTester")
+const Dummy = artifacts.require("Dummy")
 
 const th = testHelpers.TestHelper
 const timeValues = testHelpers.TimeValues
@@ -30,6 +31,7 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
   let defaultPool
   let functionCaller
   let borrowerOperations
+  let dummy
 
   let pcv
 
@@ -49,6 +51,7 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
     functionCaller = contracts.functionCaller
     borrowerOperations = contracts.borrowerOperations
     pcv = contracts.pcv
+    dummy = await Dummy.new()
 
     await deploymentHelper.connectCoreContracts(contracts)
 
@@ -422,6 +425,13 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
   })
 
   describe('PCV', async accounts => {
+    
+    before(async () => {
+      await pcv.initialize(dummy.address, { from: owner })
+      const debtToPay = await pcv.debtToPay()
+      await pcv.payDebt(debtToPay, { from: owner })
+    })
+
     it.skip("receive(): reverts when caller is not ActivePool", async () => {
       try {
         await web3.eth.sendTransaction({ from: alice, to: pcv.address, value: 100 })
@@ -431,39 +441,66 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
       }
     })
 
-    it("depositToBAMM(): reverts when caller is not owner", async () => {
+    it("depositToBAMM(): reverts when caller is not owner, council or treasury", async () => {
       try {
-        await pcv.depositToBAMM(alice, 1, { from: alice })
+        await pcv.depositToBAMM(1, { from: alice })
       } catch (err) {
         assert.include(err.message, "revert")
-        assert.include(err.message, "Ownable: caller is not the owner")
+        assert.include(err.message, "PCV: caller must be owner or council or treasury")
       }
     })
 
-    it("withdrawFromBAMM(): reverts when caller is not owner", async () => {
+    it("withdrawFromBAMM(): reverts when caller is not owner, council or treasury", async () => {
       try {
-        await pcv.withdrawFromBAMM(alice, 1, { from: alice })
+        await pcv.withdrawFromBAMM(1, { from: alice })
       } catch (err) {
         assert.include(err.message, "revert")
-        assert.include(err.message, "Ownable: caller is not the owner")
+        assert.include(err.message, "PCV: caller must be owner or council or treasury")
       }
     })
 
-    it("withdrawTHUSD(): reverts when caller is not owner", async () => {
+    it("withdrawTHUSD(): reverts when caller is not owner, council or treasury", async () => {
       try {
         await pcv.withdrawTHUSD(alice, 1, { from: alice })
       } catch (err) {
         assert.include(err.message, "revert")
-        assert.include(err.message, "Ownable: caller is not the owner")
+        assert.include(err.message, "PCV: caller must be owner or council or treasury")
       }
     })
 
-    it("withdrawCollateral(): reverts when caller is not owner", async () => {
+    it("withdrawCollateral(): reverts when caller is not owner, council or treasury", async () => {
       try {
         await pcv.withdrawCollateral(alice, 1, { from: alice })
       } catch (err) {
         assert.include(err.message, "revert")
+        assert.include(err.message, "PCV: caller must be owner or council or treasury")
+      }
+    })
+
+    it("setRoles(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.setRoles(alice, alice, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
         assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("payDebt(): reverts when caller is not owner, council or treasury", async () => {
+      try {
+        await pcv.payDebt(1, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "PCV: caller must be owner or council or treasury")
+      }
+    })
+
+    it("initialize(): reverts when caller is not owner, council or treasury", async () => {
+      try {
+        await pcv.initialize(alice, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "PCV: caller must be owner or council or treasury")
       }
     })
   })

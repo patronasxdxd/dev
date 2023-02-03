@@ -15,6 +15,8 @@ contract PCV is IPCV, Ownable, CheckContract {
     // --- Data ---
     string constant public NAME = "PCV";
 
+    uint256 constant public BOOTSTRAP_LOAN = 10 * 10**18; 
+
     ITHUSDToken public thusdToken;
     BorrowerOperations public borrowerOperations;
     IERC20 public collateralERC20;
@@ -27,13 +29,18 @@ contract PCV is IPCV, Ownable, CheckContract {
     address public council;
     address public treasury;
 
-    modifier onlyAfterLoanPaid() {
+    modifier onlyAfterDebtPaid() {
         require(isInitialized && debtToPay == 0, "PCV: debt must be paid");
         _;
     }
 
-    modifier onlyCouncilOrTreasury() {
-        require(msg.sender == council || msg.sender == treasury, "PCV: caller must be council or treasury");
+    modifier onlyOwnerOrCouncilOrTreasury() {
+        require(
+            msg.sender == owner() || 
+            msg.sender == council || 
+            msg.sender == treasury, 
+            "PCV: caller must be owner or council or treasury"
+        );
         _;
     }
 
@@ -63,14 +70,14 @@ contract PCV is IPCV, Ownable, CheckContract {
 
     // --- Initialization ---
 
-    function initialize(address payable _bammAddress) external override onlyOwner {
+    function initialize(address payable _bammAddress) external override onlyOwnerOrCouncilOrTreasury {
         require(!isInitialized, "PCV: already initialized");
         checkContract(_bammAddress);
         bamm = BAMM(_bammAddress);
-        emit CollateralAddressSet(_bammAddress);
+        emit BAMMAddressSet(_bammAddress);
 
-        debtToPay = thusdToken.balanceOf(address(this));
-        require(debtToPay > 0, "PCV: not enough tokens to bootstrap");
+        debtToPay = BOOTSTRAP_LOAN;
+        borrowerOperations.mintBootstrapLoanFromPCV(debtToPay);
 
         thusdToken.approve(address(bamm), debtToPay);
         bamm.deposit(debtToPay);
@@ -81,7 +88,7 @@ contract PCV is IPCV, Ownable, CheckContract {
 
     // --- Backstop protocol ---
 
-    function depositToBAMM(uint256 _thusdAmount) public override onlyCouncilOrTreasury {
+    function depositToBAMM(uint256 _thusdAmount) public override onlyOwnerOrCouncilOrTreasury {
         require(_thusdAmount <= thusdToken.balanceOf(address(this)), "PCV: not enough tokens");
         thusdToken.approve(address(bamm), _thusdAmount);
         bamm.deposit(_thusdAmount);
@@ -89,7 +96,7 @@ contract PCV is IPCV, Ownable, CheckContract {
         emit BAMMDeposit(_thusdAmount);     
     }
 
-    function withdrawFromBAMM(uint256 _numShares) external override onlyCouncilOrTreasury {
+    function withdrawFromBAMM(uint256 _numShares) external override onlyOwnerOrCouncilOrTreasury {
         require(_numShares <= bamm.balanceOf(address(this)), "PCV: not enough shares");
         bamm.withdraw(_numShares);
         
@@ -98,14 +105,22 @@ contract PCV is IPCV, Ownable, CheckContract {
 
     // --- Maintain thUSD and collateral ---
 
-    function withdrawTHUSD(address _recepient, uint256 _thusdAmount) external override onlyAfterLoanPaid onlyCouncilOrTreasury {
+    function withdrawTHUSD(address _recepient, uint256 _thusdAmount) external override onlyAfterDebtPaid onlyOwnerOrCouncilOrTreasury {
         require(_thusdAmount <= thusdToken.balanceOf(address(this)), "PCV: not enough tokens");
         require(thusdToken.transfer(_recepient, _thusdAmount), "PCV: sending thUSD failed");
         
         emit THUSDWithdraw(_recepient, _thusdAmount); 
     }
 
-    function withdrawCollateral(address _recepient, uint256 _collateralAmount) external override onlyAfterLoanPaid onlyCouncilOrTreasury {
+    function withdrawCollateral(
+        address _recepient, 
+        uint256 _collateralAmount
+    ) 
+        external 
+        override 
+        onlyAfterDebtPaid 
+        onlyOwnerOrCouncilOrTreasury 
+    {
         if (address(collateralERC20) == address(0)) {
             // ETH
             require(_collateralAmount <= address(this).balance, "PCV: not enough ETH");
@@ -121,7 +136,7 @@ contract PCV is IPCV, Ownable, CheckContract {
         emit CollateralWithdraw(_recepient, _collateralAmount); 
     }
 
-    function payDebt(uint256 _thusdToBurn) external override onlyCouncilOrTreasury {
+    function payDebt(uint256 _thusdToBurn) external override onlyOwnerOrCouncilOrTreasury {
         require(debtToPay > 0, "PCV: debt has already paid");
         require(_thusdToBurn <= thusdToken.balanceOf(address(this)), "PCV: not enough tokens");
         uint256 thusdToBurn = LiquityMath._min(_thusdToBurn, debtToPay);

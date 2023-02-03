@@ -261,7 +261,7 @@ contract('Deployment script - Sets correct contract addresses dependencies after
   it('Sets the correct BorrowerOperations address in PCV', async () => {
     const borrowerOperationsAddress = borrowerOperations.address
 
-    const recordedBorrowerOperationsAddress = await pcv.borrowerOperationsAddress()
+    const recordedBorrowerOperationsAddress = await pcv.borrowerOperations()
     assert.equal(borrowerOperationsAddress, recordedBorrowerOperationsAddress)
   })
 

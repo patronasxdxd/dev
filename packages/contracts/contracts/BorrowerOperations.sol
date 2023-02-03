@@ -17,8 +17,6 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOpe
 
     string constant public NAME = "BorrowerOperations";
 
-    uint256 constant public PCV_BOOTSTRAP_LOAN = 10 * 10**18; 
-
     // --- Connected contract declarations ---
 
     ITroveManager public troveManager;
@@ -143,12 +141,15 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOpe
         emit PCVAddressChanged(_pcvAddress);
         emit CollateralAddressChanged(_collateralAddress);
 
-        thusdToken.mint(_pcvAddress, PCV_BOOTSTRAP_LOAN);
-
         _renounceOwnership();
     }
 
-    /// Burn debt on PCV behalf
+    /// Calls on PCV behalf
+    function mintBootstrapLoanFromPCV(uint256 _thusdToMint) external {
+        require(msg.sender == address(pcv), "BorrowerOperations: caller must be PCV");
+        thusdToken.mint(address(pcv), _thusdToMint);
+    }
+
     function burnDebtFromPCV(uint256 _thusdToBurn) external {
         require(msg.sender == address(pcv), "BorrowerOperations: caller must be PCV");
         thusdToken.burn(address(pcv), _thusdToBurn);
