@@ -13,7 +13,7 @@ const dec = th.dec
 
 contract('PCV', async accounts => {
   
-  const [owner, alice, council, treasury] = accounts;
+  const [owner, alice, bob, council, treasury] = accounts;
 
   const feePool = "0x1000000000000000000000000000000000000001"
 
@@ -21,10 +21,6 @@ contract('PCV', async accounts => {
 
     let priceFeed
     let thusdToken
-    let sortedTroves
-    let troveManager
-    let activePool
-    let borrowerOperations
     let pcv
     let erc20
     let bamm
@@ -46,10 +42,6 @@ contract('PCV', async accounts => {
 
       priceFeed = contracts.priceFeedTestnet
       thusdToken = contracts.thusdToken
-      sortedTroves = contracts.sortedTroves
-      troveManager = contracts.troveManager
-      activePool = contracts.activePool
-      borrowerOperations = contracts.borrowerOperations
       hintHelpers = contracts.hintHelpers
       erc20 = contracts.erc20
       pcv = contracts.pcv
@@ -67,11 +59,10 @@ contract('PCV', async accounts => {
         erc20.address)
         
       bootstrapLoan = await pcv.BOOTSTRAP_LOAN()
-  })
-
-    beforeEach(async () => {
+      
       await pcv.initialize(bamm.address, { from: owner })
       await pcv.setRoles(council, treasury, { from: owner })
+      await pcv.addRecipientsToWhitelist([alice, council, treasury], { from: owner })
     })
 
     it('initialize(): reverts when trying to initialize second time', async () => {
@@ -88,6 +79,8 @@ contract('PCV', async accounts => {
       assert.isAbove(bammBalance, 0)
       const spBalance = await stabilityPool.getCompoundedTHUSDDeposit(bamm.address)
       assert.equal(spBalance.toString(), debtToPay)
+      const totalTHUSD = await thusdToken.totalSupply()
+      assert.equal(totalTHUSD.toString(), debtToPay)
     })
 
     it('depositToBAMM(): reverts if not enough thUSD', async () => {
@@ -166,12 +159,65 @@ contract('PCV', async accounts => {
       await pcv.payDebt(value, { from: treasury })
       const debtToPay = await pcv.debtToPay()
       assert.equal(debtToPay.toString(), bootstrapLoan.sub(value).toString())
+      const totalTHUSD = await thusdToken.totalSupply()
+      assert.equal(totalTHUSD.toString(), bootstrapLoan.toString())
+      const pcvBalance = await thusdToken.balanceOf(pcv.address)
+      assert.equal(pcvBalance.toString(), "0")
     })
 
     it('setRoles(): sets new roles', async () => {
       await pcv.setRoles(owner, owner, { from: owner })
       assert.equal(await pcv.council(), owner)
       assert.equal(await pcv.treasury(), owner)
+    })
+    
+    it('addRecipientToWhitelist(): reverts when address is already in the whitelist', async () => {
+      await assertRevert(pcv.addRecipientToWhitelist(alice, { from: owner }), "PCV: Recipient has already added to whitelist")
+    })
+
+    it('addRecipientToWhitelist(): adds new recipient to the whitelist', async () => {
+      assert.isTrue(await pcv.recipientsWhitelist(alice))
+      assert.isFalse(await pcv.recipientsWhitelist(bob))
+      await pcv.addRecipientToWhitelist(bob, { from: owner })
+      assert.isTrue(await pcv.recipientsWhitelist(alice))
+      assert.isTrue(await pcv.recipientsWhitelist(bob))
+    })
+    
+    it('addRecipientsToWhitelist(): reverts when address is already in the whitelist', async () => {
+      await assertRevert(pcv.addRecipientsToWhitelist([alice, bob], { from: owner }), 
+      "PCV: Recipient has already added to whitelist")
+    })
+
+    it('addRecipientsToWhitelist(): adds new recipients to the whitelist', async () => {
+      assert.isTrue(await pcv.recipientsWhitelist(alice))
+      assert.isFalse(await pcv.recipientsWhitelist(bob))
+      assert.isFalse(await pcv.recipientsWhitelist(owner))
+      await pcv.addRecipientsToWhitelist([owner, bob], { from: owner })
+      assert.isTrue(await pcv.recipientsWhitelist(alice))
+      assert.isTrue(await pcv.recipientsWhitelist(bob))
+      assert.isTrue(await pcv.recipientsWhitelist(owner))
+    })
+    
+    it('removeRecipientFromWhitelist(): reverts when address is not in the whitelist', async () => {
+      await assertRevert(pcv.removeRecipientFromWhitelist(bob, { from: owner }), "PCV: Recipient is not in whitelist")
+    })
+
+    it('removeRecipientFromWhitelist(): removes recipient from the whitelist', async () => {
+      assert.isTrue(await pcv.recipientsWhitelist(alice))
+      await pcv.removeRecipientFromWhitelist(alice, { from: owner })
+      assert.isFalse(await pcv.recipientsWhitelist(alice))
+    })
+    
+    it('removeRecipientsFromWhitelist(): reverts when address is not in the whitelist', async () => {
+      await assertRevert(pcv.removeRecipientsFromWhitelist([alice, bob], { from: owner }), "PCV: Recipient is not in whitelist")
+    })
+
+    it('removeRecipientsFromWhitelist(): removes recipients from the whitelist', async () => {
+      assert.isTrue(await pcv.recipientsWhitelist(alice))
+      assert.isTrue(await pcv.recipientsWhitelist(council))
+      await pcv.removeRecipientsFromWhitelist([alice, council], { from: owner })
+      assert.isFalse(await pcv.recipientsWhitelist(alice))
+      assert.isFalse(await pcv.recipientsWhitelist(council))
     })
 
     context("when debt is paid", () => {
@@ -192,6 +238,11 @@ contract('PCV', async accounts => {
         await assertRevert(pcv.payDebt(bootstrapLoan, { from: council }), "PCV: debt has already paid")
       })
 
+      it('withdrawTHUSD(): reverts if recipient is not in whitelist', async () => {
+        await thusdToken.unprotectedMint(pcv.address, bootstrapLoan)
+        await assertRevert(pcv.withdrawTHUSD(bob, bootstrapLoan, { from: treasury }), "PCV: recipient must be in whitelist")
+      })
+
       it('withdrawTHUSD(): reverts if not enough thUSD', async () => {
         await assertRevert(pcv.withdrawTHUSD(alice, 1, { from: treasury }), "PCV: not enough tokens")
         await thusdToken.unprotectedMint(pcv.address, 10*18)
@@ -207,6 +258,12 @@ contract('PCV', async accounts => {
         assert.equal(pcvBalance.toString(), "0")
         const aliceBalance = await thusdToken.balanceOf(alice)
         assert.equal(aliceBalance.toString(), value.toString())
+      })
+      
+      it('withdrawCollateral(): reverts if recipient is not in whitelist', async () => {
+        const value = toBN(dec(20, 18))
+        await sendCollateral(pcv.address, value)
+        await assertRevert(pcv.withdrawCollateral(bob, value, { from: treasury }), "PCV: recipient must be in whitelist")
       })
 
       it('withdrawCollateral(): reverts if not enough collateral', async () => {

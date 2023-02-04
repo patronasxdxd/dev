@@ -28,6 +28,8 @@ contract PCV is IPCV, Ownable, CheckContract {
 
     address public council;
     address public treasury;
+    
+    mapping(address => bool) public recipientsWhitelist;
 
     modifier onlyAfterDebtPaid() {
         require(isInitialized && debtToPay == 0, "PCV: debt must be paid");
@@ -41,6 +43,11 @@ contract PCV is IPCV, Ownable, CheckContract {
             msg.sender == treasury, 
             "PCV: caller must be owner or council or treasury"
         );
+        _;
+    }
+
+    modifier onlyWhitelistedRecipient(address _recipient) {
+        require(recipientsWhitelist[_recipient], "PCV: recipient must be in whitelist");
         _;
     }
 
@@ -70,6 +77,7 @@ contract PCV is IPCV, Ownable, CheckContract {
 
     // --- Initialization ---
 
+    // TODO move bamm initialization to setAddresses or constructor
     function initialize(address payable _bammAddress) external override onlyOwnerOrCouncilOrTreasury {
         require(!isInitialized, "PCV: already initialized");
         checkContract(_bammAddress);
@@ -105,35 +113,45 @@ contract PCV is IPCV, Ownable, CheckContract {
 
     // --- Maintain thUSD and collateral ---
 
-    function withdrawTHUSD(address _recepient, uint256 _thusdAmount) external override onlyAfterDebtPaid onlyOwnerOrCouncilOrTreasury {
+    function withdrawTHUSD(
+        address _recipient, 
+        uint256 _thusdAmount
+    ) 
+        external 
+        override 
+        onlyAfterDebtPaid 
+        onlyOwnerOrCouncilOrTreasury
+        onlyWhitelistedRecipient(_recipient)
+    {
         require(_thusdAmount <= thusdToken.balanceOf(address(this)), "PCV: not enough tokens");
-        require(thusdToken.transfer(_recepient, _thusdAmount), "PCV: sending thUSD failed");
+        require(thusdToken.transfer(_recipient, _thusdAmount), "PCV: sending thUSD failed");
         
-        emit THUSDWithdraw(_recepient, _thusdAmount); 
+        emit THUSDWithdraw(_recipient, _thusdAmount); 
     }
 
     function withdrawCollateral(
-        address _recepient, 
+        address _recipient, 
         uint256 _collateralAmount
     ) 
         external 
         override 
         onlyAfterDebtPaid 
-        onlyOwnerOrCouncilOrTreasury 
+        onlyOwnerOrCouncilOrTreasury
+        onlyWhitelistedRecipient(_recipient)
     {
         if (address(collateralERC20) == address(0)) {
             // ETH
             require(_collateralAmount <= address(this).balance, "PCV: not enough ETH");
-            (bool success, ) = _recepient.call{ value: _collateralAmount }(""); // re-entry is fine here
+            (bool success, ) = _recipient.call{ value: _collateralAmount }(""); // re-entry is fine here
             require(success, "PCV: sending ETH failed");
         } else {
             // ERC20
             require(_collateralAmount <= collateralERC20.balanceOf(address(this)), "PCV: not enough collateral");
-            bool success = collateralERC20.transfer(_recepient, _collateralAmount);
+            bool success = collateralERC20.transfer(_recipient, _collateralAmount);
             require(success, "PCV: sending collateral failed");
         }
         
-        emit CollateralWithdraw(_recepient, _collateralAmount); 
+        emit CollateralWithdraw(_recipient, _collateralAmount); 
     }
 
     function payDebt(uint256 _thusdToBurn) external override onlyOwnerOrCouncilOrTreasury {
@@ -144,11 +162,41 @@ contract PCV is IPCV, Ownable, CheckContract {
         borrowerOperations.burnDebtFromPCV(thusdToBurn);
         emit PCVDebtPaid(thusdToBurn);
     }
+    
+    // --- Maintain roles ---
 
     function setRoles(address _council, address _treasury) external onlyOwner {
         council = _council;
         treasury = _treasury;
         emit RolesSet(council, treasury);
+    }
+
+    // --- Maintain recipients whitelist ---
+
+    function addRecipientToWhitelist(address _recipient) public override onlyOwner {
+        require(!recipientsWhitelist[_recipient], "PCV: Recipient has already added to whitelist");
+        recipientsWhitelist[_recipient] = true;
+        emit RecipientAdded(_recipient);
+    }
+
+    function addRecipientsToWhitelist(address[] calldata _recipients) external override onlyOwner {
+        require(_recipients.length > 0, "PCV: Recipients array must not be empty");
+        for(uint256 i = 0; i < _recipients.length; i++) {
+            addRecipientToWhitelist(_recipients[i]);
+        }
+    }
+
+    function removeRecipientFromWhitelist(address _recipient) public override onlyOwner {
+        require(recipientsWhitelist[_recipient], "PCV: Recipient is not in whitelist");
+        recipientsWhitelist[_recipient] = false;
+        emit RecipientRemoved(_recipient);
+    }
+
+    function removeRecipientsFromWhitelist(address[] calldata _recipients) external override onlyOwner {
+        require(_recipients.length > 0, "PCV: Recipients array must not be empty");
+        for(uint256 i = 0; i < _recipients.length; i++) {
+            removeRecipientFromWhitelist(_recipients[i]);
+        }
     }
 
     receive() external payable {}

@@ -71,6 +71,24 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
         // assert.include(err.message, "BorrowerOps: Caller is not Stability Pool")
       }
     })
+
+    it("mintBootstrapLoanFromPCV(): reverts when called by an account that is not PCV", async () => {
+      try {
+        await borrowerOperations.mintBootstrapLoanFromPCV(toBN(dec(2, 18)), { from: alice })
+      } catch (err) {
+         assert.include(err.message, "revert")
+        assert.include(err.message, "BorrowerOperations: caller must be PCV")
+      }
+    })
+
+    it("burnDebtFromPCV(): reverts when called by an account that is not PCV", async () => {
+      try {
+        await borrowerOperations.burnDebtFromPCV(toBN(dec(2, 18)), { from: alice })
+      } catch (err) {
+         assert.include(err.message, "revert")
+        assert.include(err.message, "BorrowerOperations: caller must be PCV")
+      }
+    })
   })
 
   describe('TroveManager', async accounts => {
@@ -501,6 +519,42 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
       } catch (err) {
         assert.include(err.message, "revert")
         assert.include(err.message, "PCV: caller must be owner or council or treasury")
+      }
+    })
+
+    it("addRecipientToWhitelist(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.addRecipientToWhitelist(bob, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("addRecipientsToWhitelist(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.addRecipientsToWhitelist([bob], { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("removeRecipientFromWhitelist(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.removeRecipientFromWhitelist(alice, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("removeRecipientsFromWhitelist(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.removeRecipientsFromWhitelist([alice], { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
       }
     })
   })

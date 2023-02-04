@@ -13,10 +13,13 @@ interface IPCV {
 
     event BAMMDeposit(uint256 _thusdAmount);
     event BAMMWithdraw(uint256 _numShares);
-    event THUSDWithdraw(address _recepient, uint256 _thusdAmount);
-    event CollateralWithdraw(address _recepient, uint256 _collateralAmount);
+    event THUSDWithdraw(address _recipient, uint256 _thusdAmount);
+    event CollateralWithdraw(address _recipient, uint256 _collateralAmount);
 
     event PCVDebtPaid(uint256 _paidDebt);
+    
+    event RecipientAdded(address _recipient);
+    event RecipientRemoved(address _recipient);
 
     // --- Functions ---
 
@@ -28,7 +31,12 @@ interface IPCV {
 
     function depositToBAMM(uint256 _thusdAmount) external;
     function withdrawFromBAMM(uint256 _numShares) external;
-    function withdrawTHUSD(address _recepient, uint256 _thusdAmount) external;
-    function withdrawCollateral(address _recepient, uint256 _collateralAmount) external;
+    function withdrawTHUSD(address _recipient, uint256 _thusdAmount) external;
+    function withdrawCollateral(address _recipient, uint256 _collateralAmount) external;
+
+    function addRecipientToWhitelist(address _recipient) external;
+    function addRecipientsToWhitelist(address[] calldata _recipients) external;
+    function removeRecipientFromWhitelist(address _recipient) external;
+    function removeRecipientsFromWhitelist(address[] calldata _recipients) external;
 
 }
