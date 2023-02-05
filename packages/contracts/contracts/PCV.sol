@@ -16,6 +16,8 @@ contract PCV is IPCV, Ownable, CheckContract {
     string constant public NAME = "PCV";
 
     uint256 constant public BOOTSTRAP_LOAN = 10 * 10**18; 
+    
+    uint256 public immutable governanceTimeDelay;
 
     ITHUSDToken public thusdToken;
     BorrowerOperations public borrowerOperations;
@@ -30,6 +32,14 @@ contract PCV is IPCV, Ownable, CheckContract {
     address public treasury;
     
     mapping(address => bool) public recipientsWhitelist;
+    
+    address public pendingCouncilAddress;
+    address public pendingTreasuryAddress;
+    uint256 public changingRolesInitiated;
+
+    constructor(uint256 _governanceTimeDelay) {
+        governanceTimeDelay = _governanceTimeDelay;
+    }
 
     modifier onlyAfterDebtPaid() {
         require(isInitialized && debtToPay == 0, "PCV: debt must be paid");
@@ -165,10 +175,43 @@ contract PCV is IPCV, Ownable, CheckContract {
     
     // --- Maintain roles ---
 
-    function setRoles(address _council, address _treasury) external onlyOwner {
-        council = _council;
-        treasury = _treasury;
+    function startChangingRoles(address _council, address _treasury)
+        external
+        override
+        onlyOwner
+    {
+        require(_council != council || _treasury != treasury, "PCV: these roles already set");
+
+        changingRolesInitiated = block.timestamp;
+        if (council == address(0) && treasury == address(0)) {
+            changingRolesInitiated -= governanceTimeDelay; // skip delay if no roles set
+        }
+        pendingCouncilAddress = _council;
+        pendingTreasuryAddress = _treasury;
+    }
+
+    function cancelChangingRoles() external override onlyOwner {
+        require(changingRolesInitiated != 0, "PCV: Change not initiated");
+
+        changingRolesInitiated = 0;
+        pendingCouncilAddress = address(0);
+        pendingTreasuryAddress = address(0);
+    }
+
+    function finalizeChangingRoles() external override onlyOwner {
+        require(changingRolesInitiated > 0, "PCV: Change not initiated");
+        require(
+            block.timestamp >= changingRolesInitiated + governanceTimeDelay,
+            "PCV: Governance delay has not elapsed"
+        );
+
+        council = pendingCouncilAddress;
+        treasury = pendingTreasuryAddress;
         emit RolesSet(council, treasury);
+
+        changingRolesInitiated = 0;
+        pendingCouncilAddress = address(0);
+        pendingTreasuryAddress = address(0);
     }
 
     // --- Maintain recipients whitelist ---

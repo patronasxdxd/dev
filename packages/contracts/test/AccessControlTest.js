@@ -495,15 +495,6 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
       }
     })
 
-    it("setRoles(): reverts when caller is not owner", async () => {
-      try {
-        await pcv.setRoles(alice, alice, { from: alice })
-      } catch (err) {
-        assert.include(err.message, "revert")
-        assert.include(err.message, "Ownable: caller is not the owner")
-      }
-    })
-
     it("payDebt(): reverts when caller is not owner, council or treasury", async () => {
       try {
         await pcv.payDebt(1, { from: alice })
@@ -552,6 +543,33 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
     it("removeRecipientsFromWhitelist(): reverts when caller is not owner", async () => {
       try {
         await pcv.removeRecipientsFromWhitelist([alice], { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("startChangingRoles(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.startChangingRoles(alice, alice, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("cancelChangingRoles(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.cancelChangingRoles({ from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("finalizeChangingRoles(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.finalizeChangingRoles({ from: alice })
       } catch (err) {
         assert.include(err.message, "revert")
         assert.include(err.message, "Ownable: caller is not the owner")

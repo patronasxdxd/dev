@@ -77,7 +77,7 @@ class DeploymentHelper {
       borrowerOperations.address,
       delay
     )
-    const pcv = await PCV.new()
+    const pcv = await PCV.new(delay)
 
     PCV.setAsDeployed(pcv)
     THUSDToken.setAsDeployed(thusdToken)
@@ -146,7 +146,7 @@ class DeploymentHelper {
       testerContracts.borrowerOperations.address,
       delay
     )
-    testerContracts.pcv = await PCV.new()
+    testerContracts.pcv = await PCV.new(delay)
     
     let index = 0;
     for (const account of accounts) {

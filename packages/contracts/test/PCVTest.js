@@ -10,6 +10,8 @@ const ZERO_ADDRESS = th.ZERO_ADDRESS
 const assertRevert = th.assertRevert
 const toBN = th.toBN
 const dec = th.dec
+const getLatestBlockTimestamp = th.getLatestBlockTimestamp
+const fastForwardTime = th.fastForwardTime
 
 contract('PCV', async accounts => {
   
@@ -28,6 +30,8 @@ contract('PCV', async accounts => {
 
     let contracts
     let bootstrapLoan
+    
+    let delay
 
     const getCollateralBalance = async (address) => th.getCollateralBalance(erc20, address)
     const sendCollateral = async (recipient, valueToSend) => th.sendCollateral(erc20, owner, recipient, valueToSend)
@@ -61,8 +65,11 @@ contract('PCV', async accounts => {
       bootstrapLoan = await pcv.BOOTSTRAP_LOAN()
       
       await pcv.initialize(bamm.address, { from: owner })
-      await pcv.setRoles(council, treasury, { from: owner })
+      await pcv.startChangingRoles(council, treasury, { from: owner })
+      await pcv.finalizeChangingRoles({ from: owner })
       await pcv.addRecipientsToWhitelist([alice, council, treasury], { from: owner })
+      
+      delay = (await pcv.governanceTimeDelay()).toNumber()
     })
 
     it('initialize(): reverts when trying to initialize second time', async () => {
@@ -81,6 +88,74 @@ contract('PCV', async accounts => {
       assert.equal(spBalance.toString(), debtToPay)
       const totalTHUSD = await thusdToken.totalSupply()
       assert.equal(totalTHUSD.toString(), debtToPay)
+    })
+
+    it('startChangingRoles(): reverts when trying to set same roles twice', async () => {
+      await assertRevert(pcv.startChangingRoles(council, treasury, { from: owner }), "PCV: these roles already set")
+    })
+
+    it('startChangingRoles(): adds new roles as pending', async () => {
+      await pcv.startChangingRoles(alice, bob, { from: owner })
+      assert.equal(await pcv.council(), council)
+      assert.equal(await pcv.treasury(), treasury)
+      assert.equal(await pcv.pendingCouncilAddress(), alice)
+      assert.equal(await pcv.pendingTreasuryAddress(), bob)
+      const timeNow = await getLatestBlockTimestamp(web3)
+      assert.equal(await pcv.changingRolesInitiated(), timeNow)
+    })
+
+    it('startChangingRoles(): speeds up first setting of roles', async () => {
+      // reset roles first
+      await pcv.startChangingRoles(ZERO_ADDRESS, ZERO_ADDRESS, { from: owner })
+      assert.equal(await pcv.pendingCouncilAddress(), ZERO_ADDRESS)
+      assert.equal(await pcv.pendingTreasuryAddress(), ZERO_ADDRESS)
+      let timeNow = await getLatestBlockTimestamp(web3)
+      assert.equal(Number(await pcv.changingRolesInitiated()), timeNow)
+
+      await fastForwardTime(delay, web3.currentProvider)
+      await pcv.finalizeChangingRoles({ from: owner })
+
+      await pcv.startChangingRoles(alice, bob, { from: owner })
+      assert.equal(await pcv.council(), ZERO_ADDRESS)
+      assert.equal(await pcv.treasury(), ZERO_ADDRESS)
+      assert.equal(await pcv.pendingCouncilAddress(), alice)
+      assert.equal(await pcv.pendingTreasuryAddress(), bob)
+      timeNow = await getLatestBlockTimestamp(web3)
+      assert.equal(Number(await pcv.changingRolesInitiated()), timeNow - delay)
+    })
+    
+    it('cancelChangingRoles(): reverts when changing is not initiated', async () => {
+      await assertRevert(pcv.cancelChangingRoles({ from: owner }), "PCV: Change not initiated")
+    })
+
+    it('cancelChangingRoles(): resets pending roles', async () => {
+      await pcv.startChangingRoles(alice, bob, { from: owner })
+      await pcv.cancelChangingRoles({ from: owner })
+      assert.equal(await pcv.council(), council)
+      assert.equal(await pcv.treasury(), treasury)
+      assert.equal(await pcv.pendingCouncilAddress(), ZERO_ADDRESS)
+      assert.equal(await pcv.pendingTreasuryAddress(), ZERO_ADDRESS)
+      assert.equal(await pcv.changingRolesInitiated(), 0)
+    })
+    
+    it('finalizeChangingRoles(): reverts when changing is not initiated', async () => {
+      await assertRevert(pcv.finalizeChangingRoles({ from: owner }), "PCV: Change not initiated")
+    })
+    
+    it('finalizeChangingRoles(): reverts when passed not enough time', async () => {
+      await pcv.startChangingRoles(alice, bob, { from: owner })
+      await assertRevert(pcv.finalizeChangingRoles({ from: owner }), "PCV: Governance delay has not elapsed")
+    })
+
+    it('finalizeChangingRoles(): sets new roles', async () => {
+      await pcv.startChangingRoles(alice, bob, { from: owner })
+      await fastForwardTime(delay, web3.currentProvider)
+      await pcv.finalizeChangingRoles({ from: owner })
+      assert.equal(await pcv.council(), alice)
+      assert.equal(await pcv.treasury(), bob)
+      assert.equal(await pcv.pendingCouncilAddress(), ZERO_ADDRESS)
+      assert.equal(await pcv.pendingTreasuryAddress(), ZERO_ADDRESS)
+      assert.equal(await pcv.changingRolesInitiated(), 0)
     })
 
     it('depositToBAMM(): reverts if not enough thUSD', async () => {
@@ -163,12 +238,6 @@ contract('PCV', async accounts => {
       assert.equal(totalTHUSD.toString(), bootstrapLoan.toString())
       const pcvBalance = await thusdToken.balanceOf(pcv.address)
       assert.equal(pcvBalance.toString(), "0")
-    })
-
-    it('setRoles(): sets new roles', async () => {
-      await pcv.setRoles(owner, owner, { from: owner })
-      assert.equal(await pcv.council(), owner)
-      assert.equal(await pcv.treasury(), owner)
     })
     
     it('addRecipientToWhitelist(): reverts when address is already in the whitelist', async () => {
