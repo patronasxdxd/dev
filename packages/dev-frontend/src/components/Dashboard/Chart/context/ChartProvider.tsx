@@ -133,7 +133,7 @@ async function fetchData(API_URL: string, query: string) {
   return response;
 };
 
-export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader })  => {
+export const ChartProvider = ({ children }: FunctionalPanelProps): JSX.Element  => {
   const timestamps: Array<TimestampsObject> = createListOfTimestamps();
   const [ isTVLDataAvailable , setisTVLDataAvailable ] = useState<boolean>(true);
   const [ tvl, setTvl ] = useState<{ [key: string]: tvlData[] }>({});
@@ -177,17 +177,14 @@ export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted]);
 
-  if (!isTVLDataAvailable) {
+  if (!isTVLDataAvailable || !timestamps || Object.keys(tvl).length !== Object.keys(threshold).length) {
     return <>{children}</>
-  };
-
-  if (!timestamps || Object.keys(tvl).length !== Object.keys(threshold).length) {
-    return <>{loader}</>
   };
 
   const chartProvider = {
     tvl,
     timestamps
   };
+  
   return <ChartContext.Provider value={chartProvider}>{children}</ChartContext.Provider>;
 };

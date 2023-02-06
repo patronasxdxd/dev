@@ -18,6 +18,7 @@ import {
 import { Line } from 'react-chartjs-2';
 import { Decimal } from "@liquity/lib-base";
 import { useHover } from "../../../utils/hooks";
+import { LoadingChart } from "./LoadingChart";
 
 ChartJS.register(
   CategoryScale,
@@ -61,16 +62,21 @@ export const LineChart = (): JSX.Element => {
   const [timestamps, setTimestamps] = useState<Array<TimestampsObject>>([]);
   const [activeLabel, setActiveLabel] = useState<string>('-');
   const [chartData, setChartData] = useState<Array<Decimal>>([]);
+  const [lastTvl, setLastTvl] = useState<Decimal>();
   const [chartLabels, setChartLabels] = useState<Array<TimestampsObject>>();
 
   useTvl()
     .then((result) => {
-      if (result === null) {
+      if (result === null || !isMounted) {
         return
       }
       setTvl(result.tvl)
       setTimestamps(result.timestamps)
       setLoadedChart(true)
+    })
+    .catch((error) => {
+      setLoadedChart(false)
+      console.error('tvl fetch error: ', error)
     })
 
   useEffect(() => {
@@ -88,6 +94,7 @@ export const LineChart = (): JSX.Element => {
     }
     setChartLabels(timestamps)
     setChartData(historicalTvl)
+    setLastTvl(historicalTvl[historicalTvl.length - 1])
 
     return () => { 
       setIsMounted(false);
@@ -107,19 +114,20 @@ export const LineChart = (): JSX.Element => {
   });  
 
   const options = {
+    locale: 'en-US',
     borderWidth: 2,
     responsive: true,
     maintainAspectRatio: false,
     elements: {
       point:{
-          radius: 0,
+        radius: 0,
       },
     },
     scales: {
       y: {
         display: false,
         drawTicks: false,
-        beginAtZero: true
+        beginAtZero: true,
       }, 
       x: {
         ticks: {
@@ -157,7 +165,8 @@ export const LineChart = (): JSX.Element => {
       const activePoint = chart.tooltip._active[0];
       const setIndex = activePoint?.datasetIndex;
       const index = activePoint?.index;
-      const activeData = chart.data?.datasets[setIndex]?.data[index];
+      const activeData = chart.data?.datasets[setIndex] && 
+      Decimal.from(chart.data?.datasets[setIndex]?.data[index]).prettify(2);
       const labelIndex = labels[index];
       const activeLabel = labelIndex && Object.values(labelIndex)[0];
       setActiveData(activeData ? activeData : '-');
@@ -174,7 +183,7 @@ export const LineChart = (): JSX.Element => {
         fill: "start",
         lineTension: 0.4,
         label: 'TVL',
-        data: chartData.map((decimal) => decimal.prettify(2)),
+        data: chartData.map(decimal => parseInt(decimal.toString())),
         borderColor: colorMode === "dark" ? "#7d00ff" : colorMode === "darkGrey" ? "#f3f3f3b8" : "#20cb9d",
         pointBackgroundColor: colorMode === 'dark' ? "#7d00ff" : colorMode === "darkGrey" ? "#f3f3f3b8" : "#20cb9d",
         backgroundColor: (context: ScriptableContext<"line">) => {
@@ -217,25 +226,28 @@ export const LineChart = (): JSX.Element => {
             fontWeight: "bold", 
             color: "text"
           }}>
-            {isHovered && activeData > 0 && `$`}{isHovered ? activeData : '-'} 
+            {(lastTvl || (isHovered && activeData > 0)) && '$'}
+            {loadedChart && (
+              isHovered 
+              ? activeData 
+              : lastTvl 
+                ? lastTvl.prettify(2) 
+                : '-'
+            )} 
           </Flex>
           <Flex sx={{ 
             fontSize: ".9em",
-            marginBottom: "1.5em"
+            marginBottom: "1.5em",
+            height: "1em",
           }}>
-            {isHovered ? activeLabel : '-'}
+            {loadedChart && isHovered && activeLabel}
           </Flex>
-          <Box sx={{height: "100%"}} ref={hoverRef}>
-            <Line 
-              options={{
-                ...options,
-                interaction: {
-                  mode: 'index',
-                  intersect: false,
-                }
-              }}  
-              data={data} 
-            />
+          <Box sx={{ display: "flex", height: "100%", width: "100%" }} ref={hoverRef}>
+            {
+              !loadedChart 
+                ? <LoadingChart />
+                : <Line options={{ ...options, interaction: { mode: 'index', intersect: false } }}  data={data} />
+            }
           </Box>
         </Box>
       </Flex>
