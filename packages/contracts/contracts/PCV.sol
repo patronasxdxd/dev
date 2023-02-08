@@ -62,9 +62,12 @@ contract PCV is IPCV, Ownable, CheckContract {
     }
 
     // --- Functions ---
-
-    // TODO maybe move to constructor?
-    function setAddresses(address _thusdTokenAddress, address _borrowerOperations, address _collateralERC20)
+    function setAddresses(
+        address _thusdTokenAddress, 
+        address _borrowerOperations,
+        address payable _bammAddress, 
+        address _collateralERC20
+    )
         external
         override
         onlyOwner
@@ -72,6 +75,7 @@ contract PCV is IPCV, Ownable, CheckContract {
         require(address(thusdToken) == address(0), "PCV: contacts already set");
         checkContract(_thusdTokenAddress);
         checkContract(_borrowerOperations);
+        checkContract(_bammAddress);
         if (_collateralERC20 != address(0)) {
             checkContract(_collateralERC20);
         }
@@ -79,29 +83,23 @@ contract PCV is IPCV, Ownable, CheckContract {
         thusdToken = ITHUSDToken(_thusdTokenAddress);
         collateralERC20 = IERC20(_collateralERC20);
         borrowerOperations = BorrowerOperations(_borrowerOperations);
+        bamm = BAMM(_bammAddress);
 
         emit THUSDTokenAddressSet(_thusdTokenAddress);
         emit BorrowerOperationsAddressSet(_borrowerOperations);
         emit CollateralAddressSet(_collateralERC20);
+        emit BAMMAddressSet(_bammAddress);
     }
 
     // --- Initialization ---
-
-    // TODO move bamm initialization to setAddresses or constructor
-    function initialize(address payable _bammAddress) external override onlyOwnerOrCouncilOrTreasury {
+    function initialize() external override onlyOwnerOrCouncilOrTreasury {
         require(!isInitialized, "PCV: already initialized");
-        checkContract(_bammAddress);
-        bamm = BAMM(_bammAddress);
-        emit BAMMAddressSet(_bammAddress);
 
         debtToPay = BOOTSTRAP_LOAN;
         borrowerOperations.mintBootstrapLoanFromPCV(debtToPay);
 
-        thusdToken.approve(address(bamm), debtToPay);
-        bamm.deposit(debtToPay);
-        emit BAMMDeposit(debtToPay);  
-
         isInitialized = true;
+        depositToBAMM(debtToPay);
     }
 
     // --- Backstop protocol ---
