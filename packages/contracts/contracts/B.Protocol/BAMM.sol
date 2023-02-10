@@ -188,7 +188,7 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract {
         return n * uint256(10000 + bps) / 10000;
     }
 
-    function compensateForTHusdDeviation(uint256 collateralAmount) public view returns(uint256 newcollateralAmount) {
+    function compensateForTHUSDDeviation(uint256 collateralAmount) public view returns(uint256 newCollateralAmount) {
         uint256 chainlinkDecimals;
         uint256 chainlinkLatestAnswer;
 
@@ -201,12 +201,12 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract {
 
         // adjust only if 1 thUSD > 1 USDC. If thUSD < USD, then we give a discount, and rebalance will happen anw
         if(chainlinkLatestAnswer > 10 ** chainlinkDecimals ) {
-            newcollateralAmount = collateralAmount * chainlinkLatestAnswer / (10 ** chainlinkDecimals);
+            newCollateralAmount = collateralAmount * chainlinkLatestAnswer / (10 ** chainlinkDecimals);
         }
-        else newcollateralAmount = collateralAmount;
+        else newCollateralAmount = collateralAmount;
     }
 
-    function getSwapCollateralAmount(uint256 thusdQty) public view returns(uint256 collateralAmount, uint256 feeTHusdAmount) {
+    function getSwapCollateralAmount(uint256 thusdQty) public view returns(uint256 collateralAmount, uint256 feeTHUSDAmount) {
         uint256 thusdBalance = SP.getCompoundedTHUSDDeposit(address(this));
         uint256 collateralBalance = getCollateralBalance();
 
@@ -223,13 +223,13 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract {
         uint256 usdReturn = getReturn(xQty, xBalance, yBalance, A);
         uint256 basicCollateralReturn = usdReturn * PRECISION / collateral2usdPrice;
 
-        basicCollateralReturn = compensateForTHusdDeviation(basicCollateralReturn);
+        basicCollateralReturn = compensateForTHUSDDeviation(basicCollateralReturn);
 
         if(collateralBalance < basicCollateralReturn) basicCollateralReturn = collateralBalance; // cannot give more than balance 
         if(maxReturn < basicCollateralReturn) basicCollateralReturn = maxReturn;
 
         collateralAmount = basicCollateralReturn;
-        feeTHusdAmount = addBps(thusdQty, int(fee)) - thusdQty;
+        feeTHUSDAmount = addBps(thusdQty, int(fee)) - thusdQty;
     }
 
     // get collateral in return to THUSD
