@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.17;
 
 /*
  * The Stability Pool holds THUSD tokens deposited by Stability Pool depositors.
