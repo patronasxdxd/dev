@@ -10,9 +10,10 @@ import "./../Dependencies/IERC20.sol";
 import "./../Dependencies/Ownable.sol";
 import "./../Dependencies/AggregatorV3Interface.sol";
 import "./../Dependencies/CheckContract.sol";
+import "./../Dependencies/SendCollateral.sol";
 
 
-contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract {
+contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendCollateral {
 
     AggregatorV3Interface public immutable priceAggregator;
     AggregatorV3Interface public immutable thusd2UsdPriceAggregator;    
@@ -170,15 +171,7 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract {
             return;
         }
 
-        if (address(collateralERC20) == address(0)) {
-            // ETH
-            (bool success, ) = msg.sender.call{ value: collateralAmount }(""); // re-entry is fine here
-            require(success, "withdraw: sending ETH failed");
-        } else {
-            // ERC20
-            bool success = collateralERC20.transfer(msg.sender, collateralAmount);
-            require(success, "withdraw: sending collateral failed");
-        }
+        sendCollateral(collateralERC20, msg.sender, collateralAmount);
     }
 
     function addBps(uint256 n, int bps) internal pure returns(uint) {

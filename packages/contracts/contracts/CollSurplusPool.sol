@@ -7,9 +7,10 @@ import "./Interfaces/ICollSurplusPool.sol";
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
 import "./Dependencies/console.sol";
+import "./Dependencies/SendCollateral.sol";
 
 
-contract CollSurplusPool is Ownable, CheckContract, ICollSurplusPool {
+contract CollSurplusPool is Ownable, CheckContract, SendCollateral, ICollSurplusPool {
 
     string constant public NAME = "CollSurplusPool";
 
@@ -87,13 +88,7 @@ contract CollSurplusPool is Ownable, CheckContract, ICollSurplusPool {
         collateral -= claimableColl;
         emit CollateralSent(_account, claimableColl);
 
-        if (collateralAddress == address(0)) {
-            (bool success, ) = _account.call{ value: claimableColl }("");
-            require(success, "CollSurplusPool: sending collateral failed");
-        } else {
-            bool success = IERC20(collateralAddress).transfer(_account, claimableColl);
-            require(success, "CollSurplusPool: sending collateral failed");
-        }
+        sendCollateral(IERC20(collateralAddress), _account, claimableColl);
     }
 
     // --- 'require' functions ---

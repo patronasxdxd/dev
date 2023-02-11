@@ -9,8 +9,9 @@ import "./Interfaces/ITHUSDToken.sol";
 import "./Dependencies/IERC20.sol";
 import "./B.Protocol/BAMM.sol";
 import "./BorrowerOperations.sol";
+import "./Dependencies/SendCollateral.sol";
 
-contract PCV is IPCV, Ownable, CheckContract {
+contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
 
     // --- Data ---
     string constant public NAME = "PCV";
@@ -147,17 +148,7 @@ contract PCV is IPCV, Ownable, CheckContract {
         onlyOwnerOrCouncilOrTreasury
         onlyWhitelistedRecipient(_recipient)
     {
-        if (address(collateralERC20) == address(0)) {
-            // ETH
-            require(_collateralAmount <= address(this).balance, "PCV: not enough ETH");
-            (bool success, ) = _recipient.call{ value: _collateralAmount }(""); // re-entry is fine here
-            require(success, "PCV: sending ETH failed");
-        } else {
-            // ERC20
-            require(_collateralAmount <= collateralERC20.balanceOf(address(this)), "PCV: not enough collateral");
-            bool success = collateralERC20.transfer(_recipient, _collateralAmount);
-            require(success, "PCV: sending collateral failed");
-        }
+        sendCollateral(collateralERC20, _recipient, _collateralAmount);
         
         emit CollateralWithdraw(_recipient, _collateralAmount); 
     }
