@@ -975,7 +975,6 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
 
         // Send the ETH fee to the PCV contract
         contractsCache.activePool.sendCollateral(address(contractsCache.pcv), totals.ETHFee);
-        contractsCache.pcv.increaseF_ETH(totals.ETHFee);
 
         totals.ETHToSendToRedeemer = totals.totalETHDrawn - totals.ETHFee;
 

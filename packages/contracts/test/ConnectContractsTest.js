@@ -13,6 +13,7 @@ contract('Deployment script - Sets correct contract addresses dependencies after
   let functionCaller
   let borrowerOperations
   let pcv
+  let erc20
   let lockupContractFactory
 
   before(async () => {
@@ -28,6 +29,7 @@ contract('Deployment script - Sets correct contract addresses dependencies after
     functionCaller = contracts.functionCaller
     borrowerOperations = contracts.borrowerOperations
     pcv = contracts.pcv
+    erc20 = contracts.erc20
 
     await deploymentHelper.connectCoreContracts(contracts)
   })
@@ -247,36 +249,28 @@ contract('Deployment script - Sets correct contract addresses dependencies after
 
   // --- PCV ---
 
-  // Sets ActivePool in PCV
-  it('Sets the correct ActivePool address in PCV', async () => {
-    const activePoolAddress = activePool.address
-
-    const recordedActivePoolAddress = await pcv.activePoolAddress()
-    assert.equal(activePoolAddress, recordedActivePoolAddress)
-  })
-
   // Sets THUSDToken in PCV
-  it('Sets the correct ActivePool address in PCV', async () => {
+  it('Sets the correct thUSD token address in PCV', async () => {
     const thusdTokenAddress = thusdToken.address
 
     const recordedTHUSDTokenAddress = await pcv.thusdToken()
     assert.equal(thusdTokenAddress, recordedTHUSDTokenAddress)
   })
 
-  // Sets TroveManager in PCV
-  it('Sets the correct ActivePool address in PCV', async () => {
-    const troveManagerAddress = troveManager.address
-
-    const recordedTroveManagerAddress = await pcv.troveManagerAddress()
-    assert.equal(troveManagerAddress, recordedTroveManagerAddress)
-  })
-
   // Sets BorrowerOperations in PCV
   it('Sets the correct BorrowerOperations address in PCV', async () => {
     const borrowerOperationsAddress = borrowerOperations.address
 
-    const recordedBorrowerOperationsAddress = await pcv.borrowerOperationsAddress()
+    const recordedBorrowerOperationsAddress = await pcv.borrowerOperations()
     assert.equal(borrowerOperationsAddress, recordedBorrowerOperationsAddress)
+  })
+
+  // Sets Collateral address in PCV
+  it('Sets the correct collateral address in PCV', async () => {
+    const collateralAddress = erc20.address
+
+    const recordedCollateralAddress = await pcv.collateralERC20()
+    assert.equal(collateralAddress, recordedCollateralAddress)
   })
 
 })

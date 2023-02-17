@@ -20,7 +20,6 @@ const BorrowerOperationsTester = artifacts.require("./BorrowerOperationsTester.s
 const TroveManagerTester = artifacts.require("./TroveManagerTester.sol")
 const THUSDTokenTester = artifacts.require("./THUSDTokenTester.sol")
 const ERC20Test = artifacts.require("./ERC20Test.sol")
-const PCVTester = artifacts.require("./PCVTester.sol")
 
 // Proxy scripts
 const BorrowerOperationsScript = artifacts.require('BorrowerOperationsScript')
@@ -78,7 +77,7 @@ class DeploymentHelper {
       borrowerOperations.address,
       delay
     )
-    const pcv = await PCV.new()
+    const pcv = await PCV.new(delay)
 
     PCV.setAsDeployed(pcv)
     THUSDToken.setAsDeployed(thusdToken)
@@ -147,7 +146,17 @@ class DeploymentHelper {
       testerContracts.borrowerOperations.address,
       delay
     )
-    testerContracts.pcv = await PCVTester.new()
+    testerContracts.pcv = await PCV.new(delay)
+    
+    let index = 0;
+    for (const account of accounts) {
+      await testerContracts.erc20.mint(account, await web3.eth.getBalance(account))
+      index++;
+
+      if (index >= 50)
+        break;
+    }
+
     return testerContracts
   }
 
@@ -334,9 +343,8 @@ class DeploymentHelper {
 
     await contracts.pcv.setAddresses(
       contracts.thusdToken.address,
-      contracts.troveManager.address,
       contracts.borrowerOperations.address,
-      contracts.activePool.address
+      contracts.erc20.address
     )
 
   }

@@ -6,25 +6,41 @@ interface IPCV {
 
     // --- Events --
     event THUSDTokenAddressSet(address _thusdTokenAddress);
-    event TroveManagerAddressSet(address _troveManager);
     event BorrowerOperationsAddressSet(address _borrowerOperationsAddress);
-    event ActivePoolAddressSet(address _activePoolAddress);
+    event CollateralAddressSet(address _collateralAddress);
+    event BAMMAddressSet(address _bammAddress);
+    event RolesSet(address _council, address _treasury);
 
-    event F_ETHUpdated(uint256 _F_ETH);
-    event F_THUSDUpdated(uint256 _F_THUSD);
+    event BAMMDeposit(uint256 _thusdAmount);
+    event BAMMWithdraw(uint256 _numShares);
+    event THUSDWithdraw(address _recipient, uint256 _thusdAmount);
+    event CollateralWithdraw(address _recipient, uint256 _collateralAmount);
+
+    event PCVDebtPaid(uint256 _paidDebt);
+    
+    event RecipientAdded(address _recipient);
+    event RecipientRemoved(address _recipient);
 
     // --- Functions ---
 
-    function setAddresses
-    (
-        address _thusdTokenAddress,
-        address _troveManagerAddress,
-        address _borrowerOperationsAddress,
-        address _activePoolAddress
-    )  external;
+    function debtToPay() external returns(uint256);
+    function payDebt(uint256 _thusdToBurn) external;
 
-    function increaseF_ETH(uint256 _ETHFee) external;
+    function setAddresses(address _thusdTokenAddress, address _borrowerOperations, address _collateralERC20) external;
+    function initialize(address payable _bammAddress) external;
 
-    function increaseF_THUSD(uint256 _THUSDFee) external;
+    function depositToBAMM(uint256 _thusdAmount) external;
+    function withdrawFromBAMM(uint256 _numShares) external;
+    function withdrawTHUSD(address _recipient, uint256 _thusdAmount) external;
+    function withdrawCollateral(address _recipient, uint256 _collateralAmount) external;
+
+    function addRecipientToWhitelist(address _recipient) external;
+    function addRecipientsToWhitelist(address[] calldata _recipients) external;
+    function removeRecipientFromWhitelist(address _recipient) external;
+    function removeRecipientsFromWhitelist(address[] calldata _recipients) external;
+
+    function startChangingRoles(address _council, address _treasury) external;
+    function cancelChangingRoles() external;
+    function finalizeChangingRoles() external;
 
 }

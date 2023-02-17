@@ -219,10 +219,10 @@ async function mainnetDeploy(configParams) {
 
   // PCV
   console.log("PCV state variables:")
-  const F_THUSD = await contracts.pcv.F_THUSD()
-  const F_ETH = await contracts.pcv.F_ETH()
-  th.logBN("F_THUSD", F_THUSD)
-  th.logBN("F_ETH", F_ETH)
+  const PCV_THUSD = await contracts.thusdToken.balanceOf(contracts.pcv.address)
+  const PCV_ETH = await th.getCollateralBalance(contracts.erc20.address, contracts.pcv.address)
+  th.logBN("PCV_THUSD", PCV_THUSD)
+  th.logBN("PCV_ETH", PCV_ETH)
 
 }
 

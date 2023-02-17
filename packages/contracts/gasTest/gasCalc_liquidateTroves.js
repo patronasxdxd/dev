@@ -45,7 +45,6 @@ contract('Gas cost tests', async accounts => {
     borrowerOperations = contracts.borrowerOperations
     hintHelpers = contracts.hintHelpers
     functionCaller = contracts.functionCaller
-    pcv = contracts.pcv
 
     await deploymentHelper.connectCoreContracts(contracts)
   })

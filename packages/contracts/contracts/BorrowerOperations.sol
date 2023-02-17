@@ -144,6 +144,17 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOpe
         _renounceOwnership();
     }
 
+    /// Calls on PCV behalf
+    function mintBootstrapLoanFromPCV(uint256 _thusdToMint) external {
+        require(msg.sender == address(pcv), "BorrowerOperations: caller must be PCV");
+        thusdToken.mint(address(pcv), _thusdToMint);
+    }
+
+    function burnDebtFromPCV(uint256 _thusdToBurn) external {
+        require(msg.sender == address(pcv), "BorrowerOperations: caller must be PCV");
+        thusdToken.burn(address(pcv), _thusdToBurn);
+    }
+
     // --- Borrower Trove Operations ---
 
     function openTrove(uint256 _maxFeePercentage, uint256 _THUSDAmount, uint256 _assetAmount, address _upperHint, address _lowerHint) external payable override {
@@ -382,7 +393,6 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, IBorrowerOpe
         _requireUserAcceptsFee(THUSDFee, _THUSDAmount, _maxFeePercentage);
 
         // Send fee to PCV contract
-        pcv.increaseF_THUSD(THUSDFee);
         _thusdToken.mint(pcvAddress, THUSDFee);
         return THUSDFee;
     }
