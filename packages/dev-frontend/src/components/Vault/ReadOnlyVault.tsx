@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { Card, Box, Flex, Button, Link } from "theme-ui";
 import { useThresholdSelector} from "@liquity/lib-react";
-import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
+import { LiquityStoreState as ThresholdStoreState, UserTrove} from "@liquity/lib-base";
 import { DisabledEditableRow } from "./Editor";
 import { useVaultView } from "./context/VaultViewContext";
 import { Icon } from "../Icon";
@@ -12,19 +12,27 @@ import { CollateralRatio } from "./CollateralRatio";
 const select = ({ trove, price, symbol }: ThresholdStoreState) => ({ trove, price, symbol });
 
 type ReadOnlyVaultProps = {
-version: string
+  version: string;
+  collateral: string;
 }
 
-export const ReadOnlyVault = ({ version }: ReadOnlyVaultProps): JSX.Element => {
+export const ReadOnlyVault = ({ version, collateral }: ReadOnlyVaultProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const trove: UserTrove = store.trove;
+  const price = store.price;
+  const symbol = store.symbol;
+
   const { dispatchEvent } = useVaultView();
   const handleAdjustVault = useCallback(() => {
-    dispatchEvent("ADJUST_VAULT_PRESSED", version);
-  }, [dispatchEvent, version]);
+    dispatchEvent("ADJUST_VAULT_PRESSED", version, collateral);
+  }, [dispatchEvent, version, collateral]);
   const handleCloseVault = useCallback(() => {
-    dispatchEvent("CLOSE_VAULT_PRESSED", version);
-  }, [dispatchEvent, version]);
-
-  const { [version]: { trove, price, symbol } } = useThresholdSelector(select);
+    dispatchEvent("CLOSE_VAULT_PRESSED", version, collateral);
+  }, [dispatchEvent, version, collateral]);
 
   return (
     <Card variant="mainCards">
@@ -54,14 +62,12 @@ export const ReadOnlyVault = ({ version }: ReadOnlyVaultProps): JSX.Element => {
               amount={trove.collateral.prettify(4)}
               unit={ symbol }
             />
-
             <DisabledEditableRow
               label="Debt"
               inputId="vault-debt"
               amount={trove.debt.prettify()}
               unit={ COIN }
             />
-
             <CollateralRatio value={trove.collateralRatio(price)} sx={{ mt: -3 }} />
           </Box>
           <Flex variant="layout.actions" sx={{ flexDirection: "column" }}>

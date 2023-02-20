@@ -15,13 +15,24 @@ const select = ({ collateralSurplusBalance, symbol }: ThresholdStoreState) => ({
 
 type CollateralSurplusActionProps = {
   version: string
+  collateral: string
 }
 
-export const CollateralSurplusAction = ({ version }: CollateralSurplusActionProps): JSX.Element => {
-  const { [version]: { collateralSurplusBalance, symbol } } = useThresholdSelector(select);
-  const {
-    threshold: { [version]: { send: threshold } }
-  } = useThreshold();
+export const CollateralSurplusAction = ({ version, collateral }: CollateralSurplusActionProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const collateralSurplusBalance = store.collateralSurplusBalance;
+  const symbol = store.symbol;
+  
+  const { threshold } = useThreshold()
+  const collateralThreshold = threshold.find((versionedThreshold) => {
+    return versionedThreshold.version === version && versionedThreshold.collateral === collateral;
+  })!;
+  
+  const send = collateralThreshold.store.send
 
   const myTransactionId = "claim-coll-surplus";
   const myTransactionState = useMyTransactionState(myTransactionId);
@@ -29,9 +40,9 @@ export const CollateralSurplusAction = ({ version }: CollateralSurplusActionProp
   const { dispatchEvent } = useVaultView();
   useEffect(() => {
     if (myTransactionState.type === "confirmedOneShot") {
-      dispatchEvent("VAULT_SURPLUS_COLLATERAL_CLAIMED", version);
+      dispatchEvent("VAULT_SURPLUS_COLLATERAL_CLAIMED", version, collateral);
     }
-  }, [myTransactionState.type, dispatchEvent, version]);
+  }, [myTransactionState.type, dispatchEvent, version, collateral]);
 
   return myTransactionState.type === "waitingForApproval" ? (
     <Flex variant="layout.actions">
@@ -45,8 +56,9 @@ export const CollateralSurplusAction = ({ version }: CollateralSurplusActionProp
     <Flex variant="layout.actions">
       <Transaction
         id={myTransactionId}
-        send={threshold.claimCollateralSurplus.bind(threshold, undefined)}
+        send={send.claimCollateralSurplus.bind(send, undefined)}
         version={version}
+        collateral={collateral}
       >
         <Button sx={{ mx: 2 }}>Claim {collateralSurplusBalance.prettify()} {symbol}</Button>
       </Transaction>

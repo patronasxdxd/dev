@@ -1,8 +1,8 @@
 import { createContext, useContext } from "react";
-import { tvlData, TimestampsObject } from "./ChartProvider"
+import { Tvl, TimestampsObject } from "./ChartProvider"
 
 type ChartContextType = {
-  tvl: { [key: string]: tvlData[] };
+  tvl: Tvl[];
   timestamps: Array<TimestampsObject>;
 };
 

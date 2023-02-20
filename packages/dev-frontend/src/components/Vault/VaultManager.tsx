@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Flex, Link } from "theme-ui";
 
 import { LiquityStoreState as ThresholdStoreState, Decimal, Trove as Vault, Decimalish, THUSD_MINIMUM_DEBT } from "@liquity/lib-base";
@@ -148,22 +148,36 @@ const transactionIdMatcher = new RegExp(`^${transactionIdPrefix}`);
 
 type VaultManagerProps = {
   version: string,
-  collateral?: Decimalish;
+  collateral: string,
+  collateralAmount?: Decimalish;
   debt?: Decimalish;
 };
 
-export const VaultManager = ({ version, collateral, debt }: VaultManagerProps): JSX.Element => {
-  const [{ original, edited, changePending }, dispatch] = useThresholdReducer(version, reduce, init);
-  const { [version]: { fees, validationContext, symbol } } = useThresholdSelector(select);
+export const  VaultManager = ({ version, collateral, collateralAmount, debt }: VaultManagerProps): JSX.Element => {
+  const [isMounted, setIsMounted] = useState<boolean>(true);
+  const [{ original, edited, changePending }, dispatch] = useThresholdReducer(version, collateral, reduce, init);
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const fees = store.fees;
+  const symbol = store.symbol;
+  const validationContext = store.validationContext;
 
   useEffect(() => {
-    if (collateral !== undefined) {
-      dispatch({ type: "setCollateral", newValue: collateral });
+    if (!isMounted) return;
+
+    if (collateralAmount !== undefined) {
+      dispatch({ type: "setCollateral", newValue: collateralAmount });
     }
     if (debt !== undefined) {
       dispatch({ type: "setDebt", newValue: debt });
     }
-  }, [collateral, debt, dispatch]);
+    
+    return () => setIsMounted(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [collateralAmount, debt, dispatch]);
 
   const borrowingRate = fees.borrowingRate();
   const maxBorrowingRate = borrowingRate.add(0.005); // TODO slippage tolerance
@@ -178,14 +192,16 @@ export const VaultManager = ({ version, collateral, debt }: VaultManagerProps): 
   const { dispatchEvent } = useVaultView();
 
   const handleCancel = useCallback(() => {
-    dispatchEvent("CANCEL_ADJUST_VAULT_PRESSED", version);
-  }, [dispatchEvent, version]);
+    dispatchEvent("CANCEL_ADJUST_VAULT_PRESSED", version, collateral);
+  }, [dispatchEvent, version, collateral]);
 
   const openingNewVault = original.isEmpty;
 
   const myTransactionState = useMyTransactionState(transactionIdMatcher);
 
   useEffect(() => {
+    if (!isMounted) return;
+
     if (
       myTransactionState.type === "waitingForApproval" ||
       myTransactionState.type === "waitingForConfirmation"
@@ -195,16 +211,20 @@ export const VaultManager = ({ version, collateral, debt }: VaultManagerProps): 
       dispatch({ type: "finishChange" });
     } else if (myTransactionState.type === "confirmedOneShot") {
       if (myTransactionState.id === `${transactionIdPrefix}closure`) {
-        dispatchEvent("VAULT_CLOSED", version);
+        dispatchEvent("VAULT_CLOSED", version, collateral);
       } else {
-        dispatchEvent("VAULT_ADJUSTED", version);
+        dispatchEvent("VAULT_ADJUSTED", version, collateral);
       }
     }
-  }, [myTransactionState, dispatch, dispatchEvent, version]);
+
+    return () => setIsMounted(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myTransactionState, dispatch, dispatchEvent, version, collateral]);
 
   return (
     <VaultEditor
       version={version}
+      collateral={collateral}
       original={original}
       edited={edited}
       fee={feeFrom(original, edited, borrowingRate)}
@@ -226,6 +246,7 @@ export const VaultManager = ({ version, collateral, debt }: VaultManagerProps): 
         {validChange ? (
           <VaultAction
             version={version}
+            collateral={collateral}
             transactionId={`${transactionIdPrefix}${validChange.type}`}
             change={validChange}
             maxBorrowingRate={maxBorrowingRate}

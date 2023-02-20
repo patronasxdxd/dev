@@ -291,6 +291,7 @@ const connectContracts = async (
       pcv.setAddresses(
         thusdToken.address,
         borrowerOperations.address,
+        bamm.address,
         erc20.address,
         { ...overrides, nonce }
       )

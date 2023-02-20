@@ -311,22 +311,19 @@ export async function getCollateralsDeployments(network: string): Promise<Collat
     const collateral = collateralDeployments[index]
     
     await Promise.all((collateral.subfolders as FolderInfo[]).map(async (versionDeployment) => {
-      try {
-
-        // Construct the absolute path of the JSON file for the specified network and version.
-        import(`@liquity/lib-ethers/${versionDeployment.path}/${network}.json`).then((deployment) => {
+      
+      // Construct the absolute path of the JSON file for the specified network and version.
+      import(`@liquity/lib-ethers/${versionDeployment.path}/${network}.json`)
+        .then((deployment) => {
           // Load the JSON file for the specified network and version.
           versionedDeployments[collateral.name] = {
             ...versionedDeployments[collateralDeployments[index].name],
             [versionDeployment.name]: deployment,
           }
         })
+        .catch((error) => console.error(`Failed to load deployment for ${collateralDeployments[index].name} version ${versionDeployment.name}: ${error}`));
         // Add the versioned deployment to the corresponding collateral in the versionedDeployments object.
-      } catch (error) {
-        // Handle errors by logging or throwing an error.
-        console.error(`Failed to load deployment for ${collateralDeployments[index].name} version ${versionDeployment.name}: ${error}`);
-      }
-    }));
+    }))
   }
 
   // Return the versioned deployments object.

@@ -1,5 +1,5 @@
 export type ThresholdConfig = {
-  coingeckoIdsByVersion?: object
+  coingeckoIdsBySymbol?: object
   infuraApiKey?: string;
   testnetOnly?: boolean;
   blocksApiUrl?: string;
@@ -17,9 +17,9 @@ const parseConfig = (json: unknown): ThresholdConfig => {
   const config = { ...defaultConfig };
 
   if (typeof json === "object" && json !== null) {
-    if (hasKey(json, "coingeckoIdsByVersion") && typeof json.coingeckoIdsByVersion === "object" && json.coingeckoIdsByVersion !== null) {
-      const { coingeckoIdsByVersion } = json;
-      config.coingeckoIdsByVersion = coingeckoIdsByVersion;
+    if (hasKey(json, "coingeckoIdsBySymbol") && typeof json.coingeckoIdsBySymbol === "object" && json.coingeckoIdsBySymbol !== null) {
+      const { coingeckoIdsBySymbol } = json;
+      config.coingeckoIdsBySymbol = coingeckoIdsBySymbol;
     } else {
       console.error("Malformed infuraApiKey:");
     }

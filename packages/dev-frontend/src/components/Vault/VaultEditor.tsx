@@ -22,6 +22,7 @@ import { InfoIcon } from "../InfoIcon";
 type VaultEditorProps = {
   children: React.ReactNode;
   version: string,
+  collateral: string,
   original: Vault;
   edited: Vault;
   fee: Decimal;
@@ -37,13 +38,20 @@ const select = ({ price, symbol }: LiquityStoreState) => ({ price, symbol });
 export const VaultEditor = ({
   children,
   version,
+  collateral,
   original,
   edited,
   fee,
   borrowingRate,
   changePending,
 }: VaultEditorProps): JSX.Element => {
-  const { [ version ]: { price, symbol } } = useThresholdSelector(select);
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const price = store.price;
+  const symbol = store.symbol;
 
   const feePct = new Percent(borrowingRate);
   const originalCollateralRatio = !original.isEmpty ? original.collateralRatio(price) : undefined;

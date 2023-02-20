@@ -33,13 +33,12 @@ const selector = ({
 });
 
 export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemStatsCardProps): JSX.Element => {
-  const thresholdSelector = useThresholdSelector(selector)
-  const thresholdSelectorKeys = Object.keys(thresholdSelector)
+  const thresholdSelectorStores = useThresholdSelector(selector);
   const [borrowingFeeAvgPct, setBorrowingFeeAvgPct] = useState(new Percent(Decimal.from(0)))
   const [totalVaults, setTotalVaults] = useState(0)
-  const [thusdInStabilityPool, setThusdInStabilityPool] = useState(Decimal.from(0))
+  const [thusdInSP, setThusdInSP] = useState(Decimal.from(0))
   const [thusdSupply, setThusdSupply] = useState(Decimal.from(0))
-  const [pcvBalance, setPcvBalance] = useState(Decimal.from(0))
+  const [pcvBal, setPcvBal] = useState(Decimal.from(0))
   const [isMounted, setIsMounted] = useState<boolean>(true);
 
   useEffect(() => {
@@ -49,17 +48,19 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
     let borrowingFee = Decimal.from(0)
     let thusdSupply = Decimal.from(0)
 
-    thresholdSelectorKeys.forEach(version => {
-      const versionedThresholdSelector = thresholdSelector[version]
+    thresholdSelectorStores.forEach(collateralStore => {
+      const thresholdStore = thresholdSelectorStores.find((store) => {
+        return store.version === collateralStore.version && store.collateral === collateralStore.collateral;
+      });
 
-      borrowingFee = borrowingFee.add(versionedThresholdSelector.borrowingRate)
-      setTotalVaults(prev => prev + versionedThresholdSelector.numberOfTroves)
-      setThusdInStabilityPool(prev => prev.add(versionedThresholdSelector.thusdInStabilityPool))
-      setPcvBalance(prev => prev.add(versionedThresholdSelector.pcvBalance))
-      thusdSupply = thusdSupply.add(versionedThresholdSelector.total.debt)
+      borrowingFee = borrowingFee.add(thresholdStore?.store.borrowingRate!)
+      setTotalVaults(prev => prev + thresholdStore?.store.numberOfTroves!)
+      setThusdInSP(prev => prev.add(thresholdStore?.store.thusdInStabilityPool!))
+      setPcvBal(prev => prev.add(thresholdStore?.store.pcvBalance!))
+      thusdSupply = thusdSupply.add(thresholdStore?.store.total.debt!)
     })
 
-    const borrowingfeeAvg = borrowingFee.div(thresholdSelectorKeys.length)
+    const borrowingfeeAvg = borrowingFee.div(thresholdSelectorStores.length)
     setBorrowingFeeAvgPct(new Percent(borrowingfeeAvg))
     setThusdSupply(thusdSupply)
 
@@ -90,7 +91,7 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
           gap: "1em"
         }}>
           <SystemStat
-            info={`Borrowing Fee ${ thresholdSelectorKeys.length > 1 && "Avg." }`}
+            info={`Borrowing Fee ${ thresholdSelectorStores.length > 1 && "Avg." }`}
             tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount, and is part of a Vault's debt."
           >
             {borrowingFeeAvgPct && borrowingFeeAvgPct.toString(2)}
@@ -101,26 +102,26 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
           >
             {Decimal.from(totalVaults).prettify(0)}
           </SystemStat>
-          {thresholdSelectorKeys.map((version, index) => (
+          {thresholdSelectorStores.map((collateralStore, index) => (
             <SystemStat
               key={index}
-              info={`${ thresholdSelector[version].symbol } deposited collateral`}
-              tooltip={`The Total Value Locked (TVL) is the total value of ${ thresholdSelector[version].symbol } locked as collateral in the system.`}
+              info={`${ collateralStore.store.symbol } deposited collateral`}
+              tooltip={`The Total Value Locked (TVL) is the total value of ${ collateralStore.store.symbol } locked as collateral in the system.`}
             >
-              {thresholdSelector[version].total.collateral.shorten()} { thresholdSelector[version].symbol }
+              { collateralStore.store.total.collateral.shorten() } { collateralStore.store.symbol }
             </SystemStat>
           ))}
           <SystemStat
             info={`${ COIN } in Stability Pool`}
             tooltip={`The total ${ COIN } currently held in the Stability Pool, expressed as an amount and a fraction of the ${ COIN } supply.`}
           >
-            {thusdInStabilityPool.shorten()}
+            {thusdInSP.shorten()}
           </SystemStat>
           <SystemStat
             info={`${ COIN } in PCV`}
             tooltip={`The total ${ COIN } currently held in the PCV, expressed as an amount and a fraction of the ${ COIN } supply.`}
           >
-            {pcvBalance.prettify()}
+            {pcvBal.prettify()}
           </SystemStat>             
           <SystemStat
             info={`${ COIN } Supply`}
@@ -128,14 +129,18 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
           >
             {thusdSupply.shorten()}
           </SystemStat>
-          {thresholdSelectorKeys.forEach((version) => {
-            thresholdSelector[version].total.collateralRatioIsBelowCritical(thresholdSelector[version].price) &&
-              <SystemStat
-                info={`${ thresholdSelector[version].symbol } Recovery Mode`}
-                tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Vault's debt. Operations are also restricted that would negatively impact the TCR."
-              >
-                <Box color="danger">Yes</Box>
-              </SystemStat>
+          {thresholdSelectorStores.map((collateralStore, index) => {
+            return collateralStore.store.total.collateralRatioIsBelowCritical(collateralStore.store.price) 
+            ? (
+                <SystemStat
+                  key={index}
+                  info={`${ collateralStore.store.symbol } Recovery Mode`}
+                  tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Vault's debt. Operations are also restricted that would negatively impact the TCR."
+                >
+                  <Box color="danger">Yes</Box>
+                </SystemStat>
+              )
+            : <Box key={index}></Box>
           })}
         </Flex>
         <Flex sx={{
@@ -144,8 +149,8 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
           pb: 3
         }}>
           {IsPriceEditable === true &&
-            Object.keys(thresholdSelector).map((version, index) => {
-              return <EditPrice key={index} version={version} />
+           thresholdSelectorStores.map((collateralStore, index) => {
+              return <EditPrice key={index} version={collateralStore.version} collateral={collateralStore.collateral} />
             })
           }
         </Flex>

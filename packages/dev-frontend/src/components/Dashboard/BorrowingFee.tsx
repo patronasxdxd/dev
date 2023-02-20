@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Card } from "theme-ui";
 import { Percent, LiquityStoreState, Decimal } from "@liquity/lib-base";
 import { useThresholdSelector } from "@liquity/lib-react";
@@ -9,56 +9,52 @@ type BorrowingFeeProps = {
   variant?: string;
 };
 
-const select = ({
-  borrowingRate,
-}: LiquityStoreState) => ({
+const select = ({ borrowingRate }: LiquityStoreState) => ({
   borrowingRate,
 });
 
 export const BorrowingFee = ({ variant = "mainCards" }: BorrowingFeeProps): JSX.Element => {
-  const [isMounted, setIsMounted] = useState<boolean>(true);
-  const thresholdSelectorVersions = useThresholdSelector(select);
-  const [borrowingRates, setBorrowingRates] = useState<Record<string, Decimal>>({});
+  // Get the selected threshold stores using `useThresholdSelector`
+  const thresholdSelectorStores = useThresholdSelector(select);
 
-  useEffect(() => {
-    if (thresholdSelectorVersions && isMounted) {
-      for (const [version, { borrowingRate }] of Object.entries(thresholdSelectorVersions)) {
-        setBorrowingRates(prev => { return {...prev, [version]: borrowingRate}})
-      }
-    }
-    return () => {
-      setIsMounted(false);
-      setBorrowingRates({})
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // Compute `borrowingRates` array from `thresholdSelectorStores` using `useMemo` and memoize its value
+  const borrowingRates = useMemo(() => {
+    // If there are no selected threshold stores, return an empty array
+    if (!thresholdSelectorStores) return [];
 
+    // Map each threshold store to a `CollateralBorrowingRate` object
+    return thresholdSelectorStores.map((thresholdStore) => ({
+      version: thresholdStore.version,
+      collateral: thresholdStore.collateral,
+      collateralBorrowingRate: thresholdStore.store?.borrowingRate || Decimal.from(0),
+    }));
+  }, [thresholdSelectorStores]);
+
+  // Compute `borrowingFeeAvgPct` from `borrowingRates` using `useMemo` and memoize its value
   const borrowingFeeAvgPct = useMemo(() => {
-    let initialBorrowingRate = Decimal.from(0)
-    const BorrowingRatesKeys = Object.keys(borrowingRates)
+    // If `borrowingRates` is empty, return null
+    if (borrowingRates.length === 0) return null;
 
-    if (BorrowingRatesKeys.length !== Object.keys(thresholdSelectorVersions).length) {
-      return undefined;
-    }
+    // Compute the total borrowing rate by adding up the `collateralBorrowingRate` of each `CollateralBorrowingRate` object in `borrowingRates`
+    const totalBorrowingRate = borrowingRates.reduce(
+      (total, { collateralBorrowingRate }) => total.add(collateralBorrowingRate),
+      Decimal.from(0)
+    );
 
-    for (let index = 1; index <= BorrowingRatesKeys.length; index++) {
-      initialBorrowingRate = initialBorrowingRate.add(borrowingRates[BorrowingRatesKeys[index - 1]])
+    // Compute the average borrowing fee percentage from `totalBorrowingRate` and the length of `borrowingRates`
+    const borrowingFeeAvg = totalBorrowingRate.div(Decimal.from(borrowingRates.length));
+    return new Percent(borrowingFeeAvg);
+  }, [borrowingRates]);
 
-      if (BorrowingRatesKeys.length === index) {
-        const BorrowingFeeAvg = initialBorrowingRate.div(Decimal.from(BorrowingRatesKeys.length))
-        return new Percent(BorrowingFeeAvg)
-      }
-    };
-  }, [borrowingRates, thresholdSelectorVersions])
-
+  // Render the `BorrowingFee` component with the computed `borrowingFeeAvgPct` value
   return (
-    <Card {...{ variant }} sx={{ display: ['none', 'block'], width:"100%" }}>
-      <TopCard 
-        name={Object.keys(thresholdSelectorVersions).length > 1 ? "Borrowing Fee Avg." : "Borrowing Fee"}
-        tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount, and is part of a Vault's debt." 
-        imgSrc="./icons/borrowing-fee.svg" 
+    <Card {...{ variant }} sx={{ display: ["none", "block"], width: "100%" }}>
+      <TopCard
+        name={thresholdSelectorStores.length > 1 ? "Borrowing Fee Avg." : "Borrowing Fee"}
+        tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount, and is part of a Vault's debt."
+        imgSrc="./icons/borrowing-fee.svg"
       >
-        {borrowingFeeAvgPct && borrowingFeeAvgPct.toString(2)}
+        {borrowingFeeAvgPct ? borrowingFeeAvgPct.toString(2) : null}
       </TopCard>
     </Card>
   );

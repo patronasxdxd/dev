@@ -54,7 +54,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "snapshotETH",
+            "name": "snapshotCollateral",
             "type": "uint256"
           },
           {

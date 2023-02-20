@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
 
 import { equals } from "../utils/equals";
@@ -41,12 +41,21 @@ const getSelectedStoreStates = <S, T>(
 export const useThresholdSelector = <S, T>(
   select: (state: ThresholdStoreState<T>) => S
 ): { collateral: string, version: string, store: S }[] => {
+  const [isMounted, setIsMounted] = useState<boolean>(true);
   const stores = useThresholdStore<T>();
-  const [, rerender] = useReducer(() => ({}), {});
+  const [, rerender] = useReducer(() => ([]), []);
 
   // Subscribe to store updates, and rerender when the selected state changes
   useEffect(() =>
-    subscribeStores(stores, select, rerender),
+    {
+      if (!isMounted) return;
+
+      subscribeStores(stores, select, rerender)
+      return () => { 
+        setIsMounted(false);
+      };
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [stores, select]
   );
 

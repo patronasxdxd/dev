@@ -434,11 +434,11 @@ interface PCVTransactions {
   cancelChangingRoles(_overrides?: Overrides): Promise<void>;
   depositToBAMM(_thusdAmount: BigNumberish, _overrides?: Overrides): Promise<void>;
   finalizeChangingRoles(_overrides?: Overrides): Promise<void>;
-  initialize(_bammAddress: string, _overrides?: Overrides): Promise<void>;
+  initialize(_overrides?: Overrides): Promise<void>;
   payDebt(_thusdToBurn: BigNumberish, _overrides?: Overrides): Promise<void>;
   removeRecipientFromWhitelist(_recipient: string, _overrides?: Overrides): Promise<void>;
   removeRecipientsFromWhitelist(_recipients: string[], _overrides?: Overrides): Promise<void>;
-  setAddresses(_thusdTokenAddress: string, _borrowerOperations: string, _collateralERC20: string, _overrides?: Overrides): Promise<void>;
+  setAddresses(_thusdTokenAddress: string, _borrowerOperations: string, _bammAddress: string, _collateralERC20: string, _overrides?: Overrides): Promise<void>;
   startChangingRoles(_council: string, _treasury: string, _overrides?: Overrides): Promise<void>;
   withdrawCollateral(_recipient: string, _collateralAmount: BigNumberish, _overrides?: Overrides): Promise<void>;
   withdrawFromBAMM(_numShares: BigNumberish, _overrides?: Overrides): Promise<void>;
@@ -478,7 +478,7 @@ export interface PCV
 }
 
 interface MultiTroveGetterCalls {
-  getMultipleSortedTroves(_startIdx: BigNumberish, _count: BigNumberish, _overrides?: CallOverrides): Promise<{ owner: string; debt: BigNumber; coll: BigNumber; stake: BigNumber; snapshotETH: BigNumber; snapshotTHUSDDebt: BigNumber }[]>;
+  getMultipleSortedTroves(_startIdx: BigNumberish, _count: BigNumberish, _overrides?: CallOverrides): Promise<{ owner: string; debt: BigNumber; coll: BigNumber; stake: BigNumber; snapshotCollateral: BigNumber; snapshotTHUSDDebt: BigNumber }[]>;
   sortedTroves(_overrides?: CallOverrides): Promise<string>;
   troveManager(_overrides?: CallOverrides): Promise<string>;
 }
@@ -493,8 +493,8 @@ export interface MultiTroveGetter
 }
 
 interface PriceFeedCalls {
+  COLLATERAL_USD_TELLOR_REQ_ID(_overrides?: CallOverrides): Promise<BigNumber>;
   DECIMAL_PRECISION(_overrides?: CallOverrides): Promise<BigNumber>;
-  ETHUSD_TELLOR_REQ_ID(_overrides?: CallOverrides): Promise<BigNumber>;
   MAX_PRICE_DEVIATION_FROM_PREVIOUS_ROUND(_overrides?: CallOverrides): Promise<BigNumber>;
   MAX_PRICE_DIFFERENCE_BETWEEN_ORACLES(_overrides?: CallOverrides): Promise<BigNumber>;
   NAME(_overrides?: CallOverrides): Promise<string>;
@@ -686,48 +686,32 @@ interface BAMMCalls {
   PRECISION(_overrides?: CallOverrides): Promise<BigNumber>;
   SP(_overrides?: CallOverrides): Promise<string>;
   balanceOf(owner: string, _overrides?: CallOverrides): Promise<BigNumber>;
-  bonus(_overrides?: CallOverrides): Promise<string>;
   collateralERC20(_overrides?: CallOverrides): Promise<string>;
-  compensateForTHusdDeviation(ethAmount: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
-  crops(arg0: string, _overrides?: CallOverrides): Promise<BigNumber>;
-  dec(_overrides?: CallOverrides): Promise<BigNumber>;
+  compensateForTHUSDDeviation(collateralAmount: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
   decimals(_overrides?: CallOverrides): Promise<BigNumber>;
   fee(_overrides?: CallOverrides): Promise<BigNumber>;
   feePool(_overrides?: CallOverrides): Promise<string>;
   fetchPrice(_overrides?: CallOverrides): Promise<BigNumber>;
-  gem(_overrides?: CallOverrides): Promise<string>;
   getCollateralBalance(_overrides?: CallOverrides): Promise<BigNumber>;
   getConversionRate(arg0: string, arg1: string, srcQty: BigNumberish, arg3: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
   getReturn(xQty: BigNumberish, xBalance: BigNumberish, yBalance: BigNumberish, A: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
   getSumFixedPoint(x: BigNumberish, y: BigNumberish, A: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
-  getSwapCollateralAmount(thusdQty: BigNumberish, _overrides?: CallOverrides): Promise<{ collateralAmount: BigNumber; feeTHusdAmount: BigNumber }>;
-  ilk(_overrides?: CallOverrides): Promise<string>;
+  getSwapCollateralAmount(thusdQty: BigNumberish, _overrides?: CallOverrides): Promise<{ collateralAmount: BigNumber; feeTHUSDAmount: BigNumber }>;
   isOwner(_overrides?: CallOverrides): Promise<boolean>;
   maxDiscount(_overrides?: CallOverrides): Promise<BigNumber>;
   name(_overrides?: CallOverrides): Promise<string>;
-  nav(_overrides?: CallOverrides): Promise<BigNumber>;
   owner(_overrides?: CallOverrides): Promise<string>;
   priceAggregator(_overrides?: CallOverrides): Promise<string>;
-  rdiv(x: BigNumberish, y: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
-  rmul(x: BigNumberish, y: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
-  rmulup(x: BigNumberish, y: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
-  share(_overrides?: CallOverrides): Promise<BigNumber>;
   stake(arg0: string, _overrides?: CallOverrides): Promise<BigNumber>;
-  stock(_overrides?: CallOverrides): Promise<BigNumber>;
   symbol(_overrides?: CallOverrides): Promise<string>;
   thusd2UsdPriceAggregator(_overrides?: CallOverrides): Promise<string>;
   thusdToken(_overrides?: CallOverrides): Promise<string>;
   total(_overrides?: CallOverrides): Promise<BigNumber>;
   totalSupply(_overrides?: CallOverrides): Promise<BigNumber>;
-  vat(_overrides?: CallOverrides): Promise<string>;
-  wdiv(x: BigNumberish, y: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
-  wdivup(x: BigNumberish, y: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
-  wmul(x: BigNumberish, y: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
 }
 
 interface BAMMTransactions {
   deposit(thusdAmount: BigNumberish, _overrides?: Overrides): Promise<void>;
-  nps(_overrides?: Overrides): Promise<BigNumber>;
   setParams(_A: BigNumberish, _fee: BigNumberish, _overrides?: Overrides): Promise<void>;
   swap(thusdAmount: BigNumberish, minCollateralReturn: BigNumberish, dest: string, _overrides?: Overrides): Promise<BigNumber>;
   trade(arg0: string, srcAmount: BigNumberish, arg2: string, destAddress: string, arg4: BigNumberish, arg5: boolean, _overrides?: PayableOverrides): Promise<boolean>;
@@ -738,23 +722,19 @@ export interface BAMM
   extends _TypedLiquityContract<BAMMCalls, BAMMTransactions> {
   readonly filters: {
     Exit(val?: null): EventFilter;
-    Flee(): EventFilter;
     Join(val?: null): EventFilter;
     OwnershipTransferred(previousOwner?: string | null, newOwner?: string | null): EventFilter;
     ParamsSet(A?: null, fee?: null): EventFilter;
     RebalanceSwap(user?: string | null, thusdAmount?: null, collateralAmount?: null, timestamp?: null): EventFilter;
-    Tack(src?: string | null, dst?: string | null, wad?: null): EventFilter;
     Transfer(_from?: string | null, _to?: string | null, _value?: null): EventFilter;
     UserDeposit(user?: string | null, thusdAmount?: null, numShares?: null): EventFilter;
     UserWithdraw(user?: string | null, thusdAmount?: null, collateralAmount?: null, numShares?: null): EventFilter;
   };
   extractEvents(logs: Log[], name: "Exit"): _TypedLogDescription<{ val: BigNumber }>[];
-  extractEvents(logs: Log[], name: "Flee"): _TypedLogDescription<{  }>[];
   extractEvents(logs: Log[], name: "Join"): _TypedLogDescription<{ val: BigNumber }>[];
   extractEvents(logs: Log[], name: "OwnershipTransferred"): _TypedLogDescription<{ previousOwner: string; newOwner: string }>[];
   extractEvents(logs: Log[], name: "ParamsSet"): _TypedLogDescription<{ A: BigNumber; fee: BigNumber }>[];
   extractEvents(logs: Log[], name: "RebalanceSwap"): _TypedLogDescription<{ user: string; thusdAmount: BigNumber; collateralAmount: BigNumber; timestamp: BigNumber }>[];
-  extractEvents(logs: Log[], name: "Tack"): _TypedLogDescription<{ src: string; dst: string; wad: BigNumber }>[];
   extractEvents(logs: Log[], name: "Transfer"): _TypedLogDescription<{ _from: string; _to: string; _value: BigNumber }>[];
   extractEvents(logs: Log[], name: "UserDeposit"): _TypedLogDescription<{ user: string; thusdAmount: BigNumber; numShares: BigNumber }>[];
   extractEvents(logs: Log[], name: "UserWithdraw"): _TypedLogDescription<{ user: string; thusdAmount: BigNumber; collateralAmount: BigNumber; numShares: BigNumber }>[];
@@ -794,7 +774,7 @@ interface TroveManagerCalls {
   BORROWING_FEE_FLOOR(_overrides?: CallOverrides): Promise<BigNumber>;
   CCR(_overrides?: CallOverrides): Promise<BigNumber>;
   DECIMAL_PRECISION(_overrides?: CallOverrides): Promise<BigNumber>;
-  L_ETH(_overrides?: CallOverrides): Promise<BigNumber>;
+  L_Collateral(_overrides?: CallOverrides): Promise<BigNumber>;
   L_THUSDDebt(_overrides?: CallOverrides): Promise<BigNumber>;
   MAX_BORROWING_FEE(_overrides?: CallOverrides): Promise<BigNumber>;
   MCR(_overrides?: CallOverrides): Promise<BigNumber>;
@@ -818,13 +798,13 @@ interface TroveManagerCalls {
   getBorrowingRate(_overrides?: CallOverrides): Promise<BigNumber>;
   getBorrowingRateWithDecay(_overrides?: CallOverrides): Promise<BigNumber>;
   getCurrentICR(_borrower: string, _price: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
-  getEntireDebtAndColl(_borrower: string, _overrides?: CallOverrides): Promise<{ debt: BigNumber; coll: BigNumber; pendingTHUSDDebtReward: BigNumber; pendingETHReward: BigNumber }>;
+  getEntireDebtAndColl(_borrower: string, _overrides?: CallOverrides): Promise<{ debt: BigNumber; coll: BigNumber; pendingTHUSDDebtReward: BigNumber; pendingCollateralReward: BigNumber }>;
   getEntireSystemColl(_overrides?: CallOverrides): Promise<BigNumber>;
   getEntireSystemDebt(_overrides?: CallOverrides): Promise<BigNumber>;
   getNominalICR(_borrower: string, _overrides?: CallOverrides): Promise<BigNumber>;
-  getPendingETHReward(_borrower: string, _overrides?: CallOverrides): Promise<BigNumber>;
+  getPendingCollateralReward(_borrower: string, _overrides?: CallOverrides): Promise<BigNumber>;
   getPendingTHUSDDebtReward(_borrower: string, _overrides?: CallOverrides): Promise<BigNumber>;
-  getRedemptionFeeWithDecay(_ETHDrawn: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
+  getRedemptionFeeWithDecay(_collateralDrawn: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
   getRedemptionRate(_overrides?: CallOverrides): Promise<BigNumber>;
   getRedemptionRateWithDecay(_overrides?: CallOverrides): Promise<BigNumber>;
   getTCR(_price: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
@@ -836,13 +816,13 @@ interface TroveManagerCalls {
   getTroveStatus(_borrower: string, _overrides?: CallOverrides): Promise<BigNumber>;
   hasPendingRewards(_borrower: string, _overrides?: CallOverrides): Promise<boolean>;
   isOwner(_overrides?: CallOverrides): Promise<boolean>;
-  lastETHError_Redistribution(_overrides?: CallOverrides): Promise<BigNumber>;
+  lastCollateralError_Redistribution(_overrides?: CallOverrides): Promise<BigNumber>;
   lastFeeOperationTime(_overrides?: CallOverrides): Promise<BigNumber>;
   lastTHUSDDebtError_Redistribution(_overrides?: CallOverrides): Promise<BigNumber>;
   owner(_overrides?: CallOverrides): Promise<string>;
   pcv(_overrides?: CallOverrides): Promise<string>;
   priceFeed(_overrides?: CallOverrides): Promise<string>;
-  rewardSnapshots(arg0: string, _overrides?: CallOverrides): Promise<{ ETH: BigNumber; THUSDDebt: BigNumber }>;
+  rewardSnapshots(arg0: string, _overrides?: CallOverrides): Promise<{ collateral: BigNumber; THUSDDebt: BigNumber }>;
   sortedTroves(_overrides?: CallOverrides): Promise<string>;
   stabilityPool(_overrides?: CallOverrides): Promise<string>;
   thusdToken(_overrides?: CallOverrides): Promise<string>;
@@ -880,13 +860,13 @@ export interface TroveManager
     CollSurplusPoolAddressChanged(_collSurplusPoolAddress?: null): EventFilter;
     DefaultPoolAddressChanged(_defaultPoolAddress?: null): EventFilter;
     GasPoolAddressChanged(_gasPoolAddress?: null): EventFilter;
-    LTermsUpdated(_L_ETH?: null, _L_THUSDDebt?: null): EventFilter;
+    LTermsUpdated(_L_Collateral?: null, _L_THUSDDebt?: null): EventFilter;
     LastFeeOpTimeUpdated(_lastFeeOpTime?: null): EventFilter;
     Liquidation(_liquidatedDebt?: null, _liquidatedColl?: null, _collGasCompensation?: null, _THUSDGasCompensation?: null): EventFilter;
     OwnershipTransferred(previousOwner?: string | null, newOwner?: string | null): EventFilter;
     PCVAddressChanged(_pcvAddress?: null): EventFilter;
     PriceFeedAddressChanged(_newPriceFeedAddress?: null): EventFilter;
-    Redemption(_attemptedTHUSDAmount?: null, _actualTHUSDAmount?: null, _ETHSent?: null, _ETHFee?: null): EventFilter;
+    Redemption(_attemptedTHUSDAmount?: null, _actualTHUSDAmount?: null, _collateralSent?: null, _collateralFee?: null): EventFilter;
     SortedTrovesAddressChanged(_sortedTrovesAddress?: null): EventFilter;
     StabilityPoolAddressChanged(_stabilityPoolAddress?: null): EventFilter;
     SystemSnapshotsUpdated(_totalStakesSnapshot?: null, _totalCollateralSnapshot?: null): EventFilter;
@@ -894,7 +874,7 @@ export interface TroveManager
     TotalStakesUpdated(_newTotalStakes?: null): EventFilter;
     TroveIndexUpdated(_borrower?: null, _newIndex?: null): EventFilter;
     TroveLiquidated(_borrower?: string | null, _debt?: null, _coll?: null, _operation?: null): EventFilter;
-    TroveSnapshotsUpdated(_L_ETH?: null, _L_THUSDDebt?: null): EventFilter;
+    TroveSnapshotsUpdated(_L_Collateral?: null, _L_THUSDDebt?: null): EventFilter;
     TroveUpdated(_borrower?: string | null, _debt?: null, _coll?: null, _stake?: null, _operation?: null): EventFilter;
   };
   extractEvents(logs: Log[], name: "ActivePoolAddressChanged"): _TypedLogDescription<{ _activePoolAddress: string }>[];
@@ -903,13 +883,13 @@ export interface TroveManager
   extractEvents(logs: Log[], name: "CollSurplusPoolAddressChanged"): _TypedLogDescription<{ _collSurplusPoolAddress: string }>[];
   extractEvents(logs: Log[], name: "DefaultPoolAddressChanged"): _TypedLogDescription<{ _defaultPoolAddress: string }>[];
   extractEvents(logs: Log[], name: "GasPoolAddressChanged"): _TypedLogDescription<{ _gasPoolAddress: string }>[];
-  extractEvents(logs: Log[], name: "LTermsUpdated"): _TypedLogDescription<{ _L_ETH: BigNumber; _L_THUSDDebt: BigNumber }>[];
+  extractEvents(logs: Log[], name: "LTermsUpdated"): _TypedLogDescription<{ _L_Collateral: BigNumber; _L_THUSDDebt: BigNumber }>[];
   extractEvents(logs: Log[], name: "LastFeeOpTimeUpdated"): _TypedLogDescription<{ _lastFeeOpTime: BigNumber }>[];
   extractEvents(logs: Log[], name: "Liquidation"): _TypedLogDescription<{ _liquidatedDebt: BigNumber; _liquidatedColl: BigNumber; _collGasCompensation: BigNumber; _THUSDGasCompensation: BigNumber }>[];
   extractEvents(logs: Log[], name: "OwnershipTransferred"): _TypedLogDescription<{ previousOwner: string; newOwner: string }>[];
   extractEvents(logs: Log[], name: "PCVAddressChanged"): _TypedLogDescription<{ _pcvAddress: string }>[];
   extractEvents(logs: Log[], name: "PriceFeedAddressChanged"): _TypedLogDescription<{ _newPriceFeedAddress: string }>[];
-  extractEvents(logs: Log[], name: "Redemption"): _TypedLogDescription<{ _attemptedTHUSDAmount: BigNumber; _actualTHUSDAmount: BigNumber; _ETHSent: BigNumber; _ETHFee: BigNumber }>[];
+  extractEvents(logs: Log[], name: "Redemption"): _TypedLogDescription<{ _attemptedTHUSDAmount: BigNumber; _actualTHUSDAmount: BigNumber; _collateralSent: BigNumber; _collateralFee: BigNumber }>[];
   extractEvents(logs: Log[], name: "SortedTrovesAddressChanged"): _TypedLogDescription<{ _sortedTrovesAddress: string }>[];
   extractEvents(logs: Log[], name: "StabilityPoolAddressChanged"): _TypedLogDescription<{ _stabilityPoolAddress: string }>[];
   extractEvents(logs: Log[], name: "SystemSnapshotsUpdated"): _TypedLogDescription<{ _totalStakesSnapshot: BigNumber; _totalCollateralSnapshot: BigNumber }>[];
@@ -917,6 +897,6 @@ export interface TroveManager
   extractEvents(logs: Log[], name: "TotalStakesUpdated"): _TypedLogDescription<{ _newTotalStakes: BigNumber }>[];
   extractEvents(logs: Log[], name: "TroveIndexUpdated"): _TypedLogDescription<{ _borrower: string; _newIndex: BigNumber }>[];
   extractEvents(logs: Log[], name: "TroveLiquidated"): _TypedLogDescription<{ _borrower: string; _debt: BigNumber; _coll: BigNumber; _operation: number }>[];
-  extractEvents(logs: Log[], name: "TroveSnapshotsUpdated"): _TypedLogDescription<{ _L_ETH: BigNumber; _L_THUSDDebt: BigNumber }>[];
+  extractEvents(logs: Log[], name: "TroveSnapshotsUpdated"): _TypedLogDescription<{ _L_Collateral: BigNumber; _L_THUSDDebt: BigNumber }>[];
   extractEvents(logs: Log[], name: "TroveUpdated"): _TypedLogDescription<{ _borrower: string; _debt: BigNumber; _coll: BigNumber; _stake: BigNumber; _operation: number }>[];
 }

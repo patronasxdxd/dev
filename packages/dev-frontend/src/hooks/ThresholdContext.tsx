@@ -9,7 +9,8 @@ import {
   EthersLiquity as EthersThreshold,
   _connectByChainId,
   getCollateralsDeployments,
-  _LiquityDeploymentJSON
+  _LiquityDeploymentJSON,
+  EthersLiquityConnection
 } from "@liquity/lib-ethers";
 import { CollateralsVersionedDeployments } from "@liquity/lib-ethers/src/contracts";
 
@@ -29,6 +30,10 @@ type ThresholdContextValue = {
   threshold: Threshold[];
 };
 
+type SupportedNetworks = {
+  [key: string]: "homestead" | "goerli";
+};
+
 const ThresholdContext = createContext<ThresholdContextValue | undefined>(undefined);
 
 type ThresholdProviderProps = {
@@ -43,21 +48,21 @@ const wsParams = (network: string, infuraApiKey: string): [string, string] => [
   network
 ];
 
-const supportedNetworks = ["homestead", "goerli"];
+const supportedNetworks: SupportedNetworks = { 1: "homestead", 5: "goerli"};
 
 const getCollateralVersions = async (chainId: number): Promise<CollateralsVersionedDeployments> => {
   return await getCollateralsDeployments(chainId === 1 ? 'mainnet' : 'goerli');
 }
 
-const getConnections = async (
+async function getConnections(
     versionsArray: Version[], 
     provider: Web3Provider, 
     account: string, 
     chainId: number,
     setConnections: Function
-  ) => {
+  ) {
 
-    const connectionsByChainId = versionsArray.map(version => 
+    const connectionsByChainId: (EthersLiquityConnection & { useStore: "blockPolled"; })[] = versionsArray.map(version => 
       _connectByChainId(
         version.collateral,
         version.version, 
@@ -104,28 +109,51 @@ export const ThresholdProvider = ({
   unsupportedMainnetFallback
 }: ThresholdProviderProps): JSX.Element => {
   const { library: provider, account, chainId } = useWeb3React<Web3Provider>();
+  
   const [config, setConfig] = useState<ThresholdConfig>();
-  const [connections, setConnections] = useState<any[]>();
+  const [connections, setConnections] = useState<(EthersLiquityConnection & { useStore: "blockPolled"; })[]>();
   const [threshold, setThreshold] = useState<Threshold[]>([])
+  
+
+  useEffect(() => {
+    if (!chainId || !(chainId in supportedNetworks)) {
+      setThreshold([])
+      setConnections(undefined)
+    }
+  }, [chainId])
 
   useEffect(() => {
     if (!chainId || !provider || !account || !config) {
       return;
     }
+    
+    if (!(chainId in supportedNetworks)) {
+      setThreshold([])
+      setConnections(undefined)
+      return
+    }
+
     getCollateralVersions(chainId)
       .then((collaterals) => {
         const versionsArray = iterateVersions(collaterals);
         getConnections(versionsArray, provider, account, chainId, setConnections)
-      })
+      })  
+      .catch((err) => console.error('get collateral error: ', err))
   }, [chainId, provider, account, config])
+
   
   useEffect(() => {
     getConfig().then(setConfig);
   }, []);
 
   useEffect(() => {
+    if (!chainId || !(chainId in supportedNetworks)) {
+      setConnections(undefined)
+      return
+    }
+    
     if (config && connections) {
-      //Get the connection of the first collateral ("v1") for network identification
+      //Get the connection of the first collateral for network identification
       if (connections.length > 0) {
         const { provider, chainId } = connections[0];
 
@@ -148,7 +176,7 @@ export const ThresholdProvider = ({
         }
         if (isWebSocketAugmentedProvider(provider)) {
           const network = getNetwork(chainId);
-          if (network.name && supportedNetworks.includes(network.name) && config.infuraApiKey) {
+          if (network.name && Object.keys(supportedNetworks).includes(network.name) && config.infuraApiKey) {
             provider.openWebSocket(...wsParams(network.name, config.infuraApiKey));
           } else if (connections[0]._isDev) {
             provider.openWebSocket(`ws://${window.location.hostname}:8546`, chainId);
@@ -159,7 +187,7 @@ export const ThresholdProvider = ({
         }
       }
     }
-  }, [config, connections]);
+  }, [config, connections, chainId]);
 
 
   if (!config || !provider || !account || !chainId) {
@@ -175,7 +203,7 @@ export const ThresholdProvider = ({
   if (!connections || chainId !== 5) {
     return unsupportedNetworkFallback ? <>{unsupportedNetworkFallback(chainId)}</> : <></>;
   }
-  if (Object.keys(threshold).length !== connections.length) {
+  if (threshold.length !== connections.length) {
     return <>{loader}</>;
   }
 
@@ -185,6 +213,7 @@ export const ThresholdProvider = ({
     </ThresholdContext.Provider>
   );
 };
+
 
 export const useThreshold = () => {
   const thresholdContext = useContext(ThresholdContext);

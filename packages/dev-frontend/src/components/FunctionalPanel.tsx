@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Wallet } from "@ethersproject/wallet";
 
 import { Decimal, Difference, Trove as Vault } from "@liquity/lib-base";

@@ -191,7 +191,7 @@ export abstract class LiquityStore<T = unknown> {
   onLoaded?: () => void;
 
   /** @internal */
-  protected _loaded = false;
+  _loaded = false;
 
   private _baseState?: LiquityStoreBaseState;
   private _derivedState?: LiquityStoreDerivedState;

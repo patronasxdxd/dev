@@ -374,13 +374,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address payable",
-        "name": "_bammAddress",
-        "type": "address"
-      }
-    ],
+    "inputs": [],
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -519,6 +513,11 @@
       {
         "internalType": "address",
         "name": "_borrowerOperations",
+        "type": "address"
+      },
+      {
+        "internalType": "address payable",
+        "name": "_bammAddress",
         "type": "address"
       },
       {

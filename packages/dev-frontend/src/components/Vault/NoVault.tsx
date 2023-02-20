@@ -15,16 +15,24 @@ const select = ({ erc20TokenBalance, symbol }: ThresholdStoreState) => ({
 });
 
 type NoVaultProps = {
-  version: string
-  isMintList: boolean
+  version: string;
+  collateral: string;
+  isMintList: boolean;
 }
 
-export const NoVault = ({ version, isMintList }: NoVaultProps): JSX.Element => {
+export const NoVault = ({ version, collateral, isMintList }: NoVaultProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const erc20TokenBalance = store.erc20TokenBalance;
+  const symbol = store.symbol;
+
   const { dispatchEvent } = useVaultView();
   const handleOpenVault = useCallback(() => {
-    dispatchEvent("OPEN_VAULT_PRESSED", version);
-  }, [dispatchEvent, version]);
-  const { [version]: { erc20TokenBalance, symbol } } = useThresholdSelector(select);
+    dispatchEvent("OPEN_VAULT_PRESSED", version, collateral);
+  }, [dispatchEvent, version, collateral]);
 
   return (
     <Card variant="mainCards">

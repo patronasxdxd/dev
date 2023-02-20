@@ -44,30 +44,47 @@ const TRANSACTION_ID = "vault-creation";
 const APPROVE_TRANSACTION_ID = "vault-approve";
 
 type OpeningProps = {
-  version: string
+  version: string;
+  collateral: string;
 }
 
-export const Opening = ({ version }: OpeningProps): JSX.Element => {
-  const {
-    threshold: { [ version ]: { send: threshold } }
-  } = useThreshold();
+export const Opening = ({ version, collateral }: OpeningProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(selector);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const fees = store.fees;
+  const price = store.price;
+  const erc20TokenBalance = store.erc20TokenBalance;
+  const validationContext = store.validationContext;
+  const symbol = store.symbol;
+
+
+  const { threshold } = useThreshold()
+  const collateralThreshold = threshold.find((versionedThreshold) => {
+    return versionedThreshold.version === version && versionedThreshold.collateral === collateral;
+  })!;
+  
+  const send = collateralThreshold.store.send
+
   const { dispatchEvent } = useVaultView();
-  const { [version]: { fees, price, erc20TokenBalance, validationContext, symbol }} = useThresholdSelector(selector);
+
   const borrowingRate = fees.borrowingRate();
   const editingState = useState<string>();
   const [isMounted, setIsMounted] = useState<boolean>(true);
-  const [collateral, setCollateral] = useState<Decimal>(Decimal.ZERO);
+  const [collateralAmount, setCollateralAmount] = useState<Decimal>(Decimal.ZERO);
   const [borrowAmount, setBorrowAmount] = useState<Decimal>(Decimal.ZERO);
   const maxBorrowingRate = borrowingRate.add(0.005);
   const fee = borrowAmount.mul(borrowingRate);
   const feePct = new Percent(borrowingRate);
   const totalDebt = borrowAmount.add(THUSD_LIQUIDATION_RESERVE).add(fee);
-  const isDirty = !collateral.isZero || !borrowAmount.isZero;
-  const trove = isDirty ? new Vault(collateral, totalDebt) : EMPTY_VAULT;
+  const isDirty = !collateralAmount.isZero || !borrowAmount.isZero;
+  const trove = isDirty ? new Vault(collateralAmount, totalDebt) : EMPTY_VAULT;
   const maxCollateral = erc20TokenBalance;
-  const collateralMaxedOut = collateral.eq(maxCollateral);
+  const collateralMaxedOut = collateralAmount.eq(maxCollateral);
   const collateralRatio =
-    !collateral.isZero && !borrowAmount.isZero ? trove.collateralRatio(price) : undefined;
+    !collateralAmount.isZero && !borrowAmount.isZero ? trove.collateralRatio(price) : undefined;
 
   const [vaultChange, description] = validateVaultChange(
     EMPTY_VAULT,
@@ -77,7 +94,7 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
   );
     
   const stableVaultChange = useStableVaultChange(vaultChange);
-  const { hasApproved, amountToApprove } = useValidationState(version, stableVaultChange);
+  const { hasApproved, amountToApprove } = useValidationState(version, collateral, stableVaultChange);
 
   const [gasEstimationState, setGasEstimationState] = useState<GasEstimationState>({ type: "idle" });
 
@@ -87,19 +104,25 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
     transactionState.type === "waitingForConfirmation";
 
   const handleCancelPressed = useCallback(() => {
-    dispatchEvent("CANCEL_ADJUST_VAULT_PRESSED", version);
-  }, [dispatchEvent, version]);
+    dispatchEvent("CANCEL_ADJUST_VAULT_PRESSED", version, collateral);
+  }, [dispatchEvent, version, collateral]);
+
+  useEffect(() => {
+    if (transactionState.type === "confirmedOneShot") {
+      dispatchEvent("VAULT_OPENED", version, collateral);
+    }
+  }, [transactionState.type, dispatchEvent, version, collateral]);
 
   useEffect(() => {
     if (isMounted) {
-      if (!collateral.isZero && borrowAmount.isZero) {
+      if (!collateralAmount.isZero && borrowAmount.isZero) {
         setBorrowAmount(THUSD_MINIMUM_NET_DEBT);
       }
     }
     return () => {
       setIsMounted(false);
     }
-  }, [collateral, borrowAmount, isMounted]);
+  }, [collateralAmount, borrowAmount, isMounted]);
 
   return (
     <Card variant="mainCards">
@@ -129,13 +152,13 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
           <EditableRow
             label="Collateral"
             inputId="vault-collateral"
-            amount={collateral.prettify(4)}
+            amount={collateralAmount.prettify(4)}
             maxAmount={maxCollateral.toString()}
             maxedOut={collateralMaxedOut}
             editingState={editingState}
             unit={ symbol }
-            editedAmount={collateral.toString(4)}
-            setEditedAmount={(amount: string) => setCollateral(Decimal.from(amount))}
+            editedAmount={collateralAmount.toString(4)}
+            setEditedAmount={(amount: string) => setCollateralAmount(Decimal.from(amount))}
           />
 
           <EditableRow
@@ -212,6 +235,7 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
           {hasApproved && (
             <ExpensiveVaultChangeWarning
               version={version}
+              collateral={collateral}
               vaultChange={stableVaultChange}
               maxBorrowingRate={maxBorrowingRate}
               borrowingFeeDecayToleranceMinutes={60}
@@ -223,10 +247,11 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
             {!hasApproved && amountToApprove ? (
               <Transaction
                 id={APPROVE_TRANSACTION_ID}
-                send={threshold.approveErc20.bind(threshold, amountToApprove)}
+                send={send.approveErc20.bind(send, amountToApprove)}
                 showFailure="asTooltip"
                 tooltipPlacement="bottom"
                 version={version}
+                collateral={collateral}
               >
                 <Button>Approve { symbol }</Button>
               </Transaction>
@@ -237,6 +262,7 @@ export const Opening = ({ version }: OpeningProps): JSX.Element => {
               ) : stableVaultChange ? (
               <VaultAction
                 version={version}
+                collateral={collateral}
                 transactionId={TRANSACTION_ID}
                 change={stableVaultChange}
                 maxBorrowingRate={maxBorrowingRate}

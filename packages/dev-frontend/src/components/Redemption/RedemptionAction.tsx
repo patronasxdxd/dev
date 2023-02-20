@@ -6,7 +6,8 @@ import { useThreshold } from "../../hooks/ThresholdContext";
 import { useTransactionFunction } from "../Transaction";
 
 type RedemptionActionProps = {
-  version: string,
+  version: string;
+  collateral: string;
   transactionId: string;
   disabled?: boolean;
   thusdAmount: Decimal;
@@ -15,19 +16,24 @@ type RedemptionActionProps = {
 
 export const RedemptionAction = ({
   version,
+  collateral,
   transactionId,
   disabled,
   thusdAmount,
   maxRedemptionRate
 }: RedemptionActionProps): JSX.Element => {
-  const {
-    threshold: { [version]: { send: threshold } }
-  } = useThreshold();
+  const { threshold } = useThreshold()
+  const collateralThreshold = threshold.find((versionedThreshold) => {
+    return versionedThreshold.version === version && versionedThreshold.collateral === collateral;
+  })!;
+  
+  const send = collateralThreshold.store.send
 
   const [sendTransaction] = useTransactionFunction(
     transactionId,
-    threshold.redeemTHUSD.bind(threshold, thusdAmount, maxRedemptionRate),
-    version
+    send.redeemTHUSD.bind(send, thusdAmount, maxRedemptionRate),
+    version,
+    collateral
   );
 
   return (

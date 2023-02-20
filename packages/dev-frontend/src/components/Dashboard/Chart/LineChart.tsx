@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Box, Card, Flex, useColorMode } from "theme-ui";
 import { useTvl } from "./context/ChartContext";
-import { TimestampsObject, tvlData } from "./context/ChartProvider";
+import { TimestampsObject, Tvl } from "./context/ChartProvider";
 
 import {
   Chart as ChartJS,
@@ -57,7 +57,7 @@ export const LineChart = (): JSX.Element => {
   const [hoverRef, isHovered] = useHover<HTMLDivElement>();
   const [colorMode] = useColorMode();
   const [activeData, setActiveData] = useState<number | string>('-');
-  const [tvl, setTvl] = useState<{ [key: string]: tvlData[]; }>({});
+  const [tvl, setTvl] = useState<Tvl[]>([]);
   const [loadedChart, setLoadedChart] = useState<boolean>(false);
   const [timestamps, setTimestamps] = useState<Array<TimestampsObject>>([]);
   const [activeLabel, setActiveLabel] = useState<string>('-');
@@ -84,12 +84,12 @@ export const LineChart = (): JSX.Element => {
       return
     }
     let historicalTvl: Decimal[] = []
-    for (const [version] of Object.entries(tvl)) {
-      tvl[version].forEach((versionedTvl, index) => {
+    for (const collateralTvl of tvl) {
+      collateralTvl.tvl.forEach((tvl, index) => {
         if (historicalTvl[index] === undefined) {
           historicalTvl[index] = Decimal.from(0)
         }
-        historicalTvl[index] = versionedTvl.totalCollateral.add(historicalTvl[index])
+        historicalTvl[index] = tvl.totalCollateral.add(historicalTvl[index])
       });
     }
     setChartLabels(timestamps)

@@ -6,7 +6,7 @@ const outputDir = "deployments";
 const inputDir = (channel: string) => path.join("deployments", channel);
 
 const backfillChannel = "backfill";
-const defaultChannel = "default/eth/v1";
+const defaultChannel = "default/tst/v1";
 
 const exists = (dir: string) => {
   return fs.existsSync(dir) && fs.lstatSync(dir).isDirectory();

@@ -1,9 +1,10 @@
 import { createContext, useContext } from "react";
-import type { VaultView, VaultEvent } from "./types";
+import type { VaultEvent } from "./types";
+import { VaultStatus } from "./VaultViewProvider";
 
 type VaultViewContextType = {
-  views: Record<string, VaultView>;
-  dispatchEvent: (event: VaultEvent, version: string) => void;
+  views: VaultStatus[];
+  dispatchEvent: (event: VaultEvent, version: string, collateral: string) => void;
 };
 
 export const VaultViewContext = createContext<VaultViewContextType | null>(null);

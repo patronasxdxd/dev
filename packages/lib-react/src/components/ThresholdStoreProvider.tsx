@@ -50,14 +50,15 @@ export const ThresholdStoreProvider: React.FC<ThresholdStoreProviderProps> = ({
   useEffect(() => {
     for (const thresholdStore of thresholdStores) {
       // Set the onLoaded callback to update the loaded store state when the store is loaded
-      thresholdStore.store.onLoaded = () => setLoadedStore(prev => [
+      thresholdStore.store.onLoaded = async () => setLoadedStore(prev => [
         ...prev, 
         {
           collateral: thresholdStore.collateral,
           version: thresholdStore.version,
           store: thresholdStore.store
         }
-      ]);
+      ])
+      if (!thresholdStore.store.onLoaded) return
       // Start the threshold store
       thresholdStore.store.start();
     }
@@ -72,10 +73,12 @@ export const ThresholdStoreProvider: React.FC<ThresholdStoreProviderProps> = ({
     };
   }, [thresholdStores]);
 
+
   // If the number of loaded stores is less than the total number of stores, show the loader component
   if (loadedStore.length !== thresholdStores.length) {
     return <>{loader}</>
   }
+
   // Otherwise, provide the loaded stores to the children via context
   return <ThresholdStoreContext.Provider value={loadedStore}>{children}</ThresholdStoreContext.Provider>;
 };

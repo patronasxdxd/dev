@@ -42,6 +42,7 @@ const fastProgress = {
 type TransactionIdle = {
   type: "idle";
   version?: string;
+  collateral?: string;
 };
 
 type TransactionFailed = {
@@ -49,18 +50,21 @@ type TransactionFailed = {
   id: string;
   error: Error;
   version?: string;
+  collateral?: string;
 };
 
 type TransactionWaitingForApproval = {
   type: "waitingForApproval";
   id: string;
   version?: string;
+  collateral?: string;
 };
 
 type TransactionCancelled = {
   type: "cancelled";
   id: string;
   version?: string;
+  collateral?: string;
 };
 
 type TransactionWaitingForConfirmations = {
@@ -68,18 +72,21 @@ type TransactionWaitingForConfirmations = {
   id: string;
   tx: SentTransaction;
   version?: string;
+  collateral?: string;
 };
 
 type TransactionConfirmed = {
   type: "confirmed";
   id: string;
   version?: string;
+  collateral?: string;
 };
 
 type TransactionConfirmedOneShot = {
   type: "confirmedOneShot";
   id: string;
   version?: string;
+  collateral?: string;
 };
 
 type TransactionState =
@@ -121,8 +128,8 @@ export const useMyTransactionState = (myId: string | RegExp): TransactionState =
 
   return transactionState.type !== "idle" &&
     (typeof myId === "string" ? transactionState.id === myId : transactionState.id.match(myId))
-    ? { ...transactionState, version: transactionState.version }
-    : { type: "idle", version: transactionState.version };
+    ? { ...transactionState, version: transactionState.version, collateral: transactionState.collateral }
+    : { type: "idle", version: transactionState.version, collateral: transactionState.collateral };
 };
 
 const hasMessage = (error: unknown): error is { message: string } =>
@@ -153,7 +160,8 @@ type TransactionProps<C> = {
   showFailure?: "asTooltip" | "asChildText";
   requires?: readonly (readonly [boolean, string])[];
   send: TransactionFunction;
-  version: string,
+  version: string;
+  collateral: string;
   children: C;
 };
 
@@ -161,11 +169,12 @@ export const useTransactionFunction = (
   id: string,
   send: TransactionFunction,
   version: string,
+  collateral: string,
 ): [sendTransaction: () => Promise<void>, transactionState: TransactionState] => {
   const [transactionState, setTransactionState] = useTransactionState();
 
   const sendTransaction = useCallback(async () => {
-    setTransactionState({ type: "waitingForApproval", id, version });
+    setTransactionState({ type: "waitingForApproval", id, version, collateral });
 
     try {
       const tx = await send();
@@ -174,18 +183,20 @@ export const useTransactionFunction = (
         type: "waitingForConfirmation",
         id,
         tx, 
-        version
+        version,
+        collateral,
       });
     } catch (error) {
       if (hasMessage(error) && error.message.includes("User denied transaction signature")) {
-        setTransactionState({ type: "cancelled", id, version });
+        setTransactionState({ type: "cancelled", id, version, collateral, });
       }
       else if (hasMessage(error) && error.message.includes("nothing to liquidate")) {
         setTransactionState({
           type: "failed",
           id,
           error: new Error("There are no vaults under-collateralized to liquidate"),
-          version
+          version,
+          collateral,
         });
       }
       else {
@@ -196,10 +207,11 @@ export const useTransactionFunction = (
           id,
           error: new Error("Failed to send transaction (try again)"),
           version,
+          collateral,
         });
       }
     }
-  }, [send, id, version, setTransactionState]);
+  }, [send, id, version, collateral, setTransactionState]);
 
   return [sendTransaction, transactionState];
 };
@@ -212,9 +224,10 @@ export function Transaction<C extends React.ReactElement<ButtonlikeProps & Hover
   requires,
   send,
   version,
+  collateral,
   children
 }: TransactionProps<C>) {
-  const [sendTransaction, transactionState] = useTransactionFunction(id, send, version);
+  const [sendTransaction, transactionState] = useTransactionFunction(id, send, version, collateral);
   const trigger = React.Children.only<C>(children);
 
   const failureReasons = (requires || [])
@@ -411,9 +424,12 @@ export const TransactionMonitor = (): JSX.Element => {
         setIsMounted(false);
       };
     }
-  }, [provider, id, tx, setTransactionState, isMounted]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [provider, id, tx, setTransactionState]);
 
   useEffect(() => {
+    if (!isMounted) return;
+    
     if (transactionState.type === "confirmedOneShot" && id) {
       // hack: the txn confirmed state lasts 5 seconds which blocks other states, review with Dani
       setTransactionState({ type: "confirmed", id });
@@ -432,8 +448,10 @@ export const TransactionMonitor = (): JSX.Element => {
 
       return () => {
         cancelled = true;
+        setIsMounted(false);
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionState.type, setTransactionState, id]);
 
   if (transactionState.type === "idle" || transactionState.type === "waitingForApproval") {
