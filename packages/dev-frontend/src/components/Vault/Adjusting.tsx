@@ -28,6 +28,7 @@ import {
   selectForVaultChangeValidation,
   validateVaultChange
 } from "./validation/validateVaultChange";
+import { checkTransactionCollateral } from "../../utils/checkTransactionCollateral";
 
 const selector = (state: ThresholdStoreState) => {
   const { trove, fees, price, collateralAddress, erc20TokenBalance, symbol } = state;
@@ -121,17 +122,25 @@ export const Adjusting = ({ version, collateral }: AdjustingProps): JSX.Element 
   const borrowingRate = fees.borrowingRate();
   const [isMounted, setIsMounted] = useState<boolean>(true);
 
-  useEffect(() => {
-    if (!isMounted) return;
+  const isCollateralChecked = checkTransactionCollateral(
+    transactionState,
+    version,
+    collateral
+  );
 
-    if (transactionState.type === "confirmedOneShot") {
+  useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+
+    if (isCollateralChecked && transactionState.type === "confirmedOneShot") {
       dispatchEvent("VAULT_ADJUSTED", version, collateral);
     }
+  
     return () => {
       setIsMounted(false);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactionState.type, dispatchEvent, version, collateral]);
+  }, [isCollateralChecked, transactionState.type, dispatchEvent, version, collateral, isMounted]);
 
   useEffect(() => {
     if (!isMounted) return;
@@ -187,9 +196,9 @@ export const Adjusting = ({ version, collateral }: AdjustingProps): JSX.Element 
 
   const [gasEstimationState, setGasEstimationState] = useState<GasEstimationState>({ type: "idle" });
 
-  const isTransactionPending =
-    transactionState.type === "waitingForApproval" ||
-    transactionState.type === "waitingForConfirmation";
+  const isTransactionPending = isCollateralChecked &&
+    (transactionState.type === "waitingForApproval" ||
+    transactionState.type === "waitingForConfirmation");
 
   if (trove.status !== "open") {
     return <></>;

@@ -8,6 +8,7 @@ import { useThreshold } from "../hooks/ThresholdContext";
 
 import { Transaction, useMyTransactionState } from "./Transaction";
 import { useVaultView } from "./Vault/context/VaultViewContext";
+import { checkTransactionCollateral } from "../utils/checkTransactionCollateral";
 
 const select = ({ collateralSurplusBalance, symbol }: ThresholdStoreState) => ({
   collateralSurplusBalance, symbol
@@ -38,20 +39,27 @@ export const CollateralSurplusAction = ({ version, collateral }: CollateralSurpl
   const myTransactionState = useMyTransactionState(myTransactionId);
 
   const { dispatchEvent } = useVaultView();
+
+  const isCollateralChecked = checkTransactionCollateral(
+    myTransactionState,
+    version,
+    collateral
+  );
+
   useEffect(() => {
-    if (myTransactionState.type === "confirmedOneShot") {
+    if (isCollateralChecked && myTransactionState.type === "confirmedOneShot") {
       dispatchEvent("VAULT_SURPLUS_COLLATERAL_CLAIMED", version, collateral);
     }
-  }, [myTransactionState.type, dispatchEvent, version, collateral]);
+  }, [isCollateralChecked, myTransactionState.type, dispatchEvent, version, collateral]);
 
-  return myTransactionState.type === "waitingForApproval" ? (
+  return isCollateralChecked && myTransactionState.type === "waitingForApproval" ? (
     <Flex variant="layout.actions">
       <Button disabled sx={{ mx: 2 }}>
         <Spinner sx={{ mr: 2, color: "white" }} size="20px" />
         Waiting for your approval
       </Button>
     </Flex>
-  ) : myTransactionState.type !== "waitingForConfirmation" &&
+  ) : isCollateralChecked && myTransactionState.type !== "waitingForConfirmation" &&
     myTransactionState.type !== "confirmed" ? (
     <Flex variant="layout.actions">
       <Transaction

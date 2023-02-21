@@ -16,6 +16,7 @@ import {
   selectForVaultChangeValidation,
   validateVaultChange
 } from "./validation/validateVaultChange";
+import { checkTransactionCollateral } from "../../utils/checkTransactionCollateral";
 
 const init = ({ trove }: ThresholdStoreState) => ({
   original: trove,
@@ -198,28 +199,31 @@ export const  VaultManager = ({ version, collateral, collateralAmount, debt }: V
   const openingNewVault = original.isEmpty;
 
   const myTransactionState = useMyTransactionState(transactionIdMatcher);
+  const isCollateralChecked = checkTransactionCollateral(
+    myTransactionState,
+    version,
+    collateral
+  );
 
   useEffect(() => {
-    if (!isMounted) return;
-
-    if (
-      myTransactionState.type === "waitingForApproval" ||
-      myTransactionState.type === "waitingForConfirmation"
-    ) {
+    if (!isMounted && !isCollateralChecked) return;
+    if (myTransactionState.type === "waitingForApproval" || myTransactionState.type === "waitingForConfirmation") {
       dispatch({ type: "startChange" });
-    } else if (myTransactionState.type === "failed" || myTransactionState.type === "cancelled") {
+    } else if (myTransactionState.type === "failed" || myTransactionState.type === "cancelled")
+    {
       dispatch({ type: "finishChange" });
     } else if (myTransactionState.type === "confirmedOneShot") {
+      
       if (myTransactionState.id === `${transactionIdPrefix}closure`) {
         dispatchEvent("VAULT_CLOSED", version, collateral);
       } else {
         dispatchEvent("VAULT_ADJUSTED", version, collateral);
       }
     }
-
-    return () => setIsMounted(false);
+  
+    setIsMounted(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [myTransactionState, dispatch, dispatchEvent, version, collateral]);
+  }, [isCollateralChecked, myTransactionState.type, dispatch, dispatchEvent, version, collateral, isMounted]);
 
   return (
     <VaultEditor
@@ -267,7 +271,8 @@ export const  VaultManager = ({ version, collateral, collateralAmount, debt }: V
         fontWeight: "body",
         justifyContent: "space-between",
         width: "100%",
-        px: "1em"
+        px: "1em",
+        pt: "1em"
       }}>
         <Flex>
           <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>

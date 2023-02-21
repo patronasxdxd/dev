@@ -14,7 +14,7 @@ import { useMyTransactionState } from "../Transaction";
 
 import { RedemptionAction } from "./RedemptionAction";
 import { InfoIcon } from "../InfoIcon";
-import { useVaultView } from "../Vault/context/VaultViewContext";
+import { checkTransactionCollateral } from "../../utils/checkTransactionCollateral";
 
 const mcrPercent = new Percent(MINIMUM_COLLATERAL_RATIO).toString(0);
 
@@ -58,21 +58,27 @@ export const RedemptionManager = ({ version, collateral }: RedemptionManagerProp
   const maxRedemptionRate = redemptionRate.add(0.001); // TODO slippage tolerance
 
   const myTransactionState = useMyTransactionState(transactionId);
+  const isCollateralChecked = checkTransactionCollateral(
+    myTransactionState,
+    version,
+    collateral
+  );
 
   useEffect(() => {
     if (!isMounted) {
       return
     }
+    console.log(`isCollateralChecked? `, isCollateralChecked)
+    console.log(`myTransactionState? `, myTransactionState)
     if (
+      isCollateralChecked &&
       (myTransactionState.type === "waitingForApproval" ||
-      myTransactionState.type === "waitingForConfirmation") &&
-      myTransactionState.version === version &&
-      myTransactionState.collateral === collateral
+      myTransactionState.type === "waitingForConfirmation")
     ) {
       setChangePending(true);
-    } else if (myTransactionState.type === "failed" || myTransactionState.type === "cancelled") {
+    } else if (isCollateralChecked && (myTransactionState.type === "failed" || myTransactionState.type === "cancelled")) {
       setChangePending(false);
-    } else if (myTransactionState.type === "confirmed" || myTransactionState.type === "confirmedOneShot") {
+    } else if (isCollateralChecked && (myTransactionState.type === "confirmed" || myTransactionState.type === "confirmedOneShot")) {
       setTHUSDAmount(Decimal.ZERO);
       setChangePending(false);
     }
@@ -80,10 +86,10 @@ export const RedemptionManager = ({ version, collateral }: RedemptionManagerProp
     return () => { 
       setIsMounted(false);
     };
-  }, [
+  }, 
+  [
+    isCollateralChecked,
     myTransactionState.type,
-    myTransactionState.version, 
-    myTransactionState.collateral, 
     setChangePending, setTHUSDAmount, 
     isMounted, 
     version,

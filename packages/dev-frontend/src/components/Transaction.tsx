@@ -14,6 +14,7 @@ import { useThreshold } from "../hooks/ThresholdContext";
 
 import { Icon } from "./Icon";
 import { Tooltip, TooltipProps, Hoverable } from "./Tooltip";
+import { checkTransactionCollateral } from "../utils/checkTransactionCollateral";
 
 const strokeWidth = 10;
 
@@ -234,9 +235,16 @@ export function Transaction<C extends React.ReactElement<ButtonlikeProps & Hover
     .filter(([requirement]) => !requirement)
     .map(([, reason]) => reason);
 
+  const isCollateralChecked = checkTransactionCollateral(
+    transactionState,
+    version,
+    collateral
+  );
+
   if (
-    transactionState.type === "waitingForApproval" ||
-    transactionState.type === "waitingForConfirmation"
+    isCollateralChecked &&
+    (transactionState.type === "waitingForApproval" ||
+    transactionState.type === "waitingForConfirmation")
   ) {
     failureReasons.push("You must wait for confirmation");
   }

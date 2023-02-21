@@ -27,6 +27,7 @@ import {
   selectForVaultChangeValidation,
   validateVaultChange
 } from "./validation/validateVaultChange";
+import { checkTransactionCollateral } from "../../utils/checkTransactionCollateral";
 
 const selector = (state: ThresholdStoreState) => {
   const { fees, price, erc20TokenBalance, symbol } = state;
@@ -99,19 +100,28 @@ export const Opening = ({ version, collateral }: OpeningProps): JSX.Element => {
   const [gasEstimationState, setGasEstimationState] = useState<GasEstimationState>({ type: "idle" });
 
   const transactionState = useMyTransactionState(TRANSACTION_ID);
+  const isCollateralChecked = checkTransactionCollateral(
+    transactionState,
+    version,
+    collateral
+  );
   const isTransactionPending =
-    transactionState.type === "waitingForApproval" ||
-    transactionState.type === "waitingForConfirmation";
+    isCollateralChecked &&
+    (transactionState.type === "waitingForApproval" ||
+      transactionState.type === "waitingForConfirmation");
 
   const handleCancelPressed = useCallback(() => {
     dispatchEvent("CANCEL_ADJUST_VAULT_PRESSED", version, collateral);
   }, [dispatchEvent, version, collateral]);
 
   useEffect(() => {
-    if (transactionState.type === "confirmedOneShot") {
+    if (
+      isCollateralChecked &&
+      transactionState.type === "confirmedOneShot" || transactionState.type === "confirmed"
+    ) {
       dispatchEvent("VAULT_OPENED", version, collateral);
     }
-  }, [transactionState.type, dispatchEvent, version, collateral]);
+  }, [isCollateralChecked, transactionState.type, dispatchEvent, version, collateral]);
 
   useEffect(() => {
     if (isMounted) {
