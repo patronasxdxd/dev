@@ -17,8 +17,6 @@ contract('PCV', async accounts => {
   
   const [owner, alice, bob, council, treasury] = accounts;
 
-  const feePool = "0x1000000000000000000000000000000000000001"
-
   const contextTestPCV = (isCollateralERC20) => {
 
     let priceFeed
@@ -50,14 +48,10 @@ contract('PCV', async accounts => {
       stabilityPool = contracts.stabilityPool
 
       chainlink = await ChainlinkTestnet.new(priceFeed.address)
-      thusdChainlink = await ChainlinkTestnet.new(ZERO_ADDRESS)
       bamm = await BAMM.new(
         chainlink.address, 
-        thusdChainlink.address, 
         stabilityPool.address, 
         thusdToken.address, 
-        400, 
-        feePool, 
         erc20.address)
       contracts.bamm = bamm
 

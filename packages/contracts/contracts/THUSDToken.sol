@@ -327,13 +327,13 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
         checkContract(_borrowerOperationsAddress);
 
         isTroveManager[_troveManagerAddress] = true;
-        emit TroveManagerAddressChanged(_troveManagerAddress);
+        emit TroveManagerAddressAdded(_troveManagerAddress);
 
         isStabilityPools[_stabilityPoolAddress] = true;
-        emit StabilityPoolAddressChanged(_stabilityPoolAddress);
+        emit StabilityPoolAddressAdded(_stabilityPoolAddress);
 
         isBorrowerOperations[_borrowerOperationsAddress] = true;
-        emit BorrowerOperationsAddressChanged(_borrowerOperationsAddress);
+        emit BorrowerOperationsAddressAdded(_borrowerOperationsAddress);
 
         mintList[_borrowerOperationsAddress] = true;
     }
