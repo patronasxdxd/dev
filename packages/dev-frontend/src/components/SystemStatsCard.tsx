@@ -21,6 +21,7 @@ const selector = ({
   redemptionRate,
   pcvBalance,
   symbol,
+  stabilityDeposit
 }: ThresholdStoreState) => ({
   numberOfTroves,
   price,
@@ -30,13 +31,15 @@ const selector = ({
   redemptionRate,
   pcvBalance,
   symbol,
+  stabilityDeposit
 });
 
 export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemStatsCardProps): JSX.Element => {
   const thresholdSelectorStores = useThresholdSelector(selector);
   const [borrowingFeeAvgPct, setBorrowingFeeAvgPct] = useState(new Percent(Decimal.from(0)))
   const [totalVaults, setTotalVaults] = useState(0)
-  const [thusdInSP, setThusdInSP] = useState(Decimal.from(0))
+  // const [thusdInSP, setThusdInSP] = useState(Decimal.from(0))
+  const [thusdInBammm, setThusdInBamm] = useState(Decimal.from(0))
   const [thusdSupply, setThusdSupply] = useState(Decimal.from(0))
   const [pcvBal, setPcvBal] = useState(Decimal.from(0))
   const [isMounted, setIsMounted] = useState<boolean>(true);
@@ -47,6 +50,7 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
     }
     let borrowingFee = Decimal.from(0)
     let thusdSupply = Decimal.from(0)
+    let thusdInBamm = Decimal.from(0)
 
     thresholdSelectorStores.forEach(collateralStore => {
       const thresholdStore = thresholdSelectorStores.find((store) => {
@@ -55,14 +59,16 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
 
       borrowingFee = borrowingFee.add(thresholdStore?.store.borrowingRate!)
       setTotalVaults(prev => prev + thresholdStore?.store.numberOfTroves!)
-      setThusdInSP(prev => prev.add(thresholdStore?.store.thusdInStabilityPool!))
+      // setThusdInSP(prev => prev.add(thresholdStore?.store.thusdInStabilityPool!))
       setPcvBal(prev => prev.add(thresholdStore?.store.pcvBalance!))
       thusdSupply = thusdSupply.add(thresholdStore?.store.total.debt!)
+      thusdInBamm = thusdInBamm.add(thresholdStore?.store.stabilityDeposit.totalThusdInBamm!)
     })
 
     const borrowingfeeAvg = borrowingFee.div(thresholdSelectorStores.length)
     setBorrowingFeeAvgPct(new Percent(borrowingfeeAvg))
     setThusdSupply(thusdSupply)
+    setThusdInBamm(thusdInBamm)
 
     return () => {
       setIsMounted(false);
@@ -71,7 +77,7 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
   }, [isMounted])
 
   return (
-    <Card {...{ variant }} sx={{ width: "100%", bg: "systemStatsBackGround", maxHeight: "26rem" }}>
+    <Card {...{ variant }} sx={{ width: "100%", bg: "systemStatsBackGround"}}>
       <Card variant="layout.columns">
         <Flex sx={{
           width: "100%",
@@ -111,11 +117,17 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
               { collateralStore.store.total.collateral.shorten() } { collateralStore.store.symbol }
             </SystemStat>
           ))}
-          <SystemStat
+          {/* <SystemStat
             info={`${ COIN } in Stability Pool`}
             tooltip={`The total ${ COIN } currently held in the Stability Pool, expressed as an amount and a fraction of the ${ COIN } supply.`}
           >
             {thusdInSP.shorten()}
+          </SystemStat> */}
+          <SystemStat
+            info={`${ COIN } in B.AMM`}
+            tooltip={`The total ${ COIN } currently held in the Backstop AMM, expressed as an amount and a fraction of the ${ COIN } supply.`}
+          >
+            {thusdInBammm.shorten()}
           </SystemStat>
           <SystemStat
             info={`${ COIN } in PCV`}
@@ -146,6 +158,7 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
         <Flex sx={{
           width: "100%",
           fontSize: "0.9em",
+          pt: 3,
           pb: 3
         }}>
           {IsPriceEditable === true &&

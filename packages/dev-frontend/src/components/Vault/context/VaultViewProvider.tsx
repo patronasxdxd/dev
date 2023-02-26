@@ -128,8 +128,9 @@ export const VaultViewProvider = ({
     if (viewsRef.current.length === 0) {
       return
     }
-    const current = viewsRef.current.find((store) => {
-      return store.version === version && store.collateral === collateral;
+
+    const current = viewsRef.current.find((view) => {
+      return view.version === version && view.collateral === collateral;
     });
     const nextView = transition((current as VaultStatus).initialView as VaultView, event);
 

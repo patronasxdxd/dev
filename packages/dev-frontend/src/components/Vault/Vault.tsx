@@ -18,7 +18,7 @@ export type VaultProps = {
 }
 
 export const Vault = (props: VaultProps): JSX.Element => {
-  const { version, collateral, isMintList } = props;
+  const { version, collateral } = props;
   const { views } = useVaultView();
   const currentCollateralView = views.find((view) => {
     return view.version === version && view.collateral === collateral;
@@ -27,25 +27,25 @@ export const Vault = (props: VaultProps): JSX.Element => {
   switch ((currentCollateralView as VaultStatus).initialView) {
     // loading state not needed, as main app has a loading spinner that blocks render until the threshold backend data is available
     case "ACTIVE": {
-      return <ReadOnlyVault {...props} version={version} collateral={collateral} />;
+      return <ReadOnlyVault {...props} />;
     }
     case "ADJUSTING": {
-      return <Adjusting {...props} version={version} collateral={collateral} />;
+      return <Adjusting {...props} />;
     }
     case "CLOSING": {
-      return <VaultManager {...props} collateralAmount={Decimal.ZERO} debt={Decimal.ZERO} version={version} collateral={collateral} />;
+      return <VaultManager {...props} collateralAmount={Decimal.ZERO} debt={Decimal.ZERO} />;
     }
     case "OPENING": {
-      return <Opening {...props} version={version} collateral={collateral} />;
+      return <Opening {...props} />;
     }
     case "LIQUIDATED": {
-      return <LiquidatedVault {...props} version={version} isMintList={isMintList} collateral={collateral} />;
+      return <LiquidatedVault {...props} />;
     }
     case "REDEEMED": {
-      return <RedeemedVault {...props} version={version} collateral={collateral} />;
+      return <RedeemedVault {...props} />;
     }
     case "NONE": {
-      return <NoVault {...props} version={version} collateral={collateral} isMintList={isMintList} />;
+      return <NoVault {...props} />;
     }
   }
 };

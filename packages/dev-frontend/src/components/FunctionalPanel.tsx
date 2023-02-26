@@ -7,6 +7,7 @@ import { ThresholdStoreProvider } from "@liquity/lib-react";
 import { useThreshold } from "../hooks/ThresholdContext";
 import { VaultViewProvider } from "./Vault/context/VaultViewProvider";
 import { TransactionMonitor } from "./Transaction";
+import { StabilityViewProvider } from "./Stability/context/StabilityViewProvider";
 
 type FunctionalPanelProps = {
   loader?: React.ReactNode;
@@ -31,7 +32,9 @@ export const FunctionalPanel = ({ children, loader }: FunctionalPanelProps): JSX
     <>
       <ThresholdStoreProvider {...{ loader }} threshold={threshold}>
         <VaultViewProvider {...{ loader}}>
-          {children}
+          <StabilityViewProvider {...{ loader}}>
+            {children}
+          </StabilityViewProvider>
         </VaultViewProvider>
       </ThresholdStoreProvider>
       <TransactionMonitor />

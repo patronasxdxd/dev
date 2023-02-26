@@ -270,11 +270,14 @@ export class ReadableEthersLiquity implements ReadableLiquity {
       stake, // users share in the bamm
       {currentUSD}
     ] = await Promise.all([
-      bamm.stake(address, overrides),
+      bamm.stake(address),
       this.getStabilityDeposit(address, overrides)
     ]);
+
     // amount * stake / currentUSD
-    const spShare = decimalify(stake).mul(Decimal.from(withdrawAmount)).div(currentUSD).toString()
+    const spShare = currentUSD 
+      ? decimalify(stake).mul(Decimal.from(withdrawAmount)).div(currentUSD).toString() 
+      : Decimal.from(0).toString() 
 
     return spShare
   }
@@ -303,7 +306,6 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     address ??= _requireAddress(this.connection);
     const { stabilityPool, bamm, priceFeed } = _getContracts(this.connection);
 
-
     const [
       initialValue,
       currentBammTHUSD,
@@ -319,22 +321,37 @@ export class ReadableEthersLiquity implements ReadableLiquity {
       bamm.stake(address, { ...overrides}),
       stabilityPool.getTotalTHUSDDeposits({ ...overrides }),
     ]);
+    const isTotalGreaterThanZero = total.gt(BigNumber.from(0))
+    const isTotalThusdInSpGreaterThanZero = totalThusdInSp.gt(BigNumber.from(0))
+    
+    // stake times thUSD divided by total
+    const currentTHUSD = isTotalGreaterThanZero 
+      ? stake.mul(currentBammTHUSD).div(total) 
+      : BigNumber.from(0)
 
-    // stake times lusd divided by total
-    const currentTHUSD = stake.mul(currentBammTHUSD).div(total)
     // stabilityDeposit.currentLUSD.mulDiv(100, lusdInStabilityPool);
-    const bammShare = Decimal.fromBigNumber(currentBammTHUSD).mul(100).div(Decimal.fromBigNumber(totalThusdInSp))
+    const bammShare = isTotalThusdInSpGreaterThanZero 
+      ? Decimal.fromBigNumber(currentBammTHUSD).mul(100).div(Decimal.fromBigNumber(totalThusdInSp)) 
+      : Decimal.from(0)
+
     // bamm share in SP times stake div by total
-    const poolShare = bammShare.mul(Decimal.fromBigNumber(stake)).div(Decimal.fromBigNumber(total))
+    const poolShare = isTotalGreaterThanZero 
+      ? bammShare.mul(Decimal.fromBigNumber(stake)).div(Decimal.fromBigNumber(total)) 
+      : Decimal.from(0)
 
     const bammCollateralBalance = (await bamm.provider.getBalance(bamm.address)).add(bammPendingCollateral)
-    const currentCollateral = stake.mul(bammCollateralBalance).div(total)
+    const currentCollateral = isTotalGreaterThanZero 
+      ? stake.mul(bammCollateralBalance).div(total) 
+      : BigNumber.from(0)
     
     const price = await priceFeed.callStatic.fetchPrice({ ...overrides })
 
     const currentUSD = currentTHUSD.add(currentCollateral.mul(price).div(_1e18))
 
-    const bammPoolShare = Decimal.fromBigNumber(stake).mulDiv(100, Decimal.fromBigNumber(total))
+    const bammPoolShare = isTotalGreaterThanZero 
+      ? Decimal.fromBigNumber(stake).mulDiv(100, Decimal.fromBigNumber(total)) 
+      : Decimal.from(0)
+
     // balance + pending - stock
     if(total.gt(BigNumber.from(0))){
       console.log(

@@ -28,7 +28,7 @@ export const StabilityPoolCard = ({ variant = "mainCards" }: StabilityPoolCardPr
         tooltip={`The Stability Pool is the first line of defense in maintaining system solvency. It achieves that by acting as the source of liquidity to repay debt from liquidated Vaults—ensuring that the total ${ COIN } supply always remains backed.`}
         token={ COIN }
         path='/earn'
-        disabled={ true }
+        isPoweredByBProtocol={true}
       >
         {(!thusdBalance.eq(0) ? thusdBalance.prettify() : '--')}
       </BottomCard>

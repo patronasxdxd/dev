@@ -132,7 +132,7 @@ export const LiquidationManager = ({ version, collateral, isMintList }: Liquidat
             mt: 2
           }}>
             <Flex>
-              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+              <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
               in the documentation
             </Flex>
             <Flex>Deployment version: {version}</Flex>

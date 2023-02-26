@@ -197,9 +197,10 @@ export const LineChart = (): JSX.Element => {
     ],
   };
   return (
-    <Card variant="layout.columns">
+    <Card variant="layout.columns" sx={{height: "100%"}}>
       <Flex sx={{
         width: "100%",
+        height: "2.5em",
         gap: 1,
         pb: 3,
         borderBottom: 1, 
@@ -210,13 +211,14 @@ export const LineChart = (): JSX.Element => {
       <Flex sx={{
         width: "100%",
         flexDirection: "column",
-        pt: "1em",
+        justifyContent: "center",
+        alignItems: "center",
         pl: ["1em", 0, 0, "1em"],
         gap: "1em",
       }}>
         <Box style={{
-          height: "18.5em",
-          marginTop: "2.5em",
+          height: "20em",
+          width: "100%",
           paddingBottom: "2.5em"
         }}>
           <Flex sx={{ 
@@ -242,7 +244,7 @@ export const LineChart = (): JSX.Element => {
           }}>
             {loadedChart && isHovered && activeLabel}
           </Flex>
-          <Box sx={{ display: "flex", height: "100%", width: "100%" }} ref={hoverRef}>
+          <Box sx={{ display: "flex", height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }} ref={hoverRef}>
             {
               !loadedChart 
                 ? <LoadingChart />

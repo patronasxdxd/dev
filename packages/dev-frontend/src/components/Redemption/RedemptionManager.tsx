@@ -68,8 +68,6 @@ export const RedemptionManager = ({ version, collateral }: RedemptionManagerProp
     if (!isMounted) {
       return
     }
-    console.log(`isCollateralChecked? `, isCollateralChecked)
-    console.log(`myTransactionState? `, myTransactionState)
     if (
       isCollateralChecked &&
       (myTransactionState.type === "waitingForApproval" ||
@@ -204,7 +202,7 @@ export const RedemptionManager = ({ version, collateral }: RedemptionManagerProp
             mt: 3
           }}>
             <Flex>
-              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+              <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
               in the documentation
             </Flex>
             <Flex>Deployment version: {version}</Flex>

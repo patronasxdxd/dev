@@ -21,7 +21,6 @@ export const ActionDescription = ({ title, children }: ActionDescriptionProps): 
         mt: "1.5em", 
         mb: "0.9em", 
         p: "0.9em",
-
         border: 1,
         borderRadius: "8px",
         borderColor: "border",
