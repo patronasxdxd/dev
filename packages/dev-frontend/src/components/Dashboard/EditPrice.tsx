@@ -13,7 +13,7 @@ const editableStyle: ThemeUICSSProperties = {
   borderColor: "border",
   borderRadius: 8,
   flexGrow: 1,
-  pl: "0.4rem",
+  pl: "0.3rem",
   boxShadow: 0
 };
 
@@ -89,7 +89,6 @@ export const EditPrice = ({ version, collateral }: EditPriceProps): JSX.Element 
             >
               <Button sx={{
                 ml: 1,
-                mr: 2,
                 fontSize: "11px",
                 width: "0.1rem",
                 height: "1rem",

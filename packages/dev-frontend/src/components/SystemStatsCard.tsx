@@ -143,7 +143,7 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
           </SystemStat>
           {thresholdSelectorStores.map((collateralStore, index) => {
             return collateralStore.store.total.collateralRatioIsBelowCritical(collateralStore.store.price) 
-            ? (
+            && (
                 <SystemStat
                   key={index}
                   info={`${ collateralStore.store.symbol } Recovery Mode`}
@@ -152,20 +152,20 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
                   <Box color="danger">Yes</Box>
                 </SystemStat>
               )
-            : <Box key={index}></Box>
           })}
         </Flex>
         <Box sx={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
-          rowGap: 4, 
+          rowGap: 4,
+          columnGap: 2,
           width: "100%",
           fontSize: "0.9em",
-          pt: 3,
+          pt: 4,
           pb: 3
         }}>
           {IsPriceEditable === true &&
-           thresholdSelectorStores.map((collateralStore, index) => {
+            thresholdSelectorStores.map((collateralStore, index) => {
               return <EditPrice key={index} version={collateralStore.version} collateral={collateralStore.collateral} />
             })
           }

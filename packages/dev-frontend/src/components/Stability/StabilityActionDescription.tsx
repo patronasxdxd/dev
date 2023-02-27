@@ -3,7 +3,7 @@ import { Decimal, StabilityDeposit, StabilityDepositChange, Difference, LiquityS
 import { COIN } from "../../utils/constants";
 import { ActionDescription, Amount } from "../ActionDescription";
 import { useThresholdSelector } from "@liquity/lib-react";
-import { Flex } from "theme-ui";
+import { Box } from "theme-ui";
 
 export const select = ({
   symbol
@@ -47,7 +47,7 @@ export const StabilityActionDescription = ({
   }
   return (
     <ActionDescription>
-      <Flex sx={{ mb: 2 }}>
+      <Box sx={{ mb: 2 }}>
         {change.depositTHUSD ? (
           <>
             You are depositing{" "}
@@ -74,7 +74,7 @@ export const StabilityActionDescription = ({
             to your wallet
           </>
         )}
-      </Flex>
+      </Box>
       {collateralGain && (
         <>
           {" "}
