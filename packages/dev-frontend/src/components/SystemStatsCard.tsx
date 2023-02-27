@@ -155,7 +155,10 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
             : <Box key={index}></Box>
           })}
         </Flex>
-        <Flex sx={{
+        <Box sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          rowGap: 4, 
           width: "100%",
           fontSize: "0.9em",
           pt: 3,
@@ -166,7 +169,7 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
               return <EditPrice key={index} version={collateralStore.version} collateral={collateralStore.collateral} />
             })
           }
-        </Flex>
+        </Box>
       </Card>
     </Card>
   );
