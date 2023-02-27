@@ -351,17 +351,6 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     const bammPoolShare = isTotalGreaterThanZero 
       ? Decimal.fromBigNumber(stake).mulDiv(100, Decimal.fromBigNumber(total)) 
       : Decimal.from(0)
-
-    // balance + pending - stock
-    if(total.gt(BigNumber.from(0))){
-      console.log(
-        JSON.stringify({
-          bammPendingCollateral: bammPendingCollateral.toString(),
-          total: total.toString(),
-          stake: stake.toString(),
-        }, null, 2)
-      )
-    }
     
     return new StabilityDeposit(
       bammPoolShare,
@@ -412,6 +401,27 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     const { erc20, borrowerOperations } = _getContracts(this.connection);
 
     return erc20.allowance(address, borrowerOperations.address, { ...overrides }).then(decimalify);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.isStabilityPools} */
+  isStabilityPools(overrides?: EthersCallOverrides): Promise<boolean> {
+    const { stabilityPool, thusdToken } = _getContracts(this.connection);
+
+    return thusdToken.isStabilityPools(stabilityPool.address, { ...overrides });
+  }
+  
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.isBorrowerOperations} */
+  isBorrowerOperations(overrides?: EthersCallOverrides): Promise<boolean> {
+    const { borrowerOperations, thusdToken } = _getContracts(this.connection);
+
+    return thusdToken.isBorrowerOperations(borrowerOperations.address, { ...overrides });
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.isTroveManager} */
+  isTroveManager(overrides?: EthersCallOverrides): Promise<boolean> {
+    const { troveManager, thusdToken } = _getContracts(this.connection);
+
+    return thusdToken.isTroveManager(troveManager.address, { ...overrides });
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.checkMintList} */
@@ -676,6 +686,24 @@ class _BlockPolledReadableEthersLiquity
     return this._userHit(address, overrides)
       ? this.store.state.erc20TokenAllowance
       : this._readable.getErc20TokenAllowance(address, overrides);
+  }
+
+  async isStabilityPools(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._blockHit(overrides)
+      ? this.store.state.isStabilityPools
+      : this._readable.isStabilityPools(overrides);
+  }
+
+  async isBorrowerOperations(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._blockHit(overrides)
+      ? this.store.state.isBorrowerOperations
+      : this._readable.isBorrowerOperations(overrides);
+  }
+
+  async isTroveManager(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._blockHit(overrides)
+      ? this.store.state.isTroveManager
+      : this._readable.isTroveManager(overrides);
   }
 
   async checkMintList(overrides?: EthersCallOverrides): Promise<boolean> {

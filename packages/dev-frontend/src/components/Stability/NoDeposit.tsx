@@ -10,9 +10,10 @@ import { useThresholdSelector } from "@liquity/lib-react";
 import { GenericIcon } from "../GenericIcon";
 import { ActionDescription } from "../ActionDescription";
 
-const select = ({ symbol, thusdBalance }: ThresholdStoreState) => ({
+const select = ({ symbol, thusdBalance, isStabilityPools }: ThresholdStoreState) => ({
   symbol,
-  thusdBalance
+  thusdBalance,
+  isStabilityPools
 });
 
 type UnlockButtonProps = {
@@ -75,6 +76,7 @@ export const NoDeposit = (props: NoDepositProps): JSX.Element => {
   const store = thresholdStore?.store!;
   const collateralSymbol = store.symbol;
   const thusdBalance = store.thusdBalance;
+  const isStabilityPools = store.isStabilityPools;
 
   return (
     <Card variant="mainCards">
@@ -119,7 +121,7 @@ export const NoDeposit = (props: NoDepositProps): JSX.Element => {
             </Box>
           </Flex>
           <Flex variant="layout.actions">
-            <Button onClick={handleOpenVault} sx={{ mt: 2, width: "100%" }}>Deposit</Button>
+            <Button disabled={!isStabilityPools} onClick={handleOpenVault} sx={{ mt: 2, width: "100%" }}>Deposit</Button>
           </Flex>
           <Flex sx={{ 
             alignSelf: "center",

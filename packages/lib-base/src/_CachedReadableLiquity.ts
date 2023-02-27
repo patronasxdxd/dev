@@ -149,6 +149,27 @@ export class _CachedReadableLiquity<T extends unknown[]>
     );
   }
 
+  async isStabilityPools(...extraParams: T): Promise<boolean> {
+    return (
+      this._cache.isStabilityPools(...extraParams) ??
+      this._readable.isStabilityPools(...extraParams)
+    );
+  }
+
+  async isBorrowerOperations(...extraParams: T): Promise<boolean> {
+    return (
+      this._cache.isBorrowerOperations(...extraParams) ??
+      this._readable.isBorrowerOperations(...extraParams)
+    );
+  }
+
+  async isTroveManager(...extraParams: T): Promise<boolean> {
+    return (
+      this._cache.isTroveManager(...extraParams) ??
+      this._readable.isTroveManager(...extraParams)
+    );
+  }
+
   async getWitdrawsSpShare(withdrawAmount: Decimalish, ...extraParams: T): Promise<string> {
     return (
       this._cache.getWitdrawsSpShare(withdrawAmount, ...extraParams) ??

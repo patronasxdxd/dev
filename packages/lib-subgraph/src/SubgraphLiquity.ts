@@ -292,6 +292,18 @@ export class SubgraphLiquity implements ReadableLiquity, ObservableLiquity {
     throw new Error("Method not implemented.");
   }
 
+  isStabilityPools(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  
+  isBorrowerOperations(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  
+  isTroveManager(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+
   checkMintList(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }

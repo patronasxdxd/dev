@@ -80,11 +80,11 @@ export class StabilityDeposit {
     return (
       `{ bammPoolShare: ${this.bammPoolShare}` +
       `, poolShare: ${this.poolShare}` +
-      `, initialLUSD: ${this.initialTHUSD}` +
-      `, currentLUSD: ${this.currentTHUSD}` +
+      `, initialTHUSD: ${this.initialTHUSD}` +
+      `, currentTHUSD: ${this.currentTHUSD}` +
       `, collateralGain: ${this.collateralGain}` +
-      `, totalEthInBamm: ${this.totalCollateralInBamm}` +
-      `, totalLusdInBamm: ${this.totalThusdInBamm}`
+      `, totalCollateralInBamm: ${this.totalCollateralInBamm}` +
+      `, totalThusdInBamm: ${this.totalThusdInBamm}`
     );
   }
 

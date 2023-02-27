@@ -108,6 +108,9 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
       collateralAddress: this._readable.getCollateralAddress({ blockTag }),
       mintList: this._readable.checkMintList({ blockTag }),
       bammAllowance: this._readable.getBammAllowance({ blockTag }),
+      isStabilityPools: this._readable.isStabilityPools({ blockTag }),
+      isBorrowerOperations: this._readable.isBorrowerOperations({ blockTag }),
+      isTroveManager: this._readable.isTroveManager({ blockTag }),
       ...(userAddress
         ? {
             accountBalance: this._provider.getBalance(userAddress, blockTag).then(decimalify),

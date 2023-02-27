@@ -26,6 +26,15 @@ export interface LiquityStoreBaseState {
   /** The borrower operation's allowance of user's collateral erc20 tokens. */
   erc20TokenAllowance: Decimal;
 
+  /** Check if the deployment stability pool address was added to the thUSD token. */
+  isStabilityPools: boolean;
+
+  /** Check if the deployment borrower operations address was added to the thUSD token. */
+  isBorrowerOperations: boolean;
+
+  /** Check if the deployment trove manager address was added to the thUSD token. */
+  isTroveManager: boolean;
+
   /**
    * Amount of leftover collateral available for withdrawal to the user.
    *
@@ -333,6 +342,12 @@ export abstract class LiquityStore<T = unknown> {
         baseState. erc20TokenAllowance,
         baseStateUpdate.erc20TokenAllowance
       ),
+
+      isStabilityPools: baseState.isStabilityPools,
+
+      isBorrowerOperations: baseState.isBorrowerOperations,
+
+      isTroveManager: baseState.isTroveManager,
 
       collateralSurplusBalance: this._updateIfChanged(
         eq,

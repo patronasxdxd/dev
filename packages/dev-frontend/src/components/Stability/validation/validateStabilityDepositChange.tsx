@@ -18,12 +18,14 @@ export const selectForStabilityDepositChangeValidation = ({
   trove,
   thusdBalance,
   haveUndercollateralizedTroves,
-  bammAllowance
+  bammAllowance,
+  isStabilityPools,
 }: any) => ({
   trove,
   thusdBalance,
   haveUndercollateralizedTroves,
-  bammAllowance
+  bammAllowance,
+  isStabilityPools,
 });
 
 type StabilityDepositChangeValidationContext = ReturnType<

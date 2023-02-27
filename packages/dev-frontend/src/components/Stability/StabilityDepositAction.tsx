@@ -9,6 +9,7 @@ type StabilityDepositActionProps = {
   collateral: string;
   transactionId: string;
   change: StabilityDepositChange<Decimal>;
+  isStabilityPools: boolean,
   children: React.ReactNode
 };
 
@@ -17,6 +18,7 @@ export const StabilityDepositAction: React.FC<StabilityDepositActionProps> = ({
   collateral,
   transactionId,
   change,
+  isStabilityPools,
   children,
 }: StabilityDepositActionProps): JSX.Element => {
   const { threshold } = useThreshold();
@@ -35,5 +37,5 @@ export const StabilityDepositAction: React.FC<StabilityDepositActionProps> = ({
     collateral,
   );
 
-  return <Button onClick={sendTransaction}>{children}</Button>;
+  return <Button disabled={!isStabilityPools} onClick={sendTransaction}>{children}</Button>;
 };

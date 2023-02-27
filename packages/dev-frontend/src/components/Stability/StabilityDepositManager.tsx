@@ -101,6 +101,7 @@ export const StabilityDepositManager = (props: StabilityDepositManagerProps): JS
     return store.version === version && store.collateral === collateral;
   });
 
+  const isStabilityPools = thresholdStore?.store!.isStabilityPools;
   const { dispatchEvent } = useStabilityView();
 
   const handleCancel = useCallback(() => {
@@ -156,6 +157,7 @@ export const StabilityDepositManager = (props: StabilityDepositManagerProps): JS
             collateral={collateral} 
             transactionId={transactionId} 
             change={validChange}
+            isStabilityPools={isStabilityPools}
           >
             Confirm
           </StabilityDepositAction>

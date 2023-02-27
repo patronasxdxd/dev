@@ -256,6 +256,21 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     return this._readable.getErc20TokenAllowance(address, overrides);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.isStabilityPools} */
+  isStabilityPools(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._readable.isStabilityPools(overrides);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.isBorrowerOperations} */
+  isBorrowerOperations(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._readable.isBorrowerOperations(overrides);
+  }
+
+    /** {@inheritDoc @liquity/lib-base#ReadableLiquity.isTroveManager} */
+  isTroveManager(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._readable.isTroveManager(overrides);
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.checkMintList} */
   checkMintList(overrides?: EthersCallOverrides): Promise<boolean> {
     return this._readable.checkMintList(overrides);

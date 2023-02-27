@@ -136,6 +136,24 @@ export interface ReadableLiquity {
   getErc20TokenAllowance(address?: string): Promise<Decimal>;
 
   /**
+   * Check if the deployment stability pool address was added to the thUSD token.
+   *
+   */
+  isStabilityPools(): Promise<boolean>;
+
+  /**
+   * Check if the deployment borrower operations address was added to the thUSD token.
+   *
+   */
+  isBorrowerOperations(): Promise<boolean>;
+
+  /**
+   * Check if the deployment trove manager address was added to the thUSD token.
+   *
+   */
+  isTroveManager(): Promise<boolean>;    
+
+  /**
    * Check if a certain address is on the thUSD contract mintList.
    *
    * @param address - Address of the BorrowersOpertaions contract

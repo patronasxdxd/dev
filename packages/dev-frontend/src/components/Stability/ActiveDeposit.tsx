@@ -15,10 +15,11 @@ import { useStabilityView } from "./context/StabilityViewContext";
 import { InfoIcon } from "../InfoIcon";
 import { checkTransactionCollateral } from "../../utils/checkTransactionCollateral";
 
-const selector = ({ stabilityDeposit, trove, symbol }: ThresholdStoreState) => ({
+const selector = ({ stabilityDeposit, trove, symbol, isStabilityPools }: ThresholdStoreState) => ({
   stabilityDeposit,
   trove,
-  symbol
+  symbol,
+  isStabilityPools
 });
 
 type ActiveDepositProps = {
@@ -37,6 +38,7 @@ export const ActiveDeposit = (props: ActiveDepositProps): JSX.Element => {
   const store = thresholdStore?.store!;
   const stabilityDeposit = store.stabilityDeposit;
   const collateralSymbol = store.symbol;
+  const isStabilityPools = store.isStabilityPools;
 
   const {poolShare, bammPoolShare} = stabilityDeposit
 
@@ -139,7 +141,7 @@ export const ActiveDeposit = (props: ActiveDepositProps): JSX.Element => {
             </div>
           </Box>
           <Flex variant="layout.actions" sx={{ flexDirection: "column", gap: "1em" }}>
-            <Button variant="outline" onClick={handleAdjustDeposit} sx={{ borderRadius: "12px", mt: 2 }}>
+            <Button variant="outline" disabled={!isStabilityPools} onClick={handleAdjustDeposit} sx={{ borderRadius: "12px", mt: 2 }}>
               <Icon name="pen" size="sm" />
               &nbsp;Adjust
             </Button>
