@@ -13,6 +13,14 @@
         {
           "path": "deployments/default/tst/v2",
           "name": "v2"
+        },
+        {
+          "path": "deployments/default/tst/v3",
+          "name": "v3"
+        },
+        {
+          "path": "deployments/default/tst/v4",
+          "name": "v4"
         }
       ]
     }
