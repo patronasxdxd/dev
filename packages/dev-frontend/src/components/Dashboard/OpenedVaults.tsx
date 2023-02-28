@@ -16,12 +16,12 @@ const selector = ({
 });
 
 export const OpenedVaults = ({ variant = "mainCards" }: SystemStatsProps): JSX.Element => {
-  const thresholdSelector = useThresholdSelector(selector);
+  const thresholdSelectorStores = useThresholdSelector(selector);
   const [numberOfTroves, setNumberOfVaults] = useState(0)
 
   useEffect(() => {
-    Object.keys(thresholdSelector).map(version => {
-      return setNumberOfVaults(prev => prev + thresholdSelector[version].numberOfTroves)
+    thresholdSelectorStores.map(thresholdSelector => {
+      return setNumberOfVaults(prev => prev + thresholdSelector.store.numberOfTroves)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

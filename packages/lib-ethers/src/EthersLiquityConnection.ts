@@ -4,8 +4,10 @@ import { Signer } from "@ethersproject/abstract-signer";
 import { numberify, panic } from "./_utils";
 import { EthersProvider, EthersSigner } from "./types";
 
+import deployments from "../deployments/collaterals/collaterals.json";
+
 import {
-  _VersionedLiquityDeployments,
+  CollateralsVersionedDeployments,
   _connectToContracts,
   _LiquityContractAddresses,
   _LiquityContracts,
@@ -13,6 +15,7 @@ import {
 } from "./contracts";
 
 import { _connectToMulticall, _Multicall } from "./_Multicall";
+import { FolderInfo } from "../utils/fsScripts";
 
 declare const brand: unique symbol;
 
@@ -34,6 +37,9 @@ export interface EthersLiquityConnection extends EthersLiquityConnectionOptional
 
   /** Ethers `Signer` used for sending transactions. */
   readonly signer?: EthersSigner;
+
+  /** deployment collateral of the connected network. */
+  readonly deploymentCollateral: string;
 
   /** deployment collateral version of the connected network. */
   readonly deploymentVersion: string;
@@ -71,6 +77,7 @@ export interface _InternalEthersLiquityConnection extends EthersLiquityConnectio
 }
 
 const connectionFrom = (
+  deploymentCollateral: string,
   deploymentVersion: string,
   provider: EthersProvider,
   signer: EthersSigner | undefined,
@@ -91,6 +98,7 @@ const connectionFrom = (
   }
 
   return branded({
+    deploymentCollateral,
     deploymentVersion,
     provider,
     signer,
@@ -176,12 +184,14 @@ export const getProviderAndSigner = (
 
 /** @internal */
 export const _connectToDeployment = (
+  collateral: string,
   version: string,
   deployment: _LiquityDeploymentJSON,
   signerOrProvider: EthersSigner | EthersProvider,
   optionalParams?: EthersLiquityConnectionOptionalParams
 ): EthersLiquityConnection =>
   connectionFrom(
+    collateral,
     version,
     ...getProviderAndSigner(signerOrProvider),
     _connectToContracts(signerOrProvider, deployment),
@@ -242,6 +252,7 @@ export interface EthersLiquityConnectionOptionalParams {
 
 /** @internal */
 export function _connectByChainId<T>(
+  collateral: string,
   version: string,
   deployment: _LiquityDeploymentJSON,
   provider: EthersProvider,
@@ -252,6 +263,7 @@ export function _connectByChainId<T>(
 
 /** @internal */
 export function _connectByChainId(
+  collateral: string,
   version: string,
   deployment: _LiquityDeploymentJSON,
   provider: EthersProvider,
@@ -262,6 +274,7 @@ export function _connectByChainId(
 
 /** @internal */
 export function _connectByChainId(
+  collateral: string,
   version: string,
   deployment: _LiquityDeploymentJSON,
   provider: EthersProvider,
@@ -269,8 +282,8 @@ export function _connectByChainId(
   chainId: number,
   optionalParams?: EthersLiquityConnectionOptionalParams
 ): EthersLiquityConnection {
-
   return connectionFrom(
+    collateral,
     version,
     provider,
     signer,
@@ -281,25 +294,45 @@ export function _connectByChainId(
   );
 }
 
-/** @internal */
-export async function _getVersionedDeployments(network: string): Promise<_VersionedLiquityDeployments> {
-  const versionedDeployments: _VersionedLiquityDeployments = {};
-
-  for (let i = 1; i < 100; i++) {
-    import(`../deployments/default/eth/v${i.toString()}/${network}.json`)
-      .then((deployment) => {
-        versionedDeployments['v'+i] = deployment;
-      })
-      .catch((err) => {
-        return err
-      })
+/**
+ * Get the versioned Liquity deployments for a given network.
+ * @param network - The name of the network to get deployments for.
+ * @returns A Promise that resolves with an object containing the versioned deployments for each collateral.
+ */
+/** @public */
+export async function getCollateralsDeployments(network: string): Promise<CollateralsVersionedDeployments> {
+  // Initialize an empty object to hold the versioned deployments.
+  const versionedDeployments: CollateralsVersionedDeployments = {};
+  
+  // Get an array of DeploymentFolder objects for all the collaterals.
+  const collateralDeployments: FolderInfo[] = deployments.subfolders;
+  // Loop through each collateral DeploymentFolder and map over its subfolders.
+ for (let index = 0; index < collateralDeployments.length; index++) {
+    const collateral = collateralDeployments[index]
+    
+    await Promise.all((collateral.subfolders as FolderInfo[]).map(async (versionDeployment) => {
+      
+      // Construct the absolute path of the JSON file for the specified network and version.
+      import(`@liquity/lib-ethers/${versionDeployment.path}/${network}.json`)
+        .then((deployment) => {
+          // Load the JSON file for the specified network and version.
+          versionedDeployments[collateral.name] = {
+            ...versionedDeployments[collateralDeployments[index].name],
+            [versionDeployment.name]: deployment,
+          }
+        })
+        .catch((error) => console.error(`Failed to load deployment for ${collateralDeployments[index].name} version ${versionDeployment.name}: ${error}`));
+        // Add the versioned deployment to the corresponding collateral in the versionedDeployments object.
+    }))
   }
-  return versionedDeployments
-  ;
+
+  // Return the versioned deployments object.
+  return versionedDeployments;
 }
 
 /** @internal */
 export const _connect = async (
+  collateral: string,
   version: string,
   deployment: _LiquityDeploymentJSON,
   provider: EthersProvider,
@@ -318,5 +351,5 @@ export const _connect = async (
     };
   }
 
-  return _connectByChainId(version, deployment, provider, signer, (await provider.getNetwork()).chainId, optionalParams);
+  return _connectByChainId(collateral, version, deployment, provider, signer, (await provider.getNetwork()).chainId, optionalParams);
 };

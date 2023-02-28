@@ -20,6 +20,7 @@ const editableStyle: ThemeUICSSProperties = {
 
 type EditPriceProps = {
   version: string
+  collateral: string
 }
 
 const selector = ({
@@ -30,11 +31,21 @@ const selector = ({
   symbol,
 });
 
-export const EditPrice = ({ version }: EditPriceProps): JSX.Element => {
-  const thresholdSelector = useThresholdSelector(selector)
-  const { price, symbol } = thresholdSelector[version]
-  const { threshold } = useThreshold();
-  const canSetPrice = threshold.v1.connection._priceFeedIsTestnet
+export const EditPrice = ({ version, collateral }: EditPriceProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(selector);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const symbol = store.symbol;
+  const price = store.price;
+  
+  const { threshold } = useThreshold()
+  const collateralThreshold = threshold.find((versionedThreshold) => {
+    return versionedThreshold.version === version && versionedThreshold.collateral === collateral;
+  })!;
+  
+  const canSetPrice = collateralThreshold.store.connection._priceFeedIsTestnet
   const [editedPrice, setEditedPrice] = useState(price.toString(2))
 
   return (
@@ -42,7 +53,6 @@ export const EditPrice = ({ version }: EditPriceProps): JSX.Element => {
       <Flex sx={{
         width: "100%",
         gap: 1,
-        pt: "1.5rem",
         pb: 2,
         borderBottom: 1,
         borderColor: "border"
@@ -71,9 +81,10 @@ export const EditPrice = ({ version }: EditPriceProps): JSX.Element => {
                 if (!editedPrice) {
                   throw new Error("Invalid price");
                 }
-                return threshold[version].send.setPrice(Decimal.from(editedPrice), overrides);
+                return collateralThreshold.store.send.setPrice(Decimal.from(editedPrice), overrides);
               }}
               version={version}
+              collateral={collateral}
             >
               <Button sx={{
                 ml: 1,
@@ -88,7 +99,7 @@ export const EditPrice = ({ version }: EditPriceProps): JSX.Element => {
             </Transaction>
           </Flex>
         ) : (
-          thresholdSelector[version].price.toString(2)
+          price.toString(2)
         )}
       </SystemStat>
     </Flex>

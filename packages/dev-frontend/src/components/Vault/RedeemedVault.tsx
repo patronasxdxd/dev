@@ -13,16 +13,23 @@ const select = ({ collateralSurplusBalance, symbol }: ThresholdStoreState) => ({
 });
 
 type RedeemedVaultProps = {
-  version: string
+  version: string;
+  collateral: string;
 }
 
-export const RedeemedVault = ({ version }: RedeemedVaultProps): JSX.Element => {
-  const { [version]: { hasSurplusCollateral }, symbol } = useThresholdSelector(select);
+export const RedeemedVault = ({ version, collateral }: RedeemedVaultProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const hasSurplusCollateral = store.hasSurplusCollateral;
+  const symbol = store.symbol;
   const { dispatchEvent } = useVaultView();
 
   const handleOpenVault = useCallback(() => {
-    dispatchEvent("OPEN_VAULT_PRESSED", version);
-  }, [dispatchEvent, version]);
+    dispatchEvent("OPEN_VAULT_PRESSED", version, collateral);
+  }, [dispatchEvent, version, collateral]);
 
   return (
     <Card variant="mainCards">
@@ -54,7 +61,7 @@ export const RedeemedVault = ({ version }: RedeemedVaultProps): JSX.Element => {
                 : `You can borrow ${ COIN } by opening a Vault.`}
             </InfoMessage>
             <Flex variant="layout.actions">
-              {hasSurplusCollateral && <CollateralSurplusAction version={version} />}
+              {hasSurplusCollateral && <CollateralSurplusAction version={version} collateral={collateral} />}
               {!hasSurplusCollateral && <Button onClick={handleOpenVault} sx={{ width: "100%" }}>Open Vault</Button>}
             </Flex>
             <Flex sx={{ 

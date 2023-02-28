@@ -12,6 +12,7 @@ export type GasEstimationState =
 
 type ExpensiveVaultChangeWarningParams = {
   version: string,
+  collateral: string,
   vaultChange?: Exclude<VaultChange<Decimal>, { type: "invalidCreation" }>;
   maxBorrowingRate: Decimal;
   borrowingFeeDecayToleranceMinutes: number;
@@ -21,26 +22,34 @@ type ExpensiveVaultChangeWarningParams = {
 
 export const ExpensiveVaultChangeWarning = ({
   version,
+  collateral,
   vaultChange,
   maxBorrowingRate,
   borrowingFeeDecayToleranceMinutes,
   gasEstimationState,
   setGasEstimationState
 }: ExpensiveVaultChangeWarningParams): JSX.Element => {
-  const { threshold } = useThreshold();
+  const { threshold } = useThreshold()
+  const collateralThreshold = threshold.find((versionedThreshold) => {
+    return versionedThreshold.version === version && versionedThreshold.collateral === collateral;
+  })!;
+  
+  const populate = collateralThreshold.store.populate
+  
   useEffect(() => {
     if (vaultChange && vaultChange.type !== "closure") {
       setGasEstimationState({ type: "inProgress" });
+      
 
       let cancelled = false;
 
       const timeoutId = setTimeout(async () => {
         const populatedTx = await (vaultChange.type === "creation"
-          ? threshold[version].populate.openTrove(vaultChange.params, {
+          ? populate.openTrove(vaultChange.params, {
               maxBorrowingRate,
               borrowingFeeDecayToleranceMinutes
             })
-          : threshold[version].populate.adjustTrove(vaultChange.params, {
+          : populate.adjustTrove(vaultChange.params, {
               maxBorrowingRate,
               borrowingFeeDecayToleranceMinutes
             }));

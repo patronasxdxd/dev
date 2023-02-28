@@ -48,6 +48,7 @@ const liquidatableInRecoveryMode = (
 
 type RiskyVaultsProps = {
   version: string
+  collateral: string
   isMintList: boolean
 };
 
@@ -68,20 +69,28 @@ const select = ({
   symbol
 });
 
-export const RiskyVaults = ({ version, isMintList }: RiskyVaultsProps): JSX.Element => {
+export const RiskyVaults = ({ version, collateral, isMintList }: RiskyVaultsProps): JSX.Element => {
   const { chainId } = useWeb3React<Web3Provider>();
-  const {
-    [version]: {
-      blockTag,
-      numberOfTroves,
-      recoveryMode,
-      totalCollateralRatio,
-      thusdInStabilityPool,
-      price,
-      symbol,
-    }
-  } = useThresholdSelector(select);
-  const { threshold } = useThreshold();
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const blockTag = store.blockTag;
+  const numberOfTroves = store.numberOfTroves;
+  const recoveryMode = store.recoveryMode;
+  const totalCollateralRatio = store.totalCollateralRatio;
+  const thusdInStabilityPool = store.thusdInStabilityPool;
+  const price = store.price;
+  const symbol = store.symbol;
+  
+  const { threshold } = useThreshold()
+  const collateralThreshold = threshold.find((versionedThreshold) => {
+    return versionedThreshold.version === version && versionedThreshold.collateral === collateral;
+  })!;
+  
+  const send = collateralThreshold.store.send
+
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [vaults, setVaults] = useState<UserVault[]>();
   const [reload, setReload] = useState({});
@@ -110,7 +119,7 @@ export const RiskyVaults = ({ version, isMintList }: RiskyVaultsProps): JSX.Elem
 
   useEffect(() => {
     if (isMounted) {
-      threshold[version]
+      collateralThreshold.store
         .getTroves(
           {
             first: pageSize,
@@ -324,14 +333,15 @@ export const RiskyVaults = ({ version, isMintList }: RiskyVaultsProps): JSX.Elem
                                     )
                                   : liquidatableInNormalMode(vault, price)
                               ]}
-                              send={threshold[version].send.liquidate.bind(threshold[version].send, vault.ownerAddress)}
+                              send={send.liquidate.bind(send, vault.ownerAddress)}
                               version={version}
+                              collateral={collateral}
                             >
                               <Button variant="dangerIcon">
                                 <Icon name="trash" />
                               </Button>
                             </Transaction>
-                          </td>
+                          </td> 
                         </tr>
                       )
                   )}

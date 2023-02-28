@@ -23,6 +23,7 @@ const editableStyle: ThemeUICSSProperties = {
 
 type LiquidationManagerProps = {
   version: string
+  collateral: string
   isMintList: boolean
 }
 
@@ -30,10 +31,22 @@ const selector = ({ symbol }: ThresholdStoreState) => ({
   symbol
 });
 
-export const LiquidationManager = ({ version, isMintList }: LiquidationManagerProps): JSX.Element => {
+export const LiquidationManager = ({ version, collateral, isMintList }: LiquidationManagerProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(selector);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const symbol = store.symbol;
+  
+  const { threshold } = useThreshold()
+  const collateralThreshold = threshold.find((versionedThreshold) => {
+    return versionedThreshold.version === version && versionedThreshold.collateral === collateral;
+  })!;
+  
+  const send = collateralThreshold.store.send
+
   const inputId: string = "liquidate-vaults";
-  const { threshold } = useThreshold();
-  const { [version]: { symbol } } = useThresholdSelector(selector);
   const [numberOfTrovesToLiquidate, setNumberOfVaultsToLiquidate] = useState("90");
   const [editing, setEditing] = useState<string>();
 
@@ -101,9 +114,10 @@ export const LiquidationManager = ({ version, isMintList }: LiquidationManagerPr
                 if (!numberOfTrovesToLiquidate) {
                   throw new Error("Invalid number");
                 }
-                return threshold[version].send.liquidateUpTo(parseInt(numberOfTrovesToLiquidate, 10), overrides);
+                return send.liquidateUpTo(parseInt(numberOfTrovesToLiquidate, 10), overrides);
               }}
               version={version}
+              collateral={collateral}
             >
               <Button sx={{ width: "100%" }}>Liquidate</Button>
             </Transaction>

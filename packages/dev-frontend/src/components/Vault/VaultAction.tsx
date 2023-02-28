@@ -8,6 +8,7 @@ import { useTransactionFunction } from "../Transaction";
 type VaultActionProps = {
   children: React.ReactNode
   version: string,
+  collateral: string,
   transactionId: string;
   change: Exclude<VaultChange<Decimal>, { type: "invalidCreation" }>;
   maxBorrowingRate: Decimal;
@@ -17,27 +18,34 @@ type VaultActionProps = {
 export const VaultAction = ({
   children,
   version,
+  collateral,
   transactionId,
   change,
   maxBorrowingRate,
   borrowingFeeDecayToleranceMinutes
 }: VaultActionProps): JSX.Element => {
-  const { threshold } = useThreshold();
+  const { threshold } = useThreshold()
+  const collateralThreshold = threshold.find((versionedThreshold) => {
+    return versionedThreshold.version === version && versionedThreshold.collateral === collateral;
+  })!;
+  
+  const send = collateralThreshold.store.send
 
   const [sendTransaction] = useTransactionFunction(
     transactionId,
     change.type === "creation"
-      ? threshold[version].send.openTrove.bind(threshold[version].send, change.params, {
+      ? send.openTrove.bind(send, change.params, {
           maxBorrowingRate,
           borrowingFeeDecayToleranceMinutes
         })
       : change.type === "closure"
-      ? threshold[version].send.closeTrove.bind(threshold[version].send)
-      : threshold[version].send.adjustTrove.bind(threshold[version].send, change.params, {
+      ? send.closeTrove.bind(send)
+      : send.adjustTrove.bind(send, change.params, {
           maxBorrowingRate,
           borrowingFeeDecayToleranceMinutes
         }),
-    version
+    version,
+    collateral,
   );
 
   return <Button onClick={sendTransaction}>{children}</Button>;

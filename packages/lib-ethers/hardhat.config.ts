@@ -19,20 +19,21 @@ import { deployAndSetupContracts, deployTellorCaller, setSilent } from "./utils/
 import { _connectToContracts, _LiquityDeploymentJSON, _priceFeedIsTestnet } from "./src/contracts";
 
 import accounts from "./accounts.json";
+import { getFolderInfo } from "./utils/fsScripts";
 
 interface IOracles {
   chainlink: string,
   tellor: string,
 }
 
-interface ICollaterals {
-  eth: IOracles,
+export interface IAssets {
+  [eth: string]: IOracles,
   btc: IOracles,
 }
 
-interface INetworkOracles {
-  mainnet: ICollaterals,
-  goerli: ICollaterals,
+export interface INetworkOracles {
+  mainnet: IAssets,
+  goerli: IAssets,
 }
 
 dotenv.config();
@@ -65,7 +66,7 @@ const generateRandomAccounts = (numberOfAccounts: number) => {
   return accounts;
 };
 
-const deployerAccount = process.env.DEPLOYER_PRIVATE_KEY || Wallet.createRandom().privateKey;
+const deployerAccount = "a9549f1d4db37b976cbb5950a6e7ef9116741b3c2b60ba4480f26523e7f9f2c5";
 const devChainRichAccount = "0x4d5db4107d237df6a3d58ee5f70ae63d73d7658d4026f2eefd2f204c81682cb7";
 
 const infuraApiKey = "ad9cef41c9c844a7b54d10be24d416e5";
@@ -80,7 +81,7 @@ const infuraNetwork = (name: string): { [name: string]: NetworkUserConfig } => (
 // https://docs.chain.link/docs/ethereum-addresses
 // https://docs.tellor.io/tellor/the-basics/contracts-reference
 
-const oracleAddresses: INetworkOracles = {
+export const oracleAddresses: INetworkOracles = {
   mainnet: {
     btc: {
       chainlink: "0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c",
@@ -88,6 +89,10 @@ const oracleAddresses: INetworkOracles = {
     },
     eth: {
       chainlink: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+      tellor: "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
+    },
+    thusd: {
+      chainlink: "0x3D7aE7E594f2f2091Ad8798313450130d0Aba3a0", // TODO this is LUSD:USD address, should be replaced with thUSD
       tellor: "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
     }
   },
@@ -139,6 +144,10 @@ declare module "hardhat/types/runtime" {
   interface HardhatRuntimeEnvironment {
     deployLiquity: (
       deployer: Signer,
+      oracleAddresses: INetworkOracles,
+      collateralSymbol: (keyof IAssets),
+      collateralAddress?: string,
+      delay?: number,
       stablecoinAddress?: string,
       useRealPriceFeed?: boolean,
       overrides?: Overrides
@@ -161,13 +170,21 @@ const getContractFactory: (
 extendEnvironment(env => {
   env.deployLiquity = async (
     deployer,
+    oracleAddresses,
+    collateralSymbol = "tst",
+    collateralAddress = "",
+    delay = 90 * 24 * 60 * 60,
     stablecoinAddress = "",
     useRealPriceFeed = false,
     overrides?: Overrides
   ) => {
     const deployment = await deployAndSetupContracts(
       deployer,
+      oracleAddresses,
+      collateralSymbol,
+      collateralAddress,
       getContractFactory(env),
+      delay,
       stablecoinAddress,
       !useRealPriceFeed,
       env.network.name === "dev",
@@ -180,21 +197,26 @@ extendEnvironment(env => {
 
 type DeployParams = {
   channel: string;
-  collateral: string;
+  collateralSymbol: string;
+  collateralAddress: string;
   contractsVersion: string;
+  delay: number;
   stablecoinAddress: string;
   gasPrice?: number;
   useRealPriceFeed?: boolean;
 };
 
 const defaultChannel = process.env.CHANNEL || "default";
-const defaultCollateral = process.env.COLLATERAL || "eth";
+const defaultCollateralSymbol = process.env.COLLATERAL_SYMBOL || "tst";
+const defaultCollateralAddress = process.env.COLLATERAL_ADDRESS || "";
 const defaultRelease = process.env.RELEASE || "v1";
 const defaultToken = process.env.TOKEN_ADDRESS || "";
+const defaultDelay = process.env.DELAY || 90 * 24 * 60 * 60;
 
 task("deploy", "Deploys the contracts to the network")
   .addOptionalParam("channel", "Deployment channel to deploy into", defaultChannel, types.string)
-  .addOptionalParam("collateral", "Asset to use as collateral", defaultCollateral, types.string)
+  .addOptionalParam("collateralSymbol", "Asset symbol to use as collateral", defaultCollateralSymbol, types.string)
+  .addOptionalParam("collateralAddress", "Asset address to use as collateral", defaultCollateralAddress, types.string)
   .addOptionalParam("contractsVersion", "Version of contracts for collateral type", defaultRelease, types.string)
   .addOptionalParam("gasPrice", "Price to pay for 1 gas [Gwei]", undefined, types.float)
   .addOptionalParam(
@@ -204,13 +226,19 @@ task("deploy", "Deploys the contracts to the network")
     types.boolean
   )
   .addOptionalParam(
+    "delay",
+    "Governance time set to thUSD contract",
+    defaultDelay,
+    types.int
+  )
+  .addOptionalParam(
     "stablecoinAddress",
     "Address of existing stablecoin to add the new collateral to",
     defaultToken,
     types.string
   )
   .setAction(
-    async ({ channel, collateral, contractsVersion, stablecoinAddress, gasPrice, useRealPriceFeed }: DeployParams, env) => {
+    async ({ channel, collateralSymbol, collateralAddress, contractsVersion, delay, stablecoinAddress, gasPrice, useRealPriceFeed }: DeployParams, env) => {     
       const overrides = { gasPrice: gasPrice && Decimal.from(gasPrice).div(1000000000).hex };
       const [deployer] = await env.ethers.getSigners();
       useRealPriceFeed ??= env.network.name === "mainnet";
@@ -220,13 +248,25 @@ task("deploy", "Deploys the contracts to the network")
       }
 
       console.log('network', env.network.name);
-      console.log('collateral', collateral);
+      console.log('collateralSymbol', collateralSymbol);
+      console.log('collateralAddress', collateralAddress);
       console.log('version', contractsVersion);
+      console.log('delay', delay);
       console.log('stablecoin address:', stablecoinAddress);
       console.log('gas price: ', gasPrice);
       setSilent(false);
 
-      const deployment = await env.deployLiquity(deployer, stablecoinAddress, useRealPriceFeed, overrides);
+      const deployment = await env
+        .deployLiquity(
+          deployer, 
+          oracleAddresses, 
+          collateralSymbol, 
+          collateralAddress, 
+          delay, 
+          stablecoinAddress, 
+          useRealPriceFeed, 
+          overrides
+        );
 
       if (useRealPriceFeed) {
         const contracts = _connectToContracts(deployer, deployment);
@@ -237,14 +277,14 @@ task("deploy", "Deploys the contracts to the network")
           const tellorCallerAddress = await deployTellorCaller(
             deployer,
             getContractFactory(env),
-            oracleAddresses[env.network.name][collateral as keyof ICollaterals].tellor,
+            oracleAddresses[env.network.name][collateralSymbol as keyof IAssets].tellor,
             overrides
           );
 
           console.log(`Hooking up PriceFeed with oracles ...`);
 
           const tx = await contracts.priceFeed.setAddresses(
-            oracleAddresses[env.network.name][collateral as keyof ICollaterals].chainlink,
+            oracleAddresses[env.network.name][collateralSymbol as keyof IAssets].chainlink,
             tellorCallerAddress,
             overrides
           );
@@ -253,10 +293,23 @@ task("deploy", "Deploys the contracts to the network")
         }
       }
 
-      fs.mkdirSync(path.join("deployments", channel, collateral, contractsVersion), { recursive: true });
+      const deploymentChannelPath = path.posix.join("deployments", channel)
+
+      // Call getFolderInfo on a specific folder and log the result
+      getFolderInfo(deploymentChannelPath)
+        .then((folderInfo) => {
+          fs.mkdirSync(path.join("deployments", "collaterals"), { recursive: true });
+          fs.writeFileSync(
+            path.join("deployments", "collaterals", "collaterals.json"),
+            JSON.stringify(folderInfo, null, 2)
+          );
+        })
+        .catch((err) => console.error(err));
+
+      fs.mkdirSync(path.join("deployments", channel, collateralSymbol, contractsVersion), { recursive: true });
 
       fs.writeFileSync(
-        path.join("deployments", channel, collateral, contractsVersion, `${env.network.name}.json`),
+        path.join("deployments", channel, collateralSymbol, contractsVersion, `${env.network.name}.json`),
         JSON.stringify(deployment, undefined, 2)
       );
 

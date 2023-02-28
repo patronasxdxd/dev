@@ -46,7 +46,7 @@
   },
   {
     "inputs": [],
-    "name": "DECIMAL_PRECISION",
+    "name": "COLLATERAL_USD_TELLOR_REQ_ID",
     "outputs": [
       {
         "internalType": "uint256",
@@ -59,7 +59,7 @@
   },
   {
     "inputs": [],
-    "name": "ETHUSD_TELLOR_REQ_ID",
+    "name": "DECIMAL_PRECISION",
     "outputs": [
       {
         "internalType": "uint256",

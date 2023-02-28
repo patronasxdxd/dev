@@ -13,17 +13,25 @@ const select = ({ collateralSurplusBalance, symbol }: ThresholdStoreState) => ({
 });
 
 type LiquidatedVaultProps = {
-  version: string
-  isMintList: boolean
+  version: string;
+  collateral: string;
+  isMintList: boolean;
 }
 
-export const LiquidatedVault = ({ version, isMintList }: LiquidatedVaultProps): JSX.Element => {
-  const { [version]: { hasSurplusCollateral, symbol } } = useThresholdSelector(select);
+export const LiquidatedVault = ({ version, collateral, isMintList }: LiquidatedVaultProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const hasSurplusCollateral = store.hasSurplusCollateral;
+  const symbol = store.symbol;
+
   const { dispatchEvent } = useVaultView();
 
   const handleOpenVault = useCallback(() => {
-    dispatchEvent("OPEN_VAULT_PRESSED", version);
-  }, [dispatchEvent, version]);
+    dispatchEvent("OPEN_VAULT_PRESSED", version, collateral);
+  }, [dispatchEvent, version, collateral]);
 
   return (
     <Card variant="mainCards">
@@ -57,7 +65,7 @@ export const LiquidatedVault = ({ version, isMintList }: LiquidatedVaultProps): 
               )}
           </InfoMessage>
           <Flex variant="layout.actions">
-            {hasSurplusCollateral && <CollateralSurplusAction version={version} />}
+            {hasSurplusCollateral && <CollateralSurplusAction version={version} collateral={collateral} />}
             {!hasSurplusCollateral && 
             isMintList === false 
             ? <Button sx={{ mt: 2, width: "100%" }} disabled={ true }>Open a Vault</Button>

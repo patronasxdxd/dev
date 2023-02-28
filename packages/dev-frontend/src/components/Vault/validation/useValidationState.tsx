@@ -13,8 +13,13 @@ type VaultStakeValidation = {
   amountToApprove?: Decimal;
 };
 
-export const useValidationState = (version: string, stableVaultChange: ValidVaultChange | undefined): VaultStakeValidation => {
-  const { [ version ]: { erc20TokenAllowance }} = useThresholdSelector(selector);
+export const useValidationState = (version: string, collateral: string  , stableVaultChange: ValidVaultChange | undefined): VaultStakeValidation => {
+  const thresholdSelectorStores = useThresholdSelector(selector);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const erc20TokenAllowance = store.erc20TokenAllowance;
 
   const CollateralBN = stableVaultChange?.params.depositCollateral;
 

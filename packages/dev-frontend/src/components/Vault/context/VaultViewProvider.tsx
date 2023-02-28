@@ -75,28 +75,44 @@ const getInitialView = (vaultStatus: UserVaultStatus): VaultView => {
   return "NONE";
 };
 
-const select = ({ trove: { status } } : ThresholdStoreState) => status;
+const select = ({ trove } : ThresholdStoreState) => trove;
 
 type VaultViewProps = {
   loader: React.ReactNode;
   children: React.ReactNode;
 };
 
+export type VaultStatus = {
+  version: string;
+  collateral: string;
+  initialView: VaultView;
+};
+
 export const VaultViewProvider = ({
   loader,
   children
 }: VaultViewProps): JSX.Element => {
-  const vaultsStatus = useThresholdSelector(select);
-  const [views, setViews] = useState<Record<string, VaultView>>({});
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const [views, setViews] = useState<VaultStatus[]>([]);
   const [isMounted, setIsMounted] = useState<boolean>(true);
 
   useEffect(() => {
-    if (!vaultsStatus || !isMounted) {
+    if (!thresholdSelectorStores || !isMounted) {
       return
     }
-    let vaultsInitialStatus = {}
-    for (const [version, vaultStatus] of Object.entries(vaultsStatus)) {
-      vaultsInitialStatus = {...vaultsInitialStatus, [version]: getInitialView(vaultStatus)}
+    let vaultsInitialStatus: VaultStatus[] = []
+    for (const thresholdSelectorStore of thresholdSelectorStores) {
+      const store = thresholdSelectorStore?.store!;
+      const { status } = store;
+
+      vaultsInitialStatus = [
+        ...vaultsInitialStatus, 
+        {
+          version: thresholdSelectorStore.version,
+          collateral: thresholdSelectorStore.collateral,
+          initialView: getInitialView(status)
+        }
+      ]
     }
     
     setViews(vaultsInitialStatus)
@@ -106,20 +122,36 @@ export const VaultViewProvider = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   
-  const viewsRef = useRef<Record<string, VaultView>>(views);
+  const viewsRef = useRef<VaultStatus[]>(views);
 
-  const dispatchEvent = useCallback((event: VaultEvent, version: string) => {
-    if (Object.keys(viewsRef.current).length > 0) {
-      const nextView = transition(viewsRef.current[version], event);
-
-      console.log(
-        "dispatchEvent() [current-view, event, next-view]",
-        viewsRef.current[version],
-        event,
-        nextView
-      );
-      setViews(prev => { return {...prev, [version]: nextView}});
+  const dispatchEvent = useCallback((event: VaultEvent, version: string, collateral: string) => {
+    if (viewsRef.current.length === 0) {
+      return
     }
+    const current = viewsRef.current.find((store) => {
+      return store.version === version && store.collateral === collateral;
+    });
+    const nextView = transition((current as VaultStatus).initialView as VaultView, event);
+
+    console.log(
+      "dispatchEvent() [current-view, event, next-view]",
+      (current as VaultStatus).initialView,
+      event,
+      nextView
+    );
+    
+    setViews(prev => {
+      const index = prev.findIndex(view => view.version === version && view.collateral === collateral);
+      const nextView = transition(prev[index].initialView, event);
+    
+      if (index !== -1) {
+        const updatedView = { ...prev[index], initialView: nextView };
+        return [...prev.slice(0, index), updatedView, ...prev.slice(index + 1)];
+      } else {
+        return [...prev, { version, collateral, initialView: nextView }];
+      }
+    });
+    
   }, []);
 
   useEffect(() => {
@@ -127,14 +159,17 @@ export const VaultViewProvider = ({
   }, [views]);
 
   useEffect(() => {
-    if (!vaultsStatus) {
+    if (!thresholdSelectorStores) {
       return
     }
 
-    for (const [version, vaultStatus] of Object.entries(vaultsStatus)) {
-      const event = vaultStatusEvents[vaultStatus] ?? null;
+    for (const thresholdSelectorStore of thresholdSelectorStores) {
+      const store = thresholdSelectorStore?.store;
+      const { status } = store;
+
+      const event = vaultStatusEvents[status] ?? null;
       if (event !== null) {
-        dispatchEvent(event, version);
+        dispatchEvent(event, thresholdSelectorStore.version, thresholdSelectorStore.collateral);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -145,7 +180,7 @@ export const VaultViewProvider = ({
     dispatchEvent
   };
 
-  if (!vaultsStatus || Object.keys(views).length === 0) {
+  if (!thresholdSelectorStores || views.length === 0) {
     return <>{loader}</>;
   }
 

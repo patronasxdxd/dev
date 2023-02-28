@@ -21,15 +21,20 @@ const vaultStatus = (view: VaultView) => {
 }
 
 export const VaultCard = ({ variant = "mainCards" }: VaultCardProps): JSX.Element => {
-  const { views: { v1 } } = useVaultView();
-  const {v1: { erc20TokenBalance, symbol }} = useThresholdSelector(selector);
+  const { views } = useVaultView();
+  const currentView = views[0]
+  const thresholdSelectorStores = useThresholdSelector(selector);
+  const thresholdStore = thresholdSelectorStores[0]
+  const store = thresholdStore?.store!;
+  const erc20TokenBalance = store.erc20TokenBalance;
+  const symbol = store.symbol;
   
   return (
     <Card {...{ variant }}>
       <BottomCard
-        title={vaultStatus(v1)}
+        title={vaultStatus(currentView.initialView)}
         tooltip={`To mint and borrow thUSD you must open a vault and deposit a certain amount of collateral (${ symbol }) to it.`}
-        action={vaultStatus(v1)}
+        action={vaultStatus(currentView.initialView)}
         token={ symbol }
         path='/borrow'
       >

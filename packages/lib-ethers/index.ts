@@ -1,5 +1,5 @@
 export {
-  _getVersionedDeployments,
+  getCollateralsDeployments,
   _connectByChainId,
   EthersLiquityConnection,
   EthersLiquityConnectionOptionalParams,
@@ -8,7 +8,8 @@ export {
 } from "./src/EthersLiquityConnection";
 
 export {
-  _VersionedLiquityDeployments,
+  Versions,
+  CollateralsVersionedDeployments,
   _LiquityContractAddresses,
   _LiquityContractsKey,
   _LiquityDeploymentJSON

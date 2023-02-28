@@ -1,15 +1,13 @@
 import { Signer } from "@ethersproject/abstract-signer";
 import { ContractTransaction, ContractFactory, Overrides } from "@ethersproject/contracts";
-import { Wallet } from "@ethersproject/wallet";
-
-import { Decimal } from "@liquity/lib-base";
-
+import { IAssets, INetworkOracles } from "../hardhat.config";
 import {
   _LiquityContractAddresses,
   _LiquityContracts,
   _LiquityDeploymentJSON,
   _connectToContracts
 } from "../src/contracts";
+import { ZERO_ADDRESS } from "./constants";
 
 let silent = true;
 
@@ -52,11 +50,15 @@ const deployContract: (
 
 const deployContracts = async (
   deployer: Signer,
+  oracleAddresses: INetworkOracles,
+  collateralSymbol: keyof IAssets,
+  collateralAddress: string,
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
+  delay: number,
   stablecoinAddress: string,
   priceFeedIsTestnet = true,
   overrides?: Overrides
-): Promise<[addresses: Omit<_LiquityContractAddresses, "uniToken">, startBlock: number]> => {
+): Promise<[addresses: _LiquityContractAddresses, startBlock: number]> => {
   const [activePoolAddress, startBlock] = await deployContractAndGetBlockNumber(
     deployer,
     getContractFactory,
@@ -77,7 +79,7 @@ const deployContracts = async (
     }),
     defaultPool: await deployContract(deployer, getContractFactory, "DefaultPool", { ...overrides }),
     hintHelpers: await deployContract(deployer, getContractFactory, "HintHelpers", { ...overrides }),
-    pcv: await deployContract(deployer, getContractFactory, "PCV", { ...overrides }),
+    pcv: await deployContract(deployer, getContractFactory, "PCV", delay, { ...overrides }),
     priceFeed: await deployContract(
       deployer,
       getContractFactory,
@@ -90,13 +92,38 @@ const deployContracts = async (
     stabilityPool: await deployContract(deployer, getContractFactory, "StabilityPool", {
       ...overrides
     }),
+    bLens: await deployContract(deployer, getContractFactory, "BLens", {
+      ...overrides
+    }),
     gasPool: await deployContract(deployer, getContractFactory, "GasPool", {
       ...overrides
     }),
-    erc20: await deployContract(deployer, getContractFactory, "ERC20Test", {
+    erc20: (collateralAddress != "") 
+    ? collateralAddress
+    : await deployContract(deployer, getContractFactory, "ERC20Test", {
       ...overrides
     })
   };
+
+  const chainlink = (priceFeedIsTestnet === false) 
+    ? oracleAddresses["mainnet"][collateralSymbol as keyof IAssets]
+    : await deployContract(
+        deployer,
+        getContractFactory,
+        "ChainlinkTestnet",
+        addresses.priceFeed,
+        { ...overrides }
+      )
+  
+  const thusdChainlink = (priceFeedIsTestnet === false) 
+    ? oracleAddresses["mainnet"]["thusd"]
+    : await deployContract(
+        deployer,
+        getContractFactory,
+        "ChainlinkTestnet",
+        ZERO_ADDRESS,
+        { ...overrides }
+      )
 
   const thusdToken = (stablecoinAddress != "") ? stablecoinAddress : await deployContract(
     deployer,
@@ -105,14 +132,30 @@ const deployContracts = async (
     addresses.troveManager,
     addresses.stabilityPool,
     addresses.borrowerOperations,
+    delay,
+    { ...overrides }
+  );
+
+  const bamm = await deployContract(
+    deployer, 
+    getContractFactory, 
+    "BAMM",
+    chainlink,
+    thusdChainlink,
+    addresses.stabilityPool,
+    thusdToken,
+    400,
+    "0x1000000000000000000000000000000000000001", //TODO feePool contract should be addressed with Bprotocol partnership
+    addresses.erc20,
     { ...overrides }
   );
 
   return [
     {
       ...addresses,
+      bamm: bamm,
       thusdToken: thusdToken,
-
+      chainlink: chainlink as string,
       multiTroveGetter: await deployContract(
         deployer,
         getContractFactory,
@@ -122,7 +165,6 @@ const deployContracts = async (
         { ...overrides }
       )
     },
-
     startBlock
   ];
 };
@@ -148,6 +190,9 @@ const connectContracts = async (
     priceFeed,
     sortedTroves,
     stabilityPool,
+    bamm,
+    bLens,
+    chainlink,
     gasPool,
     erc20
   }: _LiquityContracts,
@@ -245,9 +290,9 @@ const connectContracts = async (
     nonce =>
       pcv.setAddresses(
         thusdToken.address,
-        troveManager.address,
         borrowerOperations.address,
-        activePool.address,
+        bamm.address,
+        erc20.address,
         { ...overrides, nonce }
       )
   ];
@@ -260,7 +305,11 @@ const connectContracts = async (
 
 export const deployAndSetupContracts = async (
   deployer: Signer,
+  oracleAddresses: INetworkOracles,
+  collateralSymbol: keyof IAssets,
+  collateralAddress: string,
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
+  delay: number,
   stablecoinAddress: string,
   _priceFeedIsTestnet = true,
   _isDev = true,
@@ -280,7 +329,7 @@ export const deployAndSetupContracts = async (
     _priceFeedIsTestnet,
     _isDev,
 
-    ...(await deployContracts(deployer, getContractFactory, stablecoinAddress, _priceFeedIsTestnet, overrides).then(
+    ...(await deployContracts(deployer, oracleAddresses, collateralSymbol, collateralAddress, getContractFactory, delay, stablecoinAddress, _priceFeedIsTestnet, overrides).then(
       async ([addresses, startBlock]) => ({
         startBlock,
 

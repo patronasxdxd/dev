@@ -14,6 +14,7 @@ import { useMyTransactionState } from "../Transaction";
 
 import { RedemptionAction } from "./RedemptionAction";
 import { InfoIcon } from "../InfoIcon";
+import { checkTransactionCollateral } from "../../utils/checkTransactionCollateral";
 
 const mcrPercent = new Percent(MINIMUM_COLLATERAL_RATIO).toString(0);
 
@@ -26,13 +27,24 @@ const select = ({ price, fees, total, thusdBalance, symbol }: ThresholdStoreStat
 });
 
 type RedemptionManagerProps = {
-  version: string
+  version: string;
+  collateral: string;
 }
 
 const transactionId = "redemption";
 
-export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Element => {
-  const { [version]: { price, fees, total, thusdBalance, symbol } } = useThresholdSelector(select);
+export const RedemptionManager = ({ version, collateral }: RedemptionManagerProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const price = store.price;
+  const fees = store.fees;
+  const total = store.total;
+  const thusdBalance = store.thusdBalance;
+  const symbol = store.symbol;
+
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [thusdAmount, setTHUSDAmount] = useState(Decimal.ZERO);
   const [changePending, setChangePending] = useState(false);
@@ -46,21 +58,27 @@ export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Elem
   const maxRedemptionRate = redemptionRate.add(0.001); // TODO slippage tolerance
 
   const myTransactionState = useMyTransactionState(transactionId);
+  const isCollateralChecked = checkTransactionCollateral(
+    myTransactionState,
+    version,
+    collateral
+  );
 
   useEffect(() => {
     if (!isMounted) {
       return
     }
+    console.log(`isCollateralChecked? `, isCollateralChecked)
+    console.log(`myTransactionState? `, myTransactionState)
     if (
+      isCollateralChecked &&
       (myTransactionState.type === "waitingForApproval" ||
-      myTransactionState.type === "waitingForConfirmation") &&
-      myTransactionState.version === version
+      myTransactionState.type === "waitingForConfirmation")
     ) {
-      console.log(myTransactionState.version === version)
       setChangePending(true);
-    } else if (myTransactionState.type === "failed" || myTransactionState.type === "cancelled") {
+    } else if (isCollateralChecked && (myTransactionState.type === "failed" || myTransactionState.type === "cancelled")) {
       setChangePending(false);
-    } else if (myTransactionState.type === "confirmed") {
+    } else if (isCollateralChecked && (myTransactionState.type === "confirmed" || myTransactionState.type === "confirmedOneShot")) {
       setTHUSDAmount(Decimal.ZERO);
       setChangePending(false);
     }
@@ -68,7 +86,15 @@ export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Elem
     return () => { 
       setIsMounted(false);
     };
-  }, [myTransactionState.type, myTransactionState.version, setChangePending, setTHUSDAmount, isMounted, version]);
+  }, 
+  [
+    isCollateralChecked,
+    myTransactionState.type,
+    setChangePending, setTHUSDAmount, 
+    isMounted, 
+    version,
+    collateral,
+  ]);
 
   const [canRedeem, description] = total.collateralRatioIsBelowMinimum(price)
     ? [
@@ -161,6 +187,7 @@ export const RedemptionManager = ({ version }: RedemptionManagerProps): JSX.Elem
           <Flex variant="layout.actions">
             <RedemptionAction
               version={version}
+              collateral={collateral}
               transactionId={transactionId}
               disabled={!dirty || !canRedeem}
               thusdAmount={thusdAmount}

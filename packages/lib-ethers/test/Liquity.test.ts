@@ -33,12 +33,13 @@ import {
   _redeemMaxIterations
 } from "../src/PopulatableEthersLiquity";
 
-import { DEPLOYMENT_VERSION_FOR_TESTING } from "../src/_utils"
+import { DEPLOYMENT_COLLATERAL_FOR_TESTING, DEPLOYMENT_VERSION_FOR_TESTING } from "../src/_utils"
 import { EthersTransactionReceipt } from "../src/types";
 import { _LiquityDeploymentJSON } from "../src/contracts";
 import { _connectToDeployment } from "../src/EthersLiquityConnection";
 import { EthersLiquity } from "../src/EthersLiquity";
 import { ReadableEthersLiquity } from "../src/ReadableEthersLiquity";
+import { oracleAddresses } from "../hardhat.config";
 
 const provider = ethers.provider;
 
@@ -57,7 +58,7 @@ const connectToDeployment = async (
   signer: Signer
 ) =>
   EthersLiquity._from(
-    _connectToDeployment(DEPLOYMENT_VERSION_FOR_TESTING, deployment, signer, {
+    _connectToDeployment(DEPLOYMENT_COLLATERAL_FOR_TESTING, DEPLOYMENT_VERSION_FOR_TESTING, deployment, signer, {
       userAddress: await signer.getAddress()
     })
   );
@@ -182,7 +183,7 @@ describe("EthersLiquity", () => {
   // Always setup same initial balance for user
   beforeEach(async () => {
     [deployer, funder, user, ...otherUsers] = await ethers.getSigners();
-    deployment = await deployLiquity(deployer);
+    deployment = await deployLiquity(deployer, oracleAddresses, "tbtc");
 
     liquity = await connectToDeployment(deployment, user);
 

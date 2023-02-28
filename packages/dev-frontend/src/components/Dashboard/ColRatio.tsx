@@ -10,12 +10,13 @@ type SystemStatsProps = {
 };
 
 type mintListApproved = {
-  [key:string]: {
-    mintList: boolean;
-    price: Decimal;
-    total: Trove;
-  }
+  version: string;
+  collateral: string;
+  price: Decimal;
+  total: Trove;
+  mintList: boolean;
 }
+
 
 const selector = ({
   mintList,
@@ -28,8 +29,7 @@ const selector = ({
 });
 
 export const ColRatio = ({ variant = "mainCards" }: SystemStatsProps): JSX.Element => {
-  const thresholdSelector = useThresholdSelector(selector)
-  const thresholdSelectorKeys = Object.keys(thresholdSelector)
+  const thresholdSelectorStores = useThresholdSelector(selector)
   const [collateralData, setCollateralData] = useState({versionsQty: 0, collateralRatioAvgPct: new Percent(Decimal.from(0))})
   const [isMounted, setIsMounted] = useState<boolean>(true);
 
@@ -37,18 +37,21 @@ export const ColRatio = ({ variant = "mainCards" }: SystemStatsProps): JSX.Eleme
     if (!isMounted) {
       return
     }
-    let mintListApproved: mintListApproved = {}
-    for (const [version] of Object.entries(thresholdSelector)) {
-      if (thresholdSelector[version].mintList === true) {
-        mintListApproved = {...mintListApproved, [version]: {
+    let mintListApproved: mintListApproved[] = []
+    for (const thresholdSelectorStore of thresholdSelectorStores) {
+      if (thresholdSelectorStore.store.mintList === true) {
+        mintListApproved = [...mintListApproved, {
+          version: thresholdSelectorStore.version,
+          collateral: thresholdSelectorStore.collateral,
+          price: thresholdSelectorStore.store.price, 
+          total: thresholdSelectorStore.store.total,
           mintList: true, 
-          price: thresholdSelector[version].price, 
-          total:thresholdSelector[version].total}}
+        }]
       }
     }
     let collateralRatio = Decimal.from(0)   
-    for (const [version] of Object.entries(mintListApproved)) {
-      const versionedCollateralRatio = mintListApproved[version].total.collateralRatio(thresholdSelector[version].price)
+    for (const collateralApproved of mintListApproved) {
+      const versionedCollateralRatio = collateralApproved.total.collateralRatio(collateralApproved.price)
       
       collateralRatio = collateralRatio ===  Decimal.INFINITY || versionedCollateralRatio === Decimal.INFINITY
         ? Decimal.INFINITY 
@@ -56,7 +59,7 @@ export const ColRatio = ({ variant = "mainCards" }: SystemStatsProps): JSX.Eleme
     }
     const collateralRatioAvg = collateralRatio === Decimal.INFINITY 
       ? Decimal.INFINITY 
-      : collateralRatio.div(thresholdSelectorKeys.length)
+      : collateralRatio.div(thresholdSelectorStores.length)
       
       setCollateralData(
       {

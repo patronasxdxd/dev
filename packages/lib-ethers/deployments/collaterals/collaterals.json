@@ -1,0 +1,20 @@
+{
+  "path": "deployments/default",
+  "name": "default",
+  "subfolders": [
+    {
+      "path": "deployments/default/tst",
+      "name": "tst",
+      "subfolders": [
+        {
+          "path": "deployments/default/tst/v1",
+          "name": "v1"
+        },
+        {
+          "path": "deployments/default/tst/v2",
+          "name": "v2"
+        }
+      ]
+    }
+  ]
+}
