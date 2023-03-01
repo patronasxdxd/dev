@@ -1,8 +1,9 @@
 import { Card } from "theme-ui";
-import { Percent, LiquityStoreState, Decimal, Trove } from "@liquity/lib-base";
+import { Percent, LiquityStoreState, Decimal} from "@liquity/lib-base";
 import { useThresholdSelector } from "@liquity/lib-react";
 
 import { TopCard } from "./TopCard";
+
 import { useEffect, useState } from "react";
 
 type SystemStatsProps = {
