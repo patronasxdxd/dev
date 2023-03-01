@@ -6,6 +6,7 @@ import {
   LiquidationDetails,
   RedemptionDetails,
   StabilityDepositChangeDetails,
+  BammDepositChangeDetails,
   StabilityPoolGainsWithdrawalDetails,
   TransactableLiquity,
   TroveAdjustmentDetails,
@@ -193,6 +194,21 @@ export interface SendableLiquity<R = unknown, S = unknown>
     maximumNumberOfTrovesToLiquidate: number
   ): Promise<SentLiquityTransaction<S, LiquityReceipt<R, LiquidationDetails>>>;
 
+  /** {@inheritDoc TransactableLiquity.depositTHUSDInBammPool} */
+  depositTHUSDInBammPool(
+    amount: Decimalish
+  ): Promise<SentLiquityTransaction<S, LiquityReceipt<R, BammDepositChangeDetails>>>;
+
+  /** {@inheritDoc TransactableLiquity.withdrawTHUSDFromBammPool} */
+  withdrawTHUSDFromBammPool(
+    amount: Decimalish
+  ): Promise<SentLiquityTransaction<S, LiquityReceipt<R, BammDepositChangeDetails>>>;
+
+  /** {@inheritDoc TransactableLiquity.withdrawGainsFromBammPool} */
+  withdrawGainsFromBammPool(): Promise<
+    SentLiquityTransaction<S, LiquityReceipt<R, StabilityPoolGainsWithdrawalDetails>>
+  >;
+
   /** {@inheritDoc TransactableLiquity.depositTHUSDInStabilityPool} */
   depositTHUSDInStabilityPool(
     amount: Decimalish
@@ -215,6 +231,11 @@ export interface SendableLiquity<R = unknown, S = unknown>
 
   /** {@inheritDoc TransactableLiquity.transferCollateralGainToTrove} */
   transferCollateralGainToTrove(): Promise<
+    SentLiquityTransaction<S, LiquityReceipt<R, CollateralGainTransferDetails>>
+  >;
+
+  /** {@inheritDoc TransactableLiquity.transferBammCollateralGainToTrove} */
+  transferBammCollateralGainToTrove(): Promise<
     SentLiquityTransaction<S, LiquityReceipt<R, CollateralGainTransferDetails>>
   >;
 

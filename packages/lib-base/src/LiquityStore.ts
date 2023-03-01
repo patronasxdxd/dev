@@ -2,6 +2,7 @@ import assert from "assert";
 
 import { Decimal } from "./Decimal";
 import { StabilityDeposit } from "./StabilityDeposit";
+import { BammDeposit } from "./BammDeposit";
 import { Trove, TroveWithPendingRedistribution, UserTrove } from "./Trove";
 import { Fees } from "./Fees";
 
@@ -81,6 +82,9 @@ export interface LiquityStoreBaseState {
 
   /** User's stability deposit. */
   stabilityDeposit: StabilityDeposit;
+
+  /** User's bamm deposit. */
+  bammDeposit: BammDeposit;
 
   /** MintList validation. */
   mintList: boolean;
@@ -392,6 +396,13 @@ export abstract class LiquityStore<T = unknown> {
         "stabilityDeposit",
         baseState.stabilityDeposit,
         baseStateUpdate.stabilityDeposit
+      ),
+
+      bammDeposit: this._updateIfChanged(
+        equals,
+        "bammDeposit",
+        baseState.bammDeposit,
+        baseStateUpdate.bammDeposit
       ),
 
       _feesInNormalMode: this._silentlyUpdateIfChanged(

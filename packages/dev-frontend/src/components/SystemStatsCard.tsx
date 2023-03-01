@@ -21,7 +21,7 @@ const selector = ({
   redemptionRate,
   pcvBalance,
   symbol,
-  stabilityDeposit
+  bammDeposit
 }: ThresholdStoreState) => ({
   numberOfTroves,
   price,
@@ -31,7 +31,7 @@ const selector = ({
   redemptionRate,
   pcvBalance,
   symbol,
-  stabilityDeposit
+  bammDeposit
 });
 
 export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemStatsCardProps): JSX.Element => {
@@ -62,7 +62,7 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
       // setThusdInSP(prev => prev.add(thresholdStore?.store.thusdInStabilityPool!))
       setPcvBal(prev => prev.add(thresholdStore?.store.pcvBalance!))
       thusdSupply = thusdSupply.add(thresholdStore?.store.total.debt!)
-      thusdInBamm = thusdInBamm.add(thresholdStore?.store.stabilityDeposit.totalThusdInBamm!)
+      thusdInBamm = thusdInBamm.add(thresholdStore?.store.bammDeposit.totalThusdInBamm!)
     })
 
     const borrowingfeeAvg = borrowingFee.div(thresholdSelectorStores.length)
@@ -157,7 +157,7 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
         <Box sx={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
-          rowGap: 4,
+          rowGap: 3,
           columnGap: 2,
           width: "100%",
           fontSize: "0.9em",

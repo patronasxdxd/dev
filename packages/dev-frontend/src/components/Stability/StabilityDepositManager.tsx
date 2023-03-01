@@ -15,9 +15,9 @@ import {
 } from "./validation/validateStabilityDepositChange";
 import { checkTransactionCollateral } from "../../utils/checkTransactionCollateral";
 
-const init = ({ stabilityDeposit }: LiquityStoreState) => ({
-  originalDeposit: stabilityDeposit,
-  editedUSD: stabilityDeposit.currentUSD,
+const init = ({ bammDeposit }: LiquityStoreState) => ({
+  originalDeposit: bammDeposit,
+  editedUSD: bammDeposit.currentUSD,
   changePending: false
 });
 
@@ -54,7 +54,7 @@ const reduce = (
       return { ...state, editedUSD: originalDeposit.currentUSD };
     case "updateStore": {
       const {
-        stateChange: { stabilityDeposit: updatedDeposit }
+        stateChange: { bammDeposit: updatedDeposit }
       } = action;
       if (!updatedDeposit) {
         return state;

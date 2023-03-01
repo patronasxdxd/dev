@@ -7,6 +7,7 @@ import {
   LiquidationDetails,
   RedemptionDetails,
   StabilityDepositChangeDetails,
+  BammDepositChangeDetails,
   StabilityPoolGainsWithdrawalDetails,
   TroveAdjustmentDetails,
   TroveClosureDetails,
@@ -198,6 +199,34 @@ export interface PopulatableLiquity<R = unknown, S = unknown, P = unknown>
     PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, LiquidationDetails>>>
   >;
 
+  /** {@inheritDoc TransactableLiquity.depositTHUSDInBammPool} */
+  depositTHUSDInBammPool(
+    amount: Decimalish
+  ): Promise<
+    PopulatedLiquityTransaction<
+      P,
+      SentLiquityTransaction<S, LiquityReceipt<R, BammDepositChangeDetails>>
+    >
+  >;
+
+  /** {@inheritDoc TransactableLiquity.withdrawTHUSDFromBammPool} */
+  withdrawTHUSDFromBammPool(
+    amount: Decimalish
+  ): Promise<
+    PopulatedLiquityTransaction<
+      P,
+      SentLiquityTransaction<S, LiquityReceipt<R, BammDepositChangeDetails>>
+    >
+  >;
+
+  /** {@inheritDoc TransactableLiquity.withdrawGainsFromBammPool} */
+  withdrawGainsFromBammPool(): Promise<
+    PopulatedLiquityTransaction<
+      P,
+      SentLiquityTransaction<S, LiquityReceipt<R, StabilityPoolGainsWithdrawalDetails>>
+    >
+  >;
+
   /** {@inheritDoc TransactableLiquity.depositTHUSDInStabilityPool} */
   depositTHUSDInStabilityPool(
     amount: Decimalish
@@ -238,6 +267,14 @@ export interface PopulatableLiquity<R = unknown, S = unknown, P = unknown>
       SentLiquityTransaction<S, LiquityReceipt<R, CollateralGainTransferDetails>>
     >
   >;
+
+  /** {@inheritDoc TransactableLiquity.transferBammCollateralGainToTrove} */
+  transferBammCollateralGainToTrove(): Promise<
+    PopulatedLiquityTransaction<
+      P,
+      SentLiquityTransaction<S, LiquityReceipt<R, CollateralGainTransferDetails>>
+    >
+  >;  
 
   /** {@inheritDoc TransactableLiquity.sendTHUSD} */
   sendTHUSD(

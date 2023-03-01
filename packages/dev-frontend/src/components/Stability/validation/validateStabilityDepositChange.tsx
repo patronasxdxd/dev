@@ -1,7 +1,7 @@
 import {
   Decimal,
-  StabilityDeposit,
-  StabilityDepositChange
+  BammDeposit,
+  BammDepositChange
 } from "@liquity/lib-base";
 
 import {
@@ -36,7 +36,7 @@ export const validateStabilityDepositChange = (
   version: string,
   collateral: string,
   isMintList: boolean,
-  originalDeposit: StabilityDeposit,
+  originalDeposit: BammDeposit,
   editedTHUSD: Decimal,
   {
     thusdBalance,
@@ -46,7 +46,7 @@ export const validateStabilityDepositChange = (
   thusdDiff: Difference| undefined,
   collateralDiff: Difference| undefined,
 ): [
-  validChange: StabilityDepositChange<Decimal> | undefined,
+  validChange: BammDepositChange<Decimal> | undefined,
   description: JSX.Element | undefined
 ] => {
   const change = originalDeposit.whatChanged(editedTHUSD);

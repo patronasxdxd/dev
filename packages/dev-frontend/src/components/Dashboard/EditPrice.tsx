@@ -48,7 +48,7 @@ export const EditPrice = ({ version, collateral }: EditPriceProps): JSX.Element 
   const [editedPrice, setEditedPrice] = useState(price.toString(2))
 
   return (
-    <Flex sx={{ flexDirection: "column", gridColumn: "span 2", gap: 3 }}>
+    <Flex sx={{ flexDirection: "column", gridColumn: "span 2", gap: 2 }}>
       <Flex sx={{
         width: "100%",
         gap: 1,

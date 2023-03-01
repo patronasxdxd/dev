@@ -8,6 +8,7 @@ import {
   ObservableLiquity,
   ReadableLiquity,
   StabilityDeposit,
+  BammDeposit,
   Trove,
   TroveListingParams,
   TroveWithPendingRedistribution,
@@ -261,6 +262,10 @@ export class SubgraphLiquity implements ReadableLiquity, ObservableLiquity {
     throw new Error("Method not implemented.");
   }
 
+  getBammDeposit(address?: string): Promise<BammDeposit> {
+    throw new Error("Method not implemented.");
+  }
+
   watchStabilityDeposit(
     onStabilityDepositChanged: (stabilityDeposit: StabilityDeposit) => void,
     address?: string
@@ -358,7 +363,7 @@ export class SubgraphLiquity implements ReadableLiquity, ObservableLiquity {
     throw new Error("Method not implemented.");
   }
 
-  getWitdrawsSpShare(): Promise<string> {
+  getWithdrawsSpShare(): Promise<string> {
     throw new Error("Method not implemented.");
   }
 }

@@ -1,6 +1,7 @@
 import { Decimal, Decimalish } from "./Decimal";
 import { Fees } from "./Fees";
 import { StabilityDeposit } from "./StabilityDeposit";
+import { BammDeposit } from "./BammDeposit";
 import { Trove, TroveWithPendingRedistribution, UserTrove } from "./Trove";
 import { ReadableLiquity, TroveListingParams } from "./ReadableLiquity";
 
@@ -100,6 +101,13 @@ export class _CachedReadableLiquity<T extends unknown[]>
     );
   }
 
+  async getBammDeposit(address?: string, ...extraParams: T): Promise<BammDeposit> {
+    return (
+      this._cache.getBammDeposit(address, ...extraParams) ??
+      this._readable.getBammDeposit(address, ...extraParams)
+    );
+  }
+
   async getSymbol(...extraParams: T): Promise<string> {
     return (
       this._cache.getSymbol(...extraParams) ??
@@ -170,10 +178,10 @@ export class _CachedReadableLiquity<T extends unknown[]>
     );
   }
 
-  async getWitdrawsSpShare(withdrawAmount: Decimalish, ...extraParams: T): Promise<string> {
+  async getWithdrawsSpShare(withdrawAmount: Decimalish, ...extraParams: T): Promise<string> {
     return (
-      this._cache.getWitdrawsSpShare(withdrawAmount, ...extraParams) ??
-      this._readable.getWitdrawsSpShare(withdrawAmount, ...extraParams)
+      this._cache.getWithdrawsSpShare(withdrawAmount, ...extraParams) ??
+      this._readable.getWithdrawsSpShare(withdrawAmount, ...extraParams)
     )
   }
 

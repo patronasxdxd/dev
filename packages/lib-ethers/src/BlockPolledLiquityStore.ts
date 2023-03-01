@@ -6,6 +6,7 @@ import {
   LiquityStoreBaseState,
   TroveWithPendingRedistribution,
   StabilityDeposit,
+  BammDeposit,
   LiquityStore,
   Fees
 } from "@liquity/lib-base";
@@ -123,7 +124,8 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
             troveBeforeRedistribution: this._readable.getTroveBeforeRedistribution(userAddress, {
               blockTag
             }),
-            stabilityDeposit: this._readable.getStabilityDeposit(userAddress, { blockTag })
+            stabilityDeposit: this._readable.getStabilityDeposit(userAddress, { blockTag }),
+            bammDeposit: this._readable.getBammDeposit(userAddress, { blockTag })
           }
         : {
             accountBalance: Decimal.ZERO,
@@ -136,6 +138,11 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
               "nonExistent"
             ),
             stabilityDeposit: new StabilityDeposit(
+              Decimal.ZERO,
+              Decimal.ZERO,
+              Decimal.ZERO
+            ),
+            bammDeposit: new BammDeposit(
               Decimal.ZERO,
               Decimal.ZERO,
               Decimal.ZERO,

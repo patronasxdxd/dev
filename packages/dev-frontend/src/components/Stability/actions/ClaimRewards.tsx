@@ -20,7 +20,7 @@ export const ClaimRewards = ({ version, collateral, disabled, children }: ClaimR
 
   const [sendTransaction] = useTransactionFunction(
     "stability-deposit",
-    send.withdrawGainsFromStabilityPool.bind(send),
+    send.withdrawGainsFromBammPool.bind(send),
     version,
     collateral
   );

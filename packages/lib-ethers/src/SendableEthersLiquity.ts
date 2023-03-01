@@ -5,6 +5,7 @@ import {
   RedemptionDetails,
   SendableLiquity,
   StabilityDepositChangeDetails,
+  BammDepositChangeDetails,
   StabilityPoolGainsWithdrawalDetails,
   TroveAdjustmentDetails,
   TroveAdjustmentParams,
@@ -129,6 +130,33 @@ export class SendableEthersLiquity
       .then(sendTransaction);
   }
 
+  /** {@inheritDoc @liquity/lib-base#SendableLiquity.depositTHUSDInBammPool} */
+  depositTHUSDInBammPool(
+    amount: Decimalish,
+    overrides?: EthersTransactionOverrides
+  ): Promise<SentEthersLiquityTransaction<BammDepositChangeDetails>> {
+    return this._populate
+      .depositTHUSDInBammPool(amount, overrides)
+      .then(sendTransaction);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#SendableLiquity.withdrawTHUSDFromBammPool} */
+  withdrawTHUSDFromBammPool(
+    amount: Decimalish,
+    overrides?: EthersTransactionOverrides
+  ): Promise<SentEthersLiquityTransaction<BammDepositChangeDetails>> {
+    return this._populate
+      .withdrawTHUSDFromBammPool(amount, overrides)
+      .then(sendTransaction);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#SendableLiquity.withdrawGainsFromBammPool} */
+  withdrawGainsFromBammPool(
+    overrides?: EthersTransactionOverrides
+  ): Promise<SentEthersLiquityTransaction<StabilityPoolGainsWithdrawalDetails>> {
+    return this._populate.withdrawGainsFromBammPool(overrides).then(sendTransaction);
+  }
+
   /** {@inheritDoc @liquity/lib-base#SendableLiquity.depositTHUSDInStabilityPool} */
   depositTHUSDInStabilityPool(
     amount: Decimalish,
@@ -166,6 +194,13 @@ export class SendableEthersLiquity
     overrides?: EthersTransactionOverrides
   ): Promise<SentEthersLiquityTransaction<CollateralGainTransferDetails>> {
     return this._populate.transferCollateralGainToTrove(overrides).then(sendTransaction);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#SendableLiquity.transferBammCollateralGainToTrove} */
+  transferBammCollateralGainToTrove(
+    overrides?: EthersTransactionOverrides
+  ): Promise<SentEthersLiquityTransaction<CollateralGainTransferDetails>> {
+    return this._populate.transferBammCollateralGainToTrove(overrides).then(sendTransaction);
   }
 
   /** {@inheritDoc @liquity/lib-base#SendableLiquity.sendTHUSD} */

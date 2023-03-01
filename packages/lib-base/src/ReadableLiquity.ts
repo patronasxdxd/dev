@@ -1,6 +1,7 @@
 import { Decimal, Decimalish } from "./Decimal";
 import { Trove, TroveWithPendingRedistribution, UserTrove } from "./Trove";
 import { StabilityDeposit } from "./StabilityDeposit";
+import { BammDeposit } from "./BammDeposit";
 import { Fees } from "./Fees";
 
 
@@ -97,6 +98,13 @@ export interface ReadableLiquity {
   getStabilityDeposit(address?: string): Promise<StabilityDeposit>;
 
   /**
+   * Get the current state of a Bamm Deposit.
+   *
+   * @param address - Address that owns the Bamm Deposit.
+   */
+  getBammDeposit(address?: string): Promise<BammDeposit>;
+
+  /**
    * Get the total amount of thUSD currently deposited in the Stability Pool.
    */
   getTHUSDInStabilityPool(): Promise<Decimal>;
@@ -125,7 +133,7 @@ export interface ReadableLiquity {
    *
    * @param withdrawAmount - withdraw amount.
    */
-  getWitdrawsSpShare(withdrawAmount: Decimalish): Promise<string>;
+  getWithdrawsSpShare(withdrawAmount: Decimalish): Promise<string>;
 
   
   /**

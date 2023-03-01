@@ -11,7 +11,7 @@ import { useMyTransactionState } from "../Transaction";
 import {
   Decimal,
   Decimalish,
-  StabilityDeposit,
+  BammDeposit,
   LiquityStoreState as ThresholdStoreState,
   Difference
 } from "@liquity/lib-base";
@@ -25,10 +25,10 @@ import { LoadingOverlay } from "../LoadingOverlay";
 import { InfoIcon } from "../InfoIcon";
 import { checkTransactionCollateral } from "../../utils/checkTransactionCollateral";
 
-const select = ({ thusdBalance, thusdInStabilityPool, stabilityDeposit, symbol }: ThresholdStoreState) => ({
+const select = ({ thusdBalance, thusdInStabilityPool, bammDeposit, symbol }: ThresholdStoreState) => ({
   thusdBalance,
   thusdInStabilityPool,
-  stabilityDeposit,
+  bammDeposit,
   symbol
 });
 
@@ -36,7 +36,7 @@ type StabilityDepositEditorProps = {
   version: string;
   collateral: string;
   isMintList: boolean;
-  originalDeposit: StabilityDeposit;
+  originalDeposit: BammDeposit;
   editedUSD: Decimal;
   changePending: boolean;
   dispatch: (action: { type: "setDeposit"; newValue: Decimalish } | { type: "revert" }) => void;
@@ -60,7 +60,7 @@ export const StabilityDepositEditor = ({
   const store = thresholdStore?.store!;
   const thusdBalance = store.thusdBalance;
   const thusdInStabilityPool = store.thusdInStabilityPool;
-  const stabilityDeposit = store.stabilityDeposit;
+  const bammDeposit = store.bammDeposit;
   const collateralSymbol = store.symbol;
 
   const editingState = useState<string>();
@@ -69,34 +69,34 @@ export const StabilityDepositEditor = ({
     return store.version === version && store.collateral === collateral;
   });
 
-  const maxAmount = stabilityDeposit.currentUSD.add(thusdBalance);
+  const maxAmount = bammDeposit.currentUSD.add(thusdBalance);
   const maxedOut = editedUSD.eq(maxAmount);
 
   const originalPoolShare = originalDeposit.currentTHUSD.mulDiv(100, thusdInStabilityPool);
 
-  const { bammPoolShare } = stabilityDeposit;
+  const { bammPoolShare } = bammDeposit;
 
-  const userTotalUsdInBamm = stabilityDeposit.currentUSD
+  const userTotalUsdInBamm = bammDeposit.currentUSD
   const totalUsdInBamm = userTotalUsdInBamm.mulDiv(100, bammPoolShare);
-  const editedUserUsd = userTotalUsdInBamm.sub(stabilityDeposit.currentUSD).add(editedUSD);
-  const editedTotalUsdInBamm = totalUsdInBamm.infinite ? Decimal.from(0) : totalUsdInBamm.sub(stabilityDeposit.currentUSD).add(editedUSD);
+  const editedUserUsd = userTotalUsdInBamm.sub(bammDeposit.currentUSD).add(editedUSD);
+  const editedTotalUsdInBamm = totalUsdInBamm.infinite ? Decimal.from(0) : totalUsdInBamm.sub(bammDeposit.currentUSD).add(editedUSD);
   const editedBammPoolShare = editedTotalUsdInBamm.nonZero ? editedUserUsd.mulDiv(100, editedTotalUsdInBamm) : Decimal.from(0)
 
   /* USD balance
   ====================================================================*/
-  const usdDiff = Difference.between(editedUSD, stabilityDeposit.currentUSD)
+  const usdDiff = Difference.between(editedUSD, bammDeposit.currentUSD)
 
   const bammPoolShareChange =
-    stabilityDeposit.currentUSD.nonZero &&
+  bammDeposit.currentUSD.nonZero &&
     Difference.between(editedBammPoolShare, bammPoolShare).nonZero;
 
   let newTotalThusd, newTotalCollateral;
   if(bammPoolShareChange && (!bammPoolShareChange?.nonZero || bammPoolShareChange?.positive)){
-    newTotalThusd = stabilityDeposit.totalThusdInBamm.add(Decimal.from(usdDiff.absoluteValue||0));
-    newTotalCollateral = stabilityDeposit.totalCollateralInBamm;
+    newTotalThusd = bammDeposit.totalThusdInBamm.add(Decimal.from(usdDiff.absoluteValue||0));
+    newTotalCollateral = bammDeposit.totalCollateralInBamm;
   } else {
-    newTotalThusd = stabilityDeposit.totalThusdInBamm.mul((editedTotalUsdInBamm.div(totalUsdInBamm)))
-    newTotalCollateral = stabilityDeposit.totalCollateralInBamm.mul((editedTotalUsdInBamm.div(totalUsdInBamm)))
+    newTotalThusd = bammDeposit.totalThusdInBamm.mul((editedTotalUsdInBamm.div(totalUsdInBamm)))
+    newTotalCollateral = bammDeposit.totalCollateralInBamm.mul((editedTotalUsdInBamm.div(totalUsdInBamm)))
   }
 
   const allowanceTxState = useMyTransactionState("bamm-unlock");
@@ -113,12 +113,12 @@ export const StabilityDepositEditor = ({
   /* Collateral balance
   ====================================================================*/
   const newCollateralBalance = editedBammPoolShare.mul(newTotalCollateral).div(100)
-  const collateralDiff = Difference.between(newCollateralBalance, stabilityDeposit.collateralGain).nonZero
+  const collateralDiff = Difference.between(newCollateralBalance, bammDeposit.collateralGain).nonZero
 
   /* THUSD balance
   ====================================================================*/
   const newThusdBalance = editedBammPoolShare.mul(newTotalThusd).div(100)
-  const thusdDiff = Difference.between(newThusdBalance, stabilityDeposit.currentTHUSD).nonZeroish(15)
+  const thusdDiff = Difference.between(newThusdBalance, bammDeposit.currentTHUSD).nonZeroish(15)
   
   const [, description] = validateStabilityDepositChange(
     version,
@@ -136,15 +136,15 @@ export const StabilityDepositEditor = ({
   ====================================================================*/
   const thusdInStabilityPoolAfterChange = thusdInStabilityPool
     .add(newTotalThusd)
-    .sub(stabilityDeposit.totalThusdInBamm);
+    .sub(bammDeposit.totalThusdInBamm);
 
   const newPoolShare = (newTotalThusd.mulDiv(editedBammPoolShare, 100)).mulDiv(100, thusdInStabilityPoolAfterChange);
   const poolShareChange =
     originalDeposit.currentTHUSD.nonZero &&
     Difference.between(newPoolShare, originalPoolShare).nonZero;
 
-  const collateralDiffInUsd = stabilityDeposit.currentUSD.sub(stabilityDeposit.currentTHUSD)
-  const collateralIsImportant = (collateralDiffInUsd.div(stabilityDeposit.currentUSD)).gt(1/1000)
+  const collateralDiffInUsd = bammDeposit.currentUSD.sub(bammDeposit.currentTHUSD)
+  const collateralIsImportant = (collateralDiffInUsd.div(bammDeposit.currentUSD)).gt(1/1000)
 
   const showOverlay = changePending || waitingForTransaction
   return (

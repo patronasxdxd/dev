@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useThresholdSelector } from "@liquity/lib-react";
-import { LiquityStoreState as ThresholdStoreState, StabilityDeposit } from "@liquity/lib-base";
+import { LiquityStoreState as ThresholdStoreState, BammDeposit } from "@liquity/lib-base";
 import { StabilityViewContext } from "./StabilityViewContext";
 import type { StabilityView, StabilityEvent } from "./types";
 
@@ -34,8 +34,8 @@ const transition = (view: StabilityView, event: StabilityEvent): StabilityView =
   return nextView;
 };
 
-const getInitialView = (stabilityDeposit: StabilityDeposit): StabilityView => {
-  return stabilityDeposit.isEmpty ? "NONE" : "ACTIVE";
+const getInitialView = (bammDeposit: BammDeposit): StabilityView => {
+  return bammDeposit.isEmpty ? "NONE" : "ACTIVE";
 };
 
 type StabilityViewProviderProps = {
@@ -49,7 +49,7 @@ export type StabilityStatus = {
   initialView: StabilityView;
 };
 
-const select = ({ stabilityDeposit }: ThresholdStoreState): StabilityDeposit => stabilityDeposit;
+const select = ({ bammDeposit }: ThresholdStoreState): BammDeposit => bammDeposit;
 
 export const StabilityViewProvider = (props: StabilityViewProviderProps): JSX.Element => {
   const { children } = props;
@@ -65,14 +65,14 @@ export const StabilityViewProvider = (props: StabilityViewProviderProps): JSX.El
 
     for (const thresholdSelectorStore of thresholdSelectorStores) {
       const store = thresholdSelectorStore?.store!;
-      const stabilityDeposit = store;
+      const bammDeposit = store;
 
       stabilityInitialStatus = [
         ...stabilityInitialStatus, 
         {
           version: thresholdSelectorStore.version,
           collateral: thresholdSelectorStore.collateral,
-          initialView: getInitialView(stabilityDeposit)
+          initialView: getInitialView(bammDeposit)
         }
       ]
     }

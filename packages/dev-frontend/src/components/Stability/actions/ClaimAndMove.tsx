@@ -21,7 +21,7 @@ export const ClaimAndMove= ({ version, collateral, disabled, children }: ClaimAn
 
   const [sendTransaction] = useTransactionFunction(
     "stability-deposit",
-    send.transferCollateralGainToTrove.bind(send),
+    send.transferBammCollateralGainToTrove.bind(send),
     version,
     collateral
   );

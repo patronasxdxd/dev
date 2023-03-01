@@ -15,8 +15,8 @@ import { useStabilityView } from "./context/StabilityViewContext";
 import { InfoIcon } from "../InfoIcon";
 import { checkTransactionCollateral } from "../../utils/checkTransactionCollateral";
 
-const selector = ({ stabilityDeposit, trove, symbol, isStabilityPools }: ThresholdStoreState) => ({
-  stabilityDeposit,
+const selector = ({ bammDeposit, trove, symbol, isStabilityPools }: ThresholdStoreState) => ({
+  bammDeposit,
   trove,
   symbol,
   isStabilityPools
@@ -36,17 +36,17 @@ export const ActiveDeposit = (props: ActiveDepositProps): JSX.Element => {
     return store.version === version && store.collateral === collateral;
   });
   const store = thresholdStore?.store!;
-  const stabilityDeposit = store.stabilityDeposit;
+  const bammDeposit = store.bammDeposit;
   const collateralSymbol = store.symbol;
   const isStabilityPools = store.isStabilityPools;
 
-  const {poolShare, bammPoolShare} = stabilityDeposit
+  const {poolShare, bammPoolShare} = bammDeposit
 
   const handleAdjustDeposit = useCallback(() => {
     dispatchEvent("ADJUST_DEPOSIT_PRESSED", version, collateral);
   }, [version, collateral, dispatchEvent]);
 
-  const hasGain = !stabilityDeposit.collateralGain.isZero;
+  const hasGain = !bammDeposit.collateralGain.isZero;
 
   const transactionId = "stability-deposit";
   const transactionState = useMyTransactionState(transactionId);
@@ -66,8 +66,8 @@ export const ActiveDeposit = (props: ActiveDepositProps): JSX.Element => {
     }
   }, [version, collateral, transactionState.type, dispatchEvent]);
 
-  const collateralDiffInUsd = stabilityDeposit.currentUSD.sub(stabilityDeposit.currentTHUSD)
-  const collateralIsImportant = (collateralDiffInUsd.div(stabilityDeposit.currentUSD)).gt(1/1000)
+  const collateralDiffInUsd = bammDeposit.currentUSD.sub(bammDeposit.currentTHUSD)
+  const collateralIsImportant = (collateralDiffInUsd.div(bammDeposit.currentUSD)).gt(1/1000)
 
   return (
     <Card variant="mainCards">
@@ -97,21 +97,21 @@ export const ActiveDeposit = (props: ActiveDepositProps): JSX.Element => {
             <DisabledEditableRow
               label="Deposit"
               inputId="deposit-lusd"
-              amount={stabilityDeposit.currentUSD.prettify()}
+              amount={bammDeposit.currentUSD.prettify()}
               unit={COIN}
             />
             <Flex sx={{ justifyContent: 'space-between', flexWrap: "wrap" }}>
               <StaticRow
                 label="thUSD balance"
                 inputId="deposit-gain"
-                amount={stabilityDeposit.currentTHUSD.prettify(2)}
+                amount={bammDeposit.currentTHUSD.prettify(2)}
                 unit={COIN}
               />
               {collateralIsImportant &&
                 <StaticRow
                   label={`${collateralSymbol} balance`}
                   inputId="deposit-gain"
-                  amount={stabilityDeposit.collateralGain.prettify(4)}
+                  amount={bammDeposit.collateralGain.prettify(4)}
                   unit={collateralSymbol}
                   infoIcon={
                     <InfoIcon
