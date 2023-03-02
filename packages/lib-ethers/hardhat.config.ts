@@ -292,8 +292,14 @@ task("deploy", "Deploys the contracts to the network")
           await tx.wait();
         }
       }
-
       const deploymentChannelPath = path.posix.join("deployments", channel);
+
+      fs.mkdirSync(path.join("deployments", channel, collateralSymbol, contractsVersion), { recursive: true });
+      fs.writeFileSync(
+        path.join("deployments", channel, collateralSymbol, contractsVersion, `${env.network.name}.json`),
+        JSON.stringify(deployment, undefined, 2),
+        { flag: 'w+' } // add the flag option to overwrite the file if it exists
+      );
 
       // Call getFolderInfo on a specific folder and log the result
       getFolderInfo(deploymentChannelPath)
@@ -306,14 +312,6 @@ task("deploy", "Deploys the contracts to the network")
           );
         })
         .catch((err) => console.error(err));
-
-      fs.mkdirSync(path.join("deployments", channel, collateralSymbol, contractsVersion), { recursive: true });
-
-      fs.writeFileSync(
-        path.join("deployments", channel, collateralSymbol, contractsVersion, `${env.network.name}.json`),
-        JSON.stringify(deployment, undefined, 2),
-        { flag: 'w+' } // add the flag option to overwrite the file if it exists
-      );
 
       console.log();
       console.log(deployment);
