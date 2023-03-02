@@ -20,6 +20,7 @@ import { _connectToContracts, _LiquityDeploymentJSON, _priceFeedIsTestnet } from
 
 import accounts from "./accounts.json";
 import { getFolderInfo } from "./utils/fsScripts";
+import { mkdir, writeFile } from "fs/promises";
 
 interface IOracles {
   chainlink: string,
@@ -294,24 +295,25 @@ task("deploy", "Deploys the contracts to the network")
       }
       const deploymentChannelPath = path.posix.join("deployments", channel);
 
-      fs.mkdirSync(path.join("deployments", channel, collateralSymbol, contractsVersion), { recursive: true });
-      fs.writeFileSync(
-        path.join("deployments", channel, collateralSymbol, contractsVersion, `${env.network.name}.json`),
-        JSON.stringify(deployment, undefined, 2),
-        { flag: 'w+' } // add the flag option to overwrite the file if it exists
-      );
-
-      // Call getFolderInfo on a specific folder and log the result
-      getFolderInfo(deploymentChannelPath)
-        .then((folderInfo) => {
-          fs.mkdirSync(path.join("deployments", "collaterals"), { recursive: true });
-          fs.writeFileSync(
-            path.join("deployments", "collaterals", "collaterals.json"),
-            JSON.stringify(folderInfo, null, 2),
-            { flag: 'w+' } // add the flag option to overwrite the file if it exists
-          );
-        })
-        .catch((err) => console.error(err));
+      try {
+        await mkdir(path.join("deployments", channel, collateralSymbol, contractsVersion), { recursive: true });
+        await writeFile(
+          path.join("deployments", channel, collateralSymbol, contractsVersion, `${env.network.name}.json`),
+          JSON.stringify(deployment, undefined, 2),
+          { flag: 'w+' } // add the flag option to overwrite the file if it exists
+        );
+      
+        const folderInfo = await getFolderInfo(deploymentChannelPath);
+      
+        await mkdir(path.join("deployments", "collaterals"), { recursive: true });
+        await writeFile(
+          path.join("deployments", "collaterals", "collaterals.json"),
+          JSON.stringify(folderInfo, null, 2),
+          { flag: 'w+' } // add the flag option to overwrite the file if it exists
+        );
+      } catch (err) {
+        console.error(err);
+      }
 
       console.log();
       console.log(deployment);
