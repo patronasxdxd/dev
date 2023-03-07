@@ -2,8 +2,8 @@ import { BigNumber } from "@ethersproject/bignumber";
 
 import { Decimal } from "@liquity/lib-base";
 
-export const DEPLOYMENT_VERSION_FOR_TESTING = "v1"
-export const DEPLOYMENT_COLLATERAL_FOR_TESTING = "tbtc"
+export const DEFAULT_COLLATERAL_FOR_TESTING = process.env.DEFAULT_COLLATERAL_SYMBOL || "eth";
+export const DEFAULT_VERSION_FOR_TESTING = process.env.DEFAULT_VERSION || "v1";
 
 export const numberify = (bigNumber: BigNumber): number => bigNumber.toNumber();
 

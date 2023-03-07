@@ -21,6 +21,7 @@ import { _connectToContracts, _LiquityDeploymentJSON, _priceFeedIsTestnet } from
 import accounts from "./accounts.json";
 import { getFolderInfo } from "./utils/fsScripts";
 import { mkdir, writeFile } from "fs/promises";
+import { ZERO_ADDRESS } from "./utils/constants";
 
 interface IOracles {
   chainlink: string,
@@ -207,18 +208,18 @@ type DeployParams = {
   useRealPriceFeed?: boolean;
 };
 
-const defaultChannel = process.env.CHANNEL || "default";
-const defaultCollateralSymbol = process.env.COLLATERAL_SYMBOL || "tst";
-const defaultCollateralAddress = process.env.COLLATERAL_ADDRESS || "";
-const defaultRelease = process.env.RELEASE || "v1";
-const defaultToken = process.env.TOKEN_ADDRESS || "";
-const defaultDelay = process.env.DELAY || 90 * 24 * 60 * 60;
+const defaultChannel = process.env.DEFAULT_CHANNEL || "default";
+const defaultCollateralSymbol = process.env.DEFAULT_COLLATERAL_SYMBOL || "eth";
+const defaultCollateralAddress = process.env.DEFAULT_COLLATERAL_ADDRESS || ZERO_ADDRESS;
+const defaultVersion = process.env.DEFAULT_VERSION || "v1";
+const defaultThusdAddress = process.env.DEFAULT_THUSD_ADDRESS || "";
+const defaultDelay = process.env.DEFAULT_DELAY || 90 * 24 * 60 * 60;
 
 task("deploy", "Deploys the contracts to the network")
   .addOptionalParam("channel", "Deployment channel to deploy into", defaultChannel, types.string)
   .addOptionalParam("collateralSymbol", "Asset symbol to use as collateral", defaultCollateralSymbol, types.string)
   .addOptionalParam("collateralAddress", "Asset address to use as collateral", defaultCollateralAddress, types.string)
-  .addOptionalParam("contractsVersion", "Version of contracts for collateral type", defaultRelease, types.string)
+  .addOptionalParam("contractsVersion", "Version of contracts for collateral type", defaultVersion, types.string)
   .addOptionalParam("gasPrice", "Price to pay for 1 gas [Gwei]", undefined, types.float)
   .addOptionalParam(
     "useRealPriceFeed",
@@ -235,7 +236,7 @@ task("deploy", "Deploys the contracts to the network")
   .addOptionalParam(
     "stablecoinAddress",
     "Address of existing stablecoin to add the new collateral to",
-    defaultToken,
+    defaultThusdAddress,
     types.string
   )
   .setAction(
