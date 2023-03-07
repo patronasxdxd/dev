@@ -73,16 +73,37 @@ contract('BAMM', async accounts => {
 
         bamm = await BAMM.new(
           chainlink.address, 
-          thusdChainlink.address, 
           stabilityPool.address, 
           thusdToken.address, 
-          400, 
-          feePool, 
           erc20.address,
           {from: bammOwner})
         lens = await BLens.new()
+        await bamm.enableSwap(
+          thusdChainlink.address,
+          400, 
+          feePool,
+          {from: bammOwner}
+        )
 
         await thusdChainlink.setPrice(dec(1,18)) // 1 THUSD = 1 USD
+      })
+
+      it("enableSwap(): reverts when caller is not owner", async () => {
+        try {
+          await bamm.enableSwap(thusdChainlink.address, 400,  feePool, { from: alice })
+        } catch (err) {
+          assert.include(err.message, "revert")
+          assert.include(err.message, "Ownable: caller is not the owner")
+        }
+      })
+
+      it("enableSwap(): reverts when tries to enable second time", async () => {
+        try {
+          await bamm.enableSwap(thusdChainlink.address, 400,  feePool, { from: bammOwner })
+        } catch (err) {
+          assert.include(err.message, "revert")
+          assert.include(err.message, "swap: swap already enabled")
+        }
       })
 
       // --- provideToSP() ---

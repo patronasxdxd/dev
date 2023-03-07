@@ -16,19 +16,19 @@ import "./../Dependencies/SendCollateral.sol";
 contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendCollateral {
 
     AggregatorV3Interface public immutable priceAggregator;
-    AggregatorV3Interface public immutable thusd2UsdPriceAggregator;    
+    AggregatorV3Interface public thusd2UsdPriceAggregator;    
     IERC20 public immutable thusdToken;
     StabilityPool immutable public SP;
     IERC20 public immutable collateralERC20;
 
-    address payable public immutable feePool;
+    address payable public feePool;
     uint256 public constant MAX_FEE = 100; // 1%
     uint256 public fee = 0; // fee in bps
     uint256 public A = 20;
     uint256 public constant MIN_A = 20;
     uint256 public constant MAX_A = 200;    
 
-    uint256 public immutable maxDiscount; // max discount in bips
+    uint256 public maxDiscount; // max discount in bips
 
     uint256 constant public PRECISION = 1e18;
 
@@ -39,17 +39,13 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
 
     constructor(
         address _priceAggregator,
-        address _thusd2UsdPriceAggregator,
         address payable _SP,
         address _thusdToken,
-        uint256 _maxDiscount,
-        address payable _feePool,
         address _collateralERC20
     )
         CropJoinAdapter()
     {
         checkContract(_priceAggregator);
-        checkContract(_thusd2UsdPriceAggregator);
         checkContract(_thusdToken);
         checkContract(_SP);
         if (_collateralERC20 != address(0)) {
@@ -57,10 +53,19 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         }
 
         priceAggregator = AggregatorV3Interface(_priceAggregator);
-        thusd2UsdPriceAggregator = AggregatorV3Interface(_thusd2UsdPriceAggregator);
         thusdToken = IERC20(_thusdToken);
         SP = StabilityPool(_SP);
         collateralERC20 = IERC20(_collateralERC20);
+    }
+
+    function enableSwap(
+        address _thusd2UsdPriceAggregator, 
+        uint256 _maxDiscount,
+        address payable _feePool
+    ) external onlyOwner {
+        require(!isSwapEnabled(), "swap: swap already enabled");
+        checkContract(_thusd2UsdPriceAggregator);
+        thusd2UsdPriceAggregator = AggregatorV3Interface(_thusd2UsdPriceAggregator);
 
         feePool = _feePool;
         maxDiscount = _maxDiscount;
@@ -225,8 +230,13 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         feeTHUSDAmount = addBps(thusdQty, int(fee)) - thusdQty;
     }
 
+    function isSwapEnabled() public view returns (bool) {
+        return address(thusd2UsdPriceAggregator) != address(0);
+    }
+
     // get collateral in return to THUSD
     function swap(uint256 thusdAmount, uint256 minCollateralReturn, address payable dest) public returns(uint) {
+        require(isSwapEnabled(), "swap: swap is not enabled");
         (uint256 collateralAmount, uint256 feeAmount) = getSwapCollateralAmount(thusdAmount);
 
         require(collateralAmount >= minCollateralReturn, "swap: low return");

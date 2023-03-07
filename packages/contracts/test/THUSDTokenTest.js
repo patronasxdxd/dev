@@ -592,9 +592,9 @@ contract('THUSDToken', async accounts => {
           assert.isTrue(await thusdTokenTester.mintList(newBorrowerOperations.address))
           assert.isTrue(await thusdTokenTester.mintList(borrowerOperations.address))
           
-          assert.equal(getEventArgByIndex(tx, "TroveManagerAddressChanged", 0), newTroveManager.address)
-          assert.equal(getEventArgByIndex(tx, "StabilityPoolAddressChanged", 0), newStabilityPool.address)
-          assert.equal(getEventArgByIndex(tx, "BorrowerOperationsAddressChanged", 0), newBorrowerOperations.address)
+          assert.equal(getEventArgByIndex(tx, "TroveManagerAddressAdded", 0), newTroveManager.address)
+          assert.equal(getEventArgByIndex(tx, "StabilityPoolAddressAdded", 0), newStabilityPool.address)
+          assert.equal(getEventArgByIndex(tx, "BorrowerOperationsAddressAdded", 0), newBorrowerOperations.address)
         })
       })
 
