@@ -197,9 +197,10 @@ export const LineChart = (): JSX.Element => {
     ],
   };
   return (
-    <Card variant="layout.columns">
+    <Card variant="layout.columns" sx={{height: "100%"}}>
       <Flex sx={{
         width: "100%",
+        height: "2.5rem",
         gap: 1,
         pb: 3,
         borderBottom: 1, 
@@ -209,40 +210,45 @@ export const LineChart = (): JSX.Element => {
       </Flex>
       <Flex sx={{
         width: "100%",
+        height: "100%",
         flexDirection: "column",
-        pt: "1em",
-        pl: ["1em", 0, 0, "1em"],
-        gap: "1em",
+        justifyContent: "center",
+        alignItems: "center",
+        pl: ["1rem", 0, 0, "1rem"],
+        py: "2rem",
+        gap: "1rem",
       }}>
         <Box style={{
-          height: "18.5em",
-          marginTop: "2.5em",
-          paddingBottom: "2.5em"
+          height: "20em",
+          width: "100%",
+          paddingBottom: "2.5em",
         }}>
-          <Flex sx={{ 
-            position: "absolute", 
-            marginTop: "-1.6em",
-            fontSize: "1.6em", 
-            fontWeight: "bold", 
-            color: "text"
-          }}>
-            {(lastTvl || (isHovered && activeData > 0)) && '$'}
-            {loadedChart && (
-              isHovered 
-              ? activeData 
-              : lastTvl 
-                ? lastTvl.prettify(2) 
-                : '-'
-            )} 
-          </Flex>
-          <Flex sx={{ 
-            fontSize: ".9em",
-            marginBottom: "1.5em",
-            height: "1em",
-          }}>
-            {loadedChart && isHovered && activeLabel}
-          </Flex>
-          <Box sx={{ display: "flex", height: "100%", width: "100%" }} ref={hoverRef}>
+          {loadedChart && <>
+            <Flex sx={{ 
+              position: "absolute", 
+              marginTop: "-1.6rem",
+              fontSize: "1.6rem", 
+              fontWeight: "bold", 
+              color: "text"
+            }}>
+              {(lastTvl || (isHovered && activeData > 0)) && '$'}
+              {loadedChart && (
+                isHovered 
+                ? activeData 
+                : lastTvl 
+                  ? lastTvl.prettify(2) 
+                  : '-'
+              )} 
+            </Flex>
+            <Flex sx={{ 
+              fontSize: ".9em",
+              marginBottom: "1.5rem",
+              height: "1rem",
+            }}>
+              {loadedChart && isHovered && activeLabel}
+            </Flex>
+          </>}
+          <Box sx={{ display: "flex", height: "100%", width: "100%", justifyContent: "center", alignItems: "center"}} ref={hoverRef}>
             {
               !loadedChart 
                 ? <LoadingChart />

@@ -20,6 +20,7 @@ import {
   PopulatedRedemption,
   RedemptionDetails,
   SentLiquityTransaction,
+  BammDepositChangeDetails,
   StabilityDepositChangeDetails,
   StabilityPoolGainsWithdrawalDetails,
   Trove,
@@ -81,6 +82,8 @@ const addGasForBaseRateUpdate = (maxMinutesSinceLastUpdate = 10) => (gas: BigNum
 const addGasForPotentialListTraversal = (gas: BigNumber) => gas.add(80000);
 
 const addGasForIssuance = (gas: BigNumber) => gas.add(50000);
+
+const simpleAddGas = (gas: BigNumber) => gas.add(1000);
 
 // To get the best entropy available, we'd do something like:
 //
@@ -1087,6 +1090,73 @@ export class PopulatableEthersLiquity
     );
   }
 
+  /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.bammUnlock} */
+  async bammUnlock(
+    overrides?: EthersTransactionOverrides
+  ): Promise<PopulatedEthersLiquityTransaction<void>> {
+    const { bamm, thusdToken } = _getContracts(this._readable.connection);
+    const maxAllowance = BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+
+    return this._wrapSimpleTransaction(
+      await thusdToken.estimateAndPopulate.approve(
+        { ...overrides },
+        simpleAddGas,
+        bamm.address,
+        maxAllowance
+      )
+    );
+  }
+
+  /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.depositTHUSDInBammPool} */
+  async depositTHUSDInBammPool(
+    amount: Decimalish,
+    overrides?: EthersTransactionOverrides
+  ): Promise<PopulatedEthersLiquityTransaction<BammDepositChangeDetails>> {
+    const { bamm } = _getContracts(this._readable.connection);
+    const depositTHUSD = Decimal.from(amount);
+
+    return this._wrapStabilityDepositTopup(
+      { depositTHUSD },
+      await bamm.estimateAndPopulate.deposit(
+        { ...overrides },
+        addGasForIssuance,
+        depositTHUSD.hex
+      )
+    );
+  }
+
+  /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.withdrawTHUSDFromBammPool} */
+  async withdrawTHUSDFromBammPool(
+    amount: Decimalish,
+    overrides?: EthersTransactionOverrides
+  ): Promise<PopulatedEthersLiquityTransaction<BammDepositChangeDetails>> {
+    const { bamm } = _getContracts(this._readable.connection);
+
+    const spShareToWithdraw = await this._readable.getWithdrawsSpShare(amount)
+    return this._wrapStabilityDepositWithdrawal(
+      await bamm.estimateAndPopulate.withdraw(
+        { ...overrides },
+        addGasForIssuance,
+        Decimal.from(spShareToWithdraw).hex
+      )
+    );
+  }
+
+  /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.withdrawGainsFromBammPool} */
+  async withdrawGainsFromBammPool(
+    overrides?: EthersTransactionOverrides
+  ): Promise<PopulatedEthersLiquityTransaction<StabilityPoolGainsWithdrawalDetails>> {
+    const { bamm } = _getContracts(this._readable.connection);
+
+    return this._wrapStabilityPoolGainsWithdrawal(
+      await bamm.estimateAndPopulate.withdraw(
+        { ...overrides },
+        addGasForIssuance,
+        Decimal.ZERO.hex
+      )
+    );
+  }
+
   /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.depositTHUSDInStabilityPool} */
   async depositTHUSDInStabilityPool(
     amount: Decimalish,
@@ -1136,7 +1206,7 @@ export class PopulatableEthersLiquity
     );
   }
 
-  /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.transferCollateralGainToTrove} */
+ /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.transferCollateralGainToTrove} */
   async transferCollateralGainToTrove(
     overrides?: EthersTransactionOverrides
   ): Promise<PopulatedEthersLiquityTransaction<CollateralGainTransferDetails>> {
@@ -1149,6 +1219,29 @@ export class PopulatableEthersLiquity
     ]);
 
     const finalTrove = initialTrove.addCollateral(stabilityDeposit.collateralGain);
+
+    return this._wrapCollateralGainTransfer(
+      await stabilityPool.estimateAndPopulate.withdrawCollateralGainToTrove(
+        { ...overrides },
+        compose(addGasForPotentialListTraversal, addGasForIssuance),
+        ...(await this._findHints(finalTrove, address))
+      )
+    );
+  }
+
+  /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.transferBammCollateralGainToTrove} */
+   async transferBammCollateralGainToTrove(
+    overrides?: EthersTransactionOverrides
+  ): Promise<PopulatedEthersLiquityTransaction<CollateralGainTransferDetails>> {
+    const address = _requireAddress(this._readable.connection, overrides);
+    const { stabilityPool } = _getContracts(this._readable.connection);
+
+    const [initialTrove, bammDeposit] = await Promise.all([
+      this._readable.getTrove(address),
+      this._readable.getBammDeposit(address)
+    ]);
+
+    const finalTrove = initialTrove.addCollateral(bammDeposit.collateralGain);
 
     return this._wrapCollateralGainTransfer(
       await stabilityPool.estimateAndPopulate.withdrawCollateralGainToTrove(

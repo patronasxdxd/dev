@@ -18,12 +18,13 @@ import { checkTransactionCollateral } from "../../utils/checkTransactionCollater
 
 const mcrPercent = new Percent(MINIMUM_COLLATERAL_RATIO).toString(0);
 
-const select = ({ price, fees, total, thusdBalance, symbol }: ThresholdStoreState) => ({
+const select = ({ price, fees, total, thusdBalance, symbol, isTroveManager }: ThresholdStoreState) => ({
   price,
   fees,
   total,
   thusdBalance,
-  symbol
+  symbol,
+  isTroveManager
 });
 
 type RedemptionManagerProps = {
@@ -39,11 +40,7 @@ export const RedemptionManager = ({ version, collateral }: RedemptionManagerProp
     return store.version === version && store.collateral === collateral;
   });
   const store = thresholdStore?.store!;
-  const price = store.price;
-  const fees = store.fees;
-  const total = store.total;
-  const thusdBalance = store.thusdBalance;
-  const symbol = store.symbol;
+  const { price, fees, total, thusdBalance, symbol, isTroveManager } = store
 
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [thusdAmount, setTHUSDAmount] = useState(Decimal.ZERO);
@@ -68,8 +65,6 @@ export const RedemptionManager = ({ version, collateral }: RedemptionManagerProp
     if (!isMounted) {
       return
     }
-    console.log(`isCollateralChecked? `, isCollateralChecked)
-    console.log(`myTransactionState? `, myTransactionState)
     if (
       isCollateralChecked &&
       (myTransactionState.type === "waitingForApproval" ||
@@ -189,7 +184,7 @@ export const RedemptionManager = ({ version, collateral }: RedemptionManagerProp
               version={version}
               collateral={collateral}
               transactionId={transactionId}
-              disabled={!dirty || !canRedeem}
+              disabled={!dirty || !canRedeem || !isTroveManager}
               thusdAmount={thusdAmount}
               maxRedemptionRate={maxRedemptionRate}
             />
@@ -204,7 +199,7 @@ export const RedemptionManager = ({ version, collateral }: RedemptionManagerProp
             mt: 3
           }}>
             <Flex>
-              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+              <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
               in the documentation
             </Flex>
             <Flex>Deployment version: {version}</Flex>

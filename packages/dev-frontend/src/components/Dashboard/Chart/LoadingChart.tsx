@@ -4,7 +4,7 @@ export const LoadingChart = (): JSX.Element => {
   const [colorMode] = useColorMode();
 
   return (
-    <Flex sx={{ width: "100%", transform: "scaleX(-1)" }}>
+    <Flex sx={{ width: "100%", transform: "scaleX(-1)", height: "20rem" }}>
       <svg width='100%' preserveAspectRatio='xMinYMin slice' viewBox='0 0 766 300'>
         <defs>
           <linearGradient id='linear-gradient'>

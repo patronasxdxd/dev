@@ -38,8 +38,10 @@ export const SideNav = (): JSX.Element => {
         <GenericIcon imgSrc="./threshold-usd-icon.svg" height={logoHeight} p={2} />
         <Box as="nav" sx={{ m: 3, mt: 1, p: 0 }} onClick={() => setIsVisible(false)}>
           <Link to="/">Dashboard</Link>
-          <Link to="/risky-vault">Risky Vaults</Link>
+          <Link to="/borrow">Borrow</Link>
+          <Link to="/earn">Earn</Link>
           <Link to="/redemption">Redemption</Link>
+          <Link to="/risky-vault">Risky Vaults</Link>
         </Box>
       </Flex>
     </Container>

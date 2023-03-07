@@ -29,10 +29,10 @@ export const Nav = (): JSX.Element => {
           </Flex>
           Borrow
         </Link>
-        {/*<Link to="/earn">
+        <Link to="/earn">
           <Icon name="chart-line" />
           Earn
-        </Link>*/}
+        </Link>
         <Link to="/redemption">
           <Icon name="check" />
           Redeem

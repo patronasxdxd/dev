@@ -18,7 +18,8 @@ type LiquidatedVaultProps = {
   isMintList: boolean;
 }
 
-export const LiquidatedVault = ({ version, collateral, isMintList }: LiquidatedVaultProps): JSX.Element => {
+export const LiquidatedVault = (props: LiquidatedVaultProps): JSX.Element => {
+  const { version, collateral, isMintList } = props;
   const thresholdSelectorStores = useThresholdSelector(select);
   const thresholdStore = thresholdSelectorStores.find((store) => {
     return store.version === version && store.collateral === collateral;
@@ -81,7 +82,7 @@ export const LiquidatedVault = ({ version, collateral, isMintList }: LiquidatedV
             pt: "1em"
           }}>
             <Flex>
-              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+              <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
               in the documentation
             </Flex>
             <Flex>Deployment version: {version}</Flex>

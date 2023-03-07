@@ -2,6 +2,7 @@ export * from "./src/constants";
 export * from "./src/Decimal";
 export * from "./src/Trove";
 export * from "./src/StabilityDeposit";
+export * from "./src/BammDeposit";
 export * from "./src/Fees";
 export * from "./src/ReadableLiquity";
 export * from "./src/ObservableLiquity";

@@ -20,6 +20,7 @@ import { _connectToContracts, _LiquityDeploymentJSON, _priceFeedIsTestnet } from
 
 import accounts from "./accounts.json";
 import { getFolderInfo } from "./utils/fsScripts";
+import { mkdir, writeFile } from "fs/promises";
 
 interface IOracles {
   chainlink: string,
@@ -66,7 +67,7 @@ const generateRandomAccounts = (numberOfAccounts: number) => {
   return accounts;
 };
 
-const deployerAccount = "a9549f1d4db37b976cbb5950a6e7ef9116741b3c2b60ba4480f26523e7f9f2c5";
+const deployerAccount = process.env.DEPLOYER_PRIVATE_KEY || Wallet.createRandom().privateKey;
 const devChainRichAccount = "0x4d5db4107d237df6a3d58ee5f70ae63d73d7658d4026f2eefd2f204c81682cb7";
 
 const infuraApiKey = "ad9cef41c9c844a7b54d10be24d416e5";
@@ -292,26 +293,27 @@ task("deploy", "Deploys the contracts to the network")
           await tx.wait();
         }
       }
+      const deploymentChannelPath = path.posix.join("deployments", channel);
 
-      const deploymentChannelPath = path.posix.join("deployments", channel)
-
-      // Call getFolderInfo on a specific folder and log the result
-      getFolderInfo(deploymentChannelPath)
-        .then((folderInfo) => {
-          fs.mkdirSync(path.join("deployments", "collaterals"), { recursive: true });
-          fs.writeFileSync(
-            path.join("deployments", "collaterals", "collaterals.json"),
-            JSON.stringify(folderInfo, null, 2)
-          );
-        })
-        .catch((err) => console.error(err));
-
-      fs.mkdirSync(path.join("deployments", channel, collateralSymbol, contractsVersion), { recursive: true });
-
-      fs.writeFileSync(
-        path.join("deployments", channel, collateralSymbol, contractsVersion, `${env.network.name}.json`),
-        JSON.stringify(deployment, undefined, 2)
-      );
+      try {
+        await mkdir(path.join("deployments", channel, collateralSymbol, contractsVersion), { recursive: true });
+        await writeFile(
+          path.join("deployments", channel, collateralSymbol, contractsVersion, `${env.network.name}.json`),
+          JSON.stringify(deployment, undefined, 2),
+          { flag: 'w+' } // add the flag option to overwrite the file if it exists
+        );
+      
+        const folderInfo = await getFolderInfo(deploymentChannelPath);
+      
+        await mkdir(path.join("deployments", "collaterals"), { recursive: true });
+        await writeFile(
+          path.join("deployments", "collaterals", "collaterals.json"),
+          JSON.stringify(folderInfo, null, 2),
+          { flag: 'w+' } // add the flag option to overwrite the file if it exists
+        );
+      } catch (err) {
+        console.error(err);
+      }
 
       console.log();
       console.log(deployment);

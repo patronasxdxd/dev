@@ -2,10 +2,12 @@ import { BlockTag } from "@ethersproject/abstract-provider";
 
 import {
   Decimal,
+  Decimalish,
   Fees,
   LiquityStore,
   ReadableLiquity,
   StabilityDeposit,
+  BammDeposit,
   Trove,
   TroveListingParams,
   TroveWithPendingRedistribution,
@@ -35,6 +37,7 @@ import {
 } from "./EthersLiquityConnection";
 
 import { BlockPolledLiquityStore } from "./BlockPolledLiquityStore";
+import { BigNumber } from "ethers";
 
 // TODO: these are constant in the contracts, so it doesn't make sense to make a call for them,
 // but to avoid having to update them here when we change them in the contracts, we could read
@@ -256,6 +259,30 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return activePool.add(defaultPool);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getWithdrawsSpShare} */
+  async getWithdrawsSpShare(
+    withdrawAmount: Decimalish,
+    overrides?: EthersCallOverrides
+  ): Promise<string> {
+    const address = _requireAddress(this.connection);
+    const { bamm } = _getContracts(this.connection);
+
+    const [
+      stake, // users share in the bamm
+      {currentUSD}
+    ] = await Promise.all([
+      bamm.stake(address),
+      this.getBammDeposit(address, overrides)
+    ]);
+
+    // amount * stake / currentUSD
+    const spShare = currentUSD 
+      ? decimalify(stake).mul(Decimal.from(withdrawAmount)).div(currentUSD).toString() 
+      : Decimal.from(0).toString() 
+
+    return spShare
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getSymbol} */
   getSymbol(overrides?: EthersCallOverrides): Promise<string> {
     const { erc20 } = _getContracts(this.connection);
@@ -268,6 +295,74 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     const { borrowerOperations } = _getContracts(this.connection);
 
     return borrowerOperations.collateralAddress({ ...overrides });
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getBammDeposit} */
+  async getBammDeposit(
+    address?: string,
+    overrides?: EthersCallOverrides
+  ): Promise<BammDeposit> {
+    const _1e18 = BigNumber.from(10).pow(18)
+
+    address ??= _requireAddress(this.connection);
+    const { stabilityPool, bamm, priceFeed } = _getContracts(this.connection);
+
+    const [
+      initialValue,
+      currentBammTHUSD,
+      bammPendingCollateral,
+      total,
+      stake,
+      totalThusdInSp,
+    ] = await Promise.all([
+      stabilityPool.deposits(address, { ...overrides }),
+      stabilityPool.getCompoundedTHUSDDeposit(bamm.address, { ...overrides }),
+      stabilityPool.getDepositorCollateralGain(bamm.address, { ...overrides }),
+      bamm.total({ ...overrides }),
+      bamm.stake(address, { ...overrides}),
+      stabilityPool.getTotalTHUSDDeposits({ ...overrides }),
+    ]);
+    const isTotalGreaterThanZero = total.gt(BigNumber.from(0))
+    const isTotalThusdInSpGreaterThanZero = totalThusdInSp.gt(BigNumber.from(0))
+    
+    // stake times thUSD divided by total
+    const currentTHUSD = isTotalGreaterThanZero 
+      ? stake.mul(currentBammTHUSD).div(total) 
+      : BigNumber.from(0)
+
+    // bammDeposit.currentLUSD.mulDiv(100, thusdInBammPool);
+    const bammShare = isTotalThusdInSpGreaterThanZero 
+      ? Decimal.fromBigNumber(currentBammTHUSD).mul(100).div(Decimal.fromBigNumber(totalThusdInSp)) 
+      : Decimal.from(0)
+
+    // bamm share in SP times stake div by total
+    const poolShare = isTotalGreaterThanZero 
+      ? bammShare.mul(Decimal.fromBigNumber(stake)).div(Decimal.fromBigNumber(total)) 
+      : Decimal.from(0)
+
+    const bammCollateralBalance = (await bamm.provider.getBalance(bamm.address)).add(bammPendingCollateral)
+    const currentCollateral = isTotalGreaterThanZero 
+      ? stake.mul(bammCollateralBalance).div(total) 
+      : BigNumber.from(0)
+    
+    const price = await priceFeed.callStatic.fetchPrice({ ...overrides })
+
+    const currentUSD = currentTHUSD.add(currentCollateral.mul(price).div(_1e18))
+
+    const bammPoolShare = isTotalGreaterThanZero 
+      ? Decimal.fromBigNumber(stake).mulDiv(100, Decimal.fromBigNumber(total)) 
+      : Decimal.from(0)
+    
+    return new BammDeposit(
+      bammPoolShare,
+      poolShare,
+      decimalify(initialValue),
+      Decimal.fromBigNumber(currentUSD),
+      Decimal.fromBigNumber(currentTHUSD),
+      Decimal.fromBigNumber(currentCollateral),
+      Decimal.fromBigNumber(bammCollateralBalance),
+      Decimal.fromBigNumber(currentBammTHUSD)
+    );
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getStabilityDeposit} */
@@ -332,6 +427,27 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     const { erc20, borrowerOperations } = _getContracts(this.connection);
 
     return erc20.allowance(address, borrowerOperations.address, { ...overrides }).then(decimalify);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.isStabilityPools} */
+  isStabilityPools(overrides?: EthersCallOverrides): Promise<boolean> {
+    const { stabilityPool, thusdToken } = _getContracts(this.connection);
+
+    return thusdToken.isStabilityPools(stabilityPool.address, { ...overrides });
+  }
+  
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.isBorrowerOperations} */
+  isBorrowerOperations(overrides?: EthersCallOverrides): Promise<boolean> {
+    const { borrowerOperations, thusdToken } = _getContracts(this.connection);
+
+    return thusdToken.isBorrowerOperations(borrowerOperations.address, { ...overrides });
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.isTroveManager} */
+  isTroveManager(overrides?: EthersCallOverrides): Promise<boolean> {
+    const { troveManager, thusdToken } = _getContracts(this.connection);
+
+    return thusdToken.isTroveManager(troveManager.address, { ...overrides });
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.checkMintList} */
@@ -431,6 +547,16 @@ export class ReadableEthersLiquity implements ReadableLiquity {
 
     return createFees(blockTimestamp, total.collateralRatioIsBelowCritical(price));
   }
+
+  async getBammAllowance(overrides?: EthersCallOverrides): Promise<boolean> {
+    const { thusdToken, bamm } = _getContracts(this.connection);
+    const address = _requireAddress(this.connection);
+    const reallyLargeAllowance = BigNumber.from("0x8888888888888888888888888888888888888888888888888888888888888888")
+
+    const allowance = await thusdToken.allowance(address, bamm.address, { ...overrides })
+    const bammAllowance = allowance.gt(reallyLargeAllowance)
+    return bammAllowance;
+  }
 }
 
 type Resolved<T> = T extends Promise<infer U> ? U : T;
@@ -529,6 +655,10 @@ class _BlockPolledReadableEthersLiquity
     return this._blockHit(overrides) ? this.store.state.total : this._readable.getTotal(overrides);
   }
 
+  async getWithdrawsSpShare(withdrawAmount: Decimalish, overrides?: EthersCallOverrides): Promise<string> {
+    return this._readable.getWithdrawsSpShare(withdrawAmount, overrides)
+  }
+
   async getSymbol(
     overrides?: EthersCallOverrides
   ): Promise<string> {
@@ -553,6 +683,15 @@ class _BlockPolledReadableEthersLiquity
       ? this.store.state.stabilityDeposit
       : this._readable.getStabilityDeposit(address, overrides);
   }
+
+  async getBammDeposit(
+    address?: string,
+    overrides?: EthersCallOverrides
+  ): Promise<BammDeposit> {
+    return this._userHit(address, overrides)
+      ? this.store.state.bammDeposit
+      : this._readable.getBammDeposit(address, overrides);
+    }
 
   async getTHUSDInStabilityPool(overrides?: EthersCallOverrides): Promise<Decimal> {
     return this._blockHit(overrides)
@@ -582,6 +721,24 @@ class _BlockPolledReadableEthersLiquity
     return this._userHit(address, overrides)
       ? this.store.state.erc20TokenAllowance
       : this._readable.getErc20TokenAllowance(address, overrides);
+  }
+
+  async isStabilityPools(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._blockHit(overrides)
+      ? this.store.state.isStabilityPools
+      : this._readable.isStabilityPools(overrides);
+  }
+
+  async isBorrowerOperations(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._blockHit(overrides)
+      ? this.store.state.isBorrowerOperations
+      : this._readable.isBorrowerOperations(overrides);
+  }
+
+  async isTroveManager(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._blockHit(overrides)
+      ? this.store.state.isTroveManager
+      : this._readable.isTroveManager(overrides);
   }
 
   async checkMintList(overrides?: EthersCallOverrides): Promise<boolean> {
@@ -634,5 +791,11 @@ class _BlockPolledReadableEthersLiquity
 
   _getDefaultPool(): Promise<Trove> {
     throw new Error("Method not implemented.");
+  }
+
+  async getBammAllowance(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._blockHit(overrides)
+      ? this.store.state.bammAllowance
+      : this._readable.getBammAllowance(overrides);
   }
 }

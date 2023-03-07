@@ -1,8 +1,8 @@
 import React from "react";
-import { Box, Button, Card, Flex, Link, useColorMode } from "theme-ui";
+import { Box, Button, Card, Flex, Link, Text, useColorMode } from "theme-ui";
 import { NavLink } from "react-router-dom";
 
-import { DARK_FILTER } from "../../utils/constants";
+import { COIN, DARK_FILTER } from "../../utils/constants";
 import { GenericIcon } from "../GenericIcon";
 import { InfoIcon } from "../InfoIcon";
 
@@ -12,16 +12,16 @@ type BottomCardProps = {
   action: string;
   token: string;
   path: string;
+  isPoweredByBProtocol?: boolean;
   disabled?: boolean;
   children: React.ReactNode
 };
 
 export const BottomCard = ({ 
-  title, 
-  tooltip, 
   action, 
   token, 
   path, 
+  isPoweredByBProtocol,
   disabled,
   children
 }: BottomCardProps): JSX.Element => {
@@ -29,14 +29,27 @@ export const BottomCard = ({
     return (
       <Card variant="layout.columns">
         <Flex sx={{
+          justifyContent: "space-between",
           width: "100%",
           gap: 1,
-          pb: 3,
+          pb: "1em",
+          px: ["2em", 0],
           borderBottom: 1, 
           borderColor: "border"
         }}>
-          {title}
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">{tooltip}</Card>} />
+          <Flex sx={{ gap: 1 }}>
+            Stability Pool
+            <InfoIcon size="sm" tooltip={
+              <Card variant="tooltip">
+                You can earn {COIN} rewards by depositing {COIN} .
+              </Card>} />
+          </Flex>
+          {isPoweredByBProtocol && (
+            <Flex sx={{ gap: "0.7rem", justifyContent: "center", alignContent: "center" }}>
+              <Text sx={{ mt: "-0.1rem" }}>Powered By</Text>
+              <GenericIcon imgSrc={colorMode === "dark" || colorMode === "darkGrey" ? "./icons/white-b-protocol.png" : "./icons/black-b-protocol.png"} height="18px" />
+            </Flex>
+          )}
         </Flex>
         <Flex sx={{
           width: "100%",
@@ -66,7 +79,7 @@ export const BottomCard = ({
             fontWeight: "body",
             pb: "2.4em"
           }}>
-            <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+            <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
             in the documentation
           </Flex>
         </Flex>

@@ -1,8 +1,9 @@
 import { Card } from "theme-ui";
-import { Percent, LiquityStoreState, Decimal, Trove } from "@liquity/lib-base";
+import { Percent, LiquityStoreState, Decimal} from "@liquity/lib-base";
 import { useThresholdSelector } from "@liquity/lib-react";
 
 import { TopCard } from "./TopCard";
+
 import { useEffect, useState } from "react";
 
 type SystemStatsProps = {
@@ -13,10 +14,9 @@ type mintListApproved = {
   version: string;
   collateral: string;
   price: Decimal;
-  total: Trove;
+  totalCollateralRatio: Decimal;
   mintList: boolean;
 }
-
 
 const selector = ({
   mintList,
@@ -25,12 +25,12 @@ const selector = ({
 }: LiquityStoreState) => ({
   mintList,
   price,
-  total
+  totalCollateralRatio: total.collateralRatio(price),
 });
 
 export const ColRatio = ({ variant = "mainCards" }: SystemStatsProps): JSX.Element => {
   const thresholdSelectorStores = useThresholdSelector(selector)
-  const [collateralData, setCollateralData] = useState({versionsQty: 0, collateralRatioAvgPct: new Percent(Decimal.from(0))})
+  const [collateralData, setCollateralData] = useState({collateralsQty: 0, collateralRatioAvgPct: new Percent(Decimal.from(0))})
   const [isMounted, setIsMounted] = useState<boolean>(true);
 
   useEffect(() => {
@@ -44,26 +44,26 @@ export const ColRatio = ({ variant = "mainCards" }: SystemStatsProps): JSX.Eleme
           version: thresholdSelectorStore.version,
           collateral: thresholdSelectorStore.collateral,
           price: thresholdSelectorStore.store.price, 
-          total: thresholdSelectorStore.store.total,
+          totalCollateralRatio: thresholdSelectorStore.store.totalCollateralRatio,
           mintList: true, 
         }]
       }
     }
     let collateralRatio = Decimal.from(0)   
-    for (const collateralApproved of mintListApproved) {
-      const versionedCollateralRatio = collateralApproved.total.collateralRatio(collateralApproved.price)
-      
-      collateralRatio = collateralRatio ===  Decimal.INFINITY || versionedCollateralRatio === Decimal.INFINITY
+
+    for (const collateralApproved of mintListApproved) {  
+      collateralRatio = collateralRatio.infinite || collateralApproved.totalCollateralRatio.infinite
         ? Decimal.INFINITY 
-        : collateralRatio.add(versionedCollateralRatio) 
+        : collateralRatio.add(collateralApproved.totalCollateralRatio) 
     }
-    const collateralRatioAvg = collateralRatio === Decimal.INFINITY 
+
+    const collateralRatioAvg = collateralRatio.infinite
       ? Decimal.INFINITY 
       : collateralRatio.div(thresholdSelectorStores.length)
       
       setCollateralData(
       {
-        versionsQty: Object.entries(mintListApproved).length, 
+        collateralsQty: Object.entries(mintListApproved).length, 
         collateralRatioAvgPct: new Percent(collateralRatioAvg)
       }
     )
@@ -76,8 +76,8 @@ export const ColRatio = ({ variant = "mainCards" }: SystemStatsProps): JSX.Eleme
   return (
     <Card {...{ variant }} sx={{ width:"100%"}}>
       <TopCard 
-        name={`${collateralData.versionsQty > 1 ? "Col. Ratio Avg." : "Total Col. Ratio"}`}
-        tooltip="The ratio of the Dollar value of the entire system collateral at the current ETH:USD price, to the entire system debt." 
+        name={`${collateralData.collateralsQty > 1 ? "Col. Ratio Avg." : "Total Col. Ratio"}`}
+        tooltip="The ratio of the Dollar value of the entire system collateral at the current collateral : USD price, to the entire system debt." 
         imgSrc="./icons/col-ratio.svg" 
       >
         {collateralData.collateralRatioAvgPct.prettify()}

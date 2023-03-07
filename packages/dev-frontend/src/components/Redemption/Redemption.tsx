@@ -6,6 +6,6 @@ type RedemptionProps = {
   isMintList: boolean;
 }
 
-export const Redemption = ({ version, collateral, isMintList }: RedemptionProps): JSX.Element => {
+export const Redemption = ({ version, collateral }: RedemptionProps): JSX.Element => {
   return <RedemptionManager version={version} collateral={collateral} />;
 };

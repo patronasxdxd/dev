@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-
-import axios from "axios";
 import { ChartContext } from "./ChartContext";
 
 import { useThreshold } from "../../../../hooks/ThresholdContext";
 import { Decimal } from "@liquity/lib-base";
 import { fetchCoinGeckoPrice } from "./fetchCoinGeckoPrice";
+import { createClient } from "urql";
 
 export type TimestampsObject = {
   universalTimestamp: number;
@@ -163,14 +162,12 @@ export const calculateTvlPrice = async (historicalTvl: Array<TvlData>, coingecko
 };
 
 async function fetchData(API_URL: string, query: string) {
-  try {
-    const response = await axios.post(API_URL, { query });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    throw error;
-  }
-}
+  const client = createClient({
+    url: API_URL
+  });
+  const response = await client.query(query).toPromise();
+  return response;
+};
 
 export const ChartProvider = ({ children }: FunctionalPanelProps): JSX.Element  => {
   const timestamps: Array<TimestampsObject> = createListOfTimestamps();

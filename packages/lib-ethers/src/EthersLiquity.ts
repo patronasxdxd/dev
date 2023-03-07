@@ -13,6 +13,8 @@ import {
   RedemptionDetails,
   StabilityDeposit,
   StabilityDepositChangeDetails,
+  BammDeposit,
+  BammDepositChangeDetails,
   StabilityPoolGainsWithdrawalDetails,
   TransactableLiquity,
   TransactionFailedError,
@@ -226,6 +228,16 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     return this._readable.getStabilityDeposit(address, overrides);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getBammDeposit} */
+  getBammDeposit(address?: string, overrides?: EthersCallOverrides): Promise<BammDeposit> {
+    return this._readable.getBammDeposit(address, overrides);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getWithdrawsSpShare} */
+  getWithdrawsSpShare(withdrawAmount: Decimalish, overrides?: EthersCallOverrides): Promise<string> {
+    return this._readable.getWithdrawsSpShare(withdrawAmount, overrides);
+  }
+
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getTHUSDInStabilityPool} */
   getTHUSDInStabilityPool(overrides?: EthersCallOverrides): Promise<Decimal> {
     return this._readable.getTHUSDInStabilityPool(overrides);
@@ -249,6 +261,21 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getErc20TokenAllowance} */
   getErc20TokenAllowance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     return this._readable.getErc20TokenAllowance(address, overrides);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.isStabilityPools} */
+  isStabilityPools(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._readable.isStabilityPools(overrides);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.isBorrowerOperations} */
+  isBorrowerOperations(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._readable.isBorrowerOperations(overrides);
+  }
+
+    /** {@inheritDoc @liquity/lib-base#ReadableLiquity.isTroveManager} */
+  isTroveManager(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._readable.isTroveManager(overrides);
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.checkMintList} */
@@ -289,6 +316,10 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getFees} */
   getFees(overrides?: EthersCallOverrides): Promise<Fees> {
     return this._readable.getFees(overrides);
+  }
+
+  getBammAllowance(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._readable.getBammAllowance(overrides);
   }
 
   /**
@@ -427,6 +458,47 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
   }
 
   /**
+   * {@inheritDoc @liquity/lib-base#TransactableLiquity.depositTHUSDInBammPool}
+   *
+   * @throws
+   * Throws {@link EthersTransactionFailedError} in case of transaction failure.
+   * Throws {@link EthersTransactionCancelledError} if the transaction is cancelled or replaced.
+   */
+  depositTHUSDInBammPool(
+    amount: Decimalish,
+    overrides?: EthersTransactionOverrides
+  ): Promise<BammDepositChangeDetails> {
+    return this.send.depositTHUSDInBammPool(amount, overrides).then(waitForSuccess);
+  }
+
+  /**
+   * {@inheritDoc @liquity/lib-base#TransactableLiquity.withdrawTHUSDFromBammPool}
+   *
+   * @throws
+   * Throws {@link EthersTransactionFailedError} in case of transaction failure.
+   * Throws {@link EthersTransactionCancelledError} if the transaction is cancelled or replaced.
+   */
+  withdrawTHUSDFromBammPool(
+    amount: Decimalish,
+    overrides?: EthersTransactionOverrides
+  ): Promise<BammDepositChangeDetails> {
+    return this.send.withdrawTHUSDFromBammPool(amount, overrides).then(waitForSuccess);
+  }
+
+  /**
+   * {@inheritDoc @liquity/lib-base#TransactableLiquity.withdrawGainsFromBammPool}
+   *
+   * @throws
+   * Throws {@link EthersTransactionFailedError} in case of transaction failure.
+   * Throws {@link EthersTransactionCancelledError} if the transaction is cancelled or replaced.
+   */
+  withdrawGainsFromBammPool(
+    overrides?: EthersTransactionOverrides
+  ): Promise<StabilityPoolGainsWithdrawalDetails> {
+    return this.send.withdrawGainsFromBammPool(overrides).then(waitForSuccess);
+  }
+
+  /**
    * {@inheritDoc @liquity/lib-base#TransactableLiquity.depositTHUSDInStabilityPool}
    *
    * @throws
@@ -455,6 +527,19 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
   }
 
   /**
+ * {@inheritDoc @liquity/lib-base#TransactableLiquity.bammUnlock}
+ *
+ * @throws
+ * Throws {@link EthersTransactionFailedError} in case of transaction failure.
+ * Throws {@link EthersTransactionCancelledError} if the transaction is cancelled or replaced.
+ */
+  bammUnlock(
+    overrides?: EthersTransactionOverrides
+  ): Promise<void> {
+    return this.send.bammUnlock(overrides).then(waitForSuccess);
+  }
+
+  /**
    * {@inheritDoc @liquity/lib-base#TransactableLiquity.withdrawGainsFromStabilityPool}
    *
    * @throws
@@ -479,6 +564,19 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
   ): Promise<CollateralGainTransferDetails> {
     return this.send.transferCollateralGainToTrove(overrides).then(waitForSuccess);
   }
+
+  /**
+   * {@inheritDoc @liquity/lib-base#TransactableLiquity.transferBammCollateralGainToTrove}
+   *
+   * @throws
+   * Throws {@link EthersTransactionFailedError} in case of transaction failure.
+   * Throws {@link EthersTransactionCancelledError} if the transaction is cancelled or replaced.
+   */
+  transferBammCollateralGainToTrove(
+    overrides?: EthersTransactionOverrides
+  ): Promise<CollateralGainTransferDetails> {
+    return this.send.transferBammCollateralGainToTrove(overrides).then(waitForSuccess);
+  }  
 
   /**
    * {@inheritDoc @liquity/lib-base#TransactableLiquity.sendTHUSD}

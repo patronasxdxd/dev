@@ -89,9 +89,11 @@ const applyUnsavedNetDebtChanges = (unsavedChanges: Difference, vault: Vault) =>
 type AdjustingProps = {
   version: string;
   collateral: string;
+  isMintList: boolean;
 }
 
-export const Adjusting = ({ version, collateral }: AdjustingProps): JSX.Element => {
+export const Adjusting = (props: AdjustingProps): JSX.Element => {
+  const { version, collateral } = props;
   const thresholdSelectorStores = useThresholdSelector(selector);
   const thresholdStore = thresholdSelectorStores.find((store) => {
     return store.version === version && store.collateral === collateral;
@@ -184,14 +186,14 @@ export const Adjusting = ({ version, collateral }: AdjustingProps): JSX.Element 
     !collateralAmount.isZero && !netDebt.isZero ? updatedVault.collateralRatio(price) : undefined;
   const collateralRatioChange = Difference.between(collateralRatio, trove.collateralRatio(price));
 
-  const [troveChange, description] = validateVaultChange(
+  const [vaultChange, description] = validateVaultChange(
     trove,
     updatedVault,
     borrowingRate,
     validationContext
   );
 
-  const stableVaultChange = useStableVaultChange(troveChange);
+  const stableVaultChange = useStableVaultChange(vaultChange);
   const { hasApproved, amountToApprove } = useValidationState(version, collateral, stableVaultChange);
 
   const [gasEstimationState, setGasEstimationState] = useState<GasEstimationState>({ type: "idle" });
@@ -368,7 +370,7 @@ export const Adjusting = ({ version, collateral }: AdjustingProps): JSX.Element 
               pt: "1em"
             }}>
               <Flex>
-                <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+                <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
                 in the documentation
               </Flex>
               <Flex>Deployment version: {version}</Flex>

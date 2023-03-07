@@ -8,13 +8,12 @@ import { Transaction } from "../Transaction";
 
 const editableStyle: ThemeUICSSProperties = {
   bg: "white",
-  px: "1.1em",
-  py: "0.3em",
+  py: "0.1em",
   border: 1,
   borderColor: "border",
   borderRadius: 8,
   flexGrow: 1,
-  pl: 2,
+  pl: "0.3rem",
   boxShadow: 0
 };
 
@@ -49,7 +48,7 @@ export const EditPrice = ({ version, collateral }: EditPriceProps): JSX.Element 
   const [editedPrice, setEditedPrice] = useState(price.toString(2))
 
   return (
-    <Flex sx={{ flexDirection: "column", gap: "1rem"}}>
+    <Flex sx={{ flexDirection: "column", gridColumn: "span 2", gap: 2 }}>
       <Flex sx={{
         width: "100%",
         gap: 1,
@@ -66,7 +65,9 @@ export const EditPrice = ({ version, collateral }: EditPriceProps): JSX.Element 
               variant="layout.balanceRow"
               sx={{
               ...editableStyle,
-              color: "inputText"
+              color: "inputText",
+              fontSize: "11px",
+              paddingY: "0.3rem"
               }}
               type="number"
               step="any"
@@ -88,8 +89,8 @@ export const EditPrice = ({ version, collateral }: EditPriceProps): JSX.Element 
             >
               <Button sx={{
                 ml: 1,
-                mr: 2,
-                width: "0.5rem",
+                fontSize: "11px",
+                width: "0.1rem",
                 height: "1rem",
                 borderRadius: 6,
                 top: 0

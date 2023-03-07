@@ -1,6 +1,7 @@
 import { Decimal, Decimalish } from "./Decimal";
 import { Trove, TroveAdjustmentParams, TroveClosureParams, TroveCreationParams } from "./Trove";
 import { StabilityDepositChange } from "./StabilityDeposit";
+import { BammDepositChange } from "./BammDeposit";
 import { FailedReceipt } from "./SendableLiquity";
 
 /**
@@ -124,6 +125,19 @@ export interface StabilityPoolGainsWithdrawalDetails {
 
   /** Amount of native currency (e.g. Ether) paid out to the depositor in this transaction. */
   collateralGain: Decimal;
+}
+
+/**
+ * Details of a
+ * {@link TransactableLiquity.depositTHUSDInBammPool | depositTHUSDInBammPool()} or
+ * {@link TransactableLiquity.withdrawTHUSDFromBammPool | withdrawTHUSDFromBammPool()}
+ * transaction.
+ *
+ * @public
+ */
+export interface BammDepositChangeDetails extends StabilityPoolGainsWithdrawalDetails {
+  /** Change that was made to the deposit by this transaction. */
+  change: BammDepositChange<Decimal>;
 }
 
 /**
@@ -307,6 +321,43 @@ export interface TransactableLiquity {
   liquidateUpTo(maximumNumberOfTrovesToLiquidate: number): Promise<LiquidationDetails>;
 
   /**
+   * Make a new Bamm Deposit, or top up existing one.
+   *
+   * @param amount - Amount of thUSD to add to new or existing deposit.
+   *
+   * @throws
+   * Throws {@link TransactionFailedError} in case of transaction failure.
+   *
+   * As a side-effect, the transaction will also pay out an existing Stability Deposit's
+   * {@link @liquity/lib-base#BammDeposit.collateralGain | collateral gain}
+   */
+  depositTHUSDInBammPool(
+    amount: Decimalish
+  ): Promise<BammDepositChangeDetails>;
+
+  /**
+   * Withdraw thUSD from Bamm.
+   *
+   * @param amount - Amount of thUSD to withdraw.
+   *
+   * @throws
+   * Throws {@link TransactionFailedError} in case of transaction failure.
+   *
+   * @remarks
+   * As a side-effect, the transaction will also pay out the Stability Deposit's
+   * {@link @liquity/lib-base#BammDeposit.collateralGain | collateral gain}.
+   */
+  withdrawTHUSDFromBammPool(amount: Decimalish): Promise<BammDepositChangeDetails>;
+
+  /**
+   * Withdraw {@link @liquity/lib-base#BammDeposit.collateralGain | collateral gain} from Bamm Deposit.
+   *
+   * @throws
+   * Throws {@link TransactionFailedError} in case of transaction failure.
+   */
+  withdrawGainsFromBammPool(): Promise<StabilityPoolGainsWithdrawalDetails>;
+
+  /**
    * Make a new Stability Deposit, or top up existing one.
    *
    * @param amount - Amount of thUSD to add to new or existing deposit.
@@ -336,6 +387,12 @@ export interface TransactableLiquity {
   withdrawTHUSDFromStabilityPool(amount: Decimalish): Promise<StabilityDepositChangeDetails>;
 
   /**
+   * @throws
+   * Throws {@link TransactionFailedError} in case of transaction failure.
+   */
+  bammUnlock(): Promise<void>;
+
+  /**
    * Withdraw {@link @liquity/lib-base#StabilityDeposit.collateralGain | collateral gain} from Stability Deposit.
    *
    * @throws
@@ -354,6 +411,18 @@ export interface TransactableLiquity {
    * The collateral gain is transfered to the Trove as additional collateral.
    */
   transferCollateralGainToTrove(): Promise<CollateralGainTransferDetails>;
+
+  /**
+   * Transfer {@link @liquity/lib-base#BammDeposit.collateralGain | collateral gain} from
+   * Bamm Deposit to Trove.
+   *
+   * @throws
+   * Throws {@link TransactionFailedError} in case of transaction failure.
+   *
+   * @remarks
+   * The collateral gain is transfered to the Trove as additional collateral.
+   */
+  transferBammCollateralGainToTrove(): Promise<CollateralGainTransferDetails>;  
 
   /**
    * Send thUSD tokens to an address.

@@ -14,9 +14,11 @@ const select = ({ trove, price, symbol }: ThresholdStoreState) => ({ trove, pric
 type ReadOnlyVaultProps = {
   version: string;
   collateral: string;
+  isMintList: boolean;
 }
 
-export const ReadOnlyVault = ({ version, collateral }: ReadOnlyVaultProps): JSX.Element => {
+export const ReadOnlyVault = (props: ReadOnlyVaultProps): JSX.Element => {
+  const { version, collateral } = props;
   const thresholdSelectorStores = useThresholdSelector(select);
   const thresholdStore = thresholdSelectorStores.find((store) => {
     return store.version === version && store.collateral === collateral;
@@ -38,15 +40,19 @@ export const ReadOnlyVault = ({ version, collateral }: ReadOnlyVaultProps): JSX.
     <Card variant="mainCards">
       <Card variant="layout.columns">
         <Flex sx={{
+          justifyContent: "space-between",
           width: "100%",
           gap: 1,
           pb: "1em",
           px: ["2em", 0],
           borderBottom: 1, 
-          borderColor: "border",
+          borderColor: "border"
         }}>
-          Opened Vault
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ symbol }) to it.</Card>} />
+          <Flex sx={{ gap: 1 }}>
+            Opened Vault
+            <InfoIcon size="sm" tooltip={<Card variant="tooltip">To mint and borrow { COIN } you must open a vault and deposit a certain amount of collateral ({ symbol }) to it.</Card>} />
+          </Flex>
+            {symbol} Collateral
         </Flex>
         <Flex sx={{
           width: "100%",
@@ -89,7 +95,7 @@ export const ReadOnlyVault = ({ version, collateral }: ReadOnlyVaultProps): JSX.
             pt: "1em",
           }}>
             <Flex>
-              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+              <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
               in the documentation
             </Flex>
             <Flex>Deployment version: {version}</Flex>

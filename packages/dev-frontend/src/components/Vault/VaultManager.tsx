@@ -150,11 +150,13 @@ const transactionIdMatcher = new RegExp(`^${transactionIdPrefix}`);
 type VaultManagerProps = {
   version: string,
   collateral: string,
+  isMintList: boolean;
   collateralAmount?: Decimalish;
   debt?: Decimalish;
 };
 
-export const  VaultManager = ({ version, collateral, collateralAmount, debt }: VaultManagerProps): JSX.Element => {
+export const  VaultManager = (props: VaultManagerProps): JSX.Element => {
+  const { version, collateral, collateralAmount, debt } = props;
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [{ original, edited, changePending }, dispatch] = useThresholdReducer(version, collateral, reduce, init);
   const thresholdSelectorStores = useThresholdSelector(select);
@@ -275,7 +277,7 @@ export const  VaultManager = ({ version, collateral, collateralAmount, debt }: V
         pt: "1em"
       }}>
         <Flex>
-          <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+          <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
           in the documentation
         </Flex>
         <Flex>Deployment version: {version}</Flex>

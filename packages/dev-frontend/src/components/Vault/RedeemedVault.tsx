@@ -15,9 +15,11 @@ const select = ({ collateralSurplusBalance, symbol }: ThresholdStoreState) => ({
 type RedeemedVaultProps = {
   version: string;
   collateral: string;
+  isMintList: boolean;
 }
 
-export const RedeemedVault = ({ version, collateral }: RedeemedVaultProps): JSX.Element => {
+export const RedeemedVault = (props: RedeemedVaultProps): JSX.Element => {
+  const { version, collateral } = props;
   const thresholdSelectorStores = useThresholdSelector(select);
   const thresholdStore = thresholdSelectorStores.find((store) => {
     return store.version === version && store.collateral === collateral;
@@ -74,7 +76,7 @@ export const RedeemedVault = ({ version, collateral }: RedeemedVaultProps): JSX.
               pt: "1em"
             }}>
               <Flex>
-                <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+                <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
                 in the documentation
               </Flex>
               <Flex>Deployment version: {version}</Flex>

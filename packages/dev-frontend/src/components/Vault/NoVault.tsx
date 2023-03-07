@@ -20,7 +20,8 @@ type NoVaultProps = {
   isMintList: boolean;
 }
 
-export const NoVault = ({ version, collateral, isMintList }: NoVaultProps): JSX.Element => {
+export const NoVault = (props: NoVaultProps): JSX.Element => {
+  const { version, collateral, isMintList } = props;
   const thresholdSelectorStores = useThresholdSelector(select);
   const thresholdStore = thresholdSelectorStores.find((store) => {
     return store.version === version && store.collateral === collateral;
@@ -87,11 +88,10 @@ export const NoVault = ({ version, collateral, isMintList }: NoVaultProps): JSX.
             fontWeight: "body",
             justifyContent: "space-between",
             width: "100%",
-            px: "1em",
-            pt: "1em",
+            px: "1em"
           }}>
             <Flex>
-              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+              <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
               in the documentation
             </Flex>
             <Flex>Deployment version: {version}</Flex>

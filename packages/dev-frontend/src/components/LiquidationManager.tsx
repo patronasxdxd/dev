@@ -27,8 +27,9 @@ type LiquidationManagerProps = {
   isMintList: boolean
 }
 
-const selector = ({ symbol }: ThresholdStoreState) => ({
-  symbol
+const selector = ({ symbol, isTroveManager }: ThresholdStoreState) => ({
+  symbol,
+  isTroveManager
 });
 
 export const LiquidationManager = ({ version, collateral, isMintList }: LiquidationManagerProps): JSX.Element => {
@@ -37,7 +38,7 @@ export const LiquidationManager = ({ version, collateral, isMintList }: Liquidat
     return store.version === version && store.collateral === collateral;
   });
   const store = thresholdStore?.store!;
-  const symbol = store.symbol;
+  const { symbol, isTroveManager } = store;
   
   const { threshold } = useThreshold()
   const collateralThreshold = threshold.find((versionedThreshold) => {
@@ -119,7 +120,7 @@ export const LiquidationManager = ({ version, collateral, isMintList }: Liquidat
               version={version}
               collateral={collateral}
             >
-              <Button sx={{ width: "100%" }}>Liquidate</Button>
+              <Button disabled={!isTroveManager} sx={{ width: "100%" }}>Liquidate</Button>
             </Transaction>
           </Flex>
           <Flex sx={{ 
@@ -132,7 +133,7 @@ export const LiquidationManager = ({ version, collateral, isMintList }: Liquidat
             mt: 2
           }}>
             <Flex>
-              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+              <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
               in the documentation
             </Flex>
             <Flex>Deployment version: {version}</Flex>

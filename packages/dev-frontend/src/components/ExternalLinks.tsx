@@ -7,7 +7,7 @@ export const ExternalLinks = (): JSX.Element => {
 
   return (
     <>
-      <Link variant="nav" href="https://github.com/Threshold-USD/dev" target="_blank">
+      <Link variant="nav" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">
         <Icon name="book" />
         Documentation
       </Link>

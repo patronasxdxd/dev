@@ -19,6 +19,7 @@ import { RiskyVaultsPage } from "./pages/RiskyVaultsPage";
 import { VaultPage } from "./pages/VaultPage";
 
 import { ThresholdProvider } from "./hooks/ThresholdContext";
+import { StabilityPoolPage } from "./pages/StabilityPoolPage";
 
 type ThresholdFrontendProps = {
   loader?: React.ReactNode;
@@ -97,9 +98,9 @@ export const ThresholdFrontend = ({ loader }: ThresholdFrontendProps): JSX.Eleme
                         <Route path="/borrow" exact>
                           <VaultPage />
                         </Route>
-                        {/*<Route path="/earn" exact>
+                        <Route path="/earn" exact>
                           <StabilityPoolPage />
-                        </Route>*/}
+                        </Route>
                         <Route path="/redemption">
                           <RedemptionPage />
                         </Route>

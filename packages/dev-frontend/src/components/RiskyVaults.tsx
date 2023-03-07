@@ -349,6 +349,21 @@ export const RiskyVaults = ({ version, collateral, isMintList }: RiskyVaultsProp
               </Box>
             </Box>
           )}
+          <Flex sx={{ 
+            alignSelf: "center",
+            fontSize: 11,
+            fontWeight: "body",
+            justifyContent: "space-between",
+            width: "100%",
+            px: "1em",
+            mt: 3
+          }}>
+            <Flex>
+              <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
+              in the documentation
+            </Flex>
+            <Flex>Deployment version: {version}</Flex>
+          </Flex>
         </Card>
       </Card>
     </Container>  

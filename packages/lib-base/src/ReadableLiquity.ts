@@ -1,6 +1,7 @@
-import { Decimal } from "./Decimal";
+import { Decimal, Decimalish } from "./Decimal";
 import { Trove, TroveWithPendingRedistribution, UserTrove } from "./Trove";
 import { StabilityDeposit } from "./StabilityDeposit";
+import { BammDeposit } from "./BammDeposit";
 import { Fees } from "./Fees";
 
 
@@ -97,6 +98,13 @@ export interface ReadableLiquity {
   getStabilityDeposit(address?: string): Promise<StabilityDeposit>;
 
   /**
+   * Get the current state of a Bamm Deposit.
+   *
+   * @param address - Address that owns the Bamm Deposit.
+   */
+  getBammDeposit(address?: string): Promise<BammDeposit>;
+
+  /**
    * Get the total amount of thUSD currently deposited in the Stability Pool.
    */
   getTHUSDInStabilityPool(): Promise<Decimal>;
@@ -121,11 +129,37 @@ export interface ReadableLiquity {
   getErc20TokenBalance(address?: string): Promise<Decimal>;
 
   /**
+   * Get the Stability Pool share.
+   *
+   * @param withdrawAmount - withdraw amount.
+   */
+  getWithdrawsSpShare(withdrawAmount: Decimalish): Promise<string>;
+
+  
+  /**
    * Get the Borrowers Operations contract's allowance of a holder's Erc20 tokens.
    *
    * @param address - Address holding the Erc20 tokens.
    */
   getErc20TokenAllowance(address?: string): Promise<Decimal>;
+
+  /**
+   * Check if the deployment stability pool address was added to the thUSD token.
+   *
+   */
+  isStabilityPools(): Promise<boolean>;
+
+  /**
+   * Check if the deployment borrower operations address was added to the thUSD token.
+   *
+   */
+  isBorrowerOperations(): Promise<boolean>;
+
+  /**
+   * Check if the deployment trove manager address was added to the thUSD token.
+   *
+   */
+  isTroveManager(): Promise<boolean>;    
 
   /**
    * Check if a certain address is on the thUSD contract mintList.

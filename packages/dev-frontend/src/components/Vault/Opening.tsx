@@ -47,9 +47,11 @@ const APPROVE_TRANSACTION_ID = "vault-approve";
 type OpeningProps = {
   version: string;
   collateral: string;
+  isMintList: boolean;
 }
 
-export const Opening = ({ version, collateral }: OpeningProps): JSX.Element => {
+export const Opening = (props: OpeningProps): JSX.Element => {
+  const { version, collateral } = props;
   const thresholdSelectorStores = useThresholdSelector(selector);
   const thresholdStore = thresholdSelectorStores.find((store) => {
     return store.version === version && store.collateral === collateral;
@@ -117,7 +119,7 @@ export const Opening = ({ version, collateral }: OpeningProps): JSX.Element => {
   useEffect(() => {
     if (
       isCollateralChecked &&
-      transactionState.type === "confirmedOneShot" || transactionState.type === "confirmed"
+      (transactionState.type === "confirmedOneShot" || transactionState.type === "confirmed")
     ) {
       dispatchEvent("VAULT_OPENED", version, collateral);
     }
@@ -297,7 +299,7 @@ export const Opening = ({ version, collateral }: OpeningProps): JSX.Element => {
             pt: "1em"
           }}>
             <Flex>
-              <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
+              <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
               in the documentation
             </Flex>
             <Flex>Deployment version: {version}</Flex>
