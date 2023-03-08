@@ -7,11 +7,6 @@
         "type": "address"
       },
       {
-        "internalType": "address",
-        "name": "_thusd2UsdPriceAggregator",
-        "type": "address"
-      },
-      {
         "internalType": "address payable",
         "name": "_SP",
         "type": "address"
@@ -19,16 +14,6 @@
       {
         "internalType": "address",
         "name": "_thusdToken",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_maxDiscount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address payable",
-        "name": "_feePool",
         "type": "address"
       },
       {
@@ -372,6 +357,29 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_thusd2UsdPriceAggregator",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxDiscount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address payable",
+        "name": "_feePool",
+        "type": "address"
+      }
+    ],
+    "name": "enableSwap",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "fee",
     "outputs": [
@@ -547,6 +555,19 @@
   {
     "inputs": [],
     "name": "isOwner",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isSwapEnabled",
     "outputs": [
       {
         "internalType": "bool",
