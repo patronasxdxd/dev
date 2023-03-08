@@ -55,6 +55,7 @@ import { decimalify, promiseAllValues } from "./_utils";
 import { _priceFeedIsTestnet } from "./contracts";
 import { logsToString } from "./parseLogs";
 import { ReadableEthersLiquity } from "./ReadableEthersLiquity";
+import { ZERO_ADDRESS } from "../utils/constants";
 
 const bigNumberMax = (a: BigNumber, b?: BigNumber) => (b?.gt(a) ? b : a);
 
@@ -845,7 +846,7 @@ export class PopulatableEthersLiquity
       borrowTHUSD.hex,
       depositCollateral.hex,
       ...hints,
-      { value: 0, ...overrides }
+      { value: depositCollateral.hex, ...overrides }
     ];
 
     let gasHeadroom: number | undefined;
@@ -976,9 +977,9 @@ export class PopulatableEthersLiquity
       (withdrawCollateral ?? Decimal.ZERO).hex,
       (borrowTHUSD ?? repayTHUSD ?? Decimal.ZERO).hex,
       !!borrowTHUSD,
-      (depositCollateral ?? depositCollateral ?? Decimal.ZERO).hex,
+      (depositCollateral ?? Decimal.ZERO).hex,
       ...hints,
-      { value: 0, ...overrides }
+      { value: (depositCollateral ?? Decimal.ZERO).hex, ...overrides }
     ];
 
     let gasHeadroom: number | undefined;
