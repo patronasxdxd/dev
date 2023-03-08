@@ -392,20 +392,20 @@ export interface THUSDToken
   extends _TypedLiquityContract<THUSDTokenCalls, THUSDTokenTransactions> {
   readonly filters: {
     Approval(owner?: string | null, spender?: string | null, value?: null): EventFilter;
-    BorrowerOperationsAddressChanged(_newBorrowerOperationsAddress?: null): EventFilter;
+    BorrowerOperationsAddressAdded(_newBorrowerOperationsAddress?: null): EventFilter;
     OwnershipTransferred(previousOwner?: string | null, newOwner?: string | null): EventFilter;
-    StabilityPoolAddressChanged(_newStabilityPoolAddress?: null): EventFilter;
+    StabilityPoolAddressAdded(_newStabilityPoolAddress?: null): EventFilter;
     THUSDTokenBalanceUpdated(_user?: null, _amount?: null): EventFilter;
     Transfer(from?: string | null, to?: string | null, value?: null): EventFilter;
-    TroveManagerAddressChanged(_troveManagerAddress?: null): EventFilter;
+    TroveManagerAddressAdded(_troveManagerAddress?: null): EventFilter;
   };
   extractEvents(logs: Log[], name: "Approval"): _TypedLogDescription<{ owner: string; spender: string; value: BigNumber }>[];
-  extractEvents(logs: Log[], name: "BorrowerOperationsAddressChanged"): _TypedLogDescription<{ _newBorrowerOperationsAddress: string }>[];
+  extractEvents(logs: Log[], name: "BorrowerOperationsAddressAdded"): _TypedLogDescription<{ _newBorrowerOperationsAddress: string }>[];
   extractEvents(logs: Log[], name: "OwnershipTransferred"): _TypedLogDescription<{ previousOwner: string; newOwner: string }>[];
-  extractEvents(logs: Log[], name: "StabilityPoolAddressChanged"): _TypedLogDescription<{ _newStabilityPoolAddress: string }>[];
+  extractEvents(logs: Log[], name: "StabilityPoolAddressAdded"): _TypedLogDescription<{ _newStabilityPoolAddress: string }>[];
   extractEvents(logs: Log[], name: "THUSDTokenBalanceUpdated"): _TypedLogDescription<{ _user: string; _amount: BigNumber }>[];
   extractEvents(logs: Log[], name: "Transfer"): _TypedLogDescription<{ from: string; to: string; value: BigNumber }>[];
-  extractEvents(logs: Log[], name: "TroveManagerAddressChanged"): _TypedLogDescription<{ _troveManagerAddress: string }>[];
+  extractEvents(logs: Log[], name: "TroveManagerAddressAdded"): _TypedLogDescription<{ _troveManagerAddress: string }>[];
 }
 
 interface PCVCalls {
@@ -698,6 +698,7 @@ interface BAMMCalls {
   getSumFixedPoint(x: BigNumberish, y: BigNumberish, A: BigNumberish, _overrides?: CallOverrides): Promise<BigNumber>;
   getSwapCollateralAmount(thusdQty: BigNumberish, _overrides?: CallOverrides): Promise<{ collateralAmount: BigNumber; feeTHUSDAmount: BigNumber }>;
   isOwner(_overrides?: CallOverrides): Promise<boolean>;
+  isSwapEnabled(_overrides?: CallOverrides): Promise<boolean>;
   maxDiscount(_overrides?: CallOverrides): Promise<BigNumber>;
   name(_overrides?: CallOverrides): Promise<string>;
   owner(_overrides?: CallOverrides): Promise<string>;
@@ -712,6 +713,7 @@ interface BAMMCalls {
 
 interface BAMMTransactions {
   deposit(thusdAmount: BigNumberish, _overrides?: Overrides): Promise<void>;
+  enableSwap(_thusd2UsdPriceAggregator: string, _maxDiscount: BigNumberish, _feePool: string, _overrides?: Overrides): Promise<void>;
   setParams(_A: BigNumberish, _fee: BigNumberish, _overrides?: Overrides): Promise<void>;
   swap(thusdAmount: BigNumberish, minCollateralReturn: BigNumberish, dest: string, _overrides?: Overrides): Promise<BigNumber>;
   trade(arg0: string, srcAmount: BigNumberish, arg2: string, destAddress: string, arg4: BigNumberish, arg5: boolean, _overrides?: PayableOverrides): Promise<boolean>;
