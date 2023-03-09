@@ -99,7 +99,7 @@ export const StabilityDepositEditor = ({
     newTotalCollateral = bammDeposit.totalCollateralInBamm.mul((editedTotalUsdInBamm.div(totalUsdInBamm)))
   }
 
-  const allowanceTxState = useMyTransactionState("bamm-unlock");
+  const allowanceTxState = useMyTransactionState("bamm-unlock", version, collateral);
   const isCollateralChecked = checkTransactionCollateral(
     useMyTransactionState,
     version,

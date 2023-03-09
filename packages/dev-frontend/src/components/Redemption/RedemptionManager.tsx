@@ -54,7 +54,7 @@ export const RedemptionManager = ({ version, collateral }: RedemptionManagerProp
   const ethFee = ethAmount.mul(redemptionRate);
   const maxRedemptionRate = redemptionRate.add(0.001); // TODO slippage tolerance
 
-  const myTransactionState = useMyTransactionState(transactionId);
+  const myTransactionState = useMyTransactionState(transactionId, version, collateral);
   const isCollateralChecked = checkTransactionCollateral(
     myTransactionState,
     version,

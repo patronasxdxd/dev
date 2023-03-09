@@ -36,7 +36,7 @@ export const CollateralSurplusAction = ({ version, collateral }: CollateralSurpl
   const send = collateralThreshold.store.send
 
   const myTransactionId = "claim-coll-surplus";
-  const myTransactionState = useMyTransactionState(myTransactionId);
+  const myTransactionState = useMyTransactionState(myTransactionId, version, collateral);
 
   const { dispatchEvent } = useVaultView();
 

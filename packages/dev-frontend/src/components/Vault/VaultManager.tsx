@@ -200,7 +200,7 @@ export const  VaultManager = (props: VaultManagerProps): JSX.Element => {
 
   const openingNewVault = original.isEmpty;
 
-  const myTransactionState = useMyTransactionState(transactionIdMatcher);
+  const myTransactionState = useMyTransactionState(transactionIdMatcher, version, collateral);
   const isCollateralChecked = checkTransactionCollateral(
     myTransactionState,
     version,

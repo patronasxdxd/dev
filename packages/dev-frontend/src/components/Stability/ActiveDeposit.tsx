@@ -49,7 +49,7 @@ export const ActiveDeposit = (props: ActiveDepositProps): JSX.Element => {
   const hasGain = !bammDeposit.collateralGain.isZero;
 
   const transactionId = "stability-deposit";
-  const transactionState = useMyTransactionState(transactionId);
+  const transactionState = useMyTransactionState(transactionId, version, collateral);
   const isCollateralChecked = checkTransactionCollateral(
     transactionState,
     version,
