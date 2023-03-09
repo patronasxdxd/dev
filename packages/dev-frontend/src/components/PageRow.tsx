@@ -78,7 +78,7 @@ export const PageRow = ({ Component, isWidthFull }: PageRowProps ): JSX.Element 
           </Box>
         ))}
         {approvedVersions.length <= 1 && !isWidthFull && (
-          <Container variant="secondHalf" sx={{ display: "flex", width: "100%" }}>
+          <Container variant="secondHalf" sx={{ display: "flex", maxHeight: "28rem", width: "100%" }}>
             <SystemStatsCard IsPriceEditable={false} />
           </Container>
         )}
