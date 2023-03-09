@@ -173,8 +173,8 @@ extendEnvironment(env => {
   env.deployLiquity = async (
     deployer,
     oracleAddresses,
-    collateralSymbol = "tst",
-    collateralAddress = "",
+    collateralSymbol = "eth",
+    collateralAddress = ZERO_ADDRESS,
     delay = 90 * 24 * 60 * 60,
     stablecoinAddress = "",
     useRealPriceFeed = false,
