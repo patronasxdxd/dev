@@ -226,6 +226,7 @@ export const LineChart = (): JSX.Element => {
           {loadedChart && <>
             <Flex sx={{ 
               position: "absolute", 
+              gap: "2rem",
               marginTop: "-1.6rem",
               fontSize: "1.6rem", 
               fontWeight: "bold", 
@@ -242,13 +243,14 @@ export const LineChart = (): JSX.Element => {
             </Flex>
             <Flex sx={{ 
               fontSize: ".9em",
+              marginTop: "1rem",
               marginBottom: "1.5rem",
               height: "1rem",
             }}>
               {loadedChart && isHovered && activeLabel}
             </Flex>
           </>}
-          <Box sx={{ display: "flex", height: "100%", width: "100%", justifyContent: "center", alignItems: "center"}} ref={hoverRef}>
+          <Box sx={{ display: "flex", paddingBottom: "1rem", height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }} ref={hoverRef}>
             {
               !loadedChart 
                 ? <LoadingChart />
