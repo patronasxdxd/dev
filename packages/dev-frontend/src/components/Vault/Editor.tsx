@@ -237,6 +237,9 @@ export const EditableRow = ({
             setInvalid(true);
           }
         }}
+        onWheel={e => {
+          setEditing(undefined);
+        }}
         onBlur={() => {
           setEditing(undefined);
           setInvalid(false);
