@@ -170,6 +170,29 @@ contract('BAMM', async accounts => {
         const whaleBalanceAfter = await thusdToken.balanceOf(whale)
         assert.equal(whaleBalanceAfter.sub(whaleBalanceBefore).toString(), 50)      
       })
+      
+      it("deposit(): one user deposits, withdraws almost everything and then another deposits", async () => {
+        // --- SETUP --- Give Alice a least 200
+        await openTrove({ extraTHUSDAmount: toBN(200), ICR: toBN(dec(2, 18)), extraParams: { from: alice } })
+        await openTrove({ extraTHUSDAmount: toBN(200), ICR: toBN(dec(2, 18)), extraParams: { from: whale } })    
+
+        // --- TEST ---
+        await thusdToken.approve(bamm.address, toBN(dec(800, 18)), { from: whale })      
+        await bamm.deposit(toBN(dec(800, 18)), { from: whale })     
+
+        const whaleShare = await bamm.stake(whale)
+        const shareToWithdraw = whaleShare.sub(toBN(1));
+        await bamm.withdraw(shareToWithdraw, { from: whale }); 
+        
+        await thusdToken.approve(bamm.address, toBN(100), { from: alice })
+
+        try {
+          await bamm.deposit(toBN(100), { from: alice })
+        } catch (err) {
+          assert.include(err.message, "revert")
+          assert.include(err.message, "deposit: rounding error")
+        }
+      })
 
       it('rebalance scenario', async () => {
         // --- SETUP ---
