@@ -13,6 +13,8 @@ const dec = th.dec
 const getLatestBlockTimestamp = th.getLatestBlockTimestamp
 const fastForwardTime = th.fastForwardTime
 
+const feePool = "0x1000000000000000000000000000000000000001"
+
 contract('PCV', async accounts => {
   
   const [owner, alice, bob, council, treasury] = accounts;
@@ -52,7 +54,9 @@ contract('PCV', async accounts => {
         chainlink.address, 
         stabilityPool.address, 
         thusdToken.address, 
-        erc20.address)
+        erc20.address,
+        400, 
+        feePool)
       contracts.bamm = bamm
 
       await deploymentHelper.connectCoreContracts(contracts)

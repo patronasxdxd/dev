@@ -76,33 +76,33 @@ contract('BAMM', async accounts => {
           stabilityPool.address, 
           thusdToken.address, 
           erc20.address,
-          {from: bammOwner})
-        lens = await BLens.new()
-        await bamm.enableSwap(
-          thusdChainlink.address,
           400, 
           feePool,
-          {from: bammOwner}
-        )
+          {from: bammOwner})
+        lens = await BLens.new()
 
         await thusdChainlink.setPrice(dec(1,18)) // 1 THUSD = 1 USD
       })
 
-      it("enableSwap(): reverts when caller is not owner", async () => {
+      it("setTHUSD2UsdPriceAggregator(): reverts when caller is not owner", async () => {
         try {
-          await bamm.enableSwap(thusdChainlink.address, 400,  feePool, { from: alice })
+          await bamm.setTHUSD2UsdPriceAggregator(thusdChainlink.address, { from: alice })
         } catch (err) {
           assert.include(err.message, "revert")
           assert.include(err.message, "Ownable: caller is not the owner")
         }
       })
 
-      it("enableSwap(): reverts when tries to enable second time", async () => {
+      it("setTHUSD2UsdPriceAggregator(): reverts when tries to enable second time", async () => {
+        await bamm.setTHUSD2UsdPriceAggregator(
+          thusdChainlink.address,
+          {from: bammOwner}
+        )
         try {
-          await bamm.enableSwap(thusdChainlink.address, 400,  feePool, { from: bammOwner })
+          await bamm.setTHUSD2UsdPriceAggregator(thusdChainlink.address, { from: bammOwner })
         } catch (err) {
           assert.include(err.message, "revert")
-          assert.include(err.message, "swap: swap already enabled")
+          assert.include(err.message, "set: price aggregator already set")
         }
       })
 
@@ -496,6 +496,10 @@ contract('BAMM', async accounts => {
 
       it('test getSwapCollateralAmount', async () => {
         // --- SETUP ---
+        await bamm.setTHUSD2UsdPriceAggregator(
+          thusdChainlink.address,
+          {from: bammOwner}
+        )
 
         // Whale opens Trove and deposits to SP
         await openTrove({ extraTHUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(20, 18)), extraParams: { from: whale } })
