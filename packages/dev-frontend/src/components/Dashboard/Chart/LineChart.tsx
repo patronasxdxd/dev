@@ -61,7 +61,7 @@ export const LineChart = (): JSX.Element => {
   const [loadedChart, setLoadedChart] = useState<boolean>(false);
   const [timestamps, setTimestamps] = useState<Array<TimestampsObject>>([]);
   const [activeLabel, setActiveLabel] = useState<string>('-');
-  const [chartData, setChartData] = useState<Array<Decimal>>([]);
+  const [chartData, setChartData] = useState<Array<Number>>([]);
   const [lastTvl, setLastTvl] = useState<Decimal>();
   const [chartLabels, setChartLabels] = useState<Array<TimestampsObject>>();
 
@@ -79,28 +79,46 @@ export const LineChart = (): JSX.Element => {
       console.error('tvl fetch error: ', error)
     })
 
-  useEffect(() => {
-    if (!isMounted || !loadedChart) {
-      return
-    }
-    let historicalTvl: Decimal[] = []
-    for (const collateralTvl of tvl) {
-      collateralTvl.tvl.forEach((tvl, index) => {
-        if (historicalTvl[index] === undefined) {
-          historicalTvl[index] = Decimal.from(0)
-        }
-        historicalTvl[index] = tvl.totalCollateral.add(historicalTvl[index])
-      });
-    }
-    setChartLabels(timestamps)
-    setChartData(historicalTvl)
-    setLastTvl(historicalTvl[historicalTvl.length - 1])
-
-    return () => { 
-      setIsMounted(false);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMounted, loadedChart])
+    useEffect(() => {
+      const cachedData = localStorage.getItem("chartData");
+      const cachedLabels = localStorage.getItem("chartLabels");
+    
+      if (cachedData && cachedLabels) {
+        setLoadedChart(true)
+        setChartData(JSON.parse(cachedData));
+        setChartLabels(JSON.parse(cachedLabels));
+        setLastTvl(JSON.parse(cachedData)[cachedData.length - 1]);
+        return;
+      }
+    
+      if (!isMounted || !loadedChart) {
+        return;
+      }
+    
+      let historicalTvl: Decimal[] = [];
+    
+      for (const collateralTvl of tvl) {
+        collateralTvl.tvl.forEach((tvl, index) => {
+          if (historicalTvl[index] === undefined) {
+            historicalTvl[index] = Decimal.from(0);
+          }
+          historicalTvl[index] = tvl.totalCollateral.add(historicalTvl[index]);
+        });
+      }
+      const historicalTvlinNumber = historicalTvl.map(decimal => parseInt(decimal.toString()))
+    
+      setChartLabels(timestamps);
+      setChartData(historicalTvlinNumber);
+      setLastTvl(historicalTvl[historicalTvl.length - 1]);
+    
+      // Cache the data in localStorage
+      historicalTvlinNumber.length > 0 && localStorage.setItem("chartData", JSON.stringify(historicalTvlinNumber));
+      tvl.length > 0 && localStorage.setItem("chartLabels", JSON.stringify(timestamps));
+    
+      return () => {
+        setIsMounted(false);
+      };
+    }, [isMounted, loadedChart, tvl, timestamps]);
 
   const labels: Array<{[date: string]: string}> = [];
 
@@ -176,14 +194,14 @@ export const LineChart = (): JSX.Element => {
   
   const data = {
     labels: labels.map((label: {[day: string]: string}) => {
-      return Object.keys(label)
+      return Object.keys(label)[0]
     }),
     datasets: [
       {
         fill: "start",
         lineTension: 0.4,
         label: 'TVL',
-        data: chartData.map(decimal => parseInt(decimal.toString())),
+        data: chartData,
         borderColor: colorMode === "dark" ? "#7d00ff" : colorMode === "darkGrey" ? "#f3f3f3b8" : "#20cb9d",
         pointBackgroundColor: colorMode === 'dark' ? "#7d00ff" : colorMode === "darkGrey" ? "#f3f3f3b8" : "#20cb9d",
         backgroundColor: (context: ScriptableContext<"line">) => {
@@ -232,7 +250,7 @@ export const LineChart = (): JSX.Element => {
               fontWeight: "bold", 
               color: "text"
             }}>
-              {(lastTvl || (isHovered && activeData > 0)) && '$'}
+              {(lastTvl || (isHovered && activeData)) && '$'}
               {loadedChart && (
                 isHovered 
                 ? activeData 

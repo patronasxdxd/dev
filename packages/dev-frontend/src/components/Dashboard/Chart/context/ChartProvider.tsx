@@ -29,7 +29,7 @@ export type Tvl = {
 
 export type FunctionalPanelProps = {
   loader?: React.ReactNode;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 };
 
 const fetchBlockByTimestamp = (timestamp: number, blocksApiUrl: string) => {
