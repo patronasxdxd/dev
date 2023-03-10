@@ -117,18 +117,11 @@ export const Opening = (props: OpeningProps): JSX.Element => {
   }, [dispatchEvent, version, collateral]);
 
   useEffect(() => {
-    if (!isMounted) {
-      return
-    }
     if (
       isCollateralChecked &&
       (transactionState.type === "confirmedOneShot" || transactionState.type === "confirmed")
     ) {
       dispatchEvent("VAULT_OPENED", version, collateral);
-    }
-
-    return () => {
-      setIsMounted(false);
     }
   }, [isCollateralChecked, transactionState.type, dispatchEvent, version, collateral, isMounted]);
 
