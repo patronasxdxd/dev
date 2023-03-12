@@ -144,7 +144,6 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
 
         uint256 newShare = PRECISION;
         if(total > 0) newShare = total * thusdAmount / totalValue;
-        require(newShare > 0, "deposit: rounding error");
 
         // deposit
         require(thusdToken.transferFrom(msg.sender, address(this), thusdAmount), "deposit: transferFrom failed");
@@ -152,6 +151,9 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
 
         // update LP token
         mint(msg.sender, newShare);
+
+        uint256 temp = (totalValue + thusdAmount) * newShare / total;
+        require(temp >= thusdAmount, "deposit: rounding error");
 
         emit UserDeposit(msg.sender, thusdAmount, newShare);        
     }
