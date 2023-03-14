@@ -11,9 +11,12 @@ import "./../Dependencies/Ownable.sol";
 import "./../Dependencies/AggregatorV3Interface.sol";
 import "./../Dependencies/CheckContract.sol";
 import "./../Dependencies/SendCollateral.sol";
+import "./YieldBoxRebase.sol";
 
 
 contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendCollateral {
+
+    using YieldBoxRebase for uint256;
 
     AggregatorV3Interface public immutable priceAggregator;
     AggregatorV3Interface public thusd2UsdPriceAggregator;    
@@ -140,10 +143,9 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
 
         // this is in theory not reachable. if it is, better halt deposits
         // the condition is equivalent to: (totalValue = 0) ==> (total = 0)
-        require(totalValue > 0 || total == 0, "deposit: system is rekt");
+        // require(totalValue > 0 || total == 0, "deposit: system is rekt");
 
-        uint256 newShare = PRECISION;
-        if(total > 0) newShare = total * thusdAmount / totalValue;
+        uint256 newShare = thusdAmount._toShares(total, totalValue, true);
 
         // deposit
         require(thusdToken.transferFrom(msg.sender, address(this), thusdAmount), "deposit: transferFrom failed");
@@ -152,9 +154,6 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         // update LP token
         mint(msg.sender, newShare);
 
-        uint256 temp = (totalValue + thusdAmount) * newShare / total;
-        require(temp >= thusdAmount, "deposit: rounding error");
-
         emit UserDeposit(msg.sender, thusdAmount, newShare);        
     }
 
@@ -162,8 +161,8 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         uint256 thusdValue = SP.getCompoundedTHUSDDeposit(address(this));
         uint256 collateralValue = getCollateralBalance();
 
-        uint256 thusdAmount = thusdValue * numShares / total;
-        uint256 collateralAmount = collateralValue * numShares / total;
+        uint256 thusdAmount = numShares._toAmount(total, thusdValue, true);
+        uint256 collateralAmount = numShares._toAmount(total, collateralValue, false);
 
         // this withdraws thusdn and collateral
         SP.withdrawFromSP(thusdAmount);
