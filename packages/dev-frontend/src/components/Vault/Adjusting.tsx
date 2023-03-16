@@ -325,7 +325,7 @@ export const Adjusting = (props: AdjustingProps): JSX.Element => {
                 version={version}
                 collateral={collateral}
               >
-                <Button>Approve { symbol }</Button>
+                <Button sx={{ width: "100%" }}>Approve { symbol }</Button>
               </Transaction>
             : stableVaultChange ? (
               <VaultAction

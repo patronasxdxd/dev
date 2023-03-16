@@ -267,7 +267,7 @@ export const Opening = (props: OpeningProps): JSX.Element => {
                 version={version}
                 collateral={collateral}
               >
-                <Button>Approve { symbol }</Button>
+                <Button sx={{ width: "100%" }}>Approve { symbol }</Button>
               </Transaction>
               ) : gasEstimationState.type === "inProgress" ? (
                 <Button disabled>

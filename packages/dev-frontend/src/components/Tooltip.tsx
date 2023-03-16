@@ -36,7 +36,7 @@ export const Tooltip = ({ children, message, placement = "top", link }: TooltipP
         </Card>
       }
     >
-      <span>{children}</span>
+      <span style={{ display: 'flex' }}>{children}</span>
     </Tippy>
   );
 };
