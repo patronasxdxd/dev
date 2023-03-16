@@ -62,7 +62,8 @@ export const LineChart = (): JSX.Element => {
   const [timestamps, setTimestamps] = useState<Array<TimestampsObject>>([]);
   const [activeLabel, setActiveLabel] = useState<string>('-');
   const [chartData, setChartData] = useState<Array<Number>>([]);
-  const [lastTvl, setLastTvl] = useState<Decimal>();
+  const [lastTvlDecimal, setLastTvlDecimal] = useState<Decimal>();
+  const [lastTvlNumber, setLastTvlNumber] = useState<Array<number>>([]);
   const [chartLabels, setChartLabels] = useState<Array<TimestampsObject>>();
 
   useTvl()
@@ -72,53 +73,58 @@ export const LineChart = (): JSX.Element => {
       }
       setTvl(result.tvl)
       setTimestamps(result.timestamps)
-      setLoadedChart(true)
+      setLoadedChart(true);
     })
     .catch((error) => {
       setLoadedChart(false)
       console.error('tvl fetch error: ', error)
     })
 
-    useEffect(() => {
-      const cachedData = localStorage.getItem("chartData");
-      const cachedLabels = localStorage.getItem("chartLabels");
+  useEffect(() => {
+    if (!isMounted) {
+      return;
+    }
+    const cachedData = localStorage.getItem("chartData");
+    const cachedLabels = localStorage.getItem("chartLabels");
     
-      if (cachedData && cachedLabels) {
-        setLoadedChart(true)
-        setChartData(JSON.parse(cachedData));
-        setChartLabels(JSON.parse(cachedLabels));
-        setLastTvl(JSON.parse(cachedData)[cachedData.length - 1]);
-        return;
-      }
-    
-      if (!isMounted || !loadedChart) {
-        return;
-      }
-    
-      let historicalTvl: Decimal[] = [];
-    
-      for (const collateralTvl of tvl) {
-        collateralTvl.tvl.forEach((tvl, index) => {
-          if (historicalTvl[index] === undefined) {
-            historicalTvl[index] = Decimal.from(0);
-          }
-          historicalTvl[index] = tvl.totalCollateral.add(historicalTvl[index]);
-        });
-      }
-      const historicalTvlinNumber = historicalTvl.map(decimal => parseInt(decimal.toString()))
-    
+    if (cachedData && cachedLabels) {
+      setChartData(JSON.parse(cachedData));
+      setChartLabels(JSON.parse(cachedLabels));
+      setLastTvlDecimal(JSON.parse(cachedData)[cachedData.length - 1]);
+      setLoadedChart(true);
+    }
+  
+    if (!loadedChart) {
+      return;
+    }
+    let memeTvl: Decimal[] = [];
+  
+    for (const collateralTvl of tvl) {
+      collateralTvl.tvl.forEach((tvl, index) => {
+        if (memeTvl[index] === undefined) {
+          memeTvl[index] = Decimal.from(0);
+        }
+        memeTvl[index] = tvl.totalCollateral.add(memeTvl[index]);
+      });
+    }
+    setLastTvlNumber(memeTvl.map(decimal => parseInt(decimal.toString())))
+  
+  
+    return () => {
+      setIsMounted(false);
+    };
+  }, [isMounted, loadedChart, tvl, timestamps]);
+
+  useEffect(() => {
+    if (lastTvlNumber.length > 0 && timestamps.length > 0) {
+      setChartData(lastTvlNumber);
       setChartLabels(timestamps);
-      setChartData(historicalTvlinNumber);
-      setLastTvl(historicalTvl[historicalTvl.length - 1]);
-    
-      // Cache the data in localStorage
-      historicalTvlinNumber.length > 0 && localStorage.setItem("chartData", JSON.stringify(historicalTvlinNumber));
-      tvl.length > 0 && localStorage.setItem("chartLabels", JSON.stringify(timestamps));
-    
-      return () => {
-        setIsMounted(false);
-      };
-    }, [isMounted, loadedChart, tvl, timestamps]);
+      localStorage.setItem("chartData", JSON.stringify(lastTvlNumber));
+      localStorage.setItem("chartLabels", JSON.stringify(timestamps));
+    }
+  
+
+  }, [isMounted, lastTvlNumber, timestamps]);
 
   const labels: Array<{[date: string]: string}> = [];
 
@@ -250,12 +256,12 @@ export const LineChart = (): JSX.Element => {
               fontWeight: "bold", 
               color: "text"
             }}>
-              {(lastTvl || (isHovered && activeData)) && '$'}
+              {(lastTvlDecimal || (isHovered && activeData)) && '$'}
               {loadedChart && (
                 isHovered 
                 ? activeData 
-                : lastTvl 
-                  ? lastTvl.prettify(2) 
+                : lastTvlDecimal 
+                  ? lastTvlDecimal.prettify(2) 
                   : '-'
               )} 
             </Flex>
