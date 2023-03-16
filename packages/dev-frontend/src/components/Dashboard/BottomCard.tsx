@@ -17,7 +17,8 @@ type BottomCardProps = {
   children: React.ReactNode
 };
 
-export const BottomCard = ({ 
+export const BottomCard = ({
+  title,
   action, 
   token, 
   path, 
@@ -38,7 +39,7 @@ export const BottomCard = ({
           borderColor: "border"
         }}>
           <Flex sx={{ gap: 1 }}>
-            Stability Pool
+            {title}
             <InfoIcon size="sm" tooltip={
               <Card variant="tooltip">
                 You can earn {COIN} rewards by depositing {COIN} .
