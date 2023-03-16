@@ -814,6 +814,9 @@ export class PopulatableEthersLiquity
   ): Promise<PopulatedEthersLiquityTransaction<TroveCreationDetails>> {
     const { borrowerOperations } = _getContracts(this._readable.connection);
 
+    const collateralAddress = await borrowerOperations.collateralAddress();
+    const isCollateralEth = collateralAddress === ZERO_ADDRESS
+
     const normalizedParams = _normalizeTroveCreation(params);
     const { depositCollateral, borrowTHUSD } = normalizedParams;
 
@@ -844,9 +847,9 @@ export class PopulatableEthersLiquity
     const txParams = (borrowTHUSD: Decimal): Parameters<typeof borrowerOperations.openTrove> => [
       maxBorrowingRate.hex,
       borrowTHUSD.hex,
-      depositCollateral.hex,
+      (isCollateralEth ? Decimal.from(0) : depositCollateral).hex,
       ...hints,
-      { value: depositCollateral.hex, ...overrides }
+      { value: (isCollateralEth ? depositCollateral : Decimal.from(0)).hex, ...overrides }
     ];
 
     let gasHeadroom: number | undefined;
@@ -938,6 +941,10 @@ export class PopulatableEthersLiquity
   ): Promise<PopulatedEthersLiquityTransaction<TroveAdjustmentDetails>> {
     const address = _requireAddress(this._readable.connection, overrides);
     const { borrowerOperations } = _getContracts(this._readable.connection);
+
+    const collateralAddress = await borrowerOperations.collateralAddress();
+    const isCollateralEth = collateralAddress === ZERO_ADDRESS
+
     const normalizedParams = _normalizeTroveAdjustment(params);
     const { depositCollateral, withdrawCollateral, borrowTHUSD, repayTHUSD } = normalizedParams;
 
@@ -977,9 +984,13 @@ export class PopulatableEthersLiquity
       (withdrawCollateral ?? Decimal.ZERO).hex,
       (borrowTHUSD ?? repayTHUSD ?? Decimal.ZERO).hex,
       !!borrowTHUSD,
-      (depositCollateral ?? Decimal.ZERO).hex,
+      (isCollateralEth 
+        ? Decimal.ZERO 
+        : depositCollateral ?? Decimal.ZERO).hex,
       ...hints,
-      { value: (depositCollateral ?? Decimal.ZERO).hex, ...overrides }
+      { value: (isCollateralEth 
+        ? depositCollateral ?? Decimal.ZERO
+        : Decimal.ZERO).hex, ...overrides }
     ];
 
     let gasHeadroom: number | undefined;
