@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { Button, Flex, Link } from "theme-ui";
 
 import { LiquityStoreState as ThresholdStoreState, Decimal, Trove as Vault, Decimalish, THUSD_MINIMUM_DEBT } from "@liquity/lib-base";
