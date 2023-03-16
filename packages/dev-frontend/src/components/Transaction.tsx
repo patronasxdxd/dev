@@ -266,8 +266,6 @@ const tryToGetRevertReason = async (provider: Provider, tx: TransactionReceipt) 
 };
 
 export const TransactionMonitor = (): JSX.Element => {
-  const [isMounted, setIsMounted] = useState<boolean>(true);
-
   const { provider } = useThreshold();
   const [transactionState, setTransactionState] = useTransactionState();
 
@@ -277,7 +275,7 @@ export const TransactionMonitor = (): JSX.Element => {
   const collateral = transactionState.collateral !== "" ? transactionState.collateral : undefined
 
   useEffect(() => {
-    if (!isMounted || !id || !tx || !version || !collateral) {
+    if (!id || !tx || !version || !collateral) {
       return
     }
     let cancelled = false;
@@ -290,7 +288,7 @@ export const TransactionMonitor = (): JSX.Element => {
         if (cancelled) {
           return;
         }
-
+        
         const { confirmations } = receipt.rawReceipt;
         const blockNumber = receipt.rawReceipt.blockNumber + confirmations - 1;
         console.log(`Block #${blockNumber} ${confirmations}-confirms tx ${txHash}`);
@@ -360,16 +358,10 @@ export const TransactionMonitor = (): JSX.Element => {
           console.log(`Cancel monitoring tx ${txHash}`);
           cancelled = true;
         }
-        setIsMounted(false);
       };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [provider, id, tx, setTransactionState]);
+  }, [provider, id, tx, setTransactionState, version, collateral]);
 
   useEffect(() => {
-    if (!isMounted) {
-      return;
-    }
-
     if (transactionState.type === "confirmedOneShot" && id && version && collateral) {
       // hack: the txn confirmed state lasts 5 seconds which blocks other states, review with Dani
       setTransactionState({ type: "confirmed", id, version, collateral  });
@@ -390,11 +382,17 @@ export const TransactionMonitor = (): JSX.Element => {
 
       return () => {
         cancelled = true;
-        setIsMounted(false);
       };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactionState.type, setTransactionState, id]);
+  }, [
+    transactionState.type, 
+    transactionState.collateral, 
+    transactionState.version, 
+    setTransactionState, 
+    id, 
+    version, 
+    collateral
+  ]);
 
   if (transactionState.type === "idle" || transactionState.type === "waitingForApproval") {
     return <></>;
