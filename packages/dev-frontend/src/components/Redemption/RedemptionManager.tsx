@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Box, Flex, Card, Link } from "theme-ui";
 
 import { Decimal, Percent, LiquityStoreState as ThresholdStoreState, MINIMUM_COLLATERAL_RATIO } from "@liquity/lib-base";
@@ -42,7 +42,6 @@ export const RedemptionManager = ({ version, collateral }: RedemptionManagerProp
   const store = thresholdStore?.store!;
   const { price, fees, total, thusdBalance, symbol, isTroveManager } = store
 
-  const [isMounted, setIsMounted] = useState<boolean>(true);
   const [thusdAmount, setTHUSDAmount] = useState(Decimal.ZERO);
   const [changePending, setChangePending] = useState(false);
   const editingState = useState<string>();
@@ -54,42 +53,42 @@ export const RedemptionManager = ({ version, collateral }: RedemptionManagerProp
   const ethFee = ethAmount.mul(redemptionRate);
   const maxRedemptionRate = redemptionRate.add(0.001); // TODO slippage tolerance
 
-  const myTransactionState = useMyTransactionState(transactionId);
+  const myTransactionState = useMyTransactionState(transactionId, version, collateral);
   const isCollateralChecked = checkTransactionCollateral(
     myTransactionState,
     version,
     collateral
   );
 
+  const handleSetChangePending = useCallback(
+    (value) => {
+      setChangePending(value);
+    },
+    [setChangePending]
+  );
+  
+  const handleSetTHUSDAmount = useCallback(
+    (value) => {
+      setTHUSDAmount(value);
+    },
+    [setTHUSDAmount]
+  );
+
   useEffect(() => {
-    if (!isMounted) {
-      return
-    }
     if (
       isCollateralChecked &&
       (myTransactionState.type === "waitingForApproval" ||
       myTransactionState.type === "waitingForConfirmation")
     ) {
-      setChangePending(true);
+      handleSetChangePending(true);
     } else if (isCollateralChecked && (myTransactionState.type === "failed" || myTransactionState.type === "cancelled")) {
-      setChangePending(false);
+      handleSetChangePending(false);
     } else if (isCollateralChecked && (myTransactionState.type === "confirmed" || myTransactionState.type === "confirmedOneShot")) {
-      setTHUSDAmount(Decimal.ZERO);
-      setChangePending(false);
+      handleSetTHUSDAmount(Decimal.ZERO);
+      handleSetChangePending(false);
     }
-
-    return () => { 
-      setIsMounted(false);
-    };
   }, 
-  [
-    isCollateralChecked,
-    myTransactionState.type,
-    setChangePending, setTHUSDAmount, 
-    isMounted, 
-    version,
-    collateral,
-  ]);
+  [isCollateralChecked, myTransactionState.type, handleSetChangePending, handleSetTHUSDAmount, collateral]);
 
   const [canRedeem, description] = total.collateralRatioIsBelowMinimum(price)
     ? [

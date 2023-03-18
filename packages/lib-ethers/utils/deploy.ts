@@ -114,16 +114,6 @@ const deployContracts = async (
         addresses.priceFeed,
         { ...overrides }
       )
-  
-  const thusdChainlink = (priceFeedIsTestnet === false) 
-    ? oracleAddresses["mainnet"]["thusd"]
-    : await deployContract(
-        deployer,
-        getContractFactory,
-        "ChainlinkTestnet",
-        ZERO_ADDRESS,
-        { ...overrides }
-      )
 
   const thusdToken = (stablecoinAddress != "") ? stablecoinAddress : await deployContract(
     deployer,
@@ -141,11 +131,8 @@ const deployContracts = async (
     getContractFactory, 
     "BAMM",
     chainlink,
-    thusdChainlink,
     addresses.stabilityPool,
     thusdToken,
-    400,
-    "0x1000000000000000000000000000000000000001", //TODO feePool contract should be addressed with Bprotocol partnership
     addresses.erc20,
     { ...overrides }
   );

@@ -45,11 +45,11 @@ export function handleRedemption(event: Redemption): void {
     event,
     event.params._attemptedTHUSDAmount,
     event.params._actualTHUSDAmount,
-    event.params._ETHSent,
-    event.params._ETHFee
+    event.params._collateralSent,
+    event.params._collateralFee
   );
 }
 
 export function handleLTermsUpdated(event: LTermsUpdated): void {
-  updateTotalRedistributed(event.params._L_ETH, event.params._L_THUSDDebt);
+  updateTotalRedistributed(event.params._L_Collateral, event.params._L_THUSDDebt);
 }

@@ -9,7 +9,6 @@ import { Icon } from "./components/Icon";
 import { Header } from "./components/Header";
 import { WalletConnector } from "./components/WalletConnector";
 import { TransactionProvider } from "./components/Transaction";
-import { ChartProvider } from "./components/Dashboard/Chart/context/ChartProvider";
 import { FunctionalPanel } from "./components/FunctionalPanel";
 
 import { Dashboard } from "./pages/Dashboard";
@@ -90,7 +89,6 @@ export const ThresholdFrontend = ({ loader }: ThresholdFrontendProps): JSX.Eleme
               >
                 <TransactionProvider>
                   <FunctionalPanel loader={loader}>
-                    <ChartProvider>
                       <Switch>
                         <Route path="/" exact>
                           <Dashboard />
@@ -108,7 +106,6 @@ export const ThresholdFrontend = ({ loader }: ThresholdFrontendProps): JSX.Eleme
                           <RiskyVaultsPage />
                         </Route>
                       </Switch>
-                    </ChartProvider>
                   </FunctionalPanel>
                 </TransactionProvider>
               </ThresholdProvider>

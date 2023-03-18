@@ -119,7 +119,7 @@ export const StabilityDepositManager = (props: StabilityDepositManagerProps): JS
     undefined,
   );
 
-  const myTransactionState = useMyTransactionState(transactionId);
+  const myTransactionState = useMyTransactionState(transactionId, version, collateral);
   const isCollateralChecked = checkTransactionCollateral(
     myTransactionState,
     version,

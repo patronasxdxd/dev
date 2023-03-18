@@ -3,24 +3,22 @@
   "name": "default",
   "subfolders": [
     {
-      "path": "deployments/default/tst",
-      "name": "tst",
+      "path": "deployments/default/eth",
+      "name": "eth",
       "subfolders": [
         {
-          "path": "deployments/default/tst/v1",
+          "path": "deployments/default/eth/v1",
           "name": "v1"
-        },
+        }
+      ]
+    },
+    {
+      "path": "deployments/default/tbtc",
+      "name": "tbtc",
+      "subfolders": [
         {
-          "path": "deployments/default/tst/v2",
-          "name": "v2"
-        },
-        {
-          "path": "deployments/default/tst/v3",
-          "name": "v3"
-        },
-        {
-          "path": "deployments/default/tst/v4",
-          "name": "v4"
+          "path": "deployments/default/tbtc/v1",
+          "name": "v1"
         }
       ]
     }

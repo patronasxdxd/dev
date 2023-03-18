@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { Button, Flex, Link } from "theme-ui";
 
 import { LiquityStoreState as ThresholdStoreState, Decimal, Trove as Vault, Decimalish, THUSD_MINIMUM_DEBT } from "@liquity/lib-base";
@@ -157,7 +157,6 @@ type VaultManagerProps = {
 
 export const  VaultManager = (props: VaultManagerProps): JSX.Element => {
   const { version, collateral, collateralAmount, debt } = props;
-  const [isMounted, setIsMounted] = useState<boolean>(true);
   const [{ original, edited, changePending }, dispatch] = useThresholdReducer(version, collateral, reduce, init);
   const thresholdSelectorStores = useThresholdSelector(select);
   const thresholdStore = thresholdSelectorStores.find((store) => {
@@ -169,16 +168,12 @@ export const  VaultManager = (props: VaultManagerProps): JSX.Element => {
   const validationContext = store.validationContext;
 
   useEffect(() => {
-    if (!isMounted) return;
-
     if (collateralAmount !== undefined) {
       dispatch({ type: "setCollateral", newValue: collateralAmount });
     }
     if (debt !== undefined) {
       dispatch({ type: "setDebt", newValue: debt });
     }
-    
-    return () => setIsMounted(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collateralAmount, debt, dispatch]);
 
@@ -200,7 +195,7 @@ export const  VaultManager = (props: VaultManagerProps): JSX.Element => {
 
   const openingNewVault = original.isEmpty;
 
-  const myTransactionState = useMyTransactionState(transactionIdMatcher);
+  const myTransactionState = useMyTransactionState(transactionIdMatcher, version, collateral);
   const isCollateralChecked = checkTransactionCollateral(
     myTransactionState,
     version,
@@ -208,7 +203,10 @@ export const  VaultManager = (props: VaultManagerProps): JSX.Element => {
   );
 
   useEffect(() => {
-    if (!isMounted && !isCollateralChecked) return;
+    if (!isCollateralChecked) {
+      return;
+    }
+
     if (myTransactionState.type === "waitingForApproval" || myTransactionState.type === "waitingForConfirmation") {
       dispatch({ type: "startChange" });
     } else if (myTransactionState.type === "failed" || myTransactionState.type === "cancelled")
@@ -222,10 +220,8 @@ export const  VaultManager = (props: VaultManagerProps): JSX.Element => {
         dispatchEvent("VAULT_ADJUSTED", version, collateral);
       }
     }
-  
-    setIsMounted(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCollateralChecked, myTransactionState.type, dispatch, dispatchEvent, version, collateral, isMounted]);
+  }, [isCollateralChecked, myTransactionState.type, dispatch, dispatchEvent, version, collateral]);
 
   return (
     <VaultEditor

@@ -101,7 +101,7 @@ export const Opening = (props: OpeningProps): JSX.Element => {
 
   const [gasEstimationState, setGasEstimationState] = useState<GasEstimationState>({ type: "idle" });
 
-  const transactionState = useMyTransactionState(TRANSACTION_ID);
+  const transactionState = useMyTransactionState(TRANSACTION_ID, version, collateral);
   const isCollateralChecked = checkTransactionCollateral(
     transactionState,
     version,
@@ -123,13 +123,15 @@ export const Opening = (props: OpeningProps): JSX.Element => {
     ) {
       dispatchEvent("VAULT_OPENED", version, collateral);
     }
-  }, [isCollateralChecked, transactionState.type, dispatchEvent, version, collateral]);
+  }, [isCollateralChecked, transactionState.type, dispatchEvent, version, collateral, isMounted]);
 
   useEffect(() => {
-    if (isMounted) {
-      if (!collateralAmount.isZero && borrowAmount.isZero) {
-        setBorrowAmount(THUSD_MINIMUM_NET_DEBT);
-      }
+    if (!isMounted) {
+      return
+    }
+
+    if (!collateralAmount.isZero && borrowAmount.isZero) {
+      setBorrowAmount(THUSD_MINIMUM_NET_DEBT);
     }
     return () => {
       setIsMounted(false);
@@ -265,7 +267,7 @@ export const Opening = (props: OpeningProps): JSX.Element => {
                 version={version}
                 collateral={collateral}
               >
-                <Button>Approve { symbol }</Button>
+                <Button sx={{ width: "100%" }}>Approve { symbol }</Button>
               </Transaction>
               ) : gasEstimationState.type === "inProgress" ? (
                 <Button disabled>

@@ -18,52 +18,52 @@ import { TransactionStatus } from "./TransactionStatus";
 
 type TransactionIdle = {
   type: "idle";
-  version?: string;
-  collateral?: string;
+  version: string;
+  collateral: string;
 };
 
 type TransactionFailed = {
   type: "failed";
   id: string;
   error: Error;
-  version?: string;
-  collateral?: string;
+  version: string;
+  collateral: string;
 };
 
 type TransactionWaitingForApproval = {
   type: "waitingForApproval";
   id: string;
-  version?: string;
-  collateral?: string;
+  version: string;
+  collateral: string;
 };
 
 type TransactionCancelled = {
   type: "cancelled";
   id: string;
-  version?: string;
-  collateral?: string;
+  version: string;
+  collateral: string;
 };
 
 type TransactionWaitingForConfirmations = {
   type: "waitingForConfirmation";
   id: string;
   tx: SentTransaction;
-  version?: string;
-  collateral?: string;
+  version: string;
+  collateral: string;
 };
 
 type TransactionConfirmed = {
   type: "confirmed";
   id: string;
-  version?: string;
-  collateral?: string;
+  version: string;
+  collateral: string;
 };
 
 type TransactionConfirmedOneShot = {
   type: "confirmedOneShot";
   id: string;
-  version?: string;
-  collateral?: string;
+  version: string;
+  collateral: string;
 };
 
 export type TransactionState =
@@ -84,7 +84,7 @@ type TransactionProviderProps = {
 }
 
 export const TransactionProvider = ({ children }: TransactionProviderProps): JSX.Element => {
-  const transactionState = useState<TransactionState>({ type: "idle" });
+  const transactionState = useState<TransactionState>({ type: "idle", version: "", collateral: "" });
   return (
     <TransactionContext.Provider value={transactionState}>{children}</TransactionContext.Provider>
   );
@@ -100,10 +100,15 @@ const useTransactionState = () => {
   return transactionState;
 };
 
-export const useMyTransactionState = (myId: string | RegExp): TransactionState => {
+export const useMyTransactionState = (myId: string | RegExp, version: string, collateral: string): TransactionState => {
   const [transactionState] = useTransactionState();
+  const isCollateralChecked = checkTransactionCollateral(
+    transactionState,
+    version,
+    collateral
+  );
 
-  return transactionState.type !== "idle" &&
+  return isCollateralChecked && transactionState.type !== "idle" &&
     (typeof myId === "string" ? transactionState.id === myId : transactionState.id.match(myId))
     ? { ...transactionState, version: transactionState.version, collateral: transactionState.collateral }
     : { type: "idle", version: transactionState.version, collateral: transactionState.collateral };
@@ -261,128 +266,133 @@ const tryToGetRevertReason = async (provider: Provider, tx: TransactionReceipt) 
 };
 
 export const TransactionMonitor = (): JSX.Element => {
-  const [isMounted, setIsMounted] = useState<boolean>(true);
-
   const { provider } = useThreshold();
   const [transactionState, setTransactionState] = useTransactionState();
 
   const id = transactionState.type !== "idle" ? transactionState.id : undefined;
   const tx = transactionState.type === "waitingForConfirmation" ? transactionState.tx : undefined;
+  const version = transactionState.version !== "" ? transactionState.version : undefined
+  const collateral = transactionState.collateral !== "" ? transactionState.collateral : undefined
 
   useEffect(() => {
-    if (!isMounted) {
+    if (!id || !tx || !version || !collateral) {
       return
     }
+    let cancelled = false;
+    let finished = false;
 
-    if (id && tx) {
-      let cancelled = false;
-      let finished = false;
-
-      const txHash = tx.rawSentTransaction.hash;
-
-      const waitForConfirmation = async () => {
-        try {
-          const receipt = await tx.waitForReceipt();
-
-          if (cancelled) {
-            return;
-          }
-
-          const { confirmations } = receipt.rawReceipt;
-          const blockNumber = receipt.rawReceipt.blockNumber + confirmations - 1;
-          console.log(`Block #${blockNumber} ${confirmations}-confirms tx ${txHash}`);
-          console.log(`Finish monitoring tx ${txHash}`);
-          finished = true;
-
-          if (receipt.status === "succeeded") {
-            console.log(`${receipt}`);
-
-            setTransactionState({
-              type: "confirmedOneShot",
-              id
-            });
-          } else {
-            const reason = await tryToGetRevertReason(provider, receipt.rawReceipt);
-
-            if (cancelled) {
-              return;
-            }
-
-            console.error(`Tx ${txHash} failed`);
-            if (reason) {
-              console.error(`Revert reason: ${reason}`);
-            }
-
-            setTransactionState({
-              type: "failed",
-              id,
-              error: new Error(reason ? `Reverted: ${reason}` : "Failed")
-            });
-          }
-        } catch (rawError) {
-          if (cancelled) {
-            return;
-          }
-
-          finished = true;
-
-          if (rawError instanceof EthersTransactionCancelledError) {
-            console.log(`Cancelled tx ${txHash}`);
-            setTransactionState({ type: "cancelled", id });
-          } else {
-            console.error(`Failed to get receipt for tx ${txHash}`);
-            console.error(rawError);
-
-            setTransactionState({
-              type: "failed",
-              id,
-              error: new Error("Failed")
-            });
-          }
+    const txHash = tx.rawSentTransaction.hash;
+    const waitForConfirmation = async () => {
+      try {
+        const receipt = await tx.waitForReceipt();
+        if (cancelled) {
+          return;
         }
-      };
+        
+        const { confirmations } = receipt.rawReceipt;
+        const blockNumber = receipt.rawReceipt.blockNumber + confirmations - 1;
+        console.log(`Block #${blockNumber} ${confirmations}-confirms tx ${txHash}`);
+        console.log(`Finish monitoring tx ${txHash}`);
+        finished = true;
 
+        if (receipt.status === "succeeded") {
+          console.log(`${receipt}`);
+
+          setTransactionState({
+            type: "confirmedOneShot",
+            id,
+            version,
+            collateral
+          });
+        } else {
+          const reason = await tryToGetRevertReason(provider, receipt.rawReceipt);
+
+          if (cancelled) {
+            return;
+          }
+
+          console.error(`Tx ${txHash} failed`);
+          if (reason) {
+            console.error(`Revert reason: ${reason}`);
+          }
+
+          setTransactionState({
+            type: "failed",
+            id,
+            error: new Error(reason ? `Reverted: ${reason}` : "Failed"),
+            version,
+            collateral
+          });
+        }
+      } catch (rawError) {
+        if (cancelled) {
+          return;
+        }
+
+        finished = true;
+
+        if (rawError instanceof EthersTransactionCancelledError) {
+          console.log(`Cancelled tx ${txHash}`);
+          setTransactionState({ type: "cancelled", id, version, collateral });
+        } else {
+          console.error(`Failed to get receipt for tx ${txHash}`);
+          console.error(rawError);
+
+          setTransactionState({
+            type: "failed",
+            id,
+            error: new Error("Failed"),
+            version,
+            collateral
+          });
+        }
+      }
+    }
+   
       console.log(`Start monitoring tx ${txHash}`);
       waitForConfirmation();
 
       return () => {
         if (!finished) {
-          setTransactionState({ type: "idle" });
+          setTransactionState({ type: "idle", version, collateral });
           console.log(`Cancel monitoring tx ${txHash}`);
           cancelled = true;
         }
-        setIsMounted(false);
       };
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [provider, id, tx, setTransactionState]);
+  }, [provider, id, tx, setTransactionState, version, collateral]);
 
   useEffect(() => {
-    if (!isMounted) return;
-
-    if (transactionState.type === "confirmedOneShot" && id) {
+    if (transactionState.type === "confirmedOneShot" && id && version && collateral) {
       // hack: the txn confirmed state lasts 5 seconds which blocks other states, review with Dani
-      setTransactionState({ type: "confirmed", id });
+      setTransactionState({ type: "confirmed", id, version, collateral  });
     } else if (
-      transactionState.type === "confirmed" ||
+      (transactionState.type === "confirmed" ||
       transactionState.type === "failed" ||
-      transactionState.type === "cancelled"
+      transactionState.type === "cancelled") &&
+      (transactionState.version === version &&
+      transactionState.collateral === collateral)
     ) {
       let cancelled = false;
 
       setTimeout(() => {
         if (!cancelled) {
-          setTransactionState({ type: "idle" });
+          setTransactionState({ type: "idle", version, collateral  });
         }
       }, 5000);
 
       return () => {
         cancelled = true;
-        setIsMounted(false);
       };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactionState.type, setTransactionState, id]);
+  }, [
+    transactionState.type, 
+    transactionState.collateral, 
+    transactionState.version, 
+    setTransactionState, 
+    id, 
+    version, 
+    collateral
+  ]);
 
   if (transactionState.type === "idle" || transactionState.type === "waitingForApproval") {
     return <></>;

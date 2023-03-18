@@ -4,7 +4,7 @@ import { ChartContext } from "./ChartContext";
 import { useThreshold } from "../../../../hooks/ThresholdContext";
 import { Decimal } from "@liquity/lib-base";
 import { fetchCoinGeckoPrice } from "./fetchCoinGeckoPrice";
-import { createClient } from "urql";
+import axios from "axios";
 
 export type TimestampsObject = {
   universalTimestamp: number;
@@ -29,7 +29,7 @@ export type Tvl = {
 
 export type FunctionalPanelProps = {
   loader?: React.ReactNode;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 };
 
 const fetchBlockByTimestamp = (timestamp: number, blocksApiUrl: string) => {
@@ -101,20 +101,16 @@ export const queryTvlByBlocks = async (
 
         // Fetch TVL data using the fetchTvlByBlock() function
         const result = await fetchTvlByBlock(blockNumber, thresholdUsdApiUrl);
-
+        
         // Check if the result data contains systemStates; if not, set totalCollateral to 0
         const totalCollateral = result.data?.systemStates[0]?.totalCollateral || 0;
-
-        // Convert totalCollateral to an integer and create a Decimal instance for it
-        const decimalTotalCollateral = Decimal.from(parseInt(totalCollateral));
-
+        const decimalTotalCollateral = Decimal.from(totalCollateral);
         return {
           totalCollateral: decimalTotalCollateral,
           blockNumber,
         };
       })
     );
-
     return tvlData;
   } catch (error) {
     console.error('queryTvlByBlocks error: ', error);
@@ -151,7 +147,7 @@ export const calculateTvlPrice = async (historicalTvl: Array<TvlData>, coingecko
   // map over the historical TVL data and price each entry in USD
   const pricedHistoricalTvl = historicalTvl.map(({ totalCollateral, blockNumber }) => {
     // multiply the total collateral by the USD token price to get the total value in USD
-    const pricedTvl = totalCollateral.mul(tokenPriceUSD);
+    const pricedTvl: Decimal = totalCollateral.mul(tokenPriceUSD);
 
     // return a new TVL entry with the priced total value and the original block number
     return { totalCollateral: pricedTvl, blockNumber };
@@ -162,12 +158,14 @@ export const calculateTvlPrice = async (historicalTvl: Array<TvlData>, coingecko
 };
 
 async function fetchData(API_URL: string, query: string) {
-  const client = createClient({
-    url: API_URL
-  });
-  const response = await client.query(query).toPromise();
-  return response;
-};
+  try {
+    const response = await axios.post(API_URL, { query });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+}
 
 export const ChartProvider = ({ children }: FunctionalPanelProps): JSX.Element  => {
   const timestamps: Array<TimestampsObject> = createListOfTimestamps();
@@ -225,7 +223,6 @@ export const ChartProvider = ({ children }: FunctionalPanelProps): JSX.Element  
     if (!isMounted) {
       return;
     }
-
     getTVLData();
 
     // Clean up function to set isMounted to false when the component unmounts

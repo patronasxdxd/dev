@@ -33,13 +33,12 @@ import {
   _redeemMaxIterations
 } from "../src/PopulatableEthersLiquity";
 
-import { DEPLOYMENT_COLLATERAL_FOR_TESTING, DEPLOYMENT_VERSION_FOR_TESTING } from "../src/_utils"
 import { EthersTransactionReceipt } from "../src/types";
 import { _LiquityDeploymentJSON } from "../src/contracts";
 import { _connectToDeployment } from "../src/EthersLiquityConnection";
 import { EthersLiquity } from "../src/EthersLiquity";
-import { ReadableEthersLiquity } from "../src/ReadableEthersLiquity";
 import { oracleAddresses } from "../hardhat.config";
+import { DEFAULT_COLLATERAL_FOR_TESTING, DEFAULT_VERSION_FOR_TESTING } from "../src/_utils";
 
 const provider = ethers.provider;
 
@@ -58,7 +57,7 @@ const connectToDeployment = async (
   signer: Signer
 ) =>
   EthersLiquity._from(
-    _connectToDeployment(DEPLOYMENT_COLLATERAL_FOR_TESTING, DEPLOYMENT_VERSION_FOR_TESTING, deployment, signer, {
+    _connectToDeployment(DEFAULT_COLLATERAL_FOR_TESTING, DEFAULT_VERSION_FOR_TESTING, deployment, signer, {
       userAddress: await signer.getAddress()
     })
   );

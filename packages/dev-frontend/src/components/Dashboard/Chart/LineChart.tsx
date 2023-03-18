@@ -61,8 +61,9 @@ export const LineChart = (): JSX.Element => {
   const [loadedChart, setLoadedChart] = useState<boolean>(false);
   const [timestamps, setTimestamps] = useState<Array<TimestampsObject>>([]);
   const [activeLabel, setActiveLabel] = useState<string>('-');
-  const [chartData, setChartData] = useState<Array<Decimal>>([]);
-  const [lastTvl, setLastTvl] = useState<Decimal>();
+  const [chartData, setChartData] = useState<Array<Number>>([]);
+  const [lastTvlDecimal, setLastTvlDecimal] = useState<Decimal>();
+  const [lastTvlNumber, setLastTvlNumber] = useState<Array<number>>([]);
   const [chartLabels, setChartLabels] = useState<Array<TimestampsObject>>();
 
   useTvl()
@@ -72,7 +73,7 @@ export const LineChart = (): JSX.Element => {
       }
       setTvl(result.tvl)
       setTimestamps(result.timestamps)
-      setLoadedChart(true)
+      setLoadedChart(true);
     })
     .catch((error) => {
       setLoadedChart(false)
@@ -80,27 +81,50 @@ export const LineChart = (): JSX.Element => {
     })
 
   useEffect(() => {
-    if (!isMounted || !loadedChart) {
-      return
+    if (!isMounted) {
+      return;
     }
-    let historicalTvl: Decimal[] = []
+    const cachedData = localStorage.getItem("chartData");
+    const cachedLabels = localStorage.getItem("chartLabels");
+    
+    if (cachedData && cachedLabels) {
+      setChartData(JSON.parse(cachedData));
+      setChartLabels(JSON.parse(cachedLabels));
+      setLastTvlDecimal(JSON.parse(cachedData)[cachedData.length - 1]);
+      setLoadedChart(true);
+    }
+  
+    if (!loadedChart) {
+      return;
+    }
+    let memeTvl: Decimal[] = [];
+  
     for (const collateralTvl of tvl) {
       collateralTvl.tvl.forEach((tvl, index) => {
-        if (historicalTvl[index] === undefined) {
-          historicalTvl[index] = Decimal.from(0)
+        if (memeTvl[index] === undefined) {
+          memeTvl[index] = Decimal.from(0);
         }
-        historicalTvl[index] = tvl.totalCollateral.add(historicalTvl[index])
+        memeTvl[index] = tvl.totalCollateral.add(memeTvl[index]);
       });
     }
-    setChartLabels(timestamps)
-    setChartData(historicalTvl)
-    setLastTvl(historicalTvl[historicalTvl.length - 1])
-
-    return () => { 
+    setLastTvlNumber(memeTvl.map(decimal => parseInt(decimal.toString())))
+  
+  
+    return () => {
       setIsMounted(false);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMounted, loadedChart])
+  }, [isMounted, loadedChart, tvl, timestamps]);
+
+  useEffect(() => {
+    if (lastTvlNumber.length > 0 && timestamps.length > 0) {
+      setChartData(lastTvlNumber);
+      setChartLabels(timestamps);
+      localStorage.setItem("chartData", JSON.stringify(lastTvlNumber));
+      localStorage.setItem("chartLabels", JSON.stringify(timestamps));
+    }
+  
+
+  }, [isMounted, lastTvlNumber, timestamps]);
 
   const labels: Array<{[date: string]: string}> = [];
 
@@ -176,14 +200,14 @@ export const LineChart = (): JSX.Element => {
   
   const data = {
     labels: labels.map((label: {[day: string]: string}) => {
-      return Object.keys(label)
+      return Object.keys(label)[0]
     }),
     datasets: [
       {
         fill: "start",
         lineTension: 0.4,
         label: 'TVL',
-        data: chartData.map(decimal => parseInt(decimal.toString())),
+        data: chartData,
         borderColor: colorMode === "dark" ? "#7d00ff" : colorMode === "darkGrey" ? "#f3f3f3b8" : "#20cb9d",
         pointBackgroundColor: colorMode === 'dark' ? "#7d00ff" : colorMode === "darkGrey" ? "#f3f3f3b8" : "#20cb9d",
         backgroundColor: (context: ScriptableContext<"line">) => {
@@ -226,29 +250,31 @@ export const LineChart = (): JSX.Element => {
           {loadedChart && <>
             <Flex sx={{ 
               position: "absolute", 
+              gap: "2rem",
               marginTop: "-1.6rem",
               fontSize: "1.6rem", 
               fontWeight: "bold", 
               color: "text"
             }}>
-              {(lastTvl || (isHovered && activeData > 0)) && '$'}
+              {(lastTvlDecimal || (isHovered && activeData)) && '$'}
               {loadedChart && (
                 isHovered 
                 ? activeData 
-                : lastTvl 
-                  ? lastTvl.prettify(2) 
+                : lastTvlDecimal 
+                  ? lastTvlDecimal.prettify(2) 
                   : '-'
               )} 
             </Flex>
             <Flex sx={{ 
               fontSize: ".9em",
+              marginTop: "1rem",
               marginBottom: "1.5rem",
               height: "1rem",
             }}>
               {loadedChart && isHovered && activeLabel}
             </Flex>
           </>}
-          <Box sx={{ display: "flex", height: "100%", width: "100%", justifyContent: "center", alignItems: "center"}} ref={hoverRef}>
+          <Box sx={{ display: "flex", paddingBottom: "1rem", height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }} ref={hoverRef}>
             {
               !loadedChart 
                 ? <LoadingChart />

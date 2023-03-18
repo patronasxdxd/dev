@@ -115,14 +115,12 @@ export const Adjusting = (props: AdjustingProps): JSX.Element => {
   const send = collateralThreshold.store.send
 
   const { dispatchEvent } = useVaultView();
-
   const editingState = useState<string>();
   const previousVault = useRef<Vault>(trove);
   const [collateralAmount, setCollateralAmount] = useState<Decimal>(trove.collateral);
   const [netDebt, setNetDebt] = useState<Decimal>(trove.netDebt);
-  const transactionState = useMyTransactionState(TRANSACTION_ID);
+  const transactionState = useMyTransactionState(TRANSACTION_ID, version, collateral);
   const borrowingRate = fees.borrowingRate();
-  const [isMounted, setIsMounted] = useState<boolean>(true);
 
   const isCollateralChecked = checkTransactionCollateral(
     transactionState,
@@ -131,22 +129,12 @@ export const Adjusting = (props: AdjustingProps): JSX.Element => {
   );
 
   useEffect(() => {
-    if (!isMounted) {
-      return;
-    }
-
     if (isCollateralChecked && transactionState.type === "confirmedOneShot") {
       dispatchEvent("VAULT_ADJUSTED", version, collateral);
     }
-  
-    return () => {
-      setIsMounted(false);
-    };
-  }, [isCollateralChecked, transactionState.type, dispatchEvent, version, collateral, isMounted]);
+  }, [isCollateralChecked, transactionState.type, dispatchEvent, version, collateral]);
 
   useEffect(() => {
-    if (!isMounted) return;
-
     if (!previousVault.current.collateral.eq(trove.collateral)) {
       const unsavedChanges = Difference.between(collateralAmount, previousVault.current.collateral);
       const nextCollateral = applyUnsavedCollateralChanges(unsavedChanges, trove);
@@ -158,10 +146,6 @@ export const Adjusting = (props: AdjustingProps): JSX.Element => {
       setNetDebt(nextNetDebt);
     }
     previousVault.current = trove;
-    return () => {
-      setIsMounted(false);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trove, collateralAmount, netDebt]);
 
   const handleCancelPressed = useCallback(() => {
@@ -341,7 +325,7 @@ export const Adjusting = (props: AdjustingProps): JSX.Element => {
                 version={version}
                 collateral={collateral}
               >
-                <Button>Approve { symbol }</Button>
+                <Button sx={{ width: "100%" }}>Approve { symbol }</Button>
               </Transaction>
             : stableVaultChange ? (
               <VaultAction

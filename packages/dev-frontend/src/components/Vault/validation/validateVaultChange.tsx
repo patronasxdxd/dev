@@ -30,7 +30,7 @@ const VaultChangeDescription = ({ params, symbol }: VaultAdjustmentDescriptionPa
   <ActionDescription>
     {params.depositCollateral && params.borrowTHUSD ? (
       <>
-        You will deposit <Amount>{params.depositCollateral.prettify()} { symbol }</Amount> and receive{" "}
+        You will deposit <Amount>{params.depositCollateral.prettify(6)} { symbol }</Amount> and receive{" "}
         <Amount>
           {params.borrowTHUSD.prettify()} {COIN}
         </Amount>
@@ -41,29 +41,29 @@ const VaultChangeDescription = ({ params, symbol }: VaultAdjustmentDescriptionPa
         <Amount>
           {params.repayTHUSD.prettify()} {COIN}
         </Amount>{" "}
-        and receive <Amount>{params.withdrawCollateral.prettify()} { symbol }</Amount>
+        and receive <Amount>{params.withdrawCollateral.prettify(6)} { symbol }</Amount>
       </>
     ) : params.depositCollateral && params.repayTHUSD ? (
       <>
-        You will deposit <Amount>{params.depositCollateral.prettify()} { symbol }</Amount> and pay{" "}
+        You will deposit <Amount>{params.depositCollateral.prettify(6)} { symbol }</Amount> and pay{" "}
         <Amount>
           {params.repayTHUSD.prettify()} {COIN}
         </Amount>
       </>
     ) : params.borrowTHUSD && params.withdrawCollateral ? (
       <>
-        You will receive <Amount>{params.withdrawCollateral.prettify()} { symbol }</Amount> and{" "}
+        You will receive <Amount>{params.withdrawCollateral.prettify(6)} { symbol }</Amount> and{" "}
         <Amount>
           {params.borrowTHUSD.prettify()} {COIN}
         </Amount>
       </>
     ) : params.depositCollateral ? (
       <>
-        You will deposit <Amount>{params.depositCollateral.prettify()} { symbol }</Amount>
+        You will deposit <Amount>{params.depositCollateral.prettify(6)} { symbol }</Amount>
       </>
     ) : params.withdrawCollateral ? (
       <>
-        You will receive <Amount>{params.withdrawCollateral.prettify()} { symbol }</Amount>
+        You will receive <Amount>{params.withdrawCollateral.prettify(6)} { symbol }</Amount>
       </>
     ) : params.borrowTHUSD ? (
       <>

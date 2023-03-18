@@ -1,6 +1,6 @@
 import { BlockTag } from "@ethersproject/abstract-provider";
 
-import { panic, DEPLOYMENT_VERSION_FOR_TESTING, DEPLOYMENT_COLLATERAL_FOR_TESTING } from "./_utils";
+import { panic, DEFAULT_VERSION_FOR_TESTING, DEFAULT_COLLATERAL_FOR_TESTING } from "./_utils";
 
 import {
   CollateralGainTransferDetails,
@@ -152,7 +152,7 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     const importedDeployment: _LiquityDeploymentJSON =
     versionedDeployments.v1.deployment ?? panic(new UnsupportedNetworkError(chainId));
 
-    return EthersLiquity._from(await _connect(DEPLOYMENT_COLLATERAL_FOR_TESTING, DEPLOYMENT_VERSION_FOR_TESTING, importedDeployment, provider, signer, optionalParams));
+    return EthersLiquity._from(await _connect(DEFAULT_COLLATERAL_FOR_TESTING, DEFAULT_VERSION_FOR_TESTING, importedDeployment, provider, signer, optionalParams));
   }
 
   /**

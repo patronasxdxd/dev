@@ -17,7 +17,7 @@ import {
 
 import { MultiTroveGetter } from "../types";
 
-import { decimalify, panic, DEPLOYMENT_VERSION_FOR_TESTING, DEPLOYMENT_COLLATERAL_FOR_TESTING } from "./_utils";
+import { decimalify, DEFAULT_COLLATERAL_FOR_TESTING, DEFAULT_VERSION_FOR_TESTING, panic } from "./_utils";
 import { EthersCallOverrides, EthersProvider, EthersSigner } from "./types";
 
 import {
@@ -38,6 +38,7 @@ import {
 
 import { BlockPolledLiquityStore } from "./BlockPolledLiquityStore";
 import { BigNumber } from "ethers";
+import { ZERO_ADDRESS } from "../utils/constants";
 
 // TODO: these are constant in the contracts, so it doesn't make sense to make a call for them,
 // but to avoid having to update them here when we change them in the contracts, we could read
@@ -140,7 +141,7 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     const importedDeployment: _LiquityDeploymentJSON =
     versionedDeployments.v1.deployment ?? panic(new UnsupportedNetworkError(chainId));
 
-    return ReadableEthersLiquity._from(await _connect(DEPLOYMENT_COLLATERAL_FOR_TESTING, DEPLOYMENT_VERSION_FOR_TESTING, importedDeployment, provider, signer, optionalParams));
+    return ReadableEthersLiquity._from(await _connect(DEFAULT_COLLATERAL_FOR_TESTING, DEFAULT_VERSION_FOR_TESTING, importedDeployment, provider, signer, optionalParams));
   }
 
   /**
@@ -284,8 +285,13 @@ export class ReadableEthersLiquity implements ReadableLiquity {
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getSymbol} */
-  getSymbol(overrides?: EthersCallOverrides): Promise<string> {
-    const { erc20 } = _getContracts(this.connection);
+  async getSymbol(overrides?: EthersCallOverrides): Promise<string> {
+    const { erc20, borrowerOperations } = _getContracts(this.connection);
+    const collateralAddress = await borrowerOperations.collateralAddress();
+
+    if (collateralAddress === ZERO_ADDRESS) {
+      return "ETH"
+    }
 
     return erc20.symbol({ ...overrides });
   }
@@ -414,17 +420,31 @@ export class ReadableEthersLiquity implements ReadableLiquity {
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getErc20TokenBalance} */
-  getErc20TokenBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+  async getErc20TokenBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     address ??= _requireAddress(this.connection);
-    const { erc20 } = _getContracts(this.connection);
+    const { borrowerOperations } = _getContracts(this.connection);
+    const collateralAddress = await borrowerOperations.collateralAddress();
 
+    if (collateralAddress === ZERO_ADDRESS) {
+      return this.connection.provider.getBalance(address).then(decimalify)
+    }
+
+    const { erc20 } = _getContracts(this.connection);
     return erc20.balanceOf(address, { ...overrides }).then(decimalify);
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getErc20TokenAllowance} */
-  getErc20TokenAllowance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+  async getErc20TokenAllowance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     address ??= _requireAddress(this.connection);
+    const largeAllowanceBigNumber = BigNumber.from("0x8888888888888888888888888888888888888888888888888888888888888888");
+    const largeAllowanceDecimal = decimalify(largeAllowanceBigNumber);
+
     const { erc20, borrowerOperations } = _getContracts(this.connection);
+    const collateralAddress = await borrowerOperations.collateralAddress();
+
+    if (collateralAddress === ZERO_ADDRESS) {
+      return largeAllowanceDecimal;
+    }
 
     return erc20.allowance(address, borrowerOperations.address, { ...overrides }).then(decimalify);
   }
