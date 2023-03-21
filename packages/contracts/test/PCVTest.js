@@ -56,7 +56,8 @@ contract('PCV', async accounts => {
         thusdToken.address, 
         erc20.address,
         400, 
-        feePool)
+        feePool,
+        owner)
       contracts.bamm = bamm
 
       await deploymentHelper.connectCoreContracts(contracts)

@@ -34,6 +34,8 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
     uint256 public immutable maxDiscount; // max discount in bips
 
     uint256 constant public PRECISION = 1e18;
+    
+    address public bProtocolOwner;
 
     event ParamsSet(uint256 A, uint256 fee);
     event UserDeposit(address indexed user, uint256 thusdAmount, uint256 numShares);
@@ -46,7 +48,8 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         address _thusdToken,
         address _collateralERC20,
         uint256 _maxDiscount,
-        address payable _feePool
+        address payable _feePool,
+        address _bProtocolOwner
     )
         CropJoinAdapter()
     {
@@ -63,6 +66,14 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         collateralERC20 = IERC20(_collateralERC20);
         feePool = _feePool;
         maxDiscount = _maxDiscount;
+
+        require(_bProtocolOwner != address(0), "B.Protocol owner must be specified");
+        bProtocolOwner = _bProtocolOwner;
+    }
+
+    modifier onlyBProtocolOwner() {
+        require(msg.sender == bProtocolOwner, "Ownable: caller is not the B.Protocol owner");
+        _;
     }
 
     function setTHUSD2UsdPriceAggregator(
@@ -73,7 +84,7 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         thusd2UsdPriceAggregator = AggregatorV3Interface(_thusd2UsdPriceAggregator);
     }
 
-    function setParams(uint256 _A, uint256 _fee) external onlyOwner {
+    function setParams(uint256 _A, uint256 _fee) external onlyBProtocolOwner {
         require(_fee <= MAX_FEE, "setParams: fee is too big");
         require(_A >= MIN_A, "setParams: A too small");
         require(_A <= MAX_A, "setParams: A too big");
@@ -276,4 +287,12 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
     }
 
     receive() external payable {}
+
+    function transferBProtocolOwnership(address newOwner) public onlyBProtocolOwner {
+        require(newOwner != address(0), "Ownable: new B.Protocol owner is the zero address");
+        address oldOwner = bProtocolOwner;
+        bProtocolOwner = newOwner;
+        emit OwnershipTransferred(oldOwner, newOwner);
+    }
+
 }
