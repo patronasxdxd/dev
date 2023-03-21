@@ -7,7 +7,6 @@ import {
   _LiquityDeploymentJSON,
   _connectToContracts
 } from "../src/contracts";
-import { ZERO_ADDRESS } from "./constants";
 
 let silent = true;
 
@@ -52,7 +51,7 @@ const deployContracts = async (
   deployer: Signer,
   oracleAddresses: INetworkOracles,
   collateralSymbol: keyof IAssets,
-  collateralAddress: string,
+  collateralAddress: string | undefined,
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
   delay: number,
   stablecoinAddress: string,
@@ -98,7 +97,7 @@ const deployContracts = async (
     gasPool: await deployContract(deployer, getContractFactory, "GasPool", {
       ...overrides
     }),
-    erc20: (collateralAddress != "") 
+    erc20: (collateralAddress !== undefined) 
     ? collateralAddress
     : await deployContract(deployer, getContractFactory, "ERC20Test", {
       ...overrides
@@ -294,7 +293,7 @@ export const deployAndSetupContracts = async (
   deployer: Signer,
   oracleAddresses: INetworkOracles,
   collateralSymbol: keyof IAssets,
-  collateralAddress: string,
+  collateralAddress: string | undefined,
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
   delay: number,
   stablecoinAddress: string,

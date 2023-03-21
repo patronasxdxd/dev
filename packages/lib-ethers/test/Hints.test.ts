@@ -11,20 +11,19 @@ import {
   Decimal,
   Fees,
   Trove,
-  MINIMUM_BORROWING_RATE,
   THUSD_MINIMUM_DEBT,
-  THUSD_MINIMUM_NET_DEBT
 } from "@liquity/lib-base";
 
 import { _LiquityDeploymentJSON } from "../src/contracts";
 import { EthersLiquity } from "../src/EthersLiquity";
 import {
   PopulatableEthersLiquity,
-  PopulatedEthersLiquityTransaction,
   _redeemMaxIterations
 } from "../src/PopulatableEthersLiquity";
 import { ReadableEthersLiquity } from "../src/ReadableEthersLiquity";
 import { oracleAddresses } from "../hardhat.config";
+import { DEFAULT_COLLATERAL_FOR_TESTING } from "../src/_utils";
+import { GOERLI_TBTC_ADDRESS } from "../utils/constants";
 
 const STARTING_BALANCE = Decimal.from(100); // amount of tokens and ETH to initialise
 
@@ -34,7 +33,6 @@ let user: Signer;
 let otherUsers: Signer[];
 let otherUsersSubset: Signer[];
 let deployment: _LiquityDeploymentJSON;
-let deployerLiquity: EthersLiquity;
 let liquity: EthersLiquity;
 let erc20: Contract;
 let userAddress: string;
@@ -47,7 +45,7 @@ describe("findHintForCollateralRatio", () => {
     otherUsersSubset = otherUsers.slice(0, 12);
 
     // deploy the smart contracts
-    deployment = await deployLiquity(deployer, oracleAddresses, "tbtc");
+    deployment = await deployLiquity(deployer, oracleAddresses, DEFAULT_COLLATERAL_FOR_TESTING);
 
     // create account / connection to liquity for the user wallet
     liquity = await th.connectToDeployment(deployment, user);
@@ -107,6 +105,7 @@ describe("findHintForCollateralRatio", () => {
     const fakeLiquity = new PopulatableEthersLiquity(({
       getNumberOfTroves: () => Promise.resolve(1000000),
       getTotal: () => Promise.resolve(new Trove(Decimal.from(10), Decimal.ONE)),
+      getCollateralAddress: () => Promise.resolve(GOERLI_TBTC_ADDRESS),
       getPrice: () => Promise.resolve(Decimal.ONE),
       _getBlockTimestamp: () => Promise.resolve(0),
       _getFeesFactory: () =>

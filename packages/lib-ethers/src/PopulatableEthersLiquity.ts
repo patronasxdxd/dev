@@ -814,19 +814,18 @@ export class PopulatableEthersLiquity
   ): Promise<PopulatedEthersLiquityTransaction<TroveCreationDetails>> {
     const { borrowerOperations } = _getContracts(this._readable.connection);
 
-    const collateralAddress = await borrowerOperations.collateralAddress();
-    const isCollateralEth = collateralAddress === ZERO_ADDRESS
-
     const normalizedParams = _normalizeTroveCreation(params);
     const { depositCollateral, borrowTHUSD } = normalizedParams;
 
-    const [fees, blockTimestamp, total, price] = await Promise.all([
+    const [fees, blockTimestamp, total, price, collateralAddress] = await Promise.all([
       this._readable._getFeesFactory(),
       this._readable._getBlockTimestamp(),
       this._readable.getTotal(),
-      this._readable.getPrice()
+      this._readable.getPrice(),
+      this._readable.getCollateralAddress()
     ]);
 
+    const isCollateralEth = collateralAddress === ZERO_ADDRESS
     const recoveryMode = total.collateralRatioIsBelowCritical(price);
 
     const decayBorrowingRate = (seconds: number) =>
@@ -942,23 +941,22 @@ export class PopulatableEthersLiquity
     const address = _requireAddress(this._readable.connection, overrides);
     const { borrowerOperations } = _getContracts(this._readable.connection);
 
-    const collateralAddress = await borrowerOperations.collateralAddress();
-    const isCollateralEth = collateralAddress === ZERO_ADDRESS
-
     const normalizedParams = _normalizeTroveAdjustment(params);
     const { depositCollateral, withdrawCollateral, borrowTHUSD, repayTHUSD } = normalizedParams;
 
-    const [trove, feeVars] = await Promise.all([
+    const [trove, collateralAddress, feeVars] = await Promise.all([
       this._readable.getTrove(address),
+      this._readable.getCollateralAddress(),
       borrowTHUSD &&
         promiseAllValues({
           fees: this._readable._getFeesFactory(),
           blockTimestamp: this._readable._getBlockTimestamp(),
           total: this._readable.getTotal(),
-          price: this._readable.getPrice()
+          price: this._readable.getPrice(),
         })
     ]);
 
+    const isCollateralEth = collateralAddress === ZERO_ADDRESS
     const decayBorrowingRate = (seconds: number) =>
       feeVars
         ?.fees(
