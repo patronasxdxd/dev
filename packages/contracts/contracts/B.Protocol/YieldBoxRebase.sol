@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.17;
 
-import "./BAMM.sol";
-
 
 library YieldBoxRebase {
     /// @notice Calculates the base value in relationship to `elastic` and `total`.
