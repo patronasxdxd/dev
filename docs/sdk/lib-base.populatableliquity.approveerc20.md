@@ -6,7 +6,7 @@
 
 Allow the borrower operations contract to use user's erc20 tokens for [adjustTrove](./lib-base.transactableliquity.opentrove.md)<!-- -->.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 approveErc20(allowance?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
@@ -18,7 +18,7 @@ approveErc20(allowance?: Decimalish): Promise<PopulatedLiquityTransaction<P, Sen
 |  --- | --- | --- |
 |  allowance | [Decimalish](./lib-base.decimalish.md) | Maximum amount of LP tokens that will be transferrable to liquidity mining (<code>2^256 - 1</code> by default). |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[PopulatedLiquityTransaction](./lib-base.populatedliquitytransaction.md)<!-- -->&lt;P, [SentLiquityTransaction](./lib-base.sentliquitytransaction.md)<!-- -->&lt;S, [LiquityReceipt](./lib-base.liquityreceipt.md)<!-- -->&lt;R, void&gt;&gt;&gt;&gt;
 

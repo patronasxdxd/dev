@@ -6,12 +6,12 @@
 
 A redemption transaction that has been prepared for sending.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface PopulatedRedemption<P = unknown, S = unknown, R = unknown> extends PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, RedemptionDetails>>> 
 ```
-<b>Extends:</b> [PopulatedLiquityTransaction](./lib-base.populatedliquitytransaction.md)<!-- -->&lt;P, [SentLiquityTransaction](./lib-base.sentliquitytransaction.md)<!-- -->&lt;S, [LiquityReceipt](./lib-base.liquityreceipt.md)<!-- -->&lt;R, [RedemptionDetails](./lib-base.redemptiondetails.md)<!-- -->&gt;&gt;&gt;
+**Extends:** [PopulatedLiquityTransaction](./lib-base.populatedliquitytransaction.md)<!-- -->&lt;P, [SentLiquityTransaction](./lib-base.sentliquitytransaction.md)<!-- -->&lt;S, [LiquityReceipt](./lib-base.liquityreceipt.md)<!-- -->&lt;R, [RedemptionDetails](./lib-base.redemptiondetails.md)<!-- -->&gt;&gt;&gt;
 
 ## Remarks
 
@@ -21,11 +21,11 @@ When [redeemTHUSD()](./lib-base.populatableliquity.redeemthusd.md) is called wit
 
 ## Properties
 
-|  Property | Type | Description |
-|  --- | --- | --- |
-|  [attemptedTHUSDAmount](./lib-base.populatedredemption.attemptedthusdamount.md) | [Decimal](./lib-base.decimal.md) | Amount of thUSD the redeemer is trying to redeem. |
-|  [isTruncated](./lib-base.populatedredemption.istruncated.md) | boolean | Whether <code>redeemableTHUSDAmount</code> is less than <code>attemptedTHUSDAmount</code>. |
-|  [redeemableTHUSDAmount](./lib-base.populatedredemption.redeemablethusdamount.md) | [Decimal](./lib-base.decimal.md) | Maximum amount of thUSD that is currently redeemable from <code>attemptedTHUSDAmount</code>. |
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [attemptedTHUSDAmount](./lib-base.populatedredemption.attemptedthusdamount.md) |  | [Decimal](./lib-base.decimal.md) | Amount of thUSD the redeemer is trying to redeem. |
+|  [isTruncated](./lib-base.populatedredemption.istruncated.md) |  | boolean | Whether <code>redeemableTHUSDAmount</code> is less than <code>attemptedTHUSDAmount</code>. |
+|  [redeemableTHUSDAmount](./lib-base.populatedredemption.redeemablethusdamount.md) |  | [Decimal](./lib-base.decimal.md) | Maximum amount of thUSD that is currently redeemable from <code>attemptedTHUSDAmount</code>. |
 
 ## Methods
 

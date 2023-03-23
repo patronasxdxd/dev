@@ -6,7 +6,7 @@
 
 Fixed-point decimal bignumber with 18 digits of precision.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare class Decimal 
@@ -38,6 +38,7 @@ Used by Liquity libraries to precisely represent native currency (e.g. Ether), t
 |  [div(divider)](./lib-base.decimal.div.md) |  |  |
 |  [eq(that)](./lib-base.decimal.eq.md) |  |  |
 |  [from(decimalish)](./lib-base.decimal.from.md) | <code>static</code> |  |
+|  [fromBigNumber(bigNumber)](./lib-base.decimal.frombignumber.md) | <code>static</code> |  |
 |  [fromBigNumberString(bigNumberString)](./lib-base.decimal.frombignumberstring.md) | <code>static</code> |  |
 |  [gt(that)](./lib-base.decimal.gt.md) |  |  |
 |  [gte(that)](./lib-base.decimal.gte.md) |  |  |

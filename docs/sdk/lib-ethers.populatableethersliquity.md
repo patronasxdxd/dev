@@ -6,12 +6,12 @@
 
 Ethers-based implementation of [PopulatableLiquity](./lib-base.populatableliquity.md)<!-- -->.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare class PopulatableEthersLiquity implements PopulatableLiquity<EthersTransactionReceipt, EthersTransactionResponse, EthersPopulatedTransaction> 
 ```
-<b>Implements:</b> [PopulatableLiquity](./lib-base.populatableliquity.md)<!-- -->&lt;[EthersTransactionReceipt](./lib-ethers.etherstransactionreceipt.md)<!-- -->, [EthersTransactionResponse](./lib-ethers.etherstransactionresponse.md)<!-- -->, [EthersPopulatedTransaction](./lib-ethers.etherspopulatedtransaction.md)<!-- -->&gt;
+**Implements:** [PopulatableLiquity](./lib-base.populatableliquity.md)<!-- -->&lt;[EthersTransactionReceipt](./lib-ethers.etherstransactionreceipt.md)<!-- -->, [EthersTransactionResponse](./lib-ethers.etherstransactionresponse.md)<!-- -->, [EthersPopulatedTransaction](./lib-ethers.etherspopulatedtransaction.md)<!-- -->&gt;
 
 ## Constructors
 
@@ -25,10 +25,12 @@ export declare class PopulatableEthersLiquity implements PopulatableLiquity<Ethe
 |  --- | --- | --- |
 |  [adjustTrove(params, maxBorrowingRateOrOptionalParams, overrides)](./lib-ethers.populatableethersliquity.adjusttrove.md) |  | Adjust existing Trove by changing its collateral, debt, or both. |
 |  [approveErc20(allowance, overrides)](./lib-ethers.populatableethersliquity.approveerc20.md) |  | Allow the borrower operations contract to use user's erc20 tokens for [adjustTrove](./lib-base.transactableliquity.opentrove.md)<!-- -->. |
+|  [bammUnlock(overrides)](./lib-ethers.populatableethersliquity.bammunlock.md) |  |  |
 |  [borrowTHUSD(amount, maxBorrowingRate, overrides)](./lib-ethers.populatableethersliquity.borrowthusd.md) |  | Adjust existing Trove by borrowing more thUSD. |
 |  [claimCollateralSurplus(overrides)](./lib-ethers.populatableethersliquity.claimcollateralsurplus.md) |  | Claim leftover collateral after a liquidation or redemption. |
 |  [closeTrove(overrides)](./lib-ethers.populatableethersliquity.closetrove.md) |  | Close existing Trove by repaying all debt and withdrawing all collateral. |
 |  [depositCollateral(amount, overrides)](./lib-ethers.populatableethersliquity.depositcollateral.md) |  | Adjust existing Trove by depositing more collateral. |
+|  [depositTHUSDInBammPool(amount, overrides)](./lib-ethers.populatableethersliquity.depositthusdinbammpool.md) |  | Make a new Bamm Deposit, or top up existing one. |
 |  [depositTHUSDInStabilityPool(amount, overrides)](./lib-ethers.populatableethersliquity.depositthusdinstabilitypool.md) |  | Make a new Stability Deposit, or top up existing one. |
 |  [liquidate(address, overrides)](./lib-ethers.populatableethersliquity.liquidate.md) |  | Liquidate one or more undercollateralized Troves. |
 |  [liquidateUpTo(maximumNumberOfTrovesToLiquidate, overrides)](./lib-ethers.populatableethersliquity.liquidateupto.md) |  | Liquidate the least collateralized Troves up to a maximum number. |
@@ -36,8 +38,11 @@ export declare class PopulatableEthersLiquity implements PopulatableLiquity<Ethe
 |  [redeemTHUSD(amount, maxRedemptionRate, overrides)](./lib-ethers.populatableethersliquity.redeemthusd.md) |  | Redeem thUSD to native currency (e.g. Ether) at face value. |
 |  [repayTHUSD(amount, overrides)](./lib-ethers.populatableethersliquity.repaythusd.md) |  | Adjust existing Trove by repaying some of its debt. |
 |  [sendTHUSD(toAddress, amount, overrides)](./lib-ethers.populatableethersliquity.sendthusd.md) |  | Send thUSD tokens to an address. |
+|  [transferBammCollateralGainToTrove(overrides)](./lib-ethers.populatableethersliquity.transferbammcollateralgaintotrove.md) |  | Transfer [collateral gain](./lib-base.bammdeposit.collateralgain.md) from Bamm Deposit to Trove. |
 |  [transferCollateralGainToTrove(overrides)](./lib-ethers.populatableethersliquity.transfercollateralgaintotrove.md) |  | Transfer [collateral gain](./lib-base.stabilitydeposit.collateralgain.md) from Stability Deposit to Trove. |
 |  [withdrawCollateral(amount, overrides)](./lib-ethers.populatableethersliquity.withdrawcollateral.md) |  | Adjust existing Trove by withdrawing some of its collateral. |
+|  [withdrawGainsFromBammPool(overrides)](./lib-ethers.populatableethersliquity.withdrawgainsfrombammpool.md) |  | Withdraw [collateral gain](./lib-base.bammdeposit.collateralgain.md) from Bamm Deposit. |
 |  [withdrawGainsFromStabilityPool(overrides)](./lib-ethers.populatableethersliquity.withdrawgainsfromstabilitypool.md) |  | Withdraw [collateral gain](./lib-base.stabilitydeposit.collateralgain.md) from Stability Deposit. |
+|  [withdrawTHUSDFromBammPool(amount, overrides)](./lib-ethers.populatableethersliquity.withdrawthusdfrombammpool.md) |  | Withdraw thUSD from Bamm. |
 |  [withdrawTHUSDFromStabilityPool(amount, overrides)](./lib-ethers.populatableethersliquity.withdrawthusdfromstabilitypool.md) |  | Withdraw thUSD from Stability Deposit. |
 

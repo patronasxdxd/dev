@@ -6,7 +6,7 @@
 
 Amount of thUSD left in the Stability Deposit.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly currentTHUSD: Decimal;

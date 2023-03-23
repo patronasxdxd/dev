@@ -6,7 +6,7 @@
 
 Optional parameters of [ReadableEthersLiquity.connect()](./lib-ethers.readableethersliquity.connect_1.md) and [EthersLiquity.connect()](./lib-ethers.ethersliquity.connect_1.md)<!-- -->.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface EthersLiquityConnectionOptionalParams 
@@ -14,8 +14,8 @@ export interface EthersLiquityConnectionOptionalParams
 
 ## Properties
 
-|  Property | Type | Description |
-|  --- | --- | --- |
-|  [userAddress?](./lib-ethers.ethersliquityconnectionoptionalparams.useraddress.md) | string | <i>(Optional)</i> Address whose Trove, Stability Deposit and balances will be read by default. |
-|  [useStore?](./lib-ethers.ethersliquityconnectionoptionalparams.usestore.md) | [EthersLiquityStoreOption](./lib-ethers.ethersliquitystoreoption.md) | <i>(Optional)</i> Create a [LiquityStore](./lib-base.liquitystore.md) and expose it as the <code>store</code> property. |
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [userAddress?](./lib-ethers.ethersliquityconnectionoptionalparams.useraddress.md) |  | string | _(Optional)_ Address whose Trove, Stability Deposit and balances will be read by default. |
+|  [useStore?](./lib-ethers.ethersliquityconnectionoptionalparams.usestore.md) |  | [EthersLiquityStoreOption](./lib-ethers.ethersliquitystoreoption.md) | _(Optional)_ Create a [LiquityStore](./lib-base.liquitystore.md) and expose it as the <code>store</code> property. |
 

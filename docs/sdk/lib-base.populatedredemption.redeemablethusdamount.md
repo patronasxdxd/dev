@@ -6,7 +6,7 @@
 
 Maximum amount of thUSD that is currently redeemable from `attemptedTHUSDAmount`<!-- -->.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly redeemableTHUSDAmount: Decimal;

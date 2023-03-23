@@ -6,7 +6,7 @@
 
 Read the state of the Liquity protocol.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface ReadableLiquity 
@@ -20,6 +20,9 @@ Implemented by [EthersLiquity](./lib-ethers.ethersliquity.md)<!-- -->.
 
 |  Method | Description |
 |  --- | --- |
+|  [checkMintList()](./lib-base.readableliquity.checkmintlist.md) | Check if a certain address is on the thUSD contract mintList. |
+|  [getBammDeposit(address)](./lib-base.readableliquity.getbammdeposit.md) | Get the current state of a Bamm Deposit. |
+|  [getCollateralAddress()](./lib-base.readableliquity.getcollateraladdress.md) | Get the collateral address of the BorrowersOperations contract. |
 |  [getCollateralSurplusBalance(address)](./lib-base.readableliquity.getcollateralsurplusbalance.md) | Get the amount of leftover collateral available for withdrawal by an address. |
 |  [getErc20TokenAllowance(address)](./lib-base.readableliquity.geterc20tokenallowance.md) | Get the Borrowers Operations contract's allowance of a holder's Erc20 tokens. |
 |  [getErc20TokenBalance(address)](./lib-base.readableliquity.geterc20tokenbalance.md) | Get the amount of Erc20 tokens held by an address. |
@@ -28,6 +31,7 @@ Implemented by [EthersLiquity](./lib-ethers.ethersliquity.md)<!-- -->.
 |  [getPCVBalance()](./lib-base.readableliquity.getpcvbalance.md) | Get the total amount of thUSD currently deposited in the PCV Pool. |
 |  [getPrice()](./lib-base.readableliquity.getprice.md) | Get the current price of the native currency (e.g. Ether) in USD. |
 |  [getStabilityDeposit(address)](./lib-base.readableliquity.getstabilitydeposit.md) | Get the current state of a Stability Deposit. |
+|  [getSymbol()](./lib-base.readableliquity.getsymbol.md) | Get the ERC20 token's symbol . |
 |  [getTHUSDBalance(address)](./lib-base.readableliquity.getthusdbalance.md) | Get the amount of thUSD held by an address. |
 |  [getTHUSDInStabilityPool()](./lib-base.readableliquity.getthusdinstabilitypool.md) | Get the total amount of thUSD currently deposited in the Stability Pool. |
 |  [getTotal()](./lib-base.readableliquity.gettotal.md) | Get the total amount of collateral and debt in the Liquity system. |
@@ -35,4 +39,8 @@ Implemented by [EthersLiquity](./lib-ethers.ethersliquity.md)<!-- -->.
 |  [getTrove(address)](./lib-base.readableliquity.gettrove.md) | Get the current state of a Trove. |
 |  [getTroveBeforeRedistribution(address)](./lib-base.readableliquity.gettrovebeforeredistribution.md) | Get a Trove in its state after the last direct modification. |
 |  [getTroves(params)](./lib-base.readableliquity.gettroves_1.md) | Get a slice from the list of Troves. |
+|  [getWithdrawsSpShare(withdrawAmount)](./lib-base.readableliquity.getwithdrawsspshare.md) | Get the Stability Pool share. |
+|  [isBorrowerOperations()](./lib-base.readableliquity.isborroweroperations.md) | Check if the deployment borrower operations address was added to the thUSD token. |
+|  [isStabilityPools()](./lib-base.readableliquity.isstabilitypools.md) | Check if the deployment stability pool address was added to the thUSD token. |
+|  [isTroveManager()](./lib-base.readableliquity.istrovemanager.md) | Check if the deployment trove manager address was added to the thUSD token. |
 

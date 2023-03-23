@@ -6,7 +6,7 @@
 
 Get the amount of Erc20 tokens held by an address.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 getErc20TokenBalance(address?: string): Promise<Decimal>;
@@ -18,7 +18,7 @@ getErc20TokenBalance(address?: string): Promise<Decimal>;
 |  --- | --- | --- |
 |  address | string | Address whose balance should be retrieved. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[Decimal](./lib-base.decimal.md)<!-- -->&gt;
 

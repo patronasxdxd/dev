@@ -20,6 +20,12 @@
 |  [SentEthersLiquityTransaction](./lib-ethers.sentethersliquitytransaction.md) | A transaction that has already been sent. |
 |  [UnsupportedNetworkError](./lib-ethers.unsupportednetworkerror.md) | Thrown when trying to connect to a network where Liquity is not deployed. |
 
+## Functions
+
+|  Function | Description |
+|  --- | --- |
+|  [getCollateralsDeployments(network)](./lib-ethers.getcollateralsdeployments.md) |  |
+
 ## Interfaces
 
 |  Interface | Description |
@@ -38,6 +44,7 @@
 |  Type Alias | Description |
 |  --- | --- |
 |  [BlockPolledLiquityStoreState](./lib-ethers.blockpolledliquitystorestate.md) | The type of [BlockPolledLiquityStore](./lib-ethers.blockpolledliquitystore.md)<!-- -->'s [state](./lib-base.liquitystore.state.md)<!-- -->. |
+|  [CollateralsVersionedDeployments](./lib-ethers.collateralsversioneddeployments.md) |  |
 |  [EthersLiquityStoreOption](./lib-ethers.ethersliquitystoreoption.md) | Possible values for the optional [useStore](./lib-ethers.ethersliquityconnectionoptionalparams.usestore.md) connection parameter. |
 |  [EthersPopulatedTransaction](./lib-ethers.etherspopulatedtransaction.md) | Alias of Ethers' <code>PopulatedTransaction</code> type, which implements [UnsignedTransaction](https://docs.ethers.io/v5/api/utils/transactions/#UnsignedTransaction)<!-- -->. |
 |  [EthersProvider](./lib-ethers.ethersprovider.md) | Alias of Ethers' abstract [Provider](https://docs.ethers.io/v5/api/providers/) type. |

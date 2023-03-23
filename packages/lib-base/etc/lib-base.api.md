@@ -4,9 +4,54 @@
 
 ```ts
 
+import { BigNumber } from '@ethersproject/bignumber';
+
+// @public
+export class BammDeposit {
+    // @internal
+    constructor(bammPoolShare: Decimal, poolShare: Decimal, initialTHUSD: Decimal, currentUSD: Decimal, currentTHUSD: Decimal, collateralGain: Decimal, totalCollateralInBamm: Decimal, totalThusdInBamm: Decimal);
+    apply(change: BammDepositChange<Decimalish> | undefined): Decimal;
+    readonly bammPoolShare: Decimal;
+    readonly collateralGain: Decimal;
+    readonly currentTHUSD: Decimal;
+    readonly currentUSD: Decimal;
+    equals(that: BammDeposit): boolean;
+    readonly initialTHUSD: Decimal;
+    // (undocumented)
+    get isEmpty(): boolean;
+    readonly poolShare: Decimal;
+    // @internal (undocumented)
+    toString(): string;
+    readonly totalCollateralInBamm: Decimal;
+    // (undocumented)
+    readonly totalThusdInBamm: Decimal;
+    whatChanged(thatUSD: Decimalish): BammDepositChange<Decimal> | undefined;
+}
+
+// @public
+export type BammDepositChange<T> = {
+    depositTHUSD: T;
+    withdrawTHUSD?: undefined;
+} | {
+    depositTHUSD?: undefined;
+    withdrawTHUSD: T;
+    withdrawAllTHUSD: boolean;
+};
+
+// @public
+export interface BammDepositChangeDetails extends StabilityPoolGainsWithdrawalDetails {
+    change: BammDepositChange<Decimal>;
+}
+
 // @internal (undocumented)
 export class _CachedReadableLiquity<T extends unknown[]> implements _ReadableLiquityWithExtraParams<T> {
     constructor(readable: _ReadableLiquityWithExtraParams<T>, cache: _LiquityReadCache<T>);
+    // (undocumented)
+    checkMintList(...extraParams: T): Promise<boolean>;
+    // (undocumented)
+    getBammDeposit(address?: string, ...extraParams: T): Promise<BammDeposit>;
+    // (undocumented)
+    getCollateralAddress(...extraParams: T): Promise<string>;
     // (undocumented)
     getCollateralSurplusBalance(address?: string, ...extraParams: T): Promise<Decimal>;
     // (undocumented)
@@ -43,6 +88,14 @@ export class _CachedReadableLiquity<T extends unknown[]> implements _ReadableLiq
     }, ...extraParams: T): Promise<TroveWithPendingRedistribution[]>;
     // (undocumented)
     getTroves(params: TroveListingParams, ...extraParams: T): Promise<UserTrove[]>;
+    // (undocumented)
+    getWithdrawsSpShare(withdrawAmount: Decimalish, ...extraParams: T): Promise<string>;
+    // (undocumented)
+    isBorrowerOperations(...extraParams: T): Promise<boolean>;
+    // (undocumented)
+    isStabilityPools(...extraParams: T): Promise<boolean>;
+    // (undocumented)
+    isTroveManager(...extraParams: T): Promise<boolean>;
     }
 
 // @internal (undocumented)
@@ -87,6 +140,8 @@ export class Decimal {
     get finite(): this | undefined;
     // (undocumented)
     static from(decimalish: Decimalish): Decimal;
+    // (undocumented)
+    static fromBigNumber(bigNumber: BigNumber): Decimal;
     // (undocumented)
     static fromBigNumberString(bigNumberString: string): Decimal;
     // (undocumented)
@@ -154,6 +209,8 @@ export class Difference {
     get negative(): this | undefined;
     // (undocumented)
     get nonZero(): this | undefined;
+    // (undocumented)
+    nonZeroish(precision: number): this | undefined;
     // (undocumented)
     get positive(): this | undefined;
     // (undocumented)
@@ -237,11 +294,17 @@ export abstract class LiquityStore<T = unknown> {
 // @public
 export interface LiquityStoreBaseState {
     accountBalance: Decimal;
+    bammDeposit: BammDeposit;
+    collateralAddress: string;
     collateralSurplusBalance: Decimal;
     erc20TokenAllowance: Decimal;
     erc20TokenBalance: Decimal;
     // @internal (undocumented)
     _feesInNormalMode: Fees;
+    isBorrowerOperations: boolean;
+    isStabilityPools: boolean;
+    isTroveManager: boolean;
+    mintList: boolean;
     numberOfTroves: number;
     pcvBalance: Decimal;
     price: Decimal;
@@ -371,10 +434,13 @@ export type _PopulatableFrom<T, P> = {
 export interface PopulatableLiquity<R = unknown, S = unknown, P = unknown> extends _PopulatableFrom<SendableLiquity<R, S>, P> {
     adjustTrove(params: TroveAdjustmentParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
     approveErc20(allowance?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
+    // (undocumented)
+    bammUnlock(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
     borrowTHUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
     claimCollateralSurplus(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
     closeTrove(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveClosureDetails>>>>;
     depositCollateral(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
+    depositTHUSDInBammPool(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, BammDepositChangeDetails>>>>;
     depositTHUSDInStabilityPool(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>>;
     liquidate(address: string | string[]): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, LiquidationDetails>>>>;
     liquidateUpTo(maximumNumberOfTrovesToLiquidate: number): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, LiquidationDetails>>>>;
@@ -384,9 +450,12 @@ export interface PopulatableLiquity<R = unknown, S = unknown, P = unknown> exten
     sendTHUSD(toAddress: string, amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
     // @internal (undocumented)
     setPrice(price: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
+    transferBammCollateralGainToTrove(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, CollateralGainTransferDetails>>>>;
     transferCollateralGainToTrove(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, CollateralGainTransferDetails>>>>;
     withdrawCollateral(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
+    withdrawGainsFromBammPool(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, StabilityPoolGainsWithdrawalDetails>>>>;
     withdrawGainsFromStabilityPool(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, StabilityPoolGainsWithdrawalDetails>>>>;
+    withdrawTHUSDFromBammPool(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, BammDepositChangeDetails>>>>;
     withdrawTHUSDFromStabilityPool(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>>;
 }
 
@@ -406,6 +475,9 @@ export interface PopulatedRedemption<P = unknown, S = unknown, R = unknown> exte
 
 // @public
 export interface ReadableLiquity {
+    checkMintList(): Promise<boolean>;
+    getBammDeposit(address?: string): Promise<BammDeposit>;
+    getCollateralAddress(): Promise<string>;
     getCollateralSurplusBalance(address?: string): Promise<Decimal>;
     getErc20TokenAllowance(address?: string): Promise<Decimal>;
     getErc20TokenBalance(address?: string): Promise<Decimal>;
@@ -426,6 +498,10 @@ export interface ReadableLiquity {
         beforeRedistribution: true;
     }): Promise<TroveWithPendingRedistribution[]>;
     getTroves(params: TroveListingParams): Promise<UserTrove[]>;
+    getWithdrawsSpShare(withdrawAmount: Decimalish): Promise<string>;
+    isBorrowerOperations(): Promise<boolean>;
+    isStabilityPools(): Promise<boolean>;
+    isTroveManager(): Promise<boolean>;
 }
 
 // @internal (undocumented)
@@ -462,10 +538,13 @@ export type _SendableFrom<T, R, S> = {
 export interface SendableLiquity<R = unknown, S = unknown> extends _SendableFrom<TransactableLiquity, R, S> {
     adjustTrove(params: TroveAdjustmentParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>;
     approveErc20(allowance?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
+    // (undocumented)
+    bammUnlock(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
     borrowTHUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>;
     claimCollateralSurplus(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
     closeTrove(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveClosureDetails>>>;
     depositCollateral(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>;
+    depositTHUSDInBammPool(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, BammDepositChangeDetails>>>;
     depositTHUSDInStabilityPool(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>;
     liquidate(address: string | string[]): Promise<SentLiquityTransaction<S, LiquityReceipt<R, LiquidationDetails>>>;
     liquidateUpTo(maximumNumberOfTrovesToLiquidate: number): Promise<SentLiquityTransaction<S, LiquityReceipt<R, LiquidationDetails>>>;
@@ -475,9 +554,12 @@ export interface SendableLiquity<R = unknown, S = unknown> extends _SendableFrom
     sendTHUSD(toAddress: string, amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
     // @internal (undocumented)
     setPrice(price: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
+    transferBammCollateralGainToTrove(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, CollateralGainTransferDetails>>>;
     transferCollateralGainToTrove(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, CollateralGainTransferDetails>>>;
     withdrawCollateral(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>;
+    withdrawGainsFromBammPool(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, StabilityPoolGainsWithdrawalDetails>>>;
     withdrawGainsFromStabilityPool(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, StabilityPoolGainsWithdrawalDetails>>>;
+    withdrawTHUSDFromBammPool(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, BammDepositChangeDetails>>>;
     withdrawTHUSDFromStabilityPool(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>;
 }
 
@@ -559,10 +641,13 @@ export type _THUSDRepayment<T> = {
 export interface TransactableLiquity {
     adjustTrove(params: TroveAdjustmentParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<TroveAdjustmentDetails>;
     approveErc20(allowance?: Decimalish): Promise<void>;
+    // (undocumented)
+    bammUnlock(): Promise<void>;
     borrowTHUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<TroveAdjustmentDetails>;
     claimCollateralSurplus(): Promise<void>;
     closeTrove(): Promise<TroveClosureDetails>;
     depositCollateral(amount: Decimalish): Promise<TroveAdjustmentDetails>;
+    depositTHUSDInBammPool(amount: Decimalish): Promise<BammDepositChangeDetails>;
     depositTHUSDInStabilityPool(amount: Decimalish): Promise<StabilityDepositChangeDetails>;
     liquidate(address: string | string[]): Promise<LiquidationDetails>;
     liquidateUpTo(maximumNumberOfTrovesToLiquidate: number): Promise<LiquidationDetails>;
@@ -572,9 +657,12 @@ export interface TransactableLiquity {
     sendTHUSD(toAddress: string, amount: Decimalish): Promise<void>;
     // @internal (undocumented)
     setPrice(price: Decimalish): Promise<void>;
+    transferBammCollateralGainToTrove(): Promise<CollateralGainTransferDetails>;
     transferCollateralGainToTrove(): Promise<CollateralGainTransferDetails>;
     withdrawCollateral(amount: Decimalish): Promise<TroveAdjustmentDetails>;
+    withdrawGainsFromBammPool(): Promise<StabilityPoolGainsWithdrawalDetails>;
     withdrawGainsFromStabilityPool(): Promise<StabilityPoolGainsWithdrawalDetails>;
+    withdrawTHUSDFromBammPool(amount: Decimalish): Promise<BammDepositChangeDetails>;
     withdrawTHUSDFromStabilityPool(amount: Decimalish): Promise<StabilityDepositChangeDetails>;
 }
 

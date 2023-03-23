@@ -6,7 +6,7 @@
 
 Amount of thUSD paid to the liquidator as gas compensation.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 thusdGasCompensation: Decimal;

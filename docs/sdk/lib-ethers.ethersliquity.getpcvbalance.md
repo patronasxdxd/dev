@@ -6,7 +6,7 @@
 
 Get the total amount of thUSD currently deposited in the PCV Pool.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 getPCVBalance(overrides?: EthersCallOverrides): Promise<Decimal>;
@@ -18,7 +18,7 @@ getPCVBalance(overrides?: EthersCallOverrides): Promise<Decimal>;
 |  --- | --- | --- |
 |  overrides | [EthersCallOverrides](./lib-ethers.etherscalloverrides.md) |  |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[Decimal](./lib-base.decimal.md)<!-- -->&gt;
 

@@ -6,7 +6,7 @@
 
 Amount of thUSD added to the Trove's debt as borrowing fee.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 fee: Decimal;

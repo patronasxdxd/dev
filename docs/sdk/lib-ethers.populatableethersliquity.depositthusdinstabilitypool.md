@@ -6,7 +6,7 @@
 
 Make a new Stability Deposit, or top up existing one.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 depositTHUSDInStabilityPool(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<StabilityDepositChangeDetails>>;
@@ -19,7 +19,7 @@ depositTHUSDInStabilityPool(amount: Decimalish, overrides?: EthersTransactionOve
 |  amount | [Decimalish](./lib-base.decimalish.md) | Amount of thUSD to add to new or existing deposit. |
 |  overrides | [EthersTransactionOverrides](./lib-ethers.etherstransactionoverrides.md) |  |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[PopulatedEthersLiquityTransaction](./lib-ethers.populatedethersliquitytransaction.md)<!-- -->&lt;[StabilityDepositChangeDetails](./lib-base.stabilitydepositchangedetails.md)<!-- -->&gt;&gt;
 

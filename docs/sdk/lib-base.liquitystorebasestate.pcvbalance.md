@@ -6,7 +6,7 @@
 
 Total amount of LUSD currently deposited in the PCV Pool.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 pcvBalance: Decimal;

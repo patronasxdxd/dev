@@ -6,12 +6,12 @@
 
 Ethers-based implementation of [SendableLiquity](./lib-base.sendableliquity.md)<!-- -->.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare class SendableEthersLiquity implements SendableLiquity<EthersTransactionReceipt, EthersTransactionResponse> 
 ```
-<b>Implements:</b> [SendableLiquity](./lib-base.sendableliquity.md)<!-- -->&lt;[EthersTransactionReceipt](./lib-ethers.etherstransactionreceipt.md)<!-- -->, [EthersTransactionResponse](./lib-ethers.etherstransactionresponse.md)<!-- -->&gt;
+**Implements:** [SendableLiquity](./lib-base.sendableliquity.md)<!-- -->&lt;[EthersTransactionReceipt](./lib-ethers.etherstransactionreceipt.md)<!-- -->, [EthersTransactionResponse](./lib-ethers.etherstransactionresponse.md)<!-- -->&gt;
 
 ## Constructors
 
@@ -25,10 +25,12 @@ export declare class SendableEthersLiquity implements SendableLiquity<EthersTran
 |  --- | --- | --- |
 |  [adjustTrove(params, maxBorrowingRateOrOptionalParams, overrides)](./lib-ethers.sendableethersliquity.adjusttrove.md) |  | Adjust existing Trove by changing its collateral, debt, or both. |
 |  [approveErc20(allowance, overrides)](./lib-ethers.sendableethersliquity.approveerc20.md) |  | Allow the borrower operations contract to use user's erc20 tokens for [adjustTrove](./lib-base.transactableliquity.opentrove.md)<!-- -->. |
+|  [bammUnlock(overrides)](./lib-ethers.sendableethersliquity.bammunlock.md) |  |  |
 |  [borrowTHUSD(amount, maxBorrowingRate, overrides)](./lib-ethers.sendableethersliquity.borrowthusd.md) |  | Adjust existing Trove by borrowing more thUSD. |
 |  [claimCollateralSurplus(overrides)](./lib-ethers.sendableethersliquity.claimcollateralsurplus.md) |  | Claim leftover collateral after a liquidation or redemption. |
 |  [closeTrove(overrides)](./lib-ethers.sendableethersliquity.closetrove.md) |  | Close existing Trove by repaying all debt and withdrawing all collateral. |
 |  [depositCollateral(amount, overrides)](./lib-ethers.sendableethersliquity.depositcollateral.md) |  | Adjust existing Trove by depositing more collateral. |
+|  [depositTHUSDInBammPool(amount, overrides)](./lib-ethers.sendableethersliquity.depositthusdinbammpool.md) |  | Make a new Bamm Deposit, or top up existing one. |
 |  [depositTHUSDInStabilityPool(amount, overrides)](./lib-ethers.sendableethersliquity.depositthusdinstabilitypool.md) |  | Make a new Stability Deposit, or top up existing one. |
 |  [liquidate(address, overrides)](./lib-ethers.sendableethersliquity.liquidate.md) |  | Liquidate one or more undercollateralized Troves. |
 |  [liquidateUpTo(maximumNumberOfTrovesToLiquidate, overrides)](./lib-ethers.sendableethersliquity.liquidateupto.md) |  | Liquidate the least collateralized Troves up to a maximum number. |
@@ -36,8 +38,11 @@ export declare class SendableEthersLiquity implements SendableLiquity<EthersTran
 |  [redeemTHUSD(amount, maxRedemptionRate, overrides)](./lib-ethers.sendableethersliquity.redeemthusd.md) |  | Redeem thUSD to native currency (e.g. Ether) at face value. |
 |  [repayTHUSD(amount, overrides)](./lib-ethers.sendableethersliquity.repaythusd.md) |  | Adjust existing Trove by repaying some of its debt. |
 |  [sendTHUSD(toAddress, amount, overrides)](./lib-ethers.sendableethersliquity.sendthusd.md) |  | Send thUSD tokens to an address. |
+|  [transferBammCollateralGainToTrove(overrides)](./lib-ethers.sendableethersliquity.transferbammcollateralgaintotrove.md) |  | Transfer [collateral gain](./lib-base.bammdeposit.collateralgain.md) from Bamm Deposit to Trove. |
 |  [transferCollateralGainToTrove(overrides)](./lib-ethers.sendableethersliquity.transfercollateralgaintotrove.md) |  | Transfer [collateral gain](./lib-base.stabilitydeposit.collateralgain.md) from Stability Deposit to Trove. |
 |  [withdrawCollateral(amount, overrides)](./lib-ethers.sendableethersliquity.withdrawcollateral.md) |  | Adjust existing Trove by withdrawing some of its collateral. |
+|  [withdrawGainsFromBammPool(overrides)](./lib-ethers.sendableethersliquity.withdrawgainsfrombammpool.md) |  | Withdraw [collateral gain](./lib-base.bammdeposit.collateralgain.md) from Bamm Deposit. |
 |  [withdrawGainsFromStabilityPool(overrides)](./lib-ethers.sendableethersliquity.withdrawgainsfromstabilitypool.md) |  | Withdraw [collateral gain](./lib-base.stabilitydeposit.collateralgain.md) from Stability Deposit. |
+|  [withdrawTHUSDFromBammPool(amount, overrides)](./lib-ethers.sendableethersliquity.withdrawthusdfrombammpool.md) |  | Withdraw thUSD from Bamm. |
 |  [withdrawTHUSDFromStabilityPool(amount, overrides)](./lib-ethers.sendableethersliquity.withdrawthusdfromstabilitypool.md) |  | Withdraw thUSD from Stability Deposit. |
 
