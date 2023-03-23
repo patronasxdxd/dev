@@ -37,7 +37,7 @@ import {
 } from "./EthersLiquityConnection";
 
 import { BlockPolledLiquityStore } from "./BlockPolledLiquityStore";
-import { BigNumber } from "ethers";
+import { BigNumber } from "@ethersproject/bignumber";
 import { ZERO_ADDRESS } from "../utils/constants";
 
 // TODO: these are constant in the contracts, so it doesn't make sense to make a call for them,
