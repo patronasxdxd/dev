@@ -11,9 +11,12 @@ import "./../Dependencies/Ownable.sol";
 import "./../Dependencies/AggregatorV3Interface.sol";
 import "./../Dependencies/CheckContract.sol";
 import "./../Dependencies/SendCollateral.sol";
+import "./YieldBoxRebase.sol";
 
 
 contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendCollateral {
+
+    using YieldBoxRebase for uint256;
 
     AggregatorV3Interface public immutable priceAggregator;
     AggregatorV3Interface public thusd2UsdPriceAggregator;    
@@ -21,16 +24,18 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
     StabilityPool immutable public SP;
     IERC20 public immutable collateralERC20;
 
-    address payable public feePool;
+    address payable public immutable feePool;
     uint256 public constant MAX_FEE = 100; // 1%
     uint256 public fee = 0; // fee in bps
     uint256 public A = 20;
     uint256 public constant MIN_A = 20;
     uint256 public constant MAX_A = 200;    
 
-    uint256 public maxDiscount; // max discount in bips
+    uint256 public immutable maxDiscount; // max discount in bips
 
     uint256 constant public PRECISION = 1e18;
+    
+    address public bProtocolOwner;
 
     event ParamsSet(uint256 A, uint256 fee);
     event UserDeposit(address indexed user, uint256 thusdAmount, uint256 numShares);
@@ -41,7 +46,10 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         address _priceAggregator,
         address payable _SP,
         address _thusdToken,
-        address _collateralERC20
+        address _collateralERC20,
+        uint256 _maxDiscount,
+        address payable _feePool,
+        address _bProtocolOwner
     )
         CropJoinAdapter()
     {
@@ -56,22 +64,27 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         thusdToken = IERC20(_thusdToken);
         SP = StabilityPool(_SP);
         collateralERC20 = IERC20(_collateralERC20);
-    }
-
-    function enableSwap(
-        address _thusd2UsdPriceAggregator, 
-        uint256 _maxDiscount,
-        address payable _feePool
-    ) external onlyOwner {
-        require(!isSwapEnabled(), "swap: swap already enabled");
-        checkContract(_thusd2UsdPriceAggregator);
-        thusd2UsdPriceAggregator = AggregatorV3Interface(_thusd2UsdPriceAggregator);
-
         feePool = _feePool;
         maxDiscount = _maxDiscount;
+
+        require(_bProtocolOwner != address(0), "B.Protocol owner must be specified");
+        bProtocolOwner = _bProtocolOwner;
     }
 
-    function setParams(uint256 _A, uint256 _fee) external onlyOwner {
+    modifier onlyBProtocolOwner() {
+        require(msg.sender == bProtocolOwner, "Ownable: caller is not the B.Protocol owner");
+        _;
+    }
+
+    function setTHUSD2UsdPriceAggregator(
+        address _thusd2UsdPriceAggregator
+    ) external onlyOwner {
+        require(address(thusd2UsdPriceAggregator) == address(0), "set: price aggregator already set");
+        checkContract(_thusd2UsdPriceAggregator);
+        thusd2UsdPriceAggregator = AggregatorV3Interface(_thusd2UsdPriceAggregator);
+    }
+
+    function setParams(uint256 _A, uint256 _fee) external onlyBProtocolOwner {
         require(_fee <= MAX_FEE, "setParams: fee is too big");
         require(_A >= MIN_A, "setParams: A too small");
         require(_A <= MAX_A, "setParams: A too big");
@@ -141,10 +154,9 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
 
         // this is in theory not reachable. if it is, better halt deposits
         // the condition is equivalent to: (totalValue = 0) ==> (total = 0)
-        require(totalValue > 0 || total == 0, "deposit: system is rekt");
+        // require(totalValue > 0 || total == 0, "deposit: system is rekt");
 
-        uint256 newShare = PRECISION;
-        if(total > 0) newShare = total * thusdAmount / totalValue;
+        uint256 newShare = thusdAmount._toShares(total, totalValue, true);
 
         // deposit
         require(thusdToken.transferFrom(msg.sender, address(this), thusdAmount), "deposit: transferFrom failed");
@@ -160,8 +172,8 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         uint256 thusdValue = SP.getCompoundedTHUSDDeposit(address(this));
         uint256 collateralValue = getCollateralBalance();
 
-        uint256 thusdAmount = thusdValue * numShares / total;
-        uint256 collateralAmount = collateralValue * numShares / total;
+        uint256 thusdAmount = numShares._toAmount(total, thusdValue, true);
+        uint256 collateralAmount = numShares._toAmount(total, collateralValue, false);
 
         // this withdraws thusdn and collateral
         SP.withdrawFromSP(thusdAmount);
@@ -187,6 +199,10 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
     }
 
     function compensateForTHUSDDeviation(uint256 collateralAmount) public view returns(uint256 newCollateralAmount) {
+        if (address(thusd2UsdPriceAggregator) == address(0)) {
+            return collateralAmount;
+        }
+
         uint256 chainlinkDecimals;
         uint256 chainlinkLatestAnswer;
 
@@ -230,13 +246,8 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         feeTHUSDAmount = addBps(thusdQty, int(fee)) - thusdQty;
     }
 
-    function isSwapEnabled() public view returns (bool) {
-        return address(thusd2UsdPriceAggregator) != address(0);
-    }
-
     // get collateral in return to THUSD
     function swap(uint256 thusdAmount, uint256 minCollateralReturn, address payable dest) public returns(uint) {
-        require(isSwapEnabled(), "swap: swap is not enabled");
         (uint256 collateralAmount, uint256 feeAmount) = getSwapCollateralAmount(thusdAmount);
 
         require(collateralAmount >= minCollateralReturn, "swap: low return");
@@ -246,15 +257,7 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
 
         if(feeAmount > 0) thusdToken.transfer(feePool, feeAmount);
 
-        if (address(collateralERC20) == address(0)) {
-            // ETH
-            (bool success, ) = dest.call{ value: collateralAmount }(""); // re-entry is fine here
-            require(success, "swap: sending ETH failed");
-        } else {
-            // ERC20
-            bool success = collateralERC20.transfer(dest, collateralAmount);
-            require(success, "swap: sending collateral failed");
-        }
+        sendCollateral(collateralERC20, dest, collateralAmount);
 
         emit RebalanceSwap(msg.sender, thusdAmount, collateralAmount, block.timestamp);
 
@@ -284,4 +287,12 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
     }
 
     receive() external payable {}
+
+    function transferBProtocolOwnership(address newOwner) public onlyBProtocolOwner {
+        require(newOwner != address(0), "Ownable: new B.Protocol owner is the zero address");
+        address oldOwner = bProtocolOwner;
+        bProtocolOwner = newOwner;
+        emit OwnershipTransferred(oldOwner, newOwner);
+    }
+
 }

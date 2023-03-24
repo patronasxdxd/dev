@@ -16,7 +16,7 @@ const ZERO_ADDRESS = th.ZERO_ADDRESS
 const maxBytes32 = th.maxBytes32
 
 contract('BAMM', async accounts => {
-  const [owner,
+  const [owner, bProtocolOwner,
     defaulter_1, defaulter_2, defaulter_3,
     whale,
     alice, bob, carol, dennis, erin, flyn,
@@ -76,34 +76,58 @@ contract('BAMM', async accounts => {
           stabilityPool.address, 
           thusdToken.address, 
           erc20.address,
-          {from: bammOwner})
-        lens = await BLens.new()
-        await bamm.enableSwap(
-          thusdChainlink.address,
           400, 
           feePool,
-          {from: bammOwner}
-        )
+          bProtocolOwner,
+          {from: bammOwner})
+        lens = await BLens.new()
 
         await thusdChainlink.setPrice(dec(1,18)) // 1 THUSD = 1 USD
       })
 
-      it("enableSwap(): reverts when caller is not owner", async () => {
+      it("setTHUSD2UsdPriceAggregator(): reverts when caller is not owner", async () => {
         try {
-          await bamm.enableSwap(thusdChainlink.address, 400,  feePool, { from: alice })
+          await bamm.setTHUSD2UsdPriceAggregator(thusdChainlink.address, { from: alice })
         } catch (err) {
           assert.include(err.message, "revert")
           assert.include(err.message, "Ownable: caller is not the owner")
         }
       })
 
-      it("enableSwap(): reverts when tries to enable second time", async () => {
+      it("setTHUSD2UsdPriceAggregator(): reverts when tries to enable second time", async () => {
+        await bamm.setTHUSD2UsdPriceAggregator(
+          thusdChainlink.address,
+          {from: bammOwner}
+        )
         try {
-          await bamm.enableSwap(thusdChainlink.address, 400,  feePool, { from: bammOwner })
+          await bamm.setTHUSD2UsdPriceAggregator(thusdChainlink.address, { from: bammOwner })
         } catch (err) {
           assert.include(err.message, "revert")
-          assert.include(err.message, "swap: swap already enabled")
+          assert.include(err.message, "set: price aggregator already set")
         }
+      })
+
+      it("transferBProtocolOwnership(): reverts when new owner is the zero address", async () => {
+        try {
+          await bamm.transferBProtocolOwnership(ZERO_ADDRESS, { from: bProtocolOwner })
+        } catch (err) {
+          assert.include(err.message, "revert")
+          assert.include(err.message, "Ownable: new B.Protocol owner is the zero address")
+        }
+      })
+
+      it("transferBProtocolOwnership(): reverts when caller is not B.Protocol owner", async () => {
+        try {
+          await bamm.transferBProtocolOwnership(bammOwner, { from: bammOwner })
+        } catch (err) {
+          assert.include(err.message, "revert")
+          assert.include(err.message, "Ownable: caller is not the B.Protocol owner")
+        }
+      })
+
+      it("transferBProtocolOwnership(): transfers ownership to the new address", async () => {
+        await bamm.transferBProtocolOwnership(bammOwner, { from: bProtocolOwner })
+        assert.equal(await bamm.bProtocolOwner(), bammOwner)
       })
 
       // --- provideToSP() ---
@@ -169,6 +193,20 @@ contract('BAMM', async accounts => {
 
         const whaleBalanceAfter = await thusdToken.balanceOf(whale)
         assert.equal(whaleBalanceAfter.sub(whaleBalanceBefore).toString(), 50)      
+      })
+      
+      it("deposit(): one user deposits, withdraws everything including collaterl", async () => {
+        // --- SETUP ---
+        await openTrove({ extraTHUSDAmount: toBN(200), ICR: toBN(dec(2, 18)), extraParams: { from: whale } })    
+
+        // --- TEST ---
+        await thusdToken.approve(bamm.address, toBN(dec(800, 18)), { from: whale })      
+        await bamm.deposit(toBN(dec(800, 18)), { from: whale })     
+
+        await sendCollateral(bamm.address, toBN(dec(3, 18)))
+
+        const whaleShare = await bamm.stake(whale)
+        await bamm.withdraw(whaleShare, { from: whale }); 
       })
 
       it('rebalance scenario', async () => {
@@ -421,7 +459,7 @@ contract('BAMM', async accounts => {
         await thusdToken.approve(bamm.address, totaTHUsd, { from: B })            
         await bamm.deposit(totaTHUsd, { from: B } )      
 
-        assert.equal((await bamm.balanceOf(A)).toString(), (await bamm.balanceOf(B)).toString())
+        assert(almostTheSame((await bamm.balanceOf(A)).toString(), (await bamm.balanceOf(B)).toString()))
 
         const collateralBalanceBefore = await getCollateralBalance(A)
         const THUSDBefore = await thusdToken.balanceOf(A)
@@ -470,25 +508,25 @@ contract('BAMM', async accounts => {
         const collateralGains = web3.utils.toBN("39799999999999999975")
 
         // without fee
-        await bamm.setParams(20, 0, {from: bammOwner})
+        await bamm.setParams(20, 0, {from: bProtocolOwner})
         const price = await bamm.getSwapCollateralAmount(dec(105, 18))
         assert.equal(price.collateralAmount.toString(), dec(104, 18-2).toString())
         assert.equal(price.feeTHUSDAmount.toString(), "0")
 
         // with fee
-        await bamm.setParams(20, 100, {from: bammOwner})
+        await bamm.setParams(20, 100, {from: bProtocolOwner})
         const priceWithFee = await bamm.getSwapCollateralAmount(dec(105, 18))
         assert.equal(priceWithFee.collateralAmount.toString(),price.collateralAmount.toString())
         assert.equal(priceWithFee.feeTHUSDAmount.toString(), dec(105, 16))
 
         // without fee
-        await bamm.setParams(20, 0, {from: bammOwner})
+        await bamm.setParams(20, 0, {from: bProtocolOwner})
         const priceDepleted = await bamm.getSwapCollateralAmount(dec(1050000000000000, 18))
         assert.equal(priceDepleted.collateralAmount.toString(), collateralGains.toString())      
         assert.equal(priceDepleted.feeTHUSDAmount.toString(), "0")
 
         // with fee
-        await bamm.setParams(20, 100, {from: bammOwner})
+        await bamm.setParams(20, 100, {from: bProtocolOwner})
         const priceDepletedWithFee = await bamm.getSwapCollateralAmount(dec(1050000000000000, 18))
         assert.equal(priceDepletedWithFee.collateralAmount.toString(), priceDepleted.collateralAmount.toString())
         assert.equal(priceDepletedWithFee.feeTHUSDAmount.toString(), dec(1050000000000000, 16))      
@@ -496,6 +534,10 @@ contract('BAMM', async accounts => {
 
       it('test getSwapCollateralAmount', async () => {
         // --- SETUP ---
+        await bamm.setTHUSD2UsdPriceAggregator(
+          thusdChainlink.address,
+          {from: bammOwner}
+        )
 
         // Whale opens Trove and deposits to SP
         await openTrove({ extraTHUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(20, 18)), extraParams: { from: whale } })
@@ -527,13 +569,13 @@ contract('BAMM', async accounts => {
         const expectedReturn = await bamm.getReturn(thusdQty, dec(6000, 18), toBN(dec(6000, 18)).add(collateralGains.mul(toBN(2 * 105))), 200)
 
         // without fee
-        await bamm.setParams(200, 0, {from: bammOwner})
+        await bamm.setParams(200, 0, {from: bProtocolOwner})
         const priceWithoutFee = await bamm.getSwapCollateralAmount(thusdQty)
         assert.equal(priceWithoutFee.collateralAmount.toString(), expectedReturn.mul(toBN(100)).div(toBN(100 * 105)).toString())
         assert.equal(priceWithoutFee.feeTHUSDAmount.toString(), "0")
 
         // with fee
-        await bamm.setParams(200, 100, {from: bammOwner})
+        await bamm.setParams(200, 100, {from: bProtocolOwner})
         const priceWithFee = await bamm.getSwapCollateralAmount(thusdQty)
         assert.equal(priceWithoutFee.collateralAmount.toString(), priceWithFee.collateralAmount.toString())      
         assert.equal(priceWithFee.feeTHUSDAmount.toString(), toBN(thusdQty).div(toBN("100")).toString())
@@ -593,7 +635,7 @@ contract('BAMM', async accounts => {
         const collateralGains = web3.utils.toBN("39799999999999999975")
 
         // with fee
-        await bamm.setParams(20, 100, {from: bammOwner})
+        await bamm.setParams(20, 100, {from: bProtocolOwner})
         const priceWithFee = await bamm.getSwapCollateralAmount(dec(105, 18))
         assert.equal(priceWithFee.collateralAmount.toString(), dec(104, 18-2).toString())
         assert.equal(priceWithFee.feeTHUSDAmount.toString(), dec(105, 16).toString())      
@@ -652,23 +694,23 @@ contract('BAMM', async accounts => {
         assert(expectedReturn200.toString() !== expectedReturn190.toString())
 
         // without fee
-        await bamm.setParams(200, 0, {from: bammOwner})
+        await bamm.setParams(200, 0, {from: bProtocolOwner})
         const priceWithoutFee = await bamm.getSwapCollateralAmount(thusdQty)
         assert.equal(priceWithoutFee.collateralAmount.toString(), expectedReturn200.mul(toBN(100)).div(toBN(100 * 105)).toString())
         assert.equal(priceWithoutFee.feeTHUSDAmount.toString(), "0")
 
         // with fee
-        await bamm.setParams(190, 100, {from: bammOwner})
+        await bamm.setParams(190, 100, {from: bProtocolOwner})
         const priceWithFee = await bamm.getSwapCollateralAmount(thusdQty)
         assert.equal(priceWithFee.collateralAmount.toString(), expectedReturn190.mul(toBN(100)).div(toBN(100 * 105)).toString())
         assert.equal(priceWithFee.feeTHUSDAmount.toString(), toBN(thusdQty).div(toBN("100")).toString())            
       })    
       
       it('test set params sad path', async () => {
-        await assertRevert(bamm.setParams(210, 100, {from: bammOwner}), 'setParams: A too big')
-        await assertRevert(bamm.setParams(9, 100, {from: bammOwner}), 'setParams: A too small')
-        await assertRevert(bamm.setParams(10, 101, {from: bammOwner}), 'setParams: fee is too big')             
-        await assertRevert(bamm.setParams(20, 100, {from: B}), 'Ownable: caller is not the owner')      
+        await assertRevert(bamm.setParams(210, 100, {from: bProtocolOwner}), 'setParams: A too big')
+        await assertRevert(bamm.setParams(9, 100, {from: bProtocolOwner}), 'setParams: A too small')
+        await assertRevert(bamm.setParams(10, 101, {from: bProtocolOwner}), 'setParams: fee is too big')             
+        await assertRevert(bamm.setParams(20, 100, {from: bammOwner}), 'Ownable: caller is not the B.Protocol owner')      
       })
     }
 

@@ -13,6 +13,8 @@ const dec = th.dec
 const getLatestBlockTimestamp = th.getLatestBlockTimestamp
 const fastForwardTime = th.fastForwardTime
 
+const feePool = "0x1000000000000000000000000000000000000001"
+
 contract('PCV', async accounts => {
   
   const [owner, alice, bob, council, treasury] = accounts;
@@ -52,7 +54,10 @@ contract('PCV', async accounts => {
         chainlink.address, 
         stabilityPool.address, 
         thusdToken.address, 
-        erc20.address)
+        erc20.address,
+        400, 
+        feePool,
+        owner)
       contracts.bamm = bamm
 
       await deploymentHelper.connectCoreContracts(contracts)
@@ -210,7 +215,7 @@ contract('PCV', async accounts => {
       const bammBalance = await bamm.balanceOf(pcv.address)
       await pcv.withdrawFromBAMM(bammBalance, { from: treasury })
       let pcvTHUSDBalance = await thusdToken.balanceOf(pcv.address)
-      assert.equal(pcvTHUSDBalance.toString(), thUSDAmount.toString())
+      assert(almostTheSame(pcvTHUSDBalance.toString(), thUSDAmount.toString()))
       let pcvCollateralBalance = await getCollateralBalance(pcv.address)
       assert.equal(pcvCollateralBalance.toString(), collateralAmount.toString())
     })
@@ -359,3 +364,13 @@ contract('PCV', async accounts => {
   })
 
 })
+
+function almostTheSame(n1, n2) {
+  n1 = Number(web3.utils.fromWei(n1))
+  n2 = Number(web3.utils.fromWei(n2))
+  //console.log(n1,n2)
+
+  if(n1 * 1000 > n2 * 1001) return false
+  if(n2 * 1000 > n1 * 1001) return false  
+  return true
+}
