@@ -26,7 +26,7 @@ type Version = {
 type ThresholdContextValue = {
   config: ThresholdConfig;
   account: string;
-  provider: Provider;
+  provider: Provider | Web3Provider;
   threshold: Threshold[];
 };
 
@@ -170,7 +170,7 @@ export const ThresholdProvider = ({
         }
 
         setThreshold(thresholdStores)
-        
+        console.log("config.infuraApiKey: ", config.infuraApiKey)
         if (isBatchedProvider(provider) && provider.chainId !== chainId) {
           provider.chainId = chainId;
         }

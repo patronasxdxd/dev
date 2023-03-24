@@ -1,6 +1,6 @@
 import React from "react";
 import { Flex, Container, Heading, Paragraph } from "theme-ui";
-import { HashRouter as Router, Switch, Route } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 import { Nav } from "./components/Nav";
 import { SideBar } from "./components/SideBar";
