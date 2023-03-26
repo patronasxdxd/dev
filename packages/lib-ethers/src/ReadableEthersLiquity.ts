@@ -568,14 +568,12 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return createFees(blockTimestamp, total.collateralRatioIsBelowCritical(price));
   }
 
-  async getBammAllowance(overrides?: EthersCallOverrides): Promise<boolean> {
+  async getBammAllowance(overrides?: EthersCallOverrides): Promise<Decimal> {
     const { thusdToken, bamm } = _getContracts(this.connection);
     const address = _requireAddress(this.connection);
-    const reallyLargeAllowance = BigNumber.from("0x8888888888888888888888888888888888888888888888888888888888888888")
 
-    const allowance = await thusdToken.allowance(address, bamm.address, { ...overrides })
-    const bammAllowance = allowance.gt(reallyLargeAllowance)
-    return bammAllowance;
+    const allowance = await thusdToken.allowance(address, bamm.address, { ...overrides }).then(decimalify);
+    return allowance;
   }
 }
 
@@ -813,7 +811,7 @@ class _BlockPolledReadableEthersLiquity
     throw new Error("Method not implemented.");
   }
 
-  async getBammAllowance(overrides?: EthersCallOverrides): Promise<boolean> {
+  async getBammAllowance(overrides?: EthersCallOverrides): Promise<Decimal> {
     return this._blockHit(overrides)
       ? this.store.state.bammAllowance
       : this._readable.getBammAllowance(overrides);
