@@ -91,7 +91,6 @@ export const RiskyVaults = ({ version, collateral, isMintList }: RiskyVaultsProp
   
   const send = collateralThreshold.store.send
 
-  const [isMounted, setIsMounted] = useState<boolean>(true);
   const [vaults, setVaults] = useState<UserVault[]>();
   const [reload, setReload] = useState({});
   const forceReload = useCallback(() => setReload({}), []);
@@ -118,7 +117,6 @@ export const RiskyVaults = ({ version, collateral, isMintList }: RiskyVaultsProp
   }, [page, clampedPage]);
 
   useEffect(() => {
-    if (isMounted) {
       collateralThreshold.store
         .getTroves(
           {
@@ -131,13 +129,9 @@ export const RiskyVaults = ({ version, collateral, isMintList }: RiskyVaultsProp
         .then(vaults => {
             setVaults(vaults);
         });
-    }
-    return () => {
-      setIsMounted(false);
-    };
     // Omit blockTag from deps on purpose
     // eslint-disable-next-line
-  }, [threshold, clampedPage, pageSize, reload, isMounted]);
+  }, [threshold, clampedPage, pageSize, reload]);
 
   useEffect(() => {
     forceReload();
@@ -146,18 +140,12 @@ export const RiskyVaults = ({ version, collateral, isMintList }: RiskyVaultsProp
   const [copied, setCopied] = useState<string>();
 
   useEffect(() => {
-    if (isMounted) {
-      if (copied !== undefined) {
-        setTimeout(() => {
-            setCopied(undefined);
-        }, 2000);
-
-        return () => {
-          setIsMounted(false);
-        };
-      }
+    if (copied !== undefined) {
+      setTimeout(() => {
+          setCopied(undefined);
+      }, 2000);
     }
-  }, [copied, isMounted]);
+  }, [copied]);
 
   return (
     <Container>
