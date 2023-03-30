@@ -6,7 +6,7 @@
 
 Amount of thUSD that was actually redeemed by the transaction.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 actualTHUSDAmount: Decimal;

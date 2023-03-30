@@ -6,7 +6,7 @@
 
 Amount of thUSD in the deposit directly after this transaction.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 newTHUSDDeposit: Decimal;

@@ -6,12 +6,12 @@
 
 Prepare Liquity transactions for sending.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface PopulatableLiquity<R = unknown, S = unknown, P = unknown> extends _PopulatableFrom<SendableLiquity<R, S>, P> 
 ```
-<b>Extends:</b> \_PopulatableFrom&lt;[SendableLiquity](./lib-base.sendableliquity.md)<!-- -->&lt;R, S&gt;, P&gt;
+**Extends:** \_PopulatableFrom&lt;[SendableLiquity](./lib-base.sendableliquity.md)<!-- -->&lt;R, S&gt;, P&gt;
 
 ## Remarks
 
@@ -25,10 +25,12 @@ Implemented by [PopulatableEthersLiquity](./lib-ethers.populatableethersliquity.
 |  --- | --- |
 |  [adjustTrove(params, maxBorrowingRate)](./lib-base.populatableliquity.adjusttrove.md) | Adjust existing Trove by changing its collateral, debt, or both. |
 |  [approveErc20(allowance)](./lib-base.populatableliquity.approveerc20.md) | Allow the borrower operations contract to use user's erc20 tokens for [adjustTrove](./lib-base.transactableliquity.opentrove.md)<!-- -->. |
+|  [bammUnlock()](./lib-base.populatableliquity.bammunlock.md) |  |
 |  [borrowTHUSD(amount, maxBorrowingRate)](./lib-base.populatableliquity.borrowthusd.md) | Adjust existing Trove by borrowing more thUSD. |
 |  [claimCollateralSurplus()](./lib-base.populatableliquity.claimcollateralsurplus.md) | Claim leftover collateral after a liquidation or redemption. |
 |  [closeTrove()](./lib-base.populatableliquity.closetrove.md) | Close existing Trove by repaying all debt and withdrawing all collateral. |
 |  [depositCollateral(amount)](./lib-base.populatableliquity.depositcollateral.md) | Adjust existing Trove by depositing more collateral. |
+|  [depositTHUSDInBammPool(amount)](./lib-base.populatableliquity.depositthusdinbammpool.md) | Make a new Bamm Deposit, or top up existing one. |
 |  [depositTHUSDInStabilityPool(amount)](./lib-base.populatableliquity.depositthusdinstabilitypool.md) | Make a new Stability Deposit, or top up existing one. |
 |  [liquidate(address)](./lib-base.populatableliquity.liquidate.md) | Liquidate one or more undercollateralized Troves. |
 |  [liquidateUpTo(maximumNumberOfTrovesToLiquidate)](./lib-base.populatableliquity.liquidateupto.md) | Liquidate the least collateralized Troves up to a maximum number. |
@@ -36,8 +38,11 @@ Implemented by [PopulatableEthersLiquity](./lib-ethers.populatableethersliquity.
 |  [redeemTHUSD(amount, maxRedemptionRate)](./lib-base.populatableliquity.redeemthusd.md) | Redeem thUSD to native currency (e.g. Ether) at face value. |
 |  [repayTHUSD(amount)](./lib-base.populatableliquity.repaythusd.md) | Adjust existing Trove by repaying some of its debt. |
 |  [sendTHUSD(toAddress, amount)](./lib-base.populatableliquity.sendthusd.md) | Send thUSD tokens to an address. |
+|  [transferBammCollateralGainToTrove()](./lib-base.populatableliquity.transferbammcollateralgaintotrove.md) | Transfer [collateral gain](./lib-base.bammdeposit.collateralgain.md) from Bamm Deposit to Trove. |
 |  [transferCollateralGainToTrove()](./lib-base.populatableliquity.transfercollateralgaintotrove.md) | Transfer [collateral gain](./lib-base.stabilitydeposit.collateralgain.md) from Stability Deposit to Trove. |
 |  [withdrawCollateral(amount)](./lib-base.populatableliquity.withdrawcollateral.md) | Adjust existing Trove by withdrawing some of its collateral. |
+|  [withdrawGainsFromBammPool()](./lib-base.populatableliquity.withdrawgainsfrombammpool.md) | Withdraw [collateral gain](./lib-base.bammdeposit.collateralgain.md) from Bamm Deposit. |
 |  [withdrawGainsFromStabilityPool()](./lib-base.populatableliquity.withdrawgainsfromstabilitypool.md) | Withdraw [collateral gain](./lib-base.stabilitydeposit.collateralgain.md) from Stability Deposit. |
+|  [withdrawTHUSDFromBammPool(amount)](./lib-base.populatableliquity.withdrawthusdfrombammpool.md) | Withdraw thUSD from Bamm. |
 |  [withdrawTHUSDFromStabilityPool(amount)](./lib-base.populatableliquity.withdrawthusdfromstabilitypool.md) | Withdraw thUSD from Stability Deposit. |
 

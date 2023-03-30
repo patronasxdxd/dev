@@ -6,7 +6,7 @@
 
 User's thUSD token balance.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 thusdBalance: Decimal;

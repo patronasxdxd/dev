@@ -6,7 +6,7 @@
 
 Redeem thUSD to native currency (e.g. Ether) at face value.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 redeemTHUSD(amount: Decimalish, maxRedemptionRate?: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, RedemptionDetails>>>;
@@ -19,7 +19,7 @@ redeemTHUSD(amount: Decimalish, maxRedemptionRate?: Decimalish): Promise<SentLiq
 |  amount | [Decimalish](./lib-base.decimalish.md) | Amount of thUSD to be redeemed. |
 |  maxRedemptionRate | [Decimalish](./lib-base.decimalish.md) | Maximum acceptable [redemption rate](./lib-base.fees.redemptionrate.md)<!-- -->. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[SentLiquityTransaction](./lib-base.sentliquitytransaction.md)<!-- -->&lt;S, [LiquityReceipt](./lib-base.liquityreceipt.md)<!-- -->&lt;R, [RedemptionDetails](./lib-base.redemptiondetails.md)<!-- -->&gt;&gt;&gt;
 

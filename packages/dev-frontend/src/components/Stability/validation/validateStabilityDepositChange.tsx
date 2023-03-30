@@ -68,7 +68,7 @@ export const validateStabilityDepositChange = (
     ];
   }
 
-  if(change && !bammAllowance) {
+  if(change && change.depositTHUSD?.gt(bammAllowance)) {
     return [
       undefined,
       <ErrorDescription>

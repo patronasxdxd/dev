@@ -48,7 +48,7 @@ export const LiquidationManager = ({ version, collateral, isMintList }: Liquidat
   const send = collateralThreshold.store.send
 
   const inputId: string = "liquidate-vaults";
-  const [numberOfTrovesToLiquidate, setNumberOfVaultsToLiquidate] = useState("90");
+  const [numberOfVaultsToLiquidate, setNumberOfVaultsToLiquidate] = useState("90");
   const [editing, setEditing] = useState<string>();
 
   return (
@@ -83,7 +83,7 @@ export const LiquidationManager = ({ version, collateral, isMintList }: Liquidat
                 type="number"
                 min="1"
                 step="1"
-                value={numberOfTrovesToLiquidate}
+                value={numberOfVaultsToLiquidate}
                 onChange={e => setNumberOfVaultsToLiquidate(e.target.value)}
                 onBlur={() => {
                   setEditing(undefined);
@@ -104,7 +104,7 @@ export const LiquidationManager = ({ version, collateral, isMintList }: Liquidat
                 }}
                 labelledBy={`${inputId}-label`}
                 onClick={() => setEditing(inputId)}
-                {...{ inputId, amount: numberOfTrovesToLiquidate, unit: "Vaults" }}
+                {...{ inputId, amount: numberOfVaultsToLiquidate, unit: "Vaults" }}
               />
             </>
           )}
@@ -112,10 +112,10 @@ export const LiquidationManager = ({ version, collateral, isMintList }: Liquidat
             <Transaction
               id="batch-liquidate"
               send={overrides => {
-                if (!numberOfTrovesToLiquidate) {
+                if (!numberOfVaultsToLiquidate) {
                   throw new Error("Invalid number");
                 }
-                return send.liquidateUpTo(parseInt(numberOfTrovesToLiquidate, 10), overrides);
+                return send.liquidateUpTo(parseInt(numberOfVaultsToLiquidate, 10), overrides);
               }}
               version={version}
               collateral={collateral}

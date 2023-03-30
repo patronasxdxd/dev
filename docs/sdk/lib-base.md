@@ -8,6 +8,7 @@
 
 |  Class | Description |
 |  --- | --- |
+|  [BammDeposit](./lib-base.bammdeposit.md) | A Bamm Deposit and its accrued gains. |
 |  [Decimal](./lib-base.decimal.md) | Fixed-point decimal bignumber with 18 digits of precision. |
 |  [Fees](./lib-base.fees.md) | Calculator for fees. |
 |  [LiquityStore](./lib-base.liquitystore.md) | Abstract base class of Liquity data store implementations. |
@@ -21,6 +22,7 @@
 
 |  Interface | Description |
 |  --- | --- |
+|  [BammDepositChangeDetails](./lib-base.bammdepositchangedetails.md) | Details of a [depositTHUSDInBammPool()](./lib-base.transactableliquity.depositthusdinbammpool.md) or [withdrawTHUSDFromBammPool()](./lib-base.transactableliquity.withdrawthusdfrombammpool.md) transaction. |
 |  [CollateralGainTransferDetails](./lib-base.collateralgaintransferdetails.md) | Details of a [transferCollateralGainToTrove()](./lib-base.transactableliquity.transfercollateralgaintotrove.md) transaction. |
 |  [LiquidationDetails](./lib-base.liquidationdetails.md) | Details of a [liquidate()](./lib-base.transactableliquity.liquidate.md) or [liquidateUpTo()](./lib-base.transactableliquity.liquidateupto.md) transaction. |
 |  [LiquityStoreBaseState](./lib-base.liquitystorebasestate.md) | State variables read from the blockchain. |
@@ -58,6 +60,7 @@
 
 |  Type Alias | Description |
 |  --- | --- |
+|  [BammDepositChange](./lib-base.bammdepositchange.md) | Represents the change between two Bamm Deposit states. |
 |  [Decimalish](./lib-base.decimalish.md) | Types that can be converted into a Decimal. |
 |  [FailedReceipt](./lib-base.failedreceipt.md) | Indicates that the transaction has been mined, but it failed. |
 |  [LiquityReceipt](./lib-base.liquityreceipt.md) | One of either a [PendingReceipt](./lib-base.pendingreceipt.md)<!-- -->, a [FailedReceipt](./lib-base.failedreceipt.md) or a [SuccessfulReceipt](./lib-base.successfulreceipt.md)<!-- -->. |

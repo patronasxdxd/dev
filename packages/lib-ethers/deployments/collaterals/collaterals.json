@@ -9,6 +9,10 @@
         {
           "path": "deployments/default/eth/v1",
           "name": "v1"
+        },
+        {
+          "path": "deployments/default/eth/v2",
+          "name": "v2"
         }
       ]
     },

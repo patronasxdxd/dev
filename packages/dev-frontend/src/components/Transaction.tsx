@@ -305,7 +305,7 @@ export const TransactionMonitor = (): JSX.Element => {
             collateral
           });
         } else {
-          const reason = await tryToGetRevertReason(provider, receipt.rawReceipt);
+          const reason = await tryToGetRevertReason(provider as Provider, receipt.rawReceipt);
 
           if (cancelled) {
             return;

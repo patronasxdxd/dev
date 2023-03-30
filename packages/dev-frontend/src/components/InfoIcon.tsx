@@ -5,7 +5,7 @@ import { FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
 
 export type InfoIconProps = Pick<TippyProps, "placement"> &
   Pick<FontAwesomeIconProps, "size"> & {
-    tooltip: React.ReactNode;
+    tooltip: JSX.Element;
   };
 
 export const InfoIcon = ({ placement = "right", tooltip, size = "1x" }: InfoIconProps): JSX.Element => {

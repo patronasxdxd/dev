@@ -6,7 +6,7 @@
 
 User's collateral erc20 token balance.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 erc20TokenBalance: Decimal;

@@ -318,7 +318,7 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     return this._readable.getFees(overrides);
   }
 
-  getBammAllowance(overrides?: EthersCallOverrides): Promise<boolean> {
+  getBammAllowance(overrides?: EthersCallOverrides): Promise<Decimal> {
     return this._readable.getBammAllowance(overrides);
   }
 
