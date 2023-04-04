@@ -154,7 +154,7 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
 
         // this is in theory not reachable. if it is, better halt deposits
         // the condition is equivalent to: (totalValue = 0) ==> (total = 0)
-        // require(totalValue > 0 || total == 0, "deposit: system is rekt");
+        require(totalValue > 0 || total == 0, "deposit: system is rekt");
 
         uint256 newShare = thusdAmount._toShares(total, totalValue, true);
 
