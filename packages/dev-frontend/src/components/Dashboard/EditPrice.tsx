@@ -56,53 +56,15 @@ export const EditPrice = ({ version, collateral }: EditPriceProps): JSX.Element 
         borderBottom: 1,
         borderColor: "border"
       }}>
-        { symbol } Price
+        { symbol } Price - {version}
       </Flex>
-      <SystemStat>
         {canSetPrice ? (
-          <Flex sx={{ mb:1, alignItems: "center", height: "1.2em", }}>
-            <Input
-              variant="layout.balanceRow"
-              sx={{
-              ...editableStyle,
-              color: "inputText",
-              fontSize: "11px",
-              paddingY: "0.3rem"
-              }}
-              type="number"
-              step="any"
-              value={editedPrice}
-              onChange={e => setEditedPrice(e.target.value)}
-            />
-            <Transaction
-              id="set-price"
-              tooltip="Set the collateral price in the testnet"
-              tooltipPlacement="bottom"
-              send={overrides => {
-                if (!editedPrice) {
-                  throw new Error("Invalid price");
-                }
-                return collateralThreshold.store.send.setPrice(Decimal.from(editedPrice), overrides);
-              }}
-              version={version}
-              collateral={collateral}
-            >
-              <Button sx={{
-                ml: 1,
-                fontSize: "11px",
-                width: "0.1rem",
-                height: "1rem",
-                borderRadius: 6,
-                top: 0
-              }}>
-                Set
-              </Button>
-            </Transaction>
+          <Flex sx={{ mb:1, textAlign:"left", height: "1.2em", }}>
+            {editedPrice}
           </Flex>
         ) : (
           price.toString(2)
         )}
-      </SystemStat>
     </Flex>
   );
 };
