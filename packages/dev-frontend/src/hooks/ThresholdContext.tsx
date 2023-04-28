@@ -31,7 +31,7 @@ type ThresholdContextValue = {
 };
 
 type SupportedNetworks = {
-  [key: string]: "homestead" | "goerli";
+  [key: string]: "homestead" | "goerli" | "sepolia";
 };
 
 const ThresholdContext = createContext<ThresholdContextValue | undefined>(undefined);
@@ -48,10 +48,11 @@ const wsParams = (network: string, infuraApiKey: string): [string, string] => [
   network
 ];
 
-const supportedNetworks: SupportedNetworks = { 1: "homestead", 5: "goerli"};
+export const supportedNetworks: SupportedNetworks = { 1: "homestead", 5: "goerli", 11155111: "sepolia"};
 
 const getCollateralVersions = async (chainId: number): Promise<CollateralsVersionedDeployments> => {
-  return await getCollateralsDeployments(chainId === 1 ? 'mainnet' : 'goerli');
+  const network = supportedNetworks[chainId];
+  return await getCollateralsDeployments(network);
 }
 
 async function getConnections(
@@ -61,7 +62,6 @@ async function getConnections(
     chainId: number,
     setConnections: Function
   ) {
-
     const connectionsByChainId: (EthersLiquityConnection & { useStore: "blockPolled"; })[] = versionsArray.map(version => 
       _connectByChainId(
         version.collateral,
@@ -170,7 +170,6 @@ export const ThresholdProvider = ({
         }
 
         setThreshold(thresholdStores)
-        console.log("config.infuraApiKey: ", config.infuraApiKey)
         if (isBatchedProvider(provider) && provider.chainId !== chainId) {
           provider.chainId = chainId;
         }
@@ -189,20 +188,19 @@ export const ThresholdProvider = ({
     }
   }, [config, connections, chainId]);
 
-
   if (!config || !provider || !account || !chainId) {
     return <>{loader}</>;
   }
 
   //This conditional should be habilitated only in test-net version
-  if (chainId === 1) {
+  if (config.testnetOnly && chainId === 1) {
     return <>{unsupportedMainnetFallback}</>;
   }
 
-  //Forcing goerli connection
-  if (!connections || chainId !== 5) {
+  if (!connections || connections.length === 0) {
     return unsupportedNetworkFallback ? <>{unsupportedNetworkFallback(chainId)}</> : <></>;
   }
+
   if (threshold.length !== connections.length) {
     return <>{loader}</>;
   }

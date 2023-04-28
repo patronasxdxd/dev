@@ -276,6 +276,7 @@ export const RiskyVaults = ({ version, collateral, isMintList }: RiskyVaultsProp
                             <Link 
                               variant="socialIcons" 
                               href={(chainId === 5 && `https://goerli.etherscan.io/address/${vault.ownerAddress}`) ||
+                              (chainId === 11155111 && `https://sepolia.etherscan.io/address/${vault.ownerAddress}`) ||
                                 `https://etherscan.io/address/${vault.ownerAddress})`} 
                               target="_blank"
                             >

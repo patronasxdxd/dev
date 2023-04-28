@@ -1,6 +1,6 @@
 import { BlockTag } from "@ethersproject/abstract-provider";
 
-import { panic, DEFAULT_VERSION_FOR_TESTING, DEFAULT_COLLATERAL_FOR_TESTING } from "./_utils";
+import { panic, DEFAULT_VERSION_FOR_TESTING, DEFAULT_COLLATERAL_FOR_TESTING, supportedNetworks } from "./_utils";
 
 import {
   CollateralGainTransferDetails,
@@ -147,7 +147,7 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
   ): Promise<EthersLiquity> {
     const [provider, signer] = getProviderAndSigner(signerOrProvider);
     const chainId = (await provider.getNetwork()).chainId
-    const versionedDeployments = await getCollateralsDeployments(chainId === 1 ? 'mainnet': 'goerli')
+    const versionedDeployments = await getCollateralsDeployments(supportedNetworks[chainId])
 
     const importedDeployment: _LiquityDeploymentJSON =
     versionedDeployments.v1.deployment ?? panic(new UnsupportedNetworkError(chainId));

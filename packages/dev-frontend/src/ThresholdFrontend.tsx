@@ -17,7 +17,7 @@ import { RiskyVaultsPage } from "./pages/RiskyVaultsPage";
 
 import { VaultPage } from "./pages/VaultPage";
 
-import { ThresholdProvider } from "./hooks/ThresholdContext";
+import { ThresholdProvider, supportedNetworks } from "./hooks/ThresholdContext";
 import { StabilityPoolPage } from "./pages/StabilityPoolPage";
 
 type ThresholdFrontendProps = {
@@ -39,7 +39,7 @@ const UnsupportedMainnetFallback = (): JSX.Element => (
     </Heading>
 
     <Paragraph sx={{ mb: 3 }}>
-      Please change your network to Goerli.
+      Please change your network to Sepolia.
     </Paragraph>
   </Flex>
 );
@@ -55,11 +55,13 @@ export const ThresholdFrontend = ({ loader }: ThresholdFrontendProps): JSX.Eleme
         textAlign: "center"
       }}
     >
-      <Heading sx={{ mb: 3 }}>
+      <Heading sx={{ display: "flex", gap: 1, mb: 3 }}>
         <Icon name="exclamation-triangle" /> Threshold USD is not yet deployed to{" "}
-        {chainId === 1 ? "mainnet" : "this network"}.
+        <Flex sx={supportedNetworks[chainId] && {textTransform: "capitalize"}}>
+          {chainId === 1 ? "Ethereum Mainnet" : supportedNetworks[chainId] ?? "this network"}
+        </Flex>.
       </Heading>
-      Please switch to Goerli.
+      Please switch to Sepolia.
     </Flex>
   );
 
