@@ -85,11 +85,61 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
     return riskiestTroves[0];
   }
 
+  private _getEmptyUserValues() {
+    return {
+      accountBalance: Decimal.ZERO,
+      thusdBalance: Decimal.ZERO,
+      erc20TokenBalance: Decimal.ZERO,
+      erc20TokenAllowance: Decimal.ZERO,
+      collateralSurplusBalance: Decimal.ZERO,
+      troveBeforeRedistribution: new TroveWithPendingRedistribution(
+        AddressZero,
+        "nonExistent"
+      ),
+      stabilityDeposit: new StabilityDeposit(
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO
+      ),
+      bammDeposit: new BammDeposit(
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO,
+      ),
+    };
+  }
+
+  private async _getUserValues(userAddress: string, blockTag?: number) {
+    return promiseAllValues({
+      accountBalance: this._provider.getBalance(userAddress, blockTag).then(decimalify),
+      thusdBalance: this._readable.getTHUSDBalance(userAddress, { blockTag }),
+      erc20TokenBalance: this._readable.getErc20TokenBalance(userAddress, { blockTag }),
+      erc20TokenAllowance: this._readable.getErc20TokenAllowance(userAddress, { blockTag }),
+      collateralSurplusBalance: this._readable.getCollateralSurplusBalance(userAddress, {
+        blockTag
+      }),
+      troveBeforeRedistribution: this._readable.getTroveBeforeRedistribution(userAddress, {
+        blockTag
+      }),
+      stabilityDeposit: this._readable.getStabilityDeposit(userAddress, { blockTag }),
+      bammDeposit: this._readable.getBammDeposit(userAddress, { blockTag }),
+    });
+  }
+
   private async _get(
     blockTag?: number
   ): Promise<[baseState: LiquityStoreBaseState, extraState: BlockPolledLiquityStoreExtraState]> {
     const { userAddress } = this.connection;
-
+    
+    const userValues = userAddress
+      ? await this._getUserValues(userAddress, blockTag)
+      : this._getEmptyUserValues();
+  
     const {
       blockTimestamp,
       _feesFactory,
@@ -112,47 +162,7 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
       isStabilityPools: this._readable.isStabilityPools({ blockTag }),
       isBorrowerOperations: this._readable.isBorrowerOperations({ blockTag }),
       isTroveManager: this._readable.isTroveManager({ blockTag }),
-      ...(userAddress
-        ? {
-            accountBalance: this._provider.getBalance(userAddress, blockTag).then(decimalify),
-            thusdBalance: this._readable.getTHUSDBalance(userAddress, { blockTag }),
-            erc20TokenBalance: this._readable.getErc20TokenBalance(userAddress, { blockTag }),
-            erc20TokenAllowance: this._readable.getErc20TokenAllowance(userAddress, { blockTag }),
-            collateralSurplusBalance: this._readable.getCollateralSurplusBalance(userAddress, {
-              blockTag
-            }),
-            troveBeforeRedistribution: this._readable.getTroveBeforeRedistribution(userAddress, {
-              blockTag
-            }),
-            stabilityDeposit: this._readable.getStabilityDeposit(userAddress, { blockTag }),
-            bammDeposit: this._readable.getBammDeposit(userAddress, { blockTag })
-          }
-        : {
-            accountBalance: Decimal.ZERO,
-            thusdBalance: Decimal.ZERO,
-            erc20TokenBalance: Decimal.ZERO,
-            erc20TokenAllowance: Decimal.ZERO,
-            collateralSurplusBalance: Decimal.ZERO,
-            troveBeforeRedistribution: new TroveWithPendingRedistribution(
-              AddressZero,
-              "nonExistent"
-            ),
-            stabilityDeposit: new StabilityDeposit(
-              Decimal.ZERO,
-              Decimal.ZERO,
-              Decimal.ZERO
-            ),
-            bammDeposit: new BammDeposit(
-              Decimal.ZERO,
-              Decimal.ZERO,
-              Decimal.ZERO,
-              Decimal.ZERO,
-              Decimal.ZERO,
-              Decimal.ZERO,
-              Decimal.ZERO,
-              Decimal.ZERO,
-            ),
-          })
+      ...userValues
     });
 
     return [

@@ -7,7 +7,7 @@ import { SideBar } from "./components/SideBar";
 import { HamburgerMenu } from "./components/HamburgerMenu";
 import { Icon } from "./components/Icon";
 import { Header } from "./components/Header";
-import { WalletConnector } from "./components/WalletConnector";
+import { WalletConnectorProvider } from "./hooks/WalletConnectorContext";
 import { TransactionProvider } from "./components/Transaction";
 import { FunctionalPanel } from "./components/FunctionalPanel";
 
@@ -83,7 +83,7 @@ export const ThresholdFrontend = ({ loader }: ThresholdFrontendProps): JSX.Eleme
               alignItems: "center",
             }}
           >
-            <WalletConnector loader={loader}>
+            <WalletConnectorProvider loader={loader}>
               <ThresholdProvider
                 loader={loader}
                 unsupportedNetworkFallback={unsupportedNetworkFallback}
@@ -111,7 +111,7 @@ export const ThresholdFrontend = ({ loader }: ThresholdFrontendProps): JSX.Eleme
                   </FunctionalPanel>
                 </TransactionProvider>
               </ThresholdProvider>
-            </WalletConnector>
+            </WalletConnectorProvider>
           </Container>
         </Flex>
       </Router>

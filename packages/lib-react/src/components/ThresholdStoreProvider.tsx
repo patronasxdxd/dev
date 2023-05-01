@@ -1,7 +1,7 @@
 import { LiquityStore as ThresholdBaseStore } from "@liquity/lib-base";
 import { BlockPolledLiquityStore as BlockPolledThresholdStore, CollateralsVersionedDeployments, EthersLiquityWithStore as EthersThresholdWithStore } from "@liquity/lib-ethers";
 
-import React, { createContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
 export const ThresholdStoreContext = createContext<ThresholdLoadedStore<unknown>[] | undefined>(undefined);
 
@@ -32,19 +32,21 @@ export const ThresholdStoreProvider: React.FC<ThresholdStoreProviderProps> = ({
   loader,
   children
 }) => {
-  // Extracts the threshold stores from the props and returns an array of ThresholdStore objects
-  const thresholdStores: ThresholdStore[] = useMemo(() => {
-    return threshold.map(({ collateral, version, store }) => {
-      return {
-        collateral,
-        version,
-        store: store.store
-      }
-    })
-  }, [threshold])
-
-  // State to store the loaded threshold stores
+  const [thresholdStores, setThresholdStores] = useState<{
+    collateral: string;
+    version: string;
+    store: BlockPolledThresholdStore;
+  }[]>([]);
   const [loadedStore, setLoadedStore] = useState<ThresholdLoadedStore<unknown>[]>([]);
+
+  useEffect(() => {
+    const newThresholdStores = threshold.map(({ collateral, version, store }) => ({
+      collateral,
+      version,
+      store: store.store,
+    }));
+    setThresholdStores(newThresholdStores);
+  }, [threshold]);
 
   // Effect to start and stop the threshold stores, and update the loaded stores when they are loaded
   useEffect(() => {
@@ -58,7 +60,6 @@ export const ThresholdStoreProvider: React.FC<ThresholdStoreProviderProps> = ({
           store: thresholdStore.store
         }
       ])
-      if (!thresholdStore.store.onLoaded) return
       // Start the threshold store
       thresholdStore.store.start();
     }
@@ -72,7 +73,6 @@ export const ThresholdStoreProvider: React.FC<ThresholdStoreProviderProps> = ({
       }
     };
   }, [thresholdStores]);
-
 
   // If the number of loaded stores is less than the total number of stores, show the loader component
   if (loadedStore.length !== thresholdStores.length) {
