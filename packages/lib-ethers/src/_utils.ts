@@ -23,10 +23,15 @@ export type SupportedNetworks = {
 export type Resolved<T> = T extends Promise<infer U> ? U : T;
 export type ResolvedValues<T> = { [P in keyof T]: Resolved<T[P]> };
 
+/**
+ * Takes an object with promises as values and returns a new promise that resolves with an object
+ * containing the resolved values of the input promises.
+ *
+ * @param object - An object with properties containing promises
+ * @returns A promise that resolves with an object containing the resolved values of the input promises
+ */
 export const promiseAllValues = <T>(object: T): Promise<ResolvedValues<T>> => {
-  const keys = Object.keys(object);
-
-  return Promise.all(Object.values(object)).then(values =>
-    Object.fromEntries(values.map((value, i) => [keys[i], value]))
-  ) as Promise<ResolvedValues<T>>;
+  return Promise.all(
+    Object.entries(object).map(async ([key, valuePromise]) => [key, await valuePromise])
+  ).then(Object.fromEntries) as Promise<ResolvedValues<T>>;
 };
