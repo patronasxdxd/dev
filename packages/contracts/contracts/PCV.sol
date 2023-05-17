@@ -16,7 +16,7 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
     // --- Data ---
     string constant public NAME = "PCV";
 
-    uint256 constant public BOOTSTRAP_LOAN = 10 * 10**18; 
+    uint256 constant public BOOTSTRAP_LOAN = 10**26; // 100M thUSD
     
     uint256 public immutable governanceTimeDelay;
 
