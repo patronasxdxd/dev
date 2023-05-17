@@ -138,6 +138,9 @@ contract BorrowerWrappersScript is BorrowerOperationsScript, ETHTransferScript, 
     }
 
     function _requireUserHasTrove(address _depositor) internal view {
-        require(troveManager.getTroveStatus(_depositor) == 1, "BorrowerWrappersScript: caller must have an active trove");
+        require(
+            troveManager.getTroveStatus(_depositor) == ITroveManager.Status.active, 
+            "BorrowerWrappersScript: caller must have an active trove"
+        );
     }
 }

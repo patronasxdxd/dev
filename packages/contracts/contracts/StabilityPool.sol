@@ -648,7 +648,10 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, I
     }
 
     function _requireUserHasTrove(address _depositor) internal view {
-        require(troveManager.getTroveStatus(_depositor) == 1, "StabilityPool: caller must have an active trove to withdraw colalteralGain to");
+        require(
+            troveManager.getTroveStatus(_depositor) == ITroveManager.Status.active, 
+            "StabilityPool: caller must have an active trove to withdraw colalteralGain to"
+        );
     }
 
     function _requireUserHasCollateralGain(address _depositor) internal view {

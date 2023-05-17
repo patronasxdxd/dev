@@ -504,13 +504,13 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
     }
 
     function _requireTroveisActive(ITroveManager _troveManager, address _borrower) internal view {
-        uint256 status = _troveManager.getTroveStatus(_borrower);
-        require(status == 1, "BorrowerOps: Trove does not exist or is closed");
+        ITroveManager.Status status = _troveManager.getTroveStatus(_borrower);
+        require(status == ITroveManager.Status.active, "BorrowerOps: Trove does not exist or is closed");
     }
 
     function _requireTroveisNotActive(ITroveManager _troveManager, address _borrower) internal view {
-        uint256 status = _troveManager.getTroveStatus(_borrower);
-        require(status != 1, "BorrowerOps: Trove is active");
+        ITroveManager.Status status = _troveManager.getTroveStatus(_borrower);
+        require(status != ITroveManager.Status.active, "BorrowerOps: Trove is active");
     }
 
     function _requireNonZeroDebtChange(uint256 _THUSDChange) internal pure {

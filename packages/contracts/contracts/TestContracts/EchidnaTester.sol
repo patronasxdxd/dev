@@ -327,7 +327,7 @@ contract EchidnaTester {
         address currentTrove = sortedTroves.getFirst();
         while (currentTrove != address(0)) {
             // Status
-            if (TroveManager.Status(troveManager.getTroveStatus(currentTrove)) != TroveManager.Status.active) {
+            if (troveManager.getTroveStatus(currentTrove) != ITroveManager.Status.active) {
                 return false;
             }
             // Uncomment to check that the condition is meaningful

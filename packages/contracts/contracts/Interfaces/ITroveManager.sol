@@ -11,6 +11,14 @@ import "./IPCV.sol";
 // Common interface for the Trove Manager.
 interface ITroveManager is ILiquityBase {
 
+    enum Status {
+        nonExistent,
+        active,
+        closedByOwner,
+        closedByLiquidation,
+        closedByRedemption
+    }
+
     // --- Events ---
 
     event BorrowerOperationsAddressChanged(address _newBorrowerOperationsAddress);
@@ -116,7 +124,7 @@ interface ITroveManager is ILiquityBase {
 
     function decayBaseRateFromBorrowing() external;
 
-    function getTroveStatus(address _borrower) external view returns (uint);
+    function getTroveStatus(address _borrower) external view returns (Status);
 
     function getTroveStake(address _borrower) external view returns (uint);
 
