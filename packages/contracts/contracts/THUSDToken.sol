@@ -89,6 +89,7 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
         _CACHED_CHAIN_ID = _chainID();
         _CACHED_DOMAIN_SEPARATOR = _buildDomainSeparator(_TYPE_HASH, hashedName, hashedVersion);
         governanceTimeDelay = _governanceTimeDelay;
+        require(governanceTimeDelay <= 30 weeks, "Governance delay is too big");
     }
 
     modifier onlyAfterGovernanceDelay(
