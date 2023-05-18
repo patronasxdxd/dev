@@ -7,6 +7,7 @@ pragma solidity ^0.8.17;
 
 contract NonPayable {
     bool isPayable;
+    address immutable public owner = address(this);
 
     function setPayable(bool _isPayable) external {
         isPayable = _isPayable;

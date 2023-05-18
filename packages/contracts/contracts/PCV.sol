@@ -86,6 +86,13 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
         borrowerOperations = BorrowerOperations(_borrowerOperations);
         bamm = BAMM(_bammAddress);
 
+        require(
+            (Ownable(_borrowerOperations).owner() != address(0) || 
+            borrowerOperations.collateralAddress() == _collateralERC20) && 
+            bamm.collateralERC20() == collateralERC20,
+            "The same collateral address must be used for the entire set of contracts"
+        );
+
         emit THUSDTokenAddressSet(_thusdTokenAddress);
         emit BorrowerOperationsAddressSet(_borrowerOperations);
         emit CollateralAddressSet(_collateralERC20);

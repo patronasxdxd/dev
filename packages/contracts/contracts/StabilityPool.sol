@@ -226,6 +226,14 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, I
         sortedTroves = ISortedTroves(_sortedTrovesAddress);
         priceFeed = IPriceFeed(_priceFeedAddress);
         collateralAddress = _collateralAddress;
+        
+        require(
+            (Ownable(_borrowerOperationsAddress).owner() != address(0) || 
+            borrowerOperations.collateralAddress() == _collateralAddress) &&
+            (Ownable(_activePoolAddress).owner() != address(0) || 
+            activePool.collateralAddress() == _collateralAddress),
+            "The same collateral address must be used for the entire set of contracts"
+        );
 
         emit BorrowerOperationsAddressChanged(_borrowerOperationsAddress);
         emit TroveManagerAddressChanged(_troveManagerAddress);

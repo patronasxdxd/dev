@@ -129,6 +129,20 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
         pcvAddress = _pcvAddress;
         pcv = IPCV(_pcvAddress);
         collateralAddress = _collateralAddress;
+        
+        require(
+            (Ownable(_defaultPoolAddress).owner() != address(0) || 
+            defaultPool.collateralAddress() == _collateralAddress) &&
+            (Ownable(_activePoolAddress).owner() != address(0) || 
+            activePool.collateralAddress() == _collateralAddress) &&
+            (Ownable(_stabilityPoolAddress).owner() != address(0) || 
+            IStabilityPool(stabilityPoolAddress).collateralAddress() == _collateralAddress) &&
+            (Ownable(_collSurplusPoolAddress).owner() != address(0) || 
+            collSurplusPool.collateralAddress() == _collateralAddress) &&
+            (address(pcv.thusdToken()) == address(0) || 
+            address(pcv.collateralERC20()) == _collateralAddress),
+            "The same collateral address must be used for the entire set of contracts"
+        );
 
         emit TroveManagerAddressChanged(_troveManagerAddress);
         emit ActivePoolAddressChanged(_activePoolAddress);
