@@ -67,6 +67,12 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         feePool = _feePool;
         maxDiscount = _maxDiscount;
 
+        require(
+            Ownable(_SP).owner() != address(0) || 
+            IStabilityPool(_SP).collateralAddress() == _collateralERC20,
+            "The same collateral address must be used for the entire set of contracts"
+        );
+
         require(_bProtocolOwner != address(0), "B.Protocol owner must be specified");
         bProtocolOwner = _bProtocolOwner;
     }
