@@ -292,7 +292,9 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         return collateralQty * PRECISION / srcQty;
     }
 
-    receive() external payable {}
+    receive() external payable {
+        require(address(collateralERC20) == address(0), "Collateral must be ERC20 token");
+    }
 
     function transferBProtocolOwnership(address newOwner) public onlyBProtocolOwner {
         require(newOwner != address(0), "Ownable: new B.Protocol owner is the zero address");
