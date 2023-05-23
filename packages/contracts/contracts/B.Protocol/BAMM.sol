@@ -216,8 +216,10 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         chainlinkDecimals = thusd2UsdPriceAggregator.decimals();
 
         // Secondly, try to get latest price data:
-        (,int256 answer,,,) = thusd2UsdPriceAggregator.latestRoundData();
+        (,int256 answer,,uint256 chainlinkTimestamp,) = thusd2UsdPriceAggregator.latestRoundData();
         chainlinkLatestAnswer = uint256(answer);
+
+        if(chainlinkTimestamp + 1 hours < block.timestamp) return collateralAmount; // price is down
 
         // adjust only if 1 thUSD > 1 USDC. If thUSD < USD, then we give a discount, and rebalance will happen anw
         if(chainlinkLatestAnswer > 10 ** chainlinkDecimals ) {
