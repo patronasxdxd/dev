@@ -386,7 +386,7 @@ contract('BorrowerOperations', async accounts => {
       "BorrowerOps: An operation that would result in ICR < MCR is not permitted")
     })
 
-    it("withdrawColl(): no mintlist, succeeds when withdrawal would leave trove with ICR < MCR", async() => {
+    it("withdrawColl(): no mintlist, reverts when withdrawal would leave trove with ICR < MCR", async() => {
       // alice creates a Trove and adds first collateral
       await openTrove({ ICR: toBN(dec(2, 18)), extraParams: { from: alice } })
       await openTrove({ ICR: toBN(dec(10, 18)), extraParams: { from: bob } })
@@ -403,11 +403,8 @@ contract('BorrowerOperations', async accounts => {
       assert.isTrue((await troveManager.getCurrentICR(alice, price)).lt(toBN(dec(110, 16))))
 
       const collWithdrawal = toBN(dec(1))  // 1 wei withdrawal
-      await borrowerOperations.withdrawColl(collWithdrawal, alice, alice, { from: alice })
-
-      // Check Alice's collateral
-      let aliceCollAfter = (await troveManager.Troves(alice))[1]
-      assert.isTrue(aliceCollAfter.eq(aliceCollBefore.sub(collWithdrawal)))
+      await assertRevert(borrowerOperations.withdrawColl(collWithdrawal, alice, alice, { from: alice }),
+      "BorrowerOps: An operation that would result in ICR < MCR is not permitted")
     })
 
     // reverts when calling address does not have active trove
@@ -1321,7 +1318,7 @@ contract('BorrowerOperations', async accounts => {
       "BorrowerOps: An operation that would result in ICR < MCR is not permitted")
     })
 
-    it("repayTHUSD(): no mintlist, succeeds when repayment would leave trove with ICR < MCR", async () => {
+    it("repayTHUSD(): no mintlist, reverts when repayment would leave trove with ICR < MCR", async () => {
       // alice creates a Trove and adds first collateral
       await openTrove({ ICR: toBN(dec(2, 18)), extraTHUSDAmount: toBN(dec(1000, 18)), extraParams: { from: alice } }) // extra params required so the repayment doesnt trove below min trove size
       await openTrove({ ICR: toBN(dec(10, 18)), extraParams: { from: bob } })
@@ -1336,8 +1333,8 @@ contract('BorrowerOperations', async accounts => {
       assert.isFalse(await troveManager.checkRecoveryMode(price))
       assert.isTrue((await troveManager.getCurrentICR(alice, price)).lt(toBN(dec(110, 16))))
 
-      const txData = await borrowerOperations.repayTHUSD(1, bob, bob, { from: alice })
-      assert.isTrue(txData.receipt.status)
+      await assertRevert(borrowerOperations.repayTHUSD(1, bob, bob, { from: alice }),
+      "BorrowerOps: An operation that would result in ICR < MCR is not permitted")
     })
 
     it("repayTHUSD(): succeeds when it would leave trove with net debt >= minimum net debt", async () => {
@@ -1528,7 +1525,7 @@ contract('BorrowerOperations', async accounts => {
       "BorrowerOps: An operation that would result in ICR < MCR is not permitted")
     })
 
-    it("adjustTrove(): no mintlist, succeeds when adjustment would leave trove with ICR < MCR", async () => {
+    it("adjustTrove(): no mintlist, reverts when adjustment would leave trove with ICR < MCR", async () => {
       // alice creates a Trove and adds first collateral
       await openTrove({ ICR: toBN(dec(2, 18)), extraTHUSDAmount: toBN(dec(1000, 18)), extraParams: { from: alice } }) // extra params required so the repayment doesnt trove below min trove size
       await openTrove({ ICR: toBN(dec(10, 18)), extraParams: { from: bob } })
@@ -1546,8 +1543,8 @@ contract('BorrowerOperations', async accounts => {
       const THUSDRepayment = 1  // 1 wei repayment
       const collTopUp = 1
 
-      const txData = await adjustTroveWrapper(th._100pct, 0, THUSDRepayment, false, collTopUp, alice, alice)
-      assert.isTrue(txData.receipt.status)
+      await assertRevert(adjustTroveWrapper(th._100pct, 0, THUSDRepayment, false, collTopUp, alice, alice),
+      "BorrowerOps: An operation that would result in ICR < MCR is not permitted")
     })
 
     it("adjustTrove(): reverts if max fee < 0.5% in Normal mode", async () => {

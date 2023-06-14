@@ -553,6 +553,7 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
          * If contract has been removed from the thUSD mintlist remove the adjustment restrictions
          */
         if (!thusdToken.mintList(address(this))) {
+            _requireICRisAboveMCR(_vars.newICR);
             return;
         }
 
