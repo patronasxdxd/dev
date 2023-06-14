@@ -102,21 +102,28 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
     }
 
     function fetchPrice() public view returns(uint256) {
+        (uint256 chainlinkLatestAnswer, uint256 chainlinkDecimals) = fetchChainlink(priceAggregator);
+
+        uint256 chainlinkFactor = 10 ** chainlinkDecimals;
+        return chainlinkLatestAnswer * PRECISION / chainlinkFactor;
+    }
+
+    function fetchChainlink(AggregatorV3Interface aggregator) internal view returns(uint256, uint256) {
         uint256 chainlinkDecimals;
         uint256 chainlinkLatestAnswer;
         uint256 chainlinkTimestamp;
 
         // First, try to get current decimal precision:
-        try priceAggregator.decimals() returns (uint8 decimals) {
+        try aggregator.decimals() returns (uint8 decimals) {
             // If call to Chainlink succeeds, record the current decimal precision
             chainlinkDecimals = decimals;
         } catch {
             // If call to Chainlink aggregator reverts, return a zero response with success = false
-            return 0;
+            return (0, 0);
         }
 
         // Secondly, try to get latest price data:
-        try priceAggregator.latestRoundData() returns
+        try aggregator.latestRoundData() returns
         (
             uint80 /* roundId */,
             int256 answer,
@@ -130,13 +137,12 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
             chainlinkTimestamp = timestamp;
         } catch {
             // If call to Chainlink aggregator reverts, return a zero response with success = false
-            return 0;
+            return (0, 0);
         }
 
-        if(chainlinkTimestamp + 1 hours < block.timestamp) return 0; // price is down
+        if(chainlinkTimestamp + 1 hours < block.timestamp) return (0, 0); // price is down
 
-        uint256 chainlinkFactor = 10 ** chainlinkDecimals;
-        return chainlinkLatestAnswer * PRECISION / chainlinkFactor;
+        return (chainlinkLatestAnswer, chainlinkDecimals);
     }
 
     function getCollateralBalance() public view returns (uint256 collateralValue) {
@@ -210,17 +216,10 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
             return collateralAmount;
         }
 
-        uint256 chainlinkDecimals;
-        uint256 chainlinkLatestAnswer;
-
-        // get current decimal precision:
-        chainlinkDecimals = thusd2UsdPriceAggregator.decimals();
-
-        // Secondly, try to get latest price data:
-        (,int256 answer,,uint256 chainlinkTimestamp,) = thusd2UsdPriceAggregator.latestRoundData();
-        chainlinkLatestAnswer = uint256(answer);
-
-        if(chainlinkTimestamp + 1 hours < block.timestamp) return collateralAmount; // price is down
+        (uint256 chainlinkLatestAnswer, uint256 chainlinkDecimals) = fetchChainlink(thusd2UsdPriceAggregator);
+        if (chainlinkLatestAnswer == 0) {
+            return collateralAmount;
+        }
 
         // adjust only if 1 thUSD > 1 USDC. If thUSD < USD, then we give a discount, and rebalance will happen anw
         if(chainlinkLatestAnswer > 10 ** chainlinkDecimals ) {

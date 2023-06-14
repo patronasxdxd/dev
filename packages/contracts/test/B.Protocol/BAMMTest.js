@@ -604,6 +604,23 @@ contract('BAMM', async accounts => {
 
         await chainlink.setTimestamp(888)
         assert.equal((await bamm.fetchPrice()).toString(), "0")      
+      })    
+
+      it('test compensate for thUSD deviation', async () => {
+        // --- SETUP ---
+        await bamm.setTHUSD2UsdPriceAggregator(
+          thusdChainlink.address,
+          {from: bammOwner}
+        )
+
+        await thusdChainlink.setPrice(dec(2, 18)); // 1 thusd = 2 usd
+        assert.equal((await bamm.compensateForTHUSDDeviation(dec(3, 18))).toString(), dec(6, 18))
+
+        await thusdChainlink.setTimestamp(888)
+        assert.equal((await bamm.compensateForTHUSDDeviation(dec(3, 18))).toString(), dec(3, 18))      
+        
+        await thusdChainlink.setPrice(0);
+        assert.equal((await bamm.compensateForTHUSDDeviation(dec(2, 18))).toString(), dec(2, 18))     
       })
 
       it('test swap', async () => {
