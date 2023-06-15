@@ -238,5 +238,7 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
         }
     }
 
-    receive() external payable {}
+    receive() external payable {
+        require(address(collateralERC20) == address(0), "PCV: collateral must be ERC20 token");
+    }
 }
