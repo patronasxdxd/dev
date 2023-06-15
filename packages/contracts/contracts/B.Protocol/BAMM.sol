@@ -132,6 +132,10 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
             uint80 /* answeredInRound */
         )
         {
+            // If returned value is negative then return a zero response with success = false
+            if (answer < 0) {
+                return (0, 0);
+            }
             // If call to Chainlink succeeds, return the response and success = true
             chainlinkLatestAnswer = uint256(answer);
             chainlinkTimestamp = timestamp;
