@@ -25,6 +25,7 @@ contract PriceFeed is Ownable, CheckContract, BaseMath, IPriceFeed {
 
     AggregatorV3Interface public priceAggregator;  // Mainnet Chainlink aggregator
     ITellorCaller public tellorCaller;  // Wrapper contract that calls the Tellor system
+    uint256 public immutable tellorDigits;
 
     // Core Liquity contracts
     address borrowerOperationsAddress;
@@ -32,7 +33,6 @@ contract PriceFeed is Ownable, CheckContract, BaseMath, IPriceFeed {
 
     // Use to convert a price answer to an 18-digit precision uint
     uint256 constant public TARGET_DIGITS = 18;
-    uint256 constant public TELLOR_DIGITS = 6;
 
     // Maximum time period allowed since Chainlink's latest round data timestamp, beyond which Chainlink is considered frozen.
     uint256 constant public TIMEOUT = 14400;  // 4 hours: 60 * 60 * 4
@@ -76,6 +76,11 @@ contract PriceFeed is Ownable, CheckContract, BaseMath, IPriceFeed {
     Status public status;
 
     event PriceFeedStatusChanged(Status newStatus);
+
+    constructor (uint256 _tellorDigits) {
+        require(_tellorDigits > 0 && _tellorDigits <= TARGET_DIGITS, "PriceFeed: wrong decimals for Tellor");
+        tellorDigits = _tellorDigits;
+    }
 
     // --- Dependency setters ---
 
@@ -417,7 +422,7 @@ contract PriceFeed is Ownable, CheckContract, BaseMath, IPriceFeed {
         return _bothOraclesSimilarPrice(_chainlinkResponse, _tellorResponse);
     }
 
-    function _bothOraclesSimilarPrice( ChainlinkResponse memory _chainlinkResponse, TellorResponse memory _tellorResponse) internal pure returns (bool) {
+    function _bothOraclesSimilarPrice( ChainlinkResponse memory _chainlinkResponse, TellorResponse memory _tellorResponse) internal view returns (bool) {
         uint256 scaledChainlinkPrice = _scaleChainlinkPriceByDigits(uint256(_chainlinkResponse.answer), _chainlinkResponse.decimals);
         uint256 scaledTellorPrice = _scaleTellorPriceByDigits(_tellorResponse.value);
 
@@ -452,8 +457,8 @@ contract PriceFeed is Ownable, CheckContract, BaseMath, IPriceFeed {
         return price;
     }
 
-    function _scaleTellorPriceByDigits(uint256 _price) internal pure returns (uint) {
-        return _price * (10**(TARGET_DIGITS - TELLOR_DIGITS));
+    function _scaleTellorPriceByDigits(uint256 _price) internal view returns (uint) {
+        return _price * (10**(TARGET_DIGITS - tellorDigits));
     }
 
     function _changeStatus(Status _status) internal {
