@@ -1482,9 +1482,9 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
 
     // --- Trove property setters, called by BorrowerOperations ---
 
-    function setTroveStatus(address _borrower, uint256 _num) external override {
+    function setTroveStatus(address _borrower, Status _status) external override {
         _requireCallerIsBorrowerOperations();
-        Troves[_borrower].status = Status(_num);
+        Troves[_borrower].status = _status;
     }
 
     function increaseTroveColl(address _borrower, uint256 _collIncrease) external override returns (uint) {

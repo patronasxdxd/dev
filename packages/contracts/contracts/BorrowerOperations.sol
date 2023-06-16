@@ -210,7 +210,7 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
         }
 
         // Set the trove struct's properties
-        contractsCache.troveManager.setTroveStatus(msg.sender, 1);
+        contractsCache.troveManager.setTroveStatus(msg.sender, ITroveManager.Status.active);
         contractsCache.troveManager.increaseTroveColl(msg.sender, _assetAmount);
         contractsCache.troveManager.increaseTroveDebt(msg.sender, vars.compositeDebt);
 

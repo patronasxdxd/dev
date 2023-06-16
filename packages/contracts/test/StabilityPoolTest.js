@@ -2222,7 +2222,7 @@ contract('StabilityPool', async accounts => {
 
         // D attempts to withdraw his collateral gain to Trove
         await th.assertRevert(stabilityPool.withdrawCollateralGainToTrove(dennis, dennis, { from: dennis }), 
-        "caller must have an active trove to withdraw colalteralGain to")
+        "caller must have an active trove to withdraw collateralGain to")
       })
 
       it("withdrawCollateralGainToTrove(): reverts when depositor has no collateral gain", async () => {
