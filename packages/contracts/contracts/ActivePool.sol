@@ -140,7 +140,7 @@ contract ActivePool is Ownable, CheckContract, SendCollateral, IActivePool {
         require(
             msg.sender == borrowerOperationsAddress ||
             msg.sender == defaultPoolAddress,
-            "ActivePool: Caller is neither BO nor Default Pool");
+            "ActivePool: Caller is neither BorrowerOperations nor Default Pool");
     }
 
     function _requireCallerIsBOorTroveMorSP() internal view {
@@ -161,7 +161,7 @@ contract ActivePool is Ownable, CheckContract, SendCollateral, IActivePool {
     // When ERC20 token collateral is received this function needs to be called
     function updateCollateralBalance(uint256 _amount) external override {
         _requireCallerIsBorrowerOperationsOrDefaultPool();
-        require(collateralAddress != address(0), "ActivePool: collateral must be ETH");
+        require(collateralAddress != address(0), "ActivePool: ETH collateral needed, not ERC20");
         collateral += _amount;
         emit ActivePoolCollateralBalanceUpdated(collateral);
   	}
@@ -171,7 +171,7 @@ contract ActivePool is Ownable, CheckContract, SendCollateral, IActivePool {
     // This executes when the contract recieves ETH
     receive() external payable {
         _requireCallerIsBorrowerOperationsOrDefaultPool();
-        require(collateralAddress == address(0), "ActivePool: collateral must be ERC20 token");
+        require(collateralAddress == address(0), "ActivePool: ERC20 collateral needed, not ETH");
         collateral += msg.value;
         emit ActivePoolCollateralBalanceUpdated(collateral);
     }

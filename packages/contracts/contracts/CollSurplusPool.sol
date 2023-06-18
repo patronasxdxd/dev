@@ -124,7 +124,7 @@ contract CollSurplusPool is Ownable, CheckContract, SendCollateral, ICollSurplus
     // When ERC20 token collateral is received this function needs to be called
     function updateCollateralBalance(uint256 _amount) external override {
         _requireCallerIsActivePool();
-        require(collateralAddress != address(0), "CollSurplusPool: collateral must be ETH");
+        require(collateralAddress != address(0), "CollSurplusPool: ETH collateral needed, not ERC20");
         collateral += _amount;
   	}
 
@@ -132,7 +132,7 @@ contract CollSurplusPool is Ownable, CheckContract, SendCollateral, ICollSurplus
 
     receive() external payable {
         _requireCallerIsActivePool();
-        require(collateralAddress == address(0), "CollSurplusPool: collateral must be ERC20 token");
+        require(collateralAddress == address(0), "CollSurplusPool: ERC20 collateral needed, not ETH");
         collateral += msg.value;
     }
 }

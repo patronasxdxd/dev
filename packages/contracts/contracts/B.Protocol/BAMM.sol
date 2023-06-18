@@ -303,7 +303,7 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
     }
 
     receive() external payable {
-        require(address(collateralERC20) == address(0), "Collateral must be ERC20 token");
+        require(address(collateralERC20) == address(0), "ERC20 collateral needed, not ETH");
     }
 
     function transferBProtocolOwnership(address newOwner) public onlyBProtocolOwner {

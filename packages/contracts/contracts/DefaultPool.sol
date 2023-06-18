@@ -116,7 +116,7 @@ contract DefaultPool is Ownable, CheckContract, SendCollateral, IDefaultPool {
     // When ERC20 token collateral is received this function needs to be called
     function updateCollateralBalance(uint256 _amount) external override {
         _requireCallerIsActivePool();
-        require(collateralAddress != address(0), "DefaultPool: collateral must be ETH");
+        require(collateralAddress != address(0), "DefaultPool: ETH collateral needed, not ERC20");
         collateral += _amount;
         emit DefaultPoolCollateralBalanceUpdated(collateral);
   	}
@@ -125,7 +125,7 @@ contract DefaultPool is Ownable, CheckContract, SendCollateral, IDefaultPool {
 
     receive() external payable {
         _requireCallerIsActivePool();
-        require(collateralAddress == address(0), "DefaultPool: collateral must be ERC20 token");
+        require(collateralAddress == address(0), "DefaultPool: ERC20 collateral needed, not ETH");
         collateral += msg.value;
         emit DefaultPoolCollateralBalanceUpdated(collateral);
     }

@@ -252,7 +252,7 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
             return msg.value;
         }
 
-        require(msg.value == 0, "BorrowerOperations: collateral must be ERC20 token");
+        require(msg.value == 0, "BorrowerOperations: ERC20 collateral needed, not ETH");
         return _assetAmount;
     }
 

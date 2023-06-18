@@ -272,7 +272,7 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
 
       } catch (err) {
         assert.include(err.message, "revert")
-        assert.include(err.message, "ActivePool: Caller is neither BO nor Default Pool")
+        assert.include(err.message, "ActivePool: Caller is neither BorrowerOperations nor Default Pool")
       }
     })
   })
