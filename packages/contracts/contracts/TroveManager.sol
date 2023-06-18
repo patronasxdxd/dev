@@ -174,7 +174,7 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
         uint256 collateralToSendToRedeemer;
         uint256 decayedBaseRate;
         uint256 price;
-        uint256 totalTHUSDSupplyAtStart;
+        uint256 totalTHUSDDebtAtStart;
     }
 
     struct SingleRedemptionValues {
@@ -911,10 +911,7 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
         _requireAmountGreaterThanZero(_THUSDamount);
         _requireTHUSDBalanceCoversRedemption(contractsCache.thusdToken, msg.sender, _THUSDamount);
 
-        totals.totalTHUSDSupplyAtStart = getEntireSystemDebt();
-        // Confirm redeemer's balance is less than total THUSD supply
-        assert(contractsCache.thusdToken.balanceOf(msg.sender) <= totals.totalTHUSDSupplyAtStart);
-
+        totals.totalTHUSDDebtAtStart = getEntireSystemDebt();
         totals.remainingTHUSD = _THUSDamount;
         address currentBorrower;
 
@@ -959,7 +956,7 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
 
         // Decay the baseRate due to time passed, and then increase it according to the size of this redemption.
         // Use the saved total THUSD supply value, from before it was reduced by the redemption.
-        _updateBaseRateFromRedemption(totals.totalCollateralDrawn, totals.price, totals.totalTHUSDSupplyAtStart);
+        _updateBaseRateFromRedemption(totals.totalCollateralDrawn, totals.price, totals.totalTHUSDDebtAtStart);
 
         // Calculate the collateral fee
         totals.collateralFee = _getRedemptionFee(totals.totalCollateralDrawn);
@@ -1313,14 +1310,14 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
     * This function has two impacts on the baseRate state variable:
     * 1) decays the baseRate based on time passed since last redemption or THUSD borrowing operation.
     * then,
-    * 2) increases the baseRate based on the amount redeemed, as a proportion of total supply
+    * 2) increases the baseRate based on the amount redeemed, as a proportion of total debt
     */
-    function _updateBaseRateFromRedemption(uint256 _collateralDrawn,  uint256 _price, uint256 _totalTHUSDSupply) internal returns (uint) {
+    function _updateBaseRateFromRedemption(uint256 _collateralDrawn,  uint256 _price, uint256 _totalTHUSDDebt) internal returns (uint) {
         uint256 decayedBaseRate = _calcDecayedBaseRate();
 
         /* Convert the drawn collateral back to THUSD at face value rate (1 THUSD:1 USD), in order to get
         * the fraction of total supply that was redeemed at face value. */
-        uint256 redeemedTHUSDFraction = _collateralDrawn * _price / _totalTHUSDSupply;
+        uint256 redeemedTHUSDFraction = _collateralDrawn * _price / _totalTHUSDDebt;
 
         uint256 newBaseRate = decayedBaseRate + (redeemedTHUSDFraction / BETA);
         newBaseRate = LiquityMath._min(newBaseRate, DECIMAL_PRECISION); // cap baseRate at a maximum of 100%
