@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.17;
 
-import "./Dependencies/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import './Interfaces/IDefaultPool.sol';
 import './Interfaces/IActivePool.sol';
 import "./Dependencies/Ownable.sol";

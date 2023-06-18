@@ -6,7 +6,7 @@ import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
 import "./Interfaces/IPCV.sol";
 import "./Interfaces/ITHUSDToken.sol";
-import "./Dependencies/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./B.Protocol/BAMM.sol";
 import "./BorrowerOperations.sol";
 import "./Dependencies/SendCollateral.sol";

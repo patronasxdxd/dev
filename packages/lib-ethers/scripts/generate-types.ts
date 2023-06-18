@@ -10,7 +10,7 @@ import DefaultPool from "../../contracts/artifacts/contracts/DefaultPool.sol/Def
 import ERC20Test from "../../contracts/artifacts/contracts/TestContracts/ERC20Test.sol/ERC20Test.json";
 import GasPool from "../../contracts/artifacts/contracts/GasPool.sol/GasPool.json";
 import HintHelpers from "../../contracts/artifacts/contracts/HintHelpers.sol/HintHelpers.json";
-import IERC20 from "../../contracts/artifacts/contracts/Dependencies/IERC20.sol/IERC20.json";
+import IERC20 from "../../contracts/artifacts/@openzeppelin/contracts/token/ERC20/IERC20.sol/IERC20.json";
 import THUSDToken from "../../contracts/artifacts/contracts/THUSDToken.sol/THUSDToken.json";
 import PCV from "../../contracts/artifacts/contracts/PCV.sol/PCV.json";
 import MultiTroveGetter from "../../contracts/artifacts/contracts/MultiTroveGetter.sol/MultiTroveGetter.json";

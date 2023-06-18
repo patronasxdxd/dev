@@ -6,7 +6,8 @@ import "./../StabilityPool.sol";
 import "./CropJoinAdapter.sol";
 import "./PriceFormula.sol";
 import "./../Interfaces/IPriceFeed.sol";
-import "./../Dependencies/IERC20.sol";
+import "./../Interfaces/ITHUSDToken.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./../Dependencies/Ownable.sol";
 import "./../Dependencies/AggregatorV3Interface.sol";
 import "./../Dependencies/CheckContract.sol";
@@ -20,7 +21,7 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
 
     AggregatorV3Interface public immutable priceAggregator;
     AggregatorV3Interface public thusd2UsdPriceAggregator;    
-    IERC20 public immutable thusdToken;
+    ITHUSDToken public immutable thusdToken;
     StabilityPool immutable public SP;
     IERC20 public immutable collateralERC20;
 
@@ -61,7 +62,7 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         }
 
         priceAggregator = AggregatorV3Interface(_priceAggregator);
-        thusdToken = IERC20(_thusdToken);
+        thusdToken = ITHUSDToken(_thusdToken);
         SP = StabilityPool(_SP);
         collateralERC20 = IERC20(_collateralERC20);
         feePool = _feePool;

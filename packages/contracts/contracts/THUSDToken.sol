@@ -5,7 +5,6 @@ pragma solidity ^0.8.17;
 import "./Interfaces/ITHUSDToken.sol";
 import "./Dependencies/CheckContract.sol";
 import "./Dependencies/Ownable.sol";
-import "./Dependencies/console.sol";
 
 /*
 *
