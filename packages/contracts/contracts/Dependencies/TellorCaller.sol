@@ -10,14 +10,21 @@ import "usingtellor/contracts/interface/ITellor.sol";
 * The function is called by the thUSD contract PriceFeed.sol. If any of its inner calls to Tellor revert,
 * this function will revert, and PriceFeed will catch the failure and handle it accordingly.
 *
-* The function comes from Tellor's own wrapper contract, 'UsingTellor.sol':
+* The function comes from Tellor's own wrapper contract, 'UsingTellor.sol' and 
+* an example of how to integrate the Tellor oracle into a Liquity-like system `TellorCaller.col`:
 * https://github.com/tellor-io/usingtellor/blob/master/contracts/UsingTellor.sol
+* https://github.com/tellor-io/tellor-caller-liquity/blob/main/contracts/TellorCaller.sol
 *
 */
 contract TellorCaller is ITellorCaller {
 
+    uint256 constant public DISPUTE_DELAY = 15 minutes; // 15 minutes delay
+
     ITellor public immutable tellor;
     bytes32 public immutable queryId;
+
+    uint256 public lastStoredTimestamp;
+    uint256 public lastStoredPrice;
 
     /**
      * @param _tellorMasterAddress Address of Tellor contract
@@ -36,7 +43,6 @@ contract TellorCaller is ITellorCaller {
     */
     function getTellorCurrentValue()
         external
-        view
         override
         returns (
             bool ifRetrieve,
@@ -44,32 +50,18 @@ contract TellorCaller is ITellorCaller {
             uint256 _timestampRetrieved
         )
     {
-        (, bytes memory _value, uint256 _time) =
-            tellor.getDataBefore(queryId, block.timestamp - 15 minutes);
-        // If timestampRetrieved is 0, no data was found
-        if(_time > 0) {
-            // Check that the data is not too old
-            if(block.timestamp - _time < 24 hours) {
-                // Use the helper function _sliceUint to parse the bytes to uint256
-                return(true, _sliceUint(_value), _time);
-            }
+        // retrieve most recent 15+ minute old value for a queryId. the time buffer allows time for a bad value to be disputed
+        (, bytes memory data, uint256 timestamp) = 
+            tellor.getDataBefore(queryId, block.timestamp - DISPUTE_DELAY);
+        uint256 _value = abi.decode(data, (uint256));
+        if (timestamp == 0 || _value == 0) return (false, _value, timestamp);
+        if (timestamp > lastStoredTimestamp) {
+            lastStoredTimestamp = timestamp;
+            lastStoredPrice = _value;
+            return (true, _value, timestamp);
+        } else {
+            return (true, lastStoredPrice, lastStoredTimestamp);
         }
-        return (false, 0, _time);
     }
 
-    // Internal functions
-    /**
-     * @dev Convert bytes to uint256. Copy from `UsingTellor.sol`
-     * @param _b bytes value to convert to uint256
-     * @return _number uint256 converted from bytes
-     */
-    function _sliceUint(bytes memory _b)
-        internal
-        pure
-        returns (uint256 _number)
-    {
-        for (uint256 _i = 0; _i < _b.length; _i++) {
-            _number = _number * 256 + uint8(_b[_i]);
-        }
-    }
 }
