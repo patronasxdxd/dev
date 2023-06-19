@@ -172,7 +172,7 @@ contract('PCV', async accounts => {
       const pcvBalance = await thusdToken.balanceOf(pcv.address)
       assert.equal(pcvBalance.toString(), "0")
       const bammBalance = await bamm.balanceOf(pcv.address)
-      const bammTotal = await bamm.total()
+      const bammTotal = await bamm.totalSupply()
       assert.equal(bammBalance.toString(), bammTotal.toString())
     })
 

@@ -104,10 +104,10 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
         require(!isInitialized, "PCV: already initialized");
 
         debtToPay = BOOTSTRAP_LOAN;
-        borrowerOperations.mintBootstrapLoanFromPCV(debtToPay);
+        borrowerOperations.mintBootstrapLoanFromPCV(BOOTSTRAP_LOAN);
 
         isInitialized = true;
-        depositToBAMM(debtToPay);
+        depositToBAMM(BOOTSTRAP_LOAN);
     }
 
     // --- Backstop protocol ---

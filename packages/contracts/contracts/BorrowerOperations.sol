@@ -29,8 +29,6 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
 
     ICollSurplusPool collSurplusPool;
 
-    IPCV public pcv;
-
     ITHUSDToken public thusdToken;
 
     // A doubly linked list of Troves, sorted by their collateral ratios
@@ -127,7 +125,6 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
         sortedTroves = ISortedTroves(_sortedTrovesAddress);
         thusdToken = ITHUSDToken(_thusdTokenAddress);
         pcvAddress = _pcvAddress;
-        pcv = IPCV(_pcvAddress);
         collateralAddress = _collateralAddress;
         
         require(
@@ -139,8 +136,8 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
             IStabilityPool(stabilityPoolAddress).collateralAddress() == _collateralAddress) &&
             (Ownable(_collSurplusPoolAddress).owner() != address(0) || 
             collSurplusPool.collateralAddress() == _collateralAddress) &&
-            (address(pcv.thusdToken()) == address(0) || 
-            address(pcv.collateralERC20()) == _collateralAddress),
+            (address(IPCV(pcvAddress).thusdToken()) == address(0) || 
+            address(IPCV(pcvAddress).collateralERC20()) == _collateralAddress),
             "The same collateral address must be used for the entire set of contracts"
         );
 
@@ -161,13 +158,13 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
 
     /// Calls on PCV behalf
     function mintBootstrapLoanFromPCV(uint256 _thusdToMint) external {
-        require(msg.sender == address(pcv), "BorrowerOperations: caller must be PCV");
-        thusdToken.mint(address(pcv), _thusdToMint);
+        require(msg.sender == pcvAddress, "BorrowerOperations: caller must be PCV");
+        thusdToken.mint(pcvAddress, _thusdToMint);
     }
 
     function burnDebtFromPCV(uint256 _thusdToBurn) external {
-        require(msg.sender == address(pcv), "BorrowerOperations: caller must be PCV");
-        thusdToken.burn(address(pcv), _thusdToBurn);
+        require(msg.sender == pcvAddress, "BorrowerOperations: caller must be PCV");
+        thusdToken.burn(pcvAddress, _thusdToBurn);
     }
 
     // --- Borrower Trove Operations ---
