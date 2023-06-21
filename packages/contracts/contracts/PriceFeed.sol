@@ -27,10 +27,6 @@ contract PriceFeed is Ownable, CheckContract, BaseMath, IPriceFeed {
     ITellorCaller public tellorCaller;  // Wrapper contract that calls the Tellor system
     uint256 public immutable tellorDigits;
 
-    // Core Liquity contracts
-    address borrowerOperationsAddress;
-    address troveManagerAddress;
-
     // Use to convert a price answer to an 18-digit precision uint
     uint256 constant public TARGET_DIGITS = 18;
 
@@ -91,6 +87,8 @@ contract PriceFeed is Ownable, CheckContract, BaseMath, IPriceFeed {
         external
         onlyOwner
     {
+        require(address(priceAggregator) == address(0), "PriceFeed: contacts already set");
+
         checkContract(_priceAggregatorAddress);
         checkContract(_tellorCallerAddress);
 
@@ -108,8 +106,6 @@ contract PriceFeed is Ownable, CheckContract, BaseMath, IPriceFeed {
             "PriceFeed: Chainlink must be working and current");
 
         _storeChainlinkPrice(chainlinkResponse);
-
-        _renounceOwnership();
     }
 
     // --- Functions ---
@@ -569,5 +565,78 @@ contract PriceFeed is Ownable, CheckContract, BaseMath, IPriceFeed {
             // If call to Chainlink aggregator reverts, return a zero response with success = false
             return prevChainlinkResponse;
         }
+    }
+
+    /*
+    * forceExitBothUntrustedStatus()
+    * DAO can help one oracle return back online only if previously both were untrusted.
+    * Function reverts if both oracles are still broken.
+    * In case when both oracles are online but have different prices then caller can control 
+    * which will be checked first: ChainLink if tryTellorFirst==false, Tellor otherwise
+    */ 
+    function forceExitBothUntrustedStatus(bool tryTellorFirst) external onlyOwner {
+        require(status == Status.bothOraclesUntrusted, "PriceFeed: at least one oracle is working");
+
+        ChainlinkResponse memory chainlinkResponse = _getCurrentChainlinkResponse();
+        ChainlinkResponse memory prevChainlinkResponse = _getPrevChainlinkResponse(chainlinkResponse.roundId, chainlinkResponse.decimals);
+        TellorResponse memory tellorResponse = _getCurrentTellorResponse();
+
+        // check Tellor first only if flag was true, exit function in case of success
+        if
+        (
+            tryTellorFirst &&
+            _changeStatusIfTellorLiveAndUnbroken(tellorResponse)
+        )
+        {
+            return;
+        }
+
+        // check ChainLink feed
+        if 
+        (
+            !_chainlinkIsBroken(chainlinkResponse, prevChainlinkResponse) &&
+            !_chainlinkIsFrozen(chainlinkResponse) &&
+            !_chainlinkPriceChangeAboveMax(chainlinkResponse, prevChainlinkResponse)
+        ) 
+        {
+            _changeStatus(Status.usingChainlinkTellorUntrusted);
+            _storeChainlinkPrice(chainlinkResponse);
+            return;
+        }
+
+        // if Tellor was already checked or check is false then revert transaction
+        if
+        (
+            !tryTellorFirst &&
+            _changeStatusIfTellorLiveAndUnbroken(tellorResponse)
+        )
+        {
+            return;
+        }
+
+        // Transaction is successful only if one oracle returned back online
+        revert("PriceFeed: both oracles are still untrusted");
+    }
+
+    function _changeStatusIfTellorLiveAndUnbroken
+    (
+        TellorResponse memory _tellorResponse
+    )
+        internal
+        returns (bool)
+    {
+        // Return true if Tellor is back online
+        if
+        (
+            !_tellorIsBroken(_tellorResponse) &&
+            !_tellorIsFrozen(_tellorResponse)
+        )
+        {
+            _changeStatus(Status.usingTellorChainlinkUntrusted);
+            _storeTellorPrice(_tellorResponse);
+            return true;
+        }
+
+        return false;
     }
 }

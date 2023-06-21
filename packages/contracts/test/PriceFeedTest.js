@@ -117,11 +117,23 @@ contract('PriceFeed', async accounts => {
 
         await assertRevert(
           priceFeed.setAddresses(mockChainlink.address, mockTellor.address, { from: owner }),
-          "Ownable: caller is not the owner"
+          "PriceFeed: contacts already set"
         )
 
         await assertRevert(
           priceFeed.setAddresses(mockChainlink.address, mockTellor.address, { from: alice }),
+          "Ownable: caller is not the owner"
+        )
+      })
+
+      it("forceExitBothUntrustedStatus should fail whe called by nonOwner", async () => {
+        await assertRevert(
+          priceFeed.forceExitBothUntrustedStatus(false, { from: alice }),
+          "Ownable: caller is not the owner"
+        )
+        
+        await assertRevert(
+          priceFeed.forceExitBothUntrustedStatus(true, { from: alice }),
           "Ownable: caller is not the owner"
         )
       })
@@ -1230,6 +1242,21 @@ contract('PriceFeed', async accounts => {
       assert.equal(price, dec(102, 18))
     })
 
+    it("C1 chainlinkWorking: Chainlink is working, revert transaction", async () => {
+      await setAddresses()
+      const statusBefore = await priceFeed.status()
+      assert.equal(statusBefore, '0') // status 0: Chainlink working
+
+      await assertRevert(
+        priceFeed.forceExitBothUntrustedStatus(false, { from: owner }),
+        "PriceFeed: at least one oracle is working"
+      )
+      await assertRevert(
+        priceFeed.forceExitBothUntrustedStatus(true, { from: owner }),
+        "PriceFeed: at least one oracle is working"
+      )
+    })
+
     // --- Case 2: Using Tellor ---
 
     // Using Tellor, Tellor breaks
@@ -1456,6 +1483,20 @@ contract('PriceFeed', async accounts => {
       assert.equal(price, dec(100, 18))
     })
 
+    it("C2 usingTellorChainlinkUntrusted: Tellor is working, revert transaction", async () => {
+      await setAddresses()
+      priceFeed.setStatus(1) // status 1: using Tellor, Chainlink untrusted
+
+      await assertRevert(
+        priceFeed.forceExitBothUntrustedStatus(false, { from: owner }),
+        "PriceFeed: at least one oracle is working"
+      )
+      await assertRevert(
+        priceFeed.forceExitBothUntrustedStatus(true, { from: owner }),
+        "PriceFeed: at least one oracle is working"
+      )
+    })
+
 
     // --- Case 3: Both Oracles suspect
 
@@ -1467,6 +1508,8 @@ contract('PriceFeed', async accounts => {
 
       await setTellorPrice(dec(100, 6)) // price = 100
       await mockChainlink.setPrice('10500000001') // price = 105.00000001: > 5% difference from Tellor
+      
+      await priceFeed.fetchPrice()
 
       const status = await priceFeed.status()
       assert.equal(status, 2)  // status 2: both oracles untrusted
@@ -1511,6 +1554,138 @@ contract('PriceFeed', async accounts => {
 
       const price = await priceFeed.lastGoodPrice()
       assert.equal(price, dec(105, 18))
+    })
+
+    it("C3 bothOraclesUntrusted: both Tellor and Chainlink are broken, reverts transaction", async () => {
+      await setAddresses()
+      priceFeed.setStatus(2) // status 2: both oracles untrusted
+
+      await setTellorPrice(0) // Tellor is broken
+      await mockChainlink.setUpdateTime(0) // ChainLink is broken
+
+      await assertRevert(
+        priceFeed.forceExitBothUntrustedStatus(false, { from: owner }),
+        "PriceFeed: both oracles are still untrusted"
+      )
+      await assertRevert(
+        priceFeed.forceExitBothUntrustedStatus(true, { from: owner }),
+        "PriceFeed: both oracles are still untrusted"
+      )
+    })
+
+    it("C3 bothOraclesUntrusted: Chainlink back online, check ChainLink first, switch to usingChainlinkTellorUntrusted", async () => {
+      await setAddresses()
+      priceFeed.setStatus(2) // status 2: both oracles untrusted
+
+      await setTellorPrice(0) // Tellor is broken
+      await mockChainlink.setPrevPrice(dec(100, 8))
+      await mockChainlink.setPrice(dec(105, 8)) // price = 105: 5% difference from previous
+
+      await priceFeed.forceExitBothUntrustedStatus(false, { from: owner })
+
+      const status = await priceFeed.status()
+      assert.equal(status, 4)  // status 4: using chainlink, tellor broken
+
+      const price = await priceFeed.lastGoodPrice()
+      assert.equal(price, dec(105, 18))
+    })
+
+    it("C3 bothOraclesUntrusted: Chainlink back online, check Tellor first, switch to usingChainlinkTellorUntrusted", async () => {
+      await setAddresses()
+      priceFeed.setStatus(2) // status 2: both oracles untrusted
+
+      await setTellorPrice(dec(123, 6)) // Tellor frozen
+      await th.fastForwardTime(14400, web3.currentProvider) // Fast forward 4 hours
+
+      await mockChainlink.setPrevPrice(dec(199, 8))
+      await mockChainlink.setPrice(dec(100, 8)) // price = 100: 5% difference from previous
+      const now = await th.getLatestBlockTimestamp(web3)
+      await mockChainlink.setUpdateTime(now)
+
+      await priceFeed.forceExitBothUntrustedStatus(true, { from: owner })
+
+      const status = await priceFeed.status()
+      assert.equal(status, 4)  // status 4: using chainlink, tellor broken
+
+      const price = await priceFeed.lastGoodPrice()
+      assert.equal(price, dec(100, 18))
+    })
+
+    it("C3 bothOraclesUntrusted: Tellor back online, check Chainlink first, switch to usingTellorChainlinkUntrusted", async () => {
+      await setAddresses()
+      priceFeed.setStatus(2) // status 2: both oracles untrusted
+
+      await setTellorPrice(dec(123, 6)) // Tellor is online
+      await mockChainlink.setPrevPrice(dec(201, 8))
+      await mockChainlink.setPrice(dec(100, 8)) // ChainLink: difference from previous more than 50%
+
+      await priceFeed.forceExitBothUntrustedStatus(false, { from: owner })
+
+      const status = await priceFeed.status()
+      assert.equal(status, 1)  // status 1: using tellor, chainlink broken
+
+      const price = await priceFeed.lastGoodPrice()
+      assert.equal(price.toString(), dec(123, 18))
+    })
+
+    it("C3 bothOraclesUntrusted: Tellor back online, check Tellor first, switch to usingTellorChainlinkUntrusted", async () => {
+      await setAddresses()
+      priceFeed.setStatus(2) // status 2: both oracles untrusted
+
+      await mockChainlink.setPrevPrice(dec(100, 8))
+      await mockChainlink.setPrice(dec(100, 8)) // ChainLink frozen
+
+      await th.fastForwardTime(14400, web3.currentProvider) // Fast forward 4 hours
+
+      // check Chainlink price timestamp is out of date by > 4 hours
+      const now = await th.getLatestBlockTimestamp(web3)
+      const chainlinkUpdateTime = (await mockChainlink.latestRoundData())[3]
+      assert.isTrue(chainlinkUpdateTime.lt(toBN(now).sub(toBN(14400))))
+
+      // set Tellor to current time
+      await setTellorPrice(dec(123, 6)) // Tellor is online
+
+      await priceFeed.forceExitBothUntrustedStatus(true, { from: owner })
+
+      const status = await priceFeed.status()
+      assert.equal(status, 1)  // status 1: using tellor, chainlink broken
+
+      const price = await priceFeed.lastGoodPrice()
+      assert.equal(price.toString(), dec(123, 18))
+    })
+
+    it("C3 bothOraclesUntrusted: both oracles online with different prices, check ChainLink first, switch to usingChainlinkTellorUntrusted", async () => {
+      await setAddresses()
+      priceFeed.setStatus(2) // status 2: both oracles untrusted
+
+      await mockChainlink.setPrevPrice(dec(100, 8))
+      await mockChainlink.setPrice(dec(100, 8)) // ChainLink is online
+      await setTellorPrice(dec(110, 6)) // Tellor is online, differenece > 5%
+
+      await priceFeed.forceExitBothUntrustedStatus(false, { from: owner })
+
+      const status = await priceFeed.status()
+      assert.equal(status, 4)  // status 4: using chainlink, tellor broken
+
+      const price = await priceFeed.lastGoodPrice()
+      assert.equal(price.toString(), dec(100, 18))
+    })
+
+    it("C3 bothOraclesUntrusted: both oracles online with different prices, check Tellor first, switch to usingTellorChainlinkUntrusted", async () => {
+      await setAddresses()
+      priceFeed.setStatus(2) // status 2: both oracles untrusted
+
+      await mockChainlink.setPrevPrice(dec(100, 8))
+      await mockChainlink.setPrice(dec(100, 8)) // ChainLink is online
+      await setTellorPrice(dec(110, 6)) // Tellor is online, differenece > 5%
+
+      await priceFeed.forceExitBothUntrustedStatus(true, { from: owner })
+
+      const status = await priceFeed.status()
+      assert.equal(status, 1)  // status 1: using tellor, chainlink broken
+
+      const price = await priceFeed.lastGoodPrice()
+      assert.equal(price.toString(), dec(110, 18))
     })
 
     // --- Case 4 ---
@@ -1935,6 +2110,20 @@ contract('PriceFeed', async accounts => {
       assert.equal(price, dec(50, 18))
     })
 
+    it("C4 usingTellorChainlinkFrozen: Tellor is working, revert transaction", async () => {
+      await setAddresses()
+      priceFeed.setStatus(3) // status 3: using Tellor, Chainlink frozen
+
+      await assertRevert(
+        priceFeed.forceExitBothUntrustedStatus(false, { from: owner }),
+        "PriceFeed: at least one oracle is working"
+      )
+      await assertRevert(
+        priceFeed.forceExitBothUntrustedStatus(true, { from: owner }),
+        "PriceFeed: at least one oracle is working"
+      )
+    })
+
 
 
     // --- Case 5 ---
@@ -2264,6 +2453,20 @@ contract('PriceFeed', async accounts => {
 
       const price = await priceFeed.lastGoodPrice()
       assert.equal(price, dec(246, 18))
+    })
+
+    it("C5 usingChainlinkTellorUntrusted: Chainlink is working, revert transaction", async () => {
+      await setAddresses()
+      priceFeed.setStatus(4) // status 4: using chainlink, Tellor untrusted
+
+      await assertRevert(
+        priceFeed.forceExitBothUntrustedStatus(false, { from: owner }),
+        "PriceFeed: at least one oracle is working"
+      )
+      await assertRevert(
+        priceFeed.forceExitBothUntrustedStatus(true, { from: owner }),
+        "PriceFeed: at least one oracle is working"
+      )
     })
   }
 
