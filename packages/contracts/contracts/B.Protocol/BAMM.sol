@@ -115,9 +115,9 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         uint256 chainlinkTimestamp;
 
         // First, try to get current decimal precision:
-        try aggregator.decimals() returns (uint8 decimals) {
+        try aggregator.decimals() returns (uint8 _chainlinkDecimals) {
             // If call to Chainlink succeeds, record the current decimal precision
-            chainlinkDecimals = decimals;
+            chainlinkDecimals = _chainlinkDecimals;
         } catch {
             // If call to Chainlink aggregator reverts, return a zero response with success = false
             return (0, 0);
@@ -226,7 +226,7 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
             return collateralAmount;
         }
 
-        // adjust only if 1 thUSD > 1 USDC. If thUSD < USD, then we give a discount, and rebalance will happen anw
+        // adjust only if 1 thUSD > 1 USD. If thUSD < USD, then we give a discount, and rebalance will happen anw
         if(chainlinkLatestAnswer > 10 ** chainlinkDecimals ) {
             newCollateralAmount = collateralAmount * chainlinkLatestAnswer / (10 ** chainlinkDecimals);
         }

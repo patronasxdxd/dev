@@ -414,7 +414,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, I
         * The newProductFactor is the factor by which to change all deposits, due to the depletion of Stability Pool THUSD in the liquidation.
         * We make the product factor 0 if there was a pool-emptying. Otherwise, it is (1 - THUSDLossPerUnitStaked)
         */
-        uint256 newProductFactor = uint(DECIMAL_PRECISION) - _THUSDLossPerUnitStaked;
+        uint256 newProductFactor = DECIMAL_PRECISION - _THUSDLossPerUnitStaked;
 
         uint128 currentScaleCached = currentScale;
         uint128 currentEpochCached = currentEpoch;

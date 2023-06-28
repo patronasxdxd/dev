@@ -113,11 +113,9 @@ contract ActivePool is Ownable, CheckContract, SendCollateral, IActivePool {
         }
         if (_account == defaultPoolAddress) {
             IDefaultPool(_account).updateCollateralBalance(_amount);
-        }
-        if (_account == collSurplusPoolAddress) {
+        } else if (_account == collSurplusPoolAddress) {
             ICollSurplusPool(_account).updateCollateralBalance(_amount);
-        }
-        if (_account == stabilityPoolAddress) {
+        } else if (_account == stabilityPoolAddress) {
             IStabilityPool(_account).updateCollateralBalance(_amount);
         }
     }
