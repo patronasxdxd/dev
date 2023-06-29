@@ -115,25 +115,10 @@ contract('THUSDToken', async accounts => {
     
     if (!withProxy) {
       it('Initial set of contracts was set correctly', async () => {
-        assert.isTrue(await thusdTokenTester.isTroveManager(troveManager.address))
-        assert.isFalse(await thusdTokenTester.isTroveManager(stabilityPool.address))
-        assert.isFalse(await thusdTokenTester.isTroveManager(borrowerOperations.address))
-        assert.isFalse(await thusdTokenTester.isTroveManager(owner))
-        
-        assert.isFalse(await thusdTokenTester.isStabilityPools(troveManager.address))
-        assert.isTrue(await thusdTokenTester.isStabilityPools(stabilityPool.address))
-        assert.isFalse(await thusdTokenTester.isStabilityPools(borrowerOperations.address))
-        assert.isFalse(await thusdTokenTester.isStabilityPools(owner))
-        
-        assert.isFalse(await thusdTokenTester.isBorrowerOperations(troveManager.address))
-        assert.isFalse(await thusdTokenTester.isBorrowerOperations(stabilityPool.address))
-        assert.isTrue(await thusdTokenTester.isBorrowerOperations(borrowerOperations.address))
-        assert.isFalse(await thusdTokenTester.isBorrowerOperations(owner))
-        
-        assert.isFalse(await thusdTokenTester.mintList(troveManager.address))
-        assert.isFalse(await thusdTokenTester.mintList(stabilityPool.address))
-        assert.isTrue(await thusdTokenTester.mintList(borrowerOperations.address))
-        assert.isFalse(await thusdTokenTester.mintList(owner))
+        assert.isTrue(await thusdTokenTester.burnList(troveManager.address))
+        assert.isTrue(await thusdTokenTester.burnList(stabilityPool.address))
+        assert.isTrue(await thusdTokenTester.burnList(borrowerOperations.address))
+        assert.isFalse(await thusdTokenTester.burnList(owner))
       })
     }
 
@@ -277,39 +262,6 @@ contract('THUSDToken', async accounts => {
 
         const alice_BalanceAfter = await thusdTokenTester.balanceOf(alice)
         assert.equal(alice_BalanceAfter, 80)
-      })
-
-      // TODO: Rewrite this test - it should check the actual thusdTokenTester's balance.
-      it('sendToPool(): changes balances of Stability pool and user by the correct amounts', async () => {
-        const stabilityPool_BalanceBefore = await thusdTokenTester.balanceOf(stabilityPool.address)
-        const bob_BalanceBefore = await thusdTokenTester.balanceOf(bob)
-        assert.equal(stabilityPool_BalanceBefore, 0)
-        assert.equal(bob_BalanceBefore, 100)
-
-        await thusdTokenTester.unprotectedSendToPool(bob, stabilityPool.address, 75)
-
-        const stabilityPool_BalanceAfter = await thusdTokenTester.balanceOf(stabilityPool.address)
-        const bob_BalanceAfter = await thusdTokenTester.balanceOf(bob)
-        assert.equal(stabilityPool_BalanceAfter, 75)
-        assert.equal(bob_BalanceAfter, 25)
-      })
-
-      it('returnFromPool(): changes balances of Stability pool and user by the correct amounts', async () => {
-        /// --- SETUP --- give pool 100 THUSD
-        await thusdTokenTester.unprotectedMint(stabilityPool.address, 100)
-
-        /// --- TEST ---
-        const stabilityPool_BalanceBefore = await thusdTokenTester.balanceOf(stabilityPool.address)
-        const  bob_BalanceBefore = await thusdTokenTester.balanceOf(bob)
-        assert.equal(stabilityPool_BalanceBefore, 100)
-        assert.equal(bob_BalanceBefore, 100)
-
-        await thusdTokenTester.unprotectedReturnFromPool(stabilityPool.address, bob, 75)
-
-        const stabilityPool_BalanceAfter = await thusdTokenTester.balanceOf(stabilityPool.address)
-        const bob_BalanceAfter = await thusdTokenTester.balanceOf(bob)
-        assert.equal(stabilityPool_BalanceAfter, 25)
-        assert.equal(bob_BalanceAfter, 175)
       })
     }
 
@@ -494,9 +446,9 @@ contract('THUSDToken', async accounts => {
           assert.equal(await thusdTokenTester.pendingBorrowerOperations(), newBorrowerOperations.address)
           assert.equal(await thusdTokenTester.addContractsInitiated(), timeNow)
           
-          assert.isFalse(await thusdTokenTester.isTroveManager(newTroveManager.address))
-          assert.isFalse(await thusdTokenTester.isStabilityPools(newStabilityPool.address))
-          assert.isFalse(await thusdTokenTester.isBorrowerOperations(newBorrowerOperations.address))
+          assert.isFalse(await thusdTokenTester.burnList(newTroveManager.address))
+          assert.isFalse(await thusdTokenTester.burnList(newStabilityPool.address))
+          assert.isFalse(await thusdTokenTester.burnList(newBorrowerOperations.address))
           assert.isFalse(await thusdTokenTester.mintList(newBorrowerOperations.address))
         })
         
@@ -527,9 +479,9 @@ contract('THUSDToken', async accounts => {
           assert.equal(await thusdTokenTester.pendingBorrowerOperations(), ZERO_ADDRESS)
           assert.equal(await thusdTokenTester.addContractsInitiated(), 0)
           
-          assert.isFalse(await thusdTokenTester.isTroveManager(newTroveManager.address))
-          assert.isFalse(await thusdTokenTester.isStabilityPools(newStabilityPool.address))
-          assert.isFalse(await thusdTokenTester.isBorrowerOperations(newBorrowerOperations.address))
+          assert.isFalse(await thusdTokenTester.burnList(newTroveManager.address))
+          assert.isFalse(await thusdTokenTester.burnList(newStabilityPool.address))
+          assert.isFalse(await thusdTokenTester.burnList(newBorrowerOperations.address))
           assert.isFalse(await thusdTokenTester.mintList(newBorrowerOperations.address))
         })
         
@@ -572,25 +524,12 @@ contract('THUSDToken', async accounts => {
           assert.equal(await thusdTokenTester.pendingBorrowerOperations(), ZERO_ADDRESS)
           assert.equal(await thusdTokenTester.addContractsInitiated(), 0)
           
-          assert.isTrue(await thusdTokenTester.isTroveManager(troveManager.address))
-          assert.isTrue(await thusdTokenTester.isTroveManager(newTroveManager.address))
-          assert.isFalse(await thusdTokenTester.isTroveManager(newStabilityPool.address))
-          assert.isFalse(await thusdTokenTester.isTroveManager(newBorrowerOperations.address))
-          
-          assert.isFalse(await thusdTokenTester.isStabilityPools(newTroveManager.address))
-          assert.isTrue(await thusdTokenTester.isStabilityPools(stabilityPool.address))
-          assert.isTrue(await thusdTokenTester.isStabilityPools(newStabilityPool.address))
-          assert.isFalse(await thusdTokenTester.isStabilityPools(newBorrowerOperations.address))
-          
-          assert.isFalse(await thusdTokenTester.isBorrowerOperations(newTroveManager.address))
-          assert.isFalse(await thusdTokenTester.isBorrowerOperations(newStabilityPool.address))
-          assert.isTrue(await thusdTokenTester.isBorrowerOperations(newBorrowerOperations.address))
-          assert.isTrue(await thusdTokenTester.isBorrowerOperations(borrowerOperations.address))
-          
-          assert.isFalse(await thusdTokenTester.mintList(newTroveManager.address))
-          assert.isFalse(await thusdTokenTester.mintList(newStabilityPool.address))
-          assert.isTrue(await thusdTokenTester.mintList(newBorrowerOperations.address))
-          assert.isTrue(await thusdTokenTester.mintList(borrowerOperations.address))
+          assert.isTrue(await thusdTokenTester.burnList(troveManager.address))
+          assert.isTrue(await thusdTokenTester.burnList(newTroveManager.address))
+          assert.isTrue(await thusdTokenTester.burnList(stabilityPool.address))
+          assert.isTrue(await thusdTokenTester.burnList(newStabilityPool.address))
+          assert.isTrue(await thusdTokenTester.burnList(newBorrowerOperations.address))
+          assert.isTrue(await thusdTokenTester.burnList(borrowerOperations.address))
           
           assert.equal(getEventArgByIndex(tx, "TroveManagerAddressAdded", 0), newTroveManager.address)
           assert.equal(getEventArgByIndex(tx, "StabilityPoolAddressAdded", 0), newStabilityPool.address)
@@ -775,6 +714,100 @@ contract('THUSDToken', async accounts => {
         assert.equal(await thusdTokenTester.addMintListInitiated(), 0)
         
         assert.isTrue(await thusdTokenTester.mintList(alice))
+      })
+
+      it('startRevokeBurnList(): reverts when caller is not owner', async () => {
+        await assertRevert(
+          thusdTokenTester.startRevokeBurnList(
+            borrowerOperations.address, 
+            { from: alice }),
+            "Ownable: caller is not the owner")
+      })
+
+      it('startRevokeBurnList(): reverts when account has no burning role', async () => {
+        await assertRevert(
+          thusdTokenTester.startRevokeBurnList(
+            alice, 
+            { from: owner }),
+            "Incorrect address to revoke")
+      })
+
+      it('startRevokeBurnList(): puts account to pending list', async () => {
+        await thusdTokenTester.startRevokeBurnList(borrowerOperations.address, { from: owner })
+        
+        const timeNow = await getLatestBlockTimestamp(web3)
+        assert.equal(await thusdTokenTester.pendingRevokedBurnAddress(), borrowerOperations.address)
+        assert.equal(await thusdTokenTester.revokeBurnListInitiated(), timeNow)
+        
+        assert.isTrue(await thusdTokenTester.burnList(borrowerOperations.address))
+      })
+        
+      it('cancelRevokeBurnList(): reverts when caller is not owner', async () => {
+        await assertRevert(
+          thusdTokenTester.cancelRevokeBurnList({ from: alice }), 
+          "Ownable: caller is not the owner"
+        )
+      })
+
+      it('cancelRevokeBurnList(): reverts when change is not initiated', async () => {
+        await assertRevert(
+          thusdTokenTester.cancelRevokeBurnList({ from: owner }),
+          "Revoking from burn list is not started"
+        )
+      })
+
+      it('cancelRevokeBurnList(): cancels revoking from burn list', async () => {
+        await thusdTokenTester.startRevokeBurnList(
+            borrowerOperations.address, 
+            { from: owner }
+        )
+        
+        await thusdTokenTester.cancelRevokeBurnList({ from: owner })
+
+        assert.equal(await thusdTokenTester.pendingRevokedBurnAddress(), ZERO_ADDRESS)
+        assert.equal(await thusdTokenTester.revokeBurnListInitiated(), 0)
+        
+        assert.isTrue(await thusdTokenTester.burnList(borrowerOperations.address))
+      })
+
+      it('finalizeRevokeBurnList(): reverts when caller is not owner', async () => {
+        await assertRevert(
+          thusdTokenTester.finalizeRevokeBurnList(
+            { from: alice }),
+            "Ownable: caller is not the owner")
+      })
+
+      it('finalizeRevokeBurnList(): reverts when change is not initiated', async () => {
+        await assertRevert(
+          thusdTokenTester.finalizeRevokeBurnList(
+            { from: owner }),
+            "Change not initiated")
+      })
+
+      it('finalizeRevokeBurnList(): reverts when passed not enough time', async () => {
+        await thusdTokenTester.startRevokeBurnList(
+            borrowerOperations.address, 
+            { from: owner }
+          )
+        await assertRevert(
+          thusdTokenTester.finalizeRevokeBurnList(
+            { from: owner }),
+            "Governance delay has not elapsed")
+      })
+
+      it('finalizeRevokeBurnList(): removes account from minting list', async () => {
+        await thusdTokenTester.startRevokeBurnList(
+            borrowerOperations.address, 
+            { from: owner }
+          )
+        await fastForwardTime(delay, web3.currentProvider)
+        
+        await thusdTokenTester.finalizeRevokeBurnList({ from: owner })
+
+        assert.equal(await thusdTokenTester.pendingRevokedBurnAddress(), ZERO_ADDRESS)
+        assert.equal(await thusdTokenTester.revokeBurnListInitiated(), 0)
+        
+        assert.isFalse(await thusdTokenTester.burnList(borrowerOperations.address))
       })
     }
   }

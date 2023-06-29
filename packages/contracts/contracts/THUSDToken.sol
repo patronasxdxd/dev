@@ -22,7 +22,6 @@ import "./Dependencies/console.sol";
 * transfer() and transferFrom() calls. The purpose is to protect users from losing tokens by mistakenly sending THUSD directly to a Liquity
 * core contract, when they should rather call the right function.
 *
-* 2) sendToPool() and returnFromPool(): functions callable only Liquity core contracts, which move THUSD tokens between Liquity <-> user.
 */
 
 contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
@@ -55,9 +54,7 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
     mapping (address => mapping (address => uint256)) private _allowances;
 
     // --- Addresses ---
-    mapping(address => bool) public isTroveManager;
-    mapping(address => bool) public isStabilityPools;
-    mapping(address => bool) public isBorrowerOperations;
+    mapping(address => bool) public burnList;
     mapping(address => bool) public mintList;
 
     uint256 public immutable governanceTimeDelay;
@@ -65,9 +62,13 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
     address public pendingTroveManager;
     address public pendingStabilityPool;
     address public pendingBorrowerOperations;
+    
     address public pendingRevokedMintAddress;
+    address public pendingRevokedBurnAddress;
     address public pendingAddedMintAddress;
+
     uint256 public revokeMintListInitiated;
+    uint256 public revokeBurnListInitiated;
     uint256 public addContractsInitiated;
     uint256 public addMintListInitiated;
 
@@ -195,6 +196,33 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
         pendingBorrowerOperations = address(0);
     }
 
+    function startRevokeBurnList(address _account)
+        external
+        onlyOwner
+    {
+        require(burnList[_account], "Incorrect address to revoke");
+
+        revokeBurnListInitiated = block.timestamp;
+        pendingRevokedBurnAddress = _account;
+    }
+
+    function cancelRevokeBurnList() external onlyOwner {
+        require(revokeBurnListInitiated != 0, "Revoking from burn list is not started");
+
+        revokeBurnListInitiated = 0;
+        pendingRevokedBurnAddress = address(0);
+    }
+
+    function finalizeRevokeBurnList()
+        external
+        onlyOwner
+        onlyAfterGovernanceDelay(revokeBurnListInitiated)
+    {
+        burnList[pendingRevokedBurnAddress] = false;
+        revokeBurnListInitiated = 0;
+        pendingRevokedBurnAddress = address(0);
+    }
+
     // --- Functions for intra-Liquity calls ---
 
     function mint(address _account, uint256 _amount) external override {
@@ -203,26 +231,8 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
     }
 
     function burn(address _account, uint256 _amount) external override {
-        require(
-            isBorrowerOperations[msg.sender] ||
-            isTroveManager[msg.sender] ||
-            isStabilityPools[msg.sender],
-            "THUSD: Caller is neither BorrowerOperations nor TroveManager nor StabilityPool"
-        );
+        require(burnList[msg.sender], "THUSDToken: Caller not allowed to burn");
         _burn(_account, _amount);
-    }
-
-    function sendToPool(address _sender,  address _poolAddress, uint256 _amount) external override {
-        require(isStabilityPools[msg.sender], "THUSD: Caller is not the StabilityPool");
-        _transfer(_sender, _poolAddress, _amount);
-    }
-
-    function returnFromPool(address _poolAddress, address _receiver, uint256 _amount) external override {
-        require(
-            isTroveManager[msg.sender] || isStabilityPools[msg.sender],
-            "THUSD: Caller is neither TroveManager nor StabilityPool"
-        );
-        _transfer(_poolAddress, _receiver, _amount);
     }
 
     // --- External functions ---
@@ -327,13 +337,13 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
         checkContract(_stabilityPoolAddress);
         checkContract(_borrowerOperationsAddress);
 
-        isTroveManager[_troveManagerAddress] = true;
+        burnList[_troveManagerAddress] = true;
         emit TroveManagerAddressAdded(_troveManagerAddress);
 
-        isStabilityPools[_stabilityPoolAddress] = true;
+        burnList[_stabilityPoolAddress] = true;
         emit StabilityPoolAddressAdded(_stabilityPoolAddress);
 
-        isBorrowerOperations[_borrowerOperationsAddress] = true;
+        burnList[_borrowerOperationsAddress] = true;
         emit BorrowerOperationsAddressAdded(_borrowerOperationsAddress);
 
         mintList[_borrowerOperationsAddress] = true;
