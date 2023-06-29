@@ -51,6 +51,7 @@ contract('All functions with onlyOwner modifier', async accounts => {
 
   const testSetAddresses = async (contract, numberOfAddresses, collateralAddressNumber = 0) => {
     const dumbContract = await Dummy.new()
+    await dumbContract.setCollateral(dumbContract.address)
     const params = Array(numberOfAddresses).fill(dumbContract.address)
 
     // Attempt call from alice

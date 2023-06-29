@@ -7,6 +7,7 @@ import './Interfaces/IActivePool.sol';
 import './Interfaces/ICollSurplusPool.sol';
 import './Interfaces/IDefaultPool.sol';
 import './Interfaces/IStabilityPool.sol';
+import './Interfaces/IBorrowerOperations.sol';
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
 // import "./Dependencies/console.sol";
@@ -60,6 +61,18 @@ contract ActivePool is Ownable, CheckContract, SendCollateral, IActivePool {
         defaultPoolAddress = _defaultPoolAddress;
         collateralAddress = _collateralAddress;
         collSurplusPoolAddress = _collSurplusPoolAddress;
+
+        require(
+            (Ownable(_defaultPoolAddress).owner() != address(0) || 
+            IDefaultPool(_defaultPoolAddress).collateralAddress() == _collateralAddress) &&
+            (Ownable(_borrowerOperationsAddress).owner() != address(0) || 
+            IBorrowerOperations(_borrowerOperationsAddress).collateralAddress() == _collateralAddress) &&
+            (Ownable(_stabilityPoolAddress).owner() != address(0) || 
+            IStabilityPool(stabilityPoolAddress).collateralAddress() == _collateralAddress) &&
+            (Ownable(_collSurplusPoolAddress).owner() != address(0) || 
+            ICollSurplusPool(_collSurplusPoolAddress).collateralAddress() == _collateralAddress),
+            "The same collateral address must be used for the entire set of contracts"
+        );
 
         emit BorrowerOperationsAddressChanged(_borrowerOperationsAddress);
         emit TroveManagerAddressChanged(_troveManagerAddress);

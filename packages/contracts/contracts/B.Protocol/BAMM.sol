@@ -67,6 +67,12 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         feePool = _feePool;
         maxDiscount = _maxDiscount;
 
+        require(
+            Ownable(_SP).owner() != address(0) || 
+            IStabilityPool(_SP).collateralAddress() == _collateralERC20,
+            "The same collateral address must be used for the entire set of contracts"
+        );
+
         require(_bProtocolOwner != address(0), "B.Protocol owner must be specified");
         bProtocolOwner = _bProtocolOwner;
     }
@@ -210,8 +216,10 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         chainlinkDecimals = thusd2UsdPriceAggregator.decimals();
 
         // Secondly, try to get latest price data:
-        (,int256 answer,,,) = thusd2UsdPriceAggregator.latestRoundData();
+        (,int256 answer,,uint256 chainlinkTimestamp,) = thusd2UsdPriceAggregator.latestRoundData();
         chainlinkLatestAnswer = uint256(answer);
+
+        if(chainlinkTimestamp + 1 hours < block.timestamp) return collateralAmount; // price is down
 
         // adjust only if 1 thUSD > 1 USDC. If thUSD < USD, then we give a discount, and rebalance will happen anw
         if(chainlinkLatestAnswer > 10 ** chainlinkDecimals ) {
@@ -286,7 +294,9 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         return collateralQty * PRECISION / srcQty;
     }
 
-    receive() external payable {}
+    receive() external payable {
+        require(address(collateralERC20) == address(0), "Collateral must be ERC20 token");
+    }
 
     function transferBProtocolOwnership(address newOwner) public onlyBProtocolOwner {
         require(newOwner != address(0), "Ownable: new B.Protocol owner is the zero address");

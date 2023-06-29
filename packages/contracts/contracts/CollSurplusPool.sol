@@ -4,6 +4,8 @@ pragma solidity ^0.8.17;
 
 import "./Dependencies/IERC20.sol";
 import "./Interfaces/ICollSurplusPool.sol";
+import "./Interfaces/IActivePool.sol";
+import "./Interfaces/IBorrowerOperations.sol";
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
 import "./Dependencies/console.sol";
@@ -47,6 +49,14 @@ contract CollSurplusPool is Ownable, CheckContract, SendCollateral, ICollSurplus
         troveManagerAddress = _troveManagerAddress;
         activePoolAddress = _activePoolAddress;
         collateralAddress = _collateralAddress;
+
+        require(
+            (Ownable(_activePoolAddress).owner() != address(0) || 
+            IActivePool(_activePoolAddress).collateralAddress() == _collateralAddress) &&
+            (Ownable(_borrowerOperationsAddress).owner() != address(0) || 
+            IBorrowerOperations(_borrowerOperationsAddress).collateralAddress() == _collateralAddress),
+            "The same collateral address must be used for the entire set of contracts"
+        );
 
         emit BorrowerOperationsAddressChanged(_borrowerOperationsAddress);
         emit TroveManagerAddressChanged(_troveManagerAddress);

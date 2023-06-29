@@ -56,14 +56,6 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
     // The timestamp of the latest fee operation (redemption or new THUSD issuance)
     uint256 public lastFeeOperationTime;
 
-    enum Status {
-        nonExistent,
-        active,
-        closedByOwner,
-        closedByLiquidation,
-        closedByRedemption
-    }
-
     // Store the necessary data for a trove
     struct Trove {
         uint256 debt;
@@ -1471,8 +1463,8 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
 
     // --- Trove property getters ---
 
-    function getTroveStatus(address _borrower) external view override returns (uint) {
-        return uint(Troves[_borrower].status);
+    function getTroveStatus(address _borrower) external view override returns (Status) {
+        return Troves[_borrower].status;
     }
 
     function getTroveStake(address _borrower) external view override returns (uint) {

@@ -21,7 +21,7 @@ const TroveManagerTester = artifacts.require("./TroveManagerTester.sol")
 const THUSDTokenTester = artifacts.require("./THUSDTokenTester.sol")
 const ERC20Test = artifacts.require("./ERC20Test.sol")
 
-const Dummy = artifacts.require("./TestContracts/Dummy.sol")
+const Dummy = artifacts.require("Dummy")
 
 // Proxy scripts
 const BorrowerOperationsScript = artifacts.require('BorrowerOperationsScript')
@@ -287,6 +287,7 @@ class DeploymentHelper {
 
     if (!contracts.bamm) {
       contracts.bamm = await Dummy.new()
+      await contracts.bamm.setCollateral(contracts.erc20.address)
     }
     await contracts.pcv.setAddresses(
       contracts.thusdToken.address,

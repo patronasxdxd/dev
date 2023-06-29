@@ -129,6 +129,20 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
         pcvAddress = _pcvAddress;
         pcv = IPCV(_pcvAddress);
         collateralAddress = _collateralAddress;
+        
+        require(
+            (Ownable(_defaultPoolAddress).owner() != address(0) || 
+            defaultPool.collateralAddress() == _collateralAddress) &&
+            (Ownable(_activePoolAddress).owner() != address(0) || 
+            activePool.collateralAddress() == _collateralAddress) &&
+            (Ownable(_stabilityPoolAddress).owner() != address(0) || 
+            IStabilityPool(stabilityPoolAddress).collateralAddress() == _collateralAddress) &&
+            (Ownable(_collSurplusPoolAddress).owner() != address(0) || 
+            collSurplusPool.collateralAddress() == _collateralAddress) &&
+            (address(pcv.thusdToken()) == address(0) || 
+            address(pcv.collateralERC20()) == _collateralAddress),
+            "The same collateral address must be used for the entire set of contracts"
+        );
 
         emit TroveManagerAddressChanged(_troveManagerAddress);
         emit ActivePoolAddressChanged(_activePoolAddress);
@@ -504,13 +518,13 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
     }
 
     function _requireTroveisActive(ITroveManager _troveManager, address _borrower) internal view {
-        uint256 status = _troveManager.getTroveStatus(_borrower);
-        require(status == 1, "BorrowerOps: Trove does not exist or is closed");
+        ITroveManager.Status status = _troveManager.getTroveStatus(_borrower);
+        require(status == ITroveManager.Status.active, "BorrowerOps: Trove does not exist or is closed");
     }
 
     function _requireTroveisNotActive(ITroveManager _troveManager, address _borrower) internal view {
-        uint256 status = _troveManager.getTroveStatus(_borrower);
-        require(status != 1, "BorrowerOps: Trove is active");
+        ITroveManager.Status status = _troveManager.getTroveStatus(_borrower);
+        require(status != ITroveManager.Status.active, "BorrowerOps: Trove is active");
     }
 
     function _requireNonZeroDebtChange(uint256 _THUSDChange) internal pure {

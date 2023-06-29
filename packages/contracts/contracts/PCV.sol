@@ -16,7 +16,7 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
     // --- Data ---
     string constant public NAME = "PCV";
 
-    uint256 constant public BOOTSTRAP_LOAN = 10 * 10**18; 
+    uint256 constant public BOOTSTRAP_LOAN = 10**26; // 100M thUSD
     
     uint256 public immutable governanceTimeDelay;
 
@@ -85,6 +85,13 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
         collateralERC20 = IERC20(_collateralERC20);
         borrowerOperations = BorrowerOperations(_borrowerOperations);
         bamm = BAMM(_bammAddress);
+
+        require(
+            (Ownable(_borrowerOperations).owner() != address(0) || 
+            borrowerOperations.collateralAddress() == _collateralERC20) && 
+            bamm.collateralERC20() == collateralERC20,
+            "The same collateral address must be used for the entire set of contracts"
+        );
 
         emit THUSDTokenAddressSet(_thusdTokenAddress);
         emit BorrowerOperationsAddressSet(_borrowerOperations);

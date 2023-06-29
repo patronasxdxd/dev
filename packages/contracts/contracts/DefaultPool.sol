@@ -47,6 +47,12 @@ contract DefaultPool is Ownable, CheckContract, SendCollateral, IDefaultPool {
         activePoolAddress = _activePoolAddress;
         collateralAddress = _collateralAddress;
 
+        require(
+            (Ownable(_activePoolAddress).owner() != address(0) || 
+            IActivePool(_activePoolAddress).collateralAddress() == _collateralAddress),
+            "The same collateral address must be used for the entire set of contracts"
+        );
+
         emit TroveManagerAddressChanged(_troveManagerAddress);
         emit ActivePoolAddressChanged(_activePoolAddress);
         emit CollateralAddressChanged(_collateralAddress);

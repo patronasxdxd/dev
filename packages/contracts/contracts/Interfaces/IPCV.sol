@@ -2,6 +2,9 @@
 
 pragma solidity ^0.8.17;
 
+import "../Dependencies/IERC20.sol";
+import "./ITHUSDToken.sol";
+
 interface IPCV {
 
     // --- Events --
@@ -47,5 +50,8 @@ interface IPCV {
     function startChangingRoles(address _council, address _treasury) external;
     function cancelChangingRoles() external;
     function finalizeChangingRoles() external;
+    
+    function collateralERC20() external view returns(IERC20);
+    function thusdToken() external view returns(ITHUSDToken);
 
 }
