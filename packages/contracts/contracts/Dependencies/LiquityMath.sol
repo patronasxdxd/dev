@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.17;
 
-import "./console.sol";
-
 library LiquityMath {
 
     uint256 internal constant DECIMAL_PRECISION = 1e18;
@@ -92,7 +90,7 @@ library LiquityMath {
         }
         // Return the maximal value for uint256 if the Trove has a debt of 0. Represents "infinite" CR.
         else { // if (_debt == 0)
-            return 2**256 - 1;
+            return type(uint256).max;
         }
     }
 
@@ -104,7 +102,7 @@ library LiquityMath {
         }
         // Return the maximal value for uint256 if the Trove has a debt of 0. Represents "infinite" CR.
         else { // if (_debt == 0)
-            return 2**256 - 1;
+            return type(uint256).max;
         }
     }
 }

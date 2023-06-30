@@ -52,7 +52,6 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
         address payable _feePool,
         address _bProtocolOwner
     )
-        CropJoinAdapter()
     {
         checkContract(_priceAggregator);
         checkContract(_thusdToken);

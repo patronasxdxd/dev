@@ -86,7 +86,7 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
 
         _HASHED_NAME = hashedName;
         _HASHED_VERSION = hashedVersion;
-        _CACHED_CHAIN_ID = _chainID();
+        _CACHED_CHAIN_ID = block.chainid;
         _CACHED_DOMAIN_SEPARATOR = _buildDomainSeparator(_TYPE_HASH, hashedName, hashedVersion);
         governanceTimeDelay = _governanceTimeDelay;
         require(governanceTimeDelay <= 30 weeks, "Governance delay is too big");
@@ -283,7 +283,7 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
     // --- EIP 2612 Functionality ---
 
     function domainSeparator() public view override returns (bytes32) {
-        if (_chainID() == _CACHED_CHAIN_ID) {
+        if (block.chainid == _CACHED_CHAIN_ID) {
             return _CACHED_DOMAIN_SEPARATOR;
         } else {
             return _buildDomainSeparator(_TYPE_HASH, _HASHED_NAME, _HASHED_VERSION);
@@ -319,14 +319,8 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
 
     // --- Internal operations ---
 
-    function _chainID() private view returns (uint256 chainID) {
-        assembly {
-            chainID := chainid()
-        }
-    }
-
     function _buildDomainSeparator(bytes32 typeHash, bytes32 hashedName, bytes32 hashedVersion) private view returns (bytes32) {
-        return keccak256(abi.encode(typeHash, hashedName, hashedVersion, _chainID(), address(this)));
+        return keccak256(abi.encode(typeHash, hashedName, hashedVersion, block.chainid, address(this)));
     }
 
     // --- Internal operations ---

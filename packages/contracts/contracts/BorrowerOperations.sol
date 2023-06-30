@@ -11,7 +11,6 @@ import "./Interfaces/IPCV.sol";
 import "./Dependencies/LiquityBase.sol";
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
-import "./Dependencies/console.sol";
 import "./Dependencies/SendCollateral.sol";
 
 contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollateral, IBorrowerOperations {

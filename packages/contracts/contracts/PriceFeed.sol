@@ -9,7 +9,6 @@ import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
 import "./Dependencies/BaseMath.sol";
 import "./Dependencies/LiquityMath.sol";
-import "./Dependencies/console.sol";
 
 /*
 * PriceFeed for mainnet deployment, to be connected to Chainlink's live collateral:USD aggregator reference
@@ -30,7 +29,7 @@ contract PriceFeed is Ownable, CheckContract, BaseMath, IPriceFeed {
     // Use to convert a price answer to an 18-digit precision uint
     uint256 constant public TARGET_DIGITS = 18;
 
-    // Maximum time period allowed since Chainlink's latest round data timestamp, beyond which Chainlink is considered frozen.
+    // Maximum time period allowed since Chainlink/Tellor's latest round data timestamp, beyond which Chainlink/Tellor is considered frozen.
     uint256 constant public TIMEOUT = 14400;  // 4 hours: 60 * 60 * 4
 
     // Maximum deviation allowed between two consecutive Chainlink oracle prices. 18-digit precision.

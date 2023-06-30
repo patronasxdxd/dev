@@ -12,7 +12,6 @@ import "./Interfaces/IPCV.sol";
 import "./Dependencies/LiquityBase.sol";
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
-import "./Dependencies/console.sol";
 
 contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
 
@@ -37,7 +36,6 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
 
     // --- Data structures ---
 
-    uint256 constant public SECONDS_IN_ONE_MINUTE = 60;
     /*
      * Half-life of 12h. 12h = 720 min
      * (1/2) = d^720 => d = (1/2)^(1/720)
@@ -1411,7 +1409,7 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
     function _updateLastFeeOpTime() internal {
         uint256 timePassed = block.timestamp - lastFeeOperationTime;
 
-        if (timePassed >= SECONDS_IN_ONE_MINUTE) {
+        if (timePassed >= 1 minutes) {
             lastFeeOperationTime = block.timestamp;
             emit LastFeeOpTimeUpdated(block.timestamp);
         }
@@ -1425,7 +1423,7 @@ contract TroveManager is LiquityBase, Ownable, CheckContract, ITroveManager {
     }
 
     function _minutesPassedSinceLastFeeOp() internal view returns (uint) {
-        return (block.timestamp - lastFeeOperationTime) / SECONDS_IN_ONE_MINUTE;
+        return (block.timestamp - lastFeeOperationTime) / 1 minutes;
     }
 
     // --- 'require' wrapper functions ---

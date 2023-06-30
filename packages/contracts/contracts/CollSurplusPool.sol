@@ -8,7 +8,6 @@ import "./Interfaces/IActivePool.sol";
 import "./Interfaces/IBorrowerOperations.sol";
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
-import "./Dependencies/console.sol";
 import "./Dependencies/SendCollateral.sol";
 
 
