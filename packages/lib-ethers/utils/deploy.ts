@@ -8,6 +8,8 @@ import {
   _connectToContracts
 } from "../src/contracts";
 
+
+const feePool = "0x1000000000000000000000000000000000000001"
 let silent = true;
 
 export const log = (...args: unknown[]): void => {
@@ -101,8 +103,9 @@ const deployContracts = async (
     ? collateralAddress
     : await deployContract(deployer, getContractFactory, "ERC20Test", {
       ...overrides
-    })
+    }),
   };
+  const deployerAddress = await deployer.getAddress();
 
   const chainlink = (priceFeedIsTestnet === false) 
     ? oracleAddresses["mainnet"][collateralSymbol as keyof IAssets]
@@ -133,6 +136,9 @@ const deployContracts = async (
     addresses.stabilityPool,
     thusdToken,
     addresses.erc20,
+    400,
+    process.env.BAMM_FEE_POOL || feePool,
+    process.env.BAMM_OWNER || deployerAddress,
     { ...overrides }
   );
 

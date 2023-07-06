@@ -21,6 +21,7 @@ import { Icon } from "./Icon";
 import { Transaction } from "./Transaction";
 import { Tooltip } from "./Tooltip";
 import { Abbreviation } from "./Abbreviation";
+import { useWalletConnector } from "../hooks/WalletConnectorContext";
 
 const rowHeight = "40px";
 const pageSize = 10;
@@ -69,8 +70,8 @@ const select = ({
   symbol
 });
 
-export const RiskyVaults = ({ version, collateral, isMintList }: RiskyVaultsProps): JSX.Element => {
-  const { chainId } = useWeb3React<Web3Provider>();
+export const RiskyVaults = ({ version, collateral }: RiskyVaultsProps): JSX.Element => {
+  const { account: {chainId} } = useWalletConnector();
   const thresholdSelectorStores = useThresholdSelector(select);
   const thresholdStore = thresholdSelectorStores.find((store) => {
     return store.version === version && store.collateral === collateral;
@@ -276,6 +277,7 @@ export const RiskyVaults = ({ version, collateral, isMintList }: RiskyVaultsProp
                             <Link 
                               variant="socialIcons" 
                               href={(chainId === 5 && `https://goerli.etherscan.io/address/${vault.ownerAddress}`) ||
+                              (chainId === 11155111 && `https://sepolia.etherscan.io/address/${vault.ownerAddress}`) ||
                                 `https://etherscan.io/address/${vault.ownerAddress})`} 
                               target="_blank"
                             >

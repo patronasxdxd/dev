@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { Provider } from "@ethersproject/abstract-provider";
 import { getNetwork } from "@ethersproject/networks";
 import { Web3Provider } from "@ethersproject/providers";
-import { useWeb3React } from "@web3-react/core";
 
 import { isBatchedProvider, isWebSocketAugmentedProvider } from "@liquity/providers";
 import {
@@ -16,6 +15,7 @@ import { CollateralsVersionedDeployments } from "@liquity/lib-ethers/src/contrac
 
 import { ThresholdConfig, getConfig } from "../config";
 import { Threshold } from "@liquity/lib-react";
+import { useWalletConnector } from "./WalletConnectorContext";
 
 type Version = {
   collateral: keyof CollateralsVersionedDeployments
@@ -31,7 +31,7 @@ type ThresholdContextValue = {
 };
 
 type SupportedNetworks = {
-  [key: string]: "homestead" | "goerli";
+  [key: string]: "homestead" | "goerli" | "sepolia";
 };
 
 const ThresholdContext = createContext<ThresholdContextValue | undefined>(undefined);
@@ -48,10 +48,11 @@ const wsParams = (network: string, infuraApiKey: string): [string, string] => [
   network
 ];
 
-const supportedNetworks: SupportedNetworks = { 1: "homestead", 5: "goerli"};
+export const supportedNetworks: SupportedNetworks = { 1: "homestead", 5: "goerli", 11155111: "sepolia"};
 
 const getCollateralVersions = async (chainId: number): Promise<CollateralsVersionedDeployments> => {
-  return await getCollateralsDeployments(chainId === 1 ? 'mainnet' : 'goerli');
+  const network = supportedNetworks[chainId];
+  return await getCollateralsDeployments(network);
 }
 
 async function getConnections(
@@ -61,7 +62,6 @@ async function getConnections(
     chainId: number,
     setConnections: Function
   ) {
-
     const connectionsByChainId: (EthersLiquityConnection & { useStore: "blockPolled"; })[] = versionsArray.map(version => 
       _connectByChainId(
         version.collateral,
@@ -108,22 +108,13 @@ export const ThresholdProvider = ({
   unsupportedNetworkFallback,
   unsupportedMainnetFallback
 }: ThresholdProviderProps): JSX.Element => {
-  const { library: provider, account, chainId } = useWeb3React<Web3Provider>();
-  
+  const { provider, account: { address }, account: {chainId} } = useWalletConnector();
   const [config, setConfig] = useState<ThresholdConfig>();
   const [connections, setConnections] = useState<(EthersLiquityConnection & { useStore: "blockPolled"; })[]>();
   const [threshold, setThreshold] = useState<Threshold[]>([])
   
-
   useEffect(() => {
-    if (!chainId || !(chainId in supportedNetworks)) {
-      setThreshold([])
-      setConnections(undefined)
-    }
-  }, [chainId])
-
-  useEffect(() => {
-    if (!chainId || !provider || !account || !config) {
+    if (!chainId || !provider || !address || !config) {
       return;
     }
     
@@ -136,10 +127,10 @@ export const ThresholdProvider = ({
     getCollateralVersions(chainId)
       .then((collaterals) => {
         const versionsArray = iterateVersions(collaterals);
-        getConnections(versionsArray, provider, account, chainId, setConnections)
+        getConnections(versionsArray, provider, address, chainId, setConnections)
       })  
       .catch((err) => console.error('get collateral error: ', err))
-  }, [chainId, provider, account, config])
+  }, [chainId, provider, address, config])
 
   
   useEffect(() => {
@@ -156,7 +147,6 @@ export const ThresholdProvider = ({
       //Get the connection of the first collateral for network identification
       if (connections.length > 0) {
         const { provider, chainId } = connections[0];
-
         let thresholdStores: Threshold[] = []
 
         for (const connection of connections) {
@@ -170,7 +160,6 @@ export const ThresholdProvider = ({
         }
 
         setThreshold(thresholdStores)
-        console.log("config.infuraApiKey: ", config.infuraApiKey)
         if (isBatchedProvider(provider) && provider.chainId !== chainId) {
           provider.chainId = chainId;
         }
@@ -189,31 +178,29 @@ export const ThresholdProvider = ({
     }
   }, [config, connections, chainId]);
 
-
-  if (!config || !provider || !account || !chainId) {
+  if (!config || !provider || !address || !chainId) {
     return <>{loader}</>;
   }
 
   //This conditional should be habilitated only in test-net version
-  if (chainId === 1) {
+  if (config.testnetOnly && chainId === 1) {
     return <>{unsupportedMainnetFallback}</>;
   }
 
-  //Forcing goerli connection
-  if (!connections || chainId !== 5) {
+  if (!connections || connections.length === 0) {
     return unsupportedNetworkFallback ? <>{unsupportedNetworkFallback(chainId)}</> : <></>;
   }
+
   if (threshold.length !== connections.length) {
     return <>{loader}</>;
   }
 
   return (
-    <ThresholdContext.Provider value={{ config, account, provider, threshold }}>
+    <ThresholdContext.Provider value={{ config, account: address, provider, threshold }}>
       {children}
     </ThresholdContext.Provider>
   );
 };
-
 
 export const useThreshold = () => {
   const thresholdContext = useContext(ThresholdContext);

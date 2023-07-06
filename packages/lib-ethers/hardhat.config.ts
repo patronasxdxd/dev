@@ -36,6 +36,7 @@ export interface IAssets {
 export interface INetworkOracles {
   mainnet: IAssets,
   goerli: IAssets,
+  sepolia: IAssets,
 }
 
 dotenv.config();
@@ -107,7 +108,17 @@ export const oracleAddresses: INetworkOracles = {
       chainlink: "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e",
       tellor: "0x20374E579832859f180536A69093A126Db1c8aE9" // Playground
     }
-  }
+  },
+  sepolia: {
+    btc: {
+      chainlink: "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43",
+      tellor: "0x20374E579832859f180536A69093A126Db1c8aE9"
+    },
+    eth: {
+      chainlink: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
+      tellor: "0x20374E579832859f180536A69093A126Db1c8aE9"
+    }
+  },
 };
 
 const hasOracles = (network: string): network is keyof typeof oracleAddresses =>
@@ -133,6 +144,7 @@ const config: HardhatUserConfig = {
     },
 
     ...infuraNetwork("goerli"),
+    ...infuraNetwork("sepolia"),
     ...infuraNetwork("mainnet")
   },
 

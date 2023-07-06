@@ -17,7 +17,7 @@ import {
 
 import { MultiTroveGetter } from "../types";
 
-import { decimalify, DEFAULT_COLLATERAL_FOR_TESTING, DEFAULT_VERSION_FOR_TESTING, panic } from "./_utils";
+import { decimalify, DEFAULT_COLLATERAL_FOR_TESTING, DEFAULT_VERSION_FOR_TESTING, panic, supportedNetworks } from "./_utils";
 import { EthersCallOverrides, EthersProvider, EthersSigner } from "./types";
 
 import {
@@ -137,7 +137,7 @@ export class ReadableEthersLiquity implements ReadableLiquity {
   ): Promise<ReadableEthersLiquity> {
     const [provider, signer] = getProviderAndSigner(signerOrProvider);
     const chainId = (await provider.getNetwork()).chainId
-    const versionedDeployments = await getCollateralsDeployments(chainId === 1 ? 'mainnet': 'goerli')
+    const versionedDeployments = await getCollateralsDeployments(supportedNetworks[chainId])
     const importedDeployment: _LiquityDeploymentJSON =
     versionedDeployments.v1.deployment ?? panic(new UnsupportedNetworkError(chainId));
 
