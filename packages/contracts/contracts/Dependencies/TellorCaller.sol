@@ -50,7 +50,8 @@ contract TellorCaller is ITellorCaller {
             uint256 _timestampRetrieved
         )
     {
-        // retrieve most recent 15+ minute old value for a queryId. the time buffer allows time for a bad value to be disputed
+        // retrieve most recent value from those older than DISPUTE_DELAY for a specific queryId. 
+        // The time buffer allows time for a bad value to be disputed
         (, bytes memory data, uint256 timestamp) = 
             tellor.getDataBefore(queryId, block.timestamp - DISPUTE_DELAY);
         uint256 _value = abi.decode(data, (uint256));

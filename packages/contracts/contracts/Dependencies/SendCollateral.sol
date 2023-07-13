@@ -22,7 +22,8 @@ contract SendCollateral {
         } else {
             // ERC20
             // require(_amount <= _collateralERC20.balanceOf(address(this)), "Not enough collateral");
-            _collateralERC20.safeTransfer(_recipient, _amount);        }
+            _collateralERC20.safeTransfer(_recipient, _amount); 
+        }
     }
     
     /**
