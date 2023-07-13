@@ -324,7 +324,7 @@ export class ReadableEthersLiquity implements ReadableLiquity {
       stabilityPool.deposits(address, { ...overrides }),
       stabilityPool.getCompoundedTHUSDDeposit(bamm.address, { ...overrides }),
       stabilityPool.getDepositorCollateralGain(bamm.address, { ...overrides }),
-      bamm.total({ ...overrides }),
+      bamm.totalSupply({ ...overrides }),
       bamm.stake(address, { ...overrides}),
       stabilityPool.getTotalTHUSDDeposits({ ...overrides }),
     ]);

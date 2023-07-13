@@ -3,7 +3,7 @@
 pragma solidity ^0.8.17;
 
 import "../Dependencies/LiquityMath.sol";
-import "../Dependencies/IERC20.sol";
+import "../Interfaces/ITHUSDToken.sol";
 import "../Interfaces/IBorrowerOperations.sol";
 import "../Interfaces/ITroveManager.sol";
 import "../Interfaces/IStabilityPool.sol";
@@ -22,7 +22,7 @@ contract BorrowerWrappersScript is BorrowerOperationsScript, ETHTransferScript, 
     ITroveManager immutable troveManager;
     IStabilityPool immutable stabilityPool;
     IPriceFeed immutable priceFeed;
-    IERC20 immutable thusdToken;
+    ITHUSDToken immutable thusdToken;
     IPCV immutable pcv;
 
     constructor(
@@ -47,7 +47,7 @@ contract BorrowerWrappersScript is BorrowerOperationsScript, ETHTransferScript, 
 
         address thusdTokenCached = address(troveManagerCached.thusdToken());
         checkContract(thusdTokenCached);
-        thusdToken = IERC20(thusdTokenCached);
+        thusdToken = ITHUSDToken(thusdTokenCached);
 
         IPCV pcvCached = troveManagerCached.pcv();
         require(_pcvAddress == address(pcvCached), "BorrowerWrappersScript: Wrong PCV address");

@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.17;
 
-import "./Dependencies/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import './Interfaces/IBorrowerOperations.sol';
 import './Interfaces/IStabilityPool.sol';
 import './Interfaces/IBorrowerOperations.sol';
@@ -12,7 +12,6 @@ import './Interfaces/ISortedTroves.sol';
 import "./Dependencies/LiquityBase.sol";
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
-import "./Dependencies/console.sol";
 import "./Dependencies/SendCollateral.sol";
 
 /*
@@ -150,10 +149,6 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, I
 
    // --- Data structures ---
 
-    struct Deposit {
-        uint256 initialValue;
-    }
-
     struct Snapshots {
         uint256 S;
         uint256 P;
@@ -161,7 +156,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, I
         uint128 epoch;
     }
 
-    mapping (address => Deposit) public deposits;  // depositor address -> Deposit struct
+    mapping (address => uint256) public deposits;  // depositor address -> initial value
     mapping (address => Snapshots) public depositSnapshots;  // depositor address -> snapshots struct
 
     /*  Product 'P': Running product by which to multiply an initial deposit, in order to find the current compounded deposit,
@@ -265,7 +260,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, I
     function provideToSP(uint256 _amount) external override {
         _requireNonZeroAmount(_amount);
 
-        uint256 initialDeposit = deposits[msg.sender].initialValue;
+        uint256 initialDeposit = deposits[msg.sender];
 
         uint256 depositorCollateralGain = getDepositorCollateralGain(msg.sender);
         uint256 compoundedTHUSDDeposit = getCompoundedTHUSDDeposit(msg.sender);
@@ -290,7 +285,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, I
     */
     function withdrawFromSP(uint256 _amount) external override {
         if (_amount !=0) {_requireNoUnderCollateralizedTroves();}
-        uint256 initialDeposit = deposits[msg.sender].initialValue;
+        uint256 initialDeposit = deposits[msg.sender];
         _requireUserHasDeposit(initialDeposit);
 
         uint256 depositorCollateralGain = getDepositorCollateralGain(msg.sender);
@@ -316,7 +311,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, I
     * - Leaves their compounded deposit in the Stability Pool
     * - Updates snapshots for deposit */
     function withdrawCollateralGainToTrove(address _upperHint, address _lowerHint) external override {
-        uint256 initialDeposit = deposits[msg.sender].initialValue;
+        uint256 initialDeposit = deposits[msg.sender];
         _requireUserHasDeposit(initialDeposit);
         _requireUserHasTrove(msg.sender);
         _requireUserHasCollateralGain(msg.sender);
@@ -418,7 +413,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, I
         * The newProductFactor is the factor by which to change all deposits, due to the depletion of Stability Pool THUSD in the liquidation.
         * We make the product factor 0 if there was a pool-emptying. Otherwise, it is (1 - THUSDLossPerUnitStaked)
         */
-        uint256 newProductFactor = uint(DECIMAL_PRECISION) - _THUSDLossPerUnitStaked;
+        uint256 newProductFactor = DECIMAL_PRECISION - _THUSDLossPerUnitStaked;
 
         uint128 currentScaleCached = currentScale;
         uint128 currentEpochCached = currentEpoch;
@@ -486,7 +481,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, I
     * d0 is the last recorded deposit value.
     */
     function getDepositorCollateralGain(address _depositor) public view override returns (uint) {
-        uint256 initialDeposit = deposits[_depositor].initialValue;
+        uint256 initialDeposit = deposits[_depositor];
 
         if (initialDeposit == 0) { return 0; }
 
@@ -522,7 +517,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, I
     * where P(0) is the depositor's snapshot of the product P, taken when they last updated their deposit.
     */
     function getCompoundedTHUSDDeposit(address _depositor) public view override returns (uint) {
-        uint256 initialDeposit = deposits[_depositor].initialValue;
+        uint256 initialDeposit = deposits[_depositor];
         if (initialDeposit == 0) { return 0; }
 
         Snapshots memory snapshots = depositSnapshots[_depositor];
@@ -607,7 +602,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, I
     // --- Stability Pool Deposit Functionality ---
 
     function _updateDepositAndSnapshots(address _depositor, uint256 _newValue) internal {
-        deposits[_depositor].initialValue = _newValue;
+        deposits[_depositor] = _newValue;
 
         if (_newValue == 0) {
             delete depositSnapshots[_depositor];
@@ -658,7 +653,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, I
     function _requireUserHasTrove(address _depositor) internal view {
         require(
             troveManager.getTroveStatus(_depositor) == ITroveManager.Status.active, 
-            "StabilityPool: caller must have an active trove to withdraw colalteralGain to"
+            "StabilityPool: caller must have an active trove to withdraw collateralGain to"
         );
     }
 

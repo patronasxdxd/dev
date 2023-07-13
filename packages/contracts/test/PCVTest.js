@@ -85,6 +85,7 @@ contract('PCV', async accounts => {
       const bammBalance = Number(await bamm.balanceOf(pcv.address))
       assert.isAbove(bammBalance, 0)
       const spBalance = await stabilityPool.getCompoundedTHUSDDeposit(bamm.address)
+      assert.equal(spBalance.toString(), toBN(dec(100_000_000, 18)))
       assert.equal(spBalance.toString(), debtToPay)
       const totalTHUSD = await thusdToken.totalSupply()
       assert.equal(totalTHUSD.toString(), debtToPay)
@@ -172,7 +173,7 @@ contract('PCV', async accounts => {
       const pcvBalance = await thusdToken.balanceOf(pcv.address)
       assert.equal(pcvBalance.toString(), "0")
       const bammBalance = await bamm.balanceOf(pcv.address)
-      const bammTotal = await bamm.total()
+      const bammTotal = await bamm.totalSupply()
       assert.equal(bammBalance.toString(), bammTotal.toString())
     })
 

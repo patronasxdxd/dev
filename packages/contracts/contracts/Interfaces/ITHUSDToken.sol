@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.17;
 
-import "../Dependencies/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "../Dependencies/IERC2612.sol";
 
-interface ITHUSDToken is IERC20, IERC2612 {
+interface ITHUSDToken is IERC20Metadata, IERC2612 {
 
     // --- Events ---
 
@@ -22,4 +22,8 @@ interface ITHUSDToken is IERC20, IERC2612 {
     function mint(address _account, uint256 _amount) external;
 
     function burn(address _account, uint256 _amount) external;
+
+    function increaseAllowance(address spender, uint256 addedValue) external returns (bool);
+
+    function decreaseAllowance(address spender, uint256 subtractedValue) external returns (bool);
 }

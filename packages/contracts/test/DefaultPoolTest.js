@@ -33,7 +33,7 @@ contract('DefaultPool', async accounts => {
 
     it('sendCollateralToActivePool(): fails if pool recieves ETH', async () => {  
       await th.assertRevert(mockActivePool.forward(defaultPool.address, '0x', { from: owner, value: amount }), 
-                            'DefaultPool: collateral must be ERC20 token')
+                            'DefaultPool: ERC20 collateral needed, not ETH')
     })
 
     it('sendCollateralToActivePool(): fails if receiver cannot receive collateral', async () => {
@@ -58,7 +58,7 @@ contract('DefaultPool', async accounts => {
     it('sendCollateralToActivePool(): fails if pool recieves token', async () => {
       const updateCollateralBalance = th.getTransactionData('updateCollateralBalance(uint256)', [web3.utils.toHex(amount)])
       await th.assertRevert(mockActivePool.forward(defaultPool.address, updateCollateralBalance, { from: owner }), 
-                            'DefaultPool: collateral must be ETH')
+                            'DefaultPool: ETH collateral needed, not ERC20')
     })
 
     it('sendCollateralToActivePool(): fails if receiver cannot receive collateral', async () => {

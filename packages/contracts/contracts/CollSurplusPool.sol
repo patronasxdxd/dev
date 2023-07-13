@@ -2,13 +2,12 @@
 
 pragma solidity ^0.8.17;
 
-import "./Dependencies/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Interfaces/ICollSurplusPool.sol";
 import "./Interfaces/IActivePool.sol";
 import "./Interfaces/IBorrowerOperations.sol";
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
-import "./Dependencies/console.sol";
 import "./Dependencies/SendCollateral.sol";
 
 
@@ -124,7 +123,7 @@ contract CollSurplusPool is Ownable, CheckContract, SendCollateral, ICollSurplus
     // When ERC20 token collateral is received this function needs to be called
     function updateCollateralBalance(uint256 _amount) external override {
         _requireCallerIsActivePool();
-        require(collateralAddress != address(0), "CollSurplusPool: collateral must be ETH");
+        require(collateralAddress != address(0), "CollSurplusPool: ETH collateral needed, not ERC20");
         collateral += _amount;
   	}
 
@@ -132,7 +131,7 @@ contract CollSurplusPool is Ownable, CheckContract, SendCollateral, ICollSurplus
 
     receive() external payable {
         _requireCallerIsActivePool();
-        require(collateralAddress == address(0), "CollSurplusPool: collateral must be ERC20 token");
+        require(collateralAddress == address(0), "CollSurplusPool: ERC20 collateral needed, not ETH");
         collateral += msg.value;
     }
 }

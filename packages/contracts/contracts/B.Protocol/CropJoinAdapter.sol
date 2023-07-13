@@ -8,7 +8,7 @@ contract CropJoinAdapter {
     string constant public symbol = "THUSDCOLL";
     uint256 constant public decimals = 18;
     
-    uint256     public total;                  // total gems       [wad]
+    uint256 internal total;                    // total gems      [wad]
     mapping (address => uint256) public stake; // gems per user   [wad]
 
     event Join(uint256 val);

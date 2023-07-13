@@ -6,7 +6,7 @@ import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
 import "./Interfaces/IPCV.sol";
 import "./Interfaces/ITHUSDToken.sol";
-import "./Dependencies/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./B.Protocol/BAMM.sol";
 import "./BorrowerOperations.sol";
 import "./Dependencies/SendCollateral.sol";
@@ -16,7 +16,7 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
     // --- Data ---
     string constant public NAME = "PCV";
 
-    uint256 constant public BOOTSTRAP_LOAN = 10**26; // 100M thUSD
+    uint256 constant public BOOTSTRAP_LOAN = 1e26; // 100M thUSD
     
     uint256 public immutable governanceTimeDelay;
 
@@ -104,10 +104,10 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
         require(!isInitialized, "PCV: already initialized");
 
         debtToPay = BOOTSTRAP_LOAN;
-        borrowerOperations.mintBootstrapLoanFromPCV(debtToPay);
+        borrowerOperations.mintBootstrapLoanFromPCV(BOOTSTRAP_LOAN);
 
         isInitialized = true;
-        depositToBAMM(debtToPay);
+        depositToBAMM(BOOTSTRAP_LOAN);
     }
 
     // --- Backstop protocol ---
@@ -238,5 +238,7 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
         }
     }
 
-    receive() external payable {}
+    receive() external payable {
+        require(address(collateralERC20) == address(0), "PCV: ERC20 collateral needed, not ETH");
+    }
 }

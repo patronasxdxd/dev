@@ -11,7 +11,6 @@ import "./Interfaces/IPCV.sol";
 import "./Dependencies/LiquityBase.sol";
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
-import "./Dependencies/console.sol";
 import "./Dependencies/SendCollateral.sol";
 
 contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollateral, IBorrowerOperations {
@@ -28,8 +27,6 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
     address public stabilityPoolAddress;
 
     ICollSurplusPool collSurplusPool;
-
-    IPCV public pcv;
 
     ITHUSDToken public thusdToken;
 
@@ -127,7 +124,6 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
         sortedTroves = ISortedTroves(_sortedTrovesAddress);
         thusdToken = ITHUSDToken(_thusdTokenAddress);
         pcvAddress = _pcvAddress;
-        pcv = IPCV(_pcvAddress);
         collateralAddress = _collateralAddress;
         
         require(
@@ -139,8 +135,8 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
             IStabilityPool(stabilityPoolAddress).collateralAddress() == _collateralAddress) &&
             (Ownable(_collSurplusPoolAddress).owner() != address(0) || 
             collSurplusPool.collateralAddress() == _collateralAddress) &&
-            (address(pcv.thusdToken()) == address(0) || 
-            address(pcv.collateralERC20()) == _collateralAddress),
+            (address(IPCV(pcvAddress).thusdToken()) == address(0) || 
+            address(IPCV(pcvAddress).collateralERC20()) == _collateralAddress),
             "The same collateral address must be used for the entire set of contracts"
         );
 
@@ -161,13 +157,13 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
 
     /// Calls on PCV behalf
     function mintBootstrapLoanFromPCV(uint256 _thusdToMint) external {
-        require(msg.sender == address(pcv), "BorrowerOperations: caller must be PCV");
-        thusdToken.mint(address(pcv), _thusdToMint);
+        require(msg.sender == pcvAddress, "BorrowerOperations: caller must be PCV");
+        thusdToken.mint(pcvAddress, _thusdToMint);
     }
 
     function burnDebtFromPCV(uint256 _thusdToBurn) external {
-        require(msg.sender == address(pcv), "BorrowerOperations: caller must be PCV");
-        thusdToken.burn(address(pcv), _thusdToBurn);
+        require(msg.sender == pcvAddress, "BorrowerOperations: caller must be PCV");
+        thusdToken.burn(pcvAddress, _thusdToBurn);
     }
 
     // --- Borrower Trove Operations ---
@@ -210,7 +206,7 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
         }
 
         // Set the trove struct's properties
-        contractsCache.troveManager.setTroveStatus(msg.sender, 1);
+        contractsCache.troveManager.setTroveStatus(msg.sender, ITroveManager.Status.active);
         contractsCache.troveManager.increaseTroveColl(msg.sender, _assetAmount);
         contractsCache.troveManager.increaseTroveDebt(msg.sender, vars.compositeDebt);
 
@@ -252,7 +248,7 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
             return msg.value;
         }
 
-        require(msg.value == 0, "BorrowerOperations: collateral must be ERC20 token");
+        require(msg.value == 0, "BorrowerOperations: ERC20 collateral needed, not ETH");
         return _assetAmount;
     }
 
@@ -549,13 +545,6 @@ contract BorrowerOperations is LiquityBase, Ownable, CheckContract, SendCollater
         internal
         view
     {
-        /*
-         * If contract has been removed from the thUSD mintlist remove the adjustment restrictions
-         */
-        if (!thusdToken.mintList(address(this))) {
-            return;
-        }
-
         /*
          *In Recovery Mode, only allow:
          *

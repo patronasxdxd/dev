@@ -3,10 +3,13 @@
 pragma solidity ^0.8.17;
 
 
-import "./IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 
 contract SendCollateral {
+    using SafeERC20 for IERC20;
+
     /**
      * Sends collateral to recipient
      */
@@ -19,8 +22,7 @@ contract SendCollateral {
         } else {
             // ERC20
             // require(_amount <= _collateralERC20.balanceOf(address(this)), "Not enough collateral");
-            bool success = _collateralERC20.transfer(_recipient, _amount);
-            require(success, "Sending collateral failed");
+            _collateralERC20.safeTransfer(_recipient, _amount); 
         }
     }
     
@@ -36,8 +38,7 @@ contract SendCollateral {
         } else {
             // ERC20
             // require(_amount <= _collateralERC20.balanceOf(address(this)), "Not enough collateral");
-            bool success = _collateralERC20.transferFrom(_from, _recipient, _amount);
-            require(success, "Sending collateral failed");
+            _collateralERC20.safeTransferFrom(_from, _recipient, _amount);
         }
     }
 }
