@@ -204,6 +204,9 @@ const connectContracts = async (
         nonce
       }),
 
+    nonce =>
+      gasPool.setAddresses(troveManager.address, thusdToken.address, { ...overrides, nonce }),
+
     nonce => 
       troveManager.setAddresses(
         borrowerOperations.address,
@@ -289,17 +292,10 @@ const connectContracts = async (
       )
   ];
 
-  const txs: ContractTransaction[] = []
-
   for (const [index, connect] of connections.entries()) {
     await connect(txCount + index)    
-      .then((result) =>  txs.push(result))
-  }
-
-  let i = 0;
-  for (const tx of txs) {
-    await tx.wait()    
-      .then(() => log(`Connected ${++i}`))
+      .then(async (tx: ContractTransaction) =>  await tx.wait())
+      .then(() => log(`Connected ${index}`))
   }
 };
 
