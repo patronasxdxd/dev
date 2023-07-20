@@ -1050,11 +1050,27 @@ export class PopulatableEthersLiquity
     const { priceFeed } = _getContracts(this._readable.connection);
 
     if (!_priceFeedIsTestnet(priceFeed)) {
-      throw new Error("setPrice() unavailable on this deployment of Liquity");
+      throw new Error("setPrice() unavailable on this deployment of Threshold USD");
     }
 
     return this._wrapSimpleTransaction(
       await priceFeed.estimateAndPopulate.setPrice({ ...overrides }, id, Decimal.from(price).hex)
+    );
+  }
+
+  /** @internal */
+  async mint(
+    overrides?: EthersTransactionOverrides
+  ): Promise<PopulatedEthersLiquityTransaction<void>> {
+    const { erc20, priceFeed } = _getContracts(this._readable.connection);
+    const address = _requireAddress(this._readable.connection, overrides);
+
+    if (!_priceFeedIsTestnet(priceFeed)) {
+      throw new Error("mint() unavailable on this deployment of Threshold USD");
+    }
+
+    return this._wrapSimpleTransaction(
+      await erc20.estimateAndPopulate.mint({ ...overrides }, id, address, Decimal.from(100).hex)
     );
   }
 

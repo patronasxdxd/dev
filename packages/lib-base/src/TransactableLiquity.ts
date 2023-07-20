@@ -300,6 +300,9 @@ export interface TransactableLiquity {
   /** @internal */
   setPrice(price: Decimalish): Promise<void>;
 
+  /** @internal */
+  mint(): Promise<void>;
+
   /**
    * Liquidate one or more undercollateralized Troves.
    *

@@ -429,6 +429,11 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     return this.send.setPrice(price, overrides).then(waitForSuccess);
   }
 
+  /** @internal */
+  mint(overrides?: EthersTransactionOverrides): Promise<void> {
+    return this.send.mint(overrides).then(waitForSuccess);
+  }
+
   /**
    * {@inheritDoc @liquity/lib-base#TransactableLiquity.liquidate}
    *
