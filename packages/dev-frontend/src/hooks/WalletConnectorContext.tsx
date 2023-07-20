@@ -37,13 +37,27 @@ export const WalletConnectorProvider = ({ children }: WalletConnectorProps): JSX
   const [account, setAccount] = useState<Account>();
 
   useEffect(() => {
+    const previousWallet = localStorage.getItem('walletLabel');
+    const autoSelect = { label: previousWallet!, disableModals: false }
+    if (previousWallet) {
+        // 'connect' function from useConnectWallet expects a wallet name as an argument
+        connect({ autoSelect });
+    }
+  }, [connect]);
+
+  useEffect(() => {
     if (wallet?.provider) {
+      localStorage.setItem('walletLabel', wallet.label)
+
       const { name, avatar } = wallet?.accounts[0].ens ?? {}
-      setAccount({
+
+      const account = {
         chainId: hexChains[wallet.chains[0].id as keyof HexChains],
         address: wallet.accounts[0].address,
         ens: { name, avatar: avatar?.url }
-      })
+      }
+
+      setAccount(account)
     } else setAccount(undefined)
   }, [wallet])
 
@@ -54,6 +68,12 @@ export const WalletConnectorProvider = ({ children }: WalletConnectorProps): JSX
       setProvider(provider);
     }
   }, [wallet]);
+
+  useEffect(() => {
+    if (account) {
+      
+    }
+  }, [account])
 
   if(!provider || !account) {
     return (
