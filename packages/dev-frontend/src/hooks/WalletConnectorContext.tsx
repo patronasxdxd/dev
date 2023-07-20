@@ -69,12 +69,6 @@ export const WalletConnectorProvider = ({ children }: WalletConnectorProps): JSX
     }
   }, [wallet]);
 
-  useEffect(() => {
-    if (account) {
-      
-    }
-  }, [account])
-
   if(!provider || !account) {
     return (
       <Flex sx={{
