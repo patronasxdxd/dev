@@ -8,7 +8,6 @@ import {
   _connectToContracts
 } from "../src/contracts";
 
-
 const feePool = "0x1000000000000000000000000000000000000001"
 let silent = true;
 
@@ -165,9 +164,10 @@ export const deployTellorCaller = (
   deployer: Signer,
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
   tellorAddress: string,
+  queryId: string,
   overrides?: Overrides
 ): Promise<string> =>
-  deployContract(deployer, getContractFactory, "TellorCaller", tellorAddress, { ...overrides });
+  deployContract(deployer, getContractFactory, "TellorCaller", tellorAddress, queryId, { ...overrides });
 
 const connectContracts = async (
   {

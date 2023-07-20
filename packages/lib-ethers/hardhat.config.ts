@@ -30,13 +30,18 @@ interface IOracles {
 
 export interface IAssets {
   [eth: string]: IOracles,
-  btc: IOracles,
+  tbtc: IOracles,
 }
 
 export interface INetworkOracles {
   mainnet: IAssets,
   goerli: IAssets,
   sepolia: IAssets,
+}
+
+export interface IQueryIds {
+  eth: string,
+  tbtc: string,
 }
 
 dotenv.config();
@@ -86,39 +91,40 @@ const infuraNetwork = (name: string): { [name: string]: NetworkUserConfig } => (
 
 export const oracleAddresses: INetworkOracles = {
   mainnet: {
-    btc: {
+    tbtc: {
       chainlink: "0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c",
       tellor: "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
     },
     eth: {
       chainlink: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
       tellor: "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
-    },
-    thusd: {
-      chainlink: "0x3D7aE7E594f2f2091Ad8798313450130d0Aba3a0", // TODO this is LUSD:USD address, should be replaced with thUSD
-      tellor: "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
     }
   },
   goerli: {
-    btc: {
+    tbtc: {
       chainlink: "0xA39434A63A52E749F02807ae27335515BA4b07F7",
-      tellor: "0x20374E579832859f180536A69093A126Db1c8aE9"
+      tellor: "0x199839a4907ABeC8240D119B606C98c405Bb0B33"
     },
     eth: {
       chainlink: "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e",
-      tellor: "0x20374E579832859f180536A69093A126Db1c8aE9" // Playground
+      tellor: "0x199839a4907ABeC8240D119B606C98c405Bb0B33"
     }
   },
   sepolia: {
-    btc: {
+    tbtc: {
       chainlink: "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43",
-      tellor: "0x20374E579832859f180536A69093A126Db1c8aE9"
+      tellor: "0x199839a4907ABeC8240D119B606C98c405Bb0B33"
     },
     eth: {
       chainlink: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
-      tellor: "0x20374E579832859f180536A69093A126Db1c8aE9"
+      tellor: "0x199839a4907ABeC8240D119B606C98c405Bb0B33"
     }
   },
+};
+
+export const tellorQueryIds: IQueryIds = {
+  eth: "0x83a7f3d48786ac2667503a61e8c415438ed2922eb86a2906e4ee66d9a2ce4992",
+  tbtc: "0xa6f013ee236804827b77696d350e9f0ac3e879328f2a3021d473a0b778ad78ac"
 };
 
 const hasOracles = (network: string): network is keyof typeof oracleAddresses =>
@@ -292,6 +298,7 @@ task("deploy", "Deploys the contracts to the network")
             deployer,
             getContractFactory(env),
             oracleAddresses[env.network.name][collateralSymbol as keyof IAssets].tellor,
+            tellorQueryIds[collateralSymbol as keyof IQueryIds],
             overrides
           );
 
