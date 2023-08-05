@@ -68,7 +68,7 @@ export const CollateralSurplusAction = ({ version, collateral }: CollateralSurpl
         version={version}
         collateral={collateral}
       >
-        <Button sx={{ mx: 2 }}>Claim {collateralSurplusBalance.prettify()} {symbol}</Button>
+        <Button sx={{ mx: 2, width: "100%" }}>Claim {collateralSurplusBalance.prettify()} {symbol}</Button>
       </Transaction>
     </Flex>
   ) : <></>;
