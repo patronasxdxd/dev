@@ -80,12 +80,6 @@ const deployContracts = async (
     defaultPool: await deployContract(deployer, getContractFactory, "DefaultPool", { ...overrides }),
     hintHelpers: await deployContract(deployer, getContractFactory, "HintHelpers", { ...overrides }),
     pcv: await deployContract(deployer, getContractFactory, "PCV", delay, { ...overrides }),
-    priceFeed: await deployContract(
-      deployer,
-      getContractFactory,
-      priceFeedIsTestnet ? "PriceFeedTestnet" : "PriceFeed",
-      { ...overrides }
-    ),
     sortedTroves: await deployContract(deployer, getContractFactory, "SortedTroves", {
       ...overrides
     }),
@@ -144,6 +138,13 @@ const deployContracts = async (
   return [
     {
       ...addresses,
+      priceFeed: await deployContract(
+        deployer,
+        getContractFactory,
+        priceFeedIsTestnet ? "PriceFeedTestnet" : "PriceFeed",
+        8,
+        { ...overrides }
+      ),
       bamm: bamm,
       thusdToken: thusdToken,
       chainlink: chainlink as string,
