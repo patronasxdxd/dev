@@ -93,21 +93,21 @@ export const oracleAddresses: INetworkOracles = {
   mainnet: {
     tbtc: {
       chainlink: "0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c",
-      tellor: "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
+      tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
     },
     eth: {
       chainlink: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-      tellor: "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
+      tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
     }
   },
   goerli: {
     tbtc: {
       chainlink: "0xA39434A63A52E749F02807ae27335515BA4b07F7",
-      tellor: "0x199839a4907ABeC8240D119B606C98c405Bb0B33"
+      tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
     },
     eth: {
       chainlink: "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e",
-      tellor: "0x199839a4907ABeC8240D119B606C98c405Bb0B33"
+      tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
     }
   },
   sepolia: {

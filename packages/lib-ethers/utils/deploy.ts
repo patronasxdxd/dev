@@ -101,7 +101,7 @@ const deployContracts = async (
   const deployerAddress = await deployer.getAddress();
 
   const chainlink = (priceFeedIsTestnet === false) 
-    ? oracleAddresses["mainnet"][collateralSymbol as keyof IAssets]
+    ? oracleAddresses["mainnet"][collateralSymbol as keyof IAssets]["chainlink"]
     : await deployContract(
         deployer,
         getContractFactory,
@@ -204,9 +204,6 @@ const connectContracts = async (
         ...overrides,
         nonce
       }),
-
-    nonce =>
-      gasPool.setAddresses(troveManager.address, thusdToken.address, { ...overrides, nonce }),
 
     nonce => 
       troveManager.setAddresses(
