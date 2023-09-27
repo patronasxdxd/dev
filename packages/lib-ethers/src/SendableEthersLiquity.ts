@@ -112,6 +112,13 @@ export class SendableEthersLiquity
     return this._populate.setPrice(price, overrides).then(sendTransaction);
   }
 
+  /** @internal */
+  mint(
+    overrides?: EthersTransactionOverrides
+  ): Promise<SentEthersLiquityTransaction<void>> {
+    return this._populate.mint(overrides).then(sendTransaction);
+  }
+
   /** {@inheritDoc @liquity/lib-base#SendableLiquity.liquidate} */
   liquidate(
     address: string | string[],

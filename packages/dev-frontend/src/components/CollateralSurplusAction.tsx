@@ -52,14 +52,14 @@ export const CollateralSurplusAction = ({ version, collateral }: CollateralSurpl
     }
   }, [isCollateralChecked, myTransactionState.type, dispatchEvent, version, collateral]);
 
-  return isCollateralChecked && myTransactionState.type === "waitingForApproval" ? (
+  return myTransactionState.type === "waitingForApproval" ? (
     <Flex variant="layout.actions">
       <Button disabled sx={{ mx: 2 }}>
         <Spinner sx={{ mr: 2, color: "white" }} size="20px" />
         Waiting for your approval
       </Button>
     </Flex>
-  ) : isCollateralChecked && myTransactionState.type !== "waitingForConfirmation" &&
+  ) : myTransactionState.type !== "waitingForConfirmation" &&
     myTransactionState.type !== "confirmed" ? (
     <Flex variant="layout.actions">
       <Transaction
@@ -68,7 +68,7 @@ export const CollateralSurplusAction = ({ version, collateral }: CollateralSurpl
         version={version}
         collateral={collateral}
       >
-        <Button sx={{ mx: 2 }}>Claim {collateralSurplusBalance.prettify()} {symbol}</Button>
+        <Button sx={{ mx: 2, width: "100%" }}>Claim {collateralSurplusBalance.prettify()} {symbol}</Button>
       </Transaction>
     </Flex>
   ) : <></>;

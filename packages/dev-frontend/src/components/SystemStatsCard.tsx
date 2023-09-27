@@ -6,6 +6,7 @@ import { COIN } from "../utils/constants";
 
 import { SystemStat } from "./SystemStat";
 import { EditPrice } from "./Dashboard/EditPrice";
+import { MintErc20 } from "./Dashboard/MintErc20";
 
 type SystemStatsCardProps = {
   variant?: string;
@@ -97,7 +98,7 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
           gap: "1em"
         }}>
           <SystemStat
-            info={`Borrowing Fee ${ thresholdSelectorStores.length > 1 && "Avg." }`}
+            info={`Borrowing Fee ${ thresholdSelectorStores.length > 1 ? "Avg." : "" }`}
             tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount, and is part of a Vault's debt."
           >
             {borrowingFeeAvgPct && borrowingFeeAvgPct.toString(2)}
@@ -170,6 +171,11 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
             })
           }
         </Box>
+        {IsPriceEditable === true &&
+            thresholdSelectorStores.map((collateralStore, index) => {
+              return <MintErc20 key={index} version={collateralStore.version} collateral={collateralStore.collateral} />
+            })
+          }
       </Card>
     </Card>
   );

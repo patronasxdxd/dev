@@ -185,6 +185,9 @@ export interface PopulatableLiquity<R = unknown, S = unknown, P = unknown>
     price: Decimalish
   ): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
 
+  /** @internal */
+  mint(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
+
   /** {@inheritDoc TransactableLiquity.liquidate} */
   liquidate(
     address: string | string[]
