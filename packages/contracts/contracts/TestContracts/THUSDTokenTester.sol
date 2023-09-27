@@ -17,6 +17,9 @@ contract THUSDTokenTester is THUSDToken {
         THUSDToken(_troveManagerAddress,
                  _stabilityPoolAddress,
                  _borrowerOperationsAddress,
+                 address(0),
+                 address(0),
+                 address(0),
                  _governanceTimeDelay
     ) {}
 

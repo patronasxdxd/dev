@@ -53,6 +53,9 @@ contract EchidnaTester {
             address(troveManager),
             address(stabilityPool),
             address(borrowerOperations),
+            address(0),
+            address(0),
+            address(0),
             90 * 24 * 60 * 60
         );
 

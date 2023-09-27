@@ -69,6 +69,9 @@ class DeploymentHelper {
       troveManager.address,
       stabilityPool.address,
       borrowerOperations.address,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
       delay
     )
     const pcv = await PCV.new(delay)
@@ -159,6 +162,9 @@ class DeploymentHelper {
       contracts.troveManager.address,
       contracts.stabilityPool.address,
       contracts.borrowerOperations.address,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
       delay
     )
     return contracts
