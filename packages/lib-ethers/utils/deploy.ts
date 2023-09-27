@@ -8,7 +8,20 @@ import {
   _connectToContracts
 } from "../src/contracts";
 
-const feePool = "0x1000000000000000000000000000000000000001"
+interface IOwners {
+  feePool: string
+  bammOwner: string
+  legalEntity: string
+  governorBravo: string
+}
+
+const contractOwners: IOwners = {
+  feePool: "0x7095F0B91A1010c11820B4E263927835A4CF52c9",
+  bammOwner: "0x0000000000000000000000000000000000000001",
+  legalEntity: "0xf642Bd6A9F76294d86E99c2071cFE2Aa3B61fBDa",
+  governorBravo: "0x87F005317692D05BAA4193AB0c961c69e175f45f"
+}
+
 let silent = true;
 
 export const log = (...args: unknown[]): void => {
@@ -98,8 +111,6 @@ const deployContracts = async (
       ...overrides
     }),
   };
-  const deployerAddress = await deployer.getAddress();
-
   const chainlink = (priceFeedIsTestnet === false) 
     ? oracleAddresses["mainnet"][collateralSymbol as keyof IAssets]["chainlink"]
     : await deployContract(
@@ -130,8 +141,8 @@ const deployContracts = async (
     thusdToken,
     addresses.erc20,
     400,
-    process.env.BAMM_FEE_POOL || feePool,
-    process.env.BAMM_OWNER || deployerAddress,
+    process.env.BAMM_FEE_POOL || contractOwners["feePool"],
+    process.env.BAMM_OWNER || contractOwners["bammOwner"],
     { ...overrides }
   );
 
@@ -294,6 +305,54 @@ const connectContracts = async (
     await connect(txCount + index)    
       .then(async (tx: ContractTransaction) =>  await tx.wait())
       .then(() => log(`Connected ${index}`))
+  }
+};
+
+export const transferContractsOwnership = async (
+  {
+    thusdToken,
+    pcv,
+    priceFeed
+  }: _LiquityContracts,
+  deployer: Signer,
+  overrides?: Overrides
+): Promise<void> => {
+  if (!deployer.provider) {
+    throw new Error("Signer must have a provider.");
+  }
+
+  const txCount = await deployer.provider.getTransactionCount(deployer.getAddress());
+
+  const contracts: ((nonce: number) => Promise<ContractTransaction>)[] = [
+    nonce =>
+      thusdToken.transferOwnership(
+        process.env.LEGAL_ENTITY || contractOwners["legalEntity"], 
+        {
+          ...overrides,
+          nonce
+        }),
+
+    nonce => 
+      pcv.transferOwnership(
+        process.env.GOVERNOR_BRAVO || contractOwners["governorBravo"], 
+        {
+          ...overrides, 
+          nonce 
+        }),
+
+    nonce =>
+      priceFeed.transferOwnership(
+        process.env.LEGAL_ENTITY || contractOwners["legalEntity"], 
+        { 
+          ...overrides, 
+          nonce 
+        })
+  ];
+
+  for (const [index, transfer] of contracts.entries()) {
+    await transfer(txCount + index)    
+      .then(async (tx: ContractTransaction) =>  await tx.wait())
+      .then(() => log(`Transferred ${index}`))
   }
 };
 

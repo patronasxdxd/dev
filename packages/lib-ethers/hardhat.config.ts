@@ -15,7 +15,7 @@ import "@nomiclabs/hardhat-ethers";
 
 import { Decimal } from "@liquity/lib-base";
 
-import { deployAndSetupContracts, deployTellorCaller, setSilent } from "./utils/deploy";
+import { deployAndSetupContracts, deployTellorCaller, setSilent, transferContractsOwnership } from "./utils/deploy";
 import { _connectToContracts, _LiquityDeploymentJSON, _priceFeedIsTestnet } from "./src/contracts";
 
 import accounts from "./accounts.json";
@@ -287,10 +287,9 @@ task("deploy", "Deploys the contracts to the network")
           useRealPriceFeed, 
           overrides
         );
+      const contracts = _connectToContracts(deployer, deployment);
 
       if (useRealPriceFeed) {
-        const contracts = _connectToContracts(deployer, deployment);
-
         assert(!_priceFeedIsTestnet(contracts.priceFeed));
 
         if (hasOracles(env.network.name)) {
@@ -313,6 +312,9 @@ task("deploy", "Deploys the contracts to the network")
           await tx.wait();
         }
       }
+
+      await transferContractsOwnership(contracts, deployer, overrides);
+      
       const deploymentChannelPath = path.posix.join("deployments", channel);
 
       try {
