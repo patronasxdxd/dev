@@ -15,7 +15,7 @@ import "@nomiclabs/hardhat-ethers";
 
 import { Decimal } from "@liquity/lib-base";
 
-import { deployAndSetupContracts, deployTellorCaller, setSilent, transferContractsOwnership } from "./utils/deploy";
+import { deployAndSetupContracts, deployTellorCaller, initiatePCV, setSilent, transferContractsOwnership } from "./utils/deploy";
 import { _connectToContracts, _LiquityDeploymentJSON, _priceFeedIsTestnet } from "./src/contracts";
 
 import accounts from "./accounts.json";
@@ -342,6 +342,10 @@ task("deploy", "Deploys the contracts to the network")
           }
         }
 
+        console.log("Initiating PCV...");
+        await initiatePCV(contracts, deployer, overrides);
+
+        console.log("Transferring Contracts Ownership...");
         await transferContractsOwnership(contracts, deployer, overrides);
         
         const deploymentChannelPath = path.posix.join("deployments", channel);

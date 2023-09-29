@@ -358,6 +358,32 @@ export const transferContractsOwnership = async (
   }
 };
 
+export const initiatePCV = async (
+  {
+    pcv
+  }: _LiquityContracts,
+  deployer: Signer,
+  overrides?: Overrides
+): Promise<void> => {
+  if (!deployer.provider) {
+    throw new Error("Signer must have a provider.");
+  }
+  const deployerAddress = await deployer.getAddress();
+  const txCount = await deployer.provider.getTransactionCount(deployerAddress);
+
+  try {
+    const tx = await pcv.initialize({
+      ...overrides,
+      nonce: txCount
+    });
+    await tx.wait();
+
+    console.log(`Successfully initiated PCV contract.`);
+  } catch (error) {
+    console.log(`Failed to initiate PCV contract: ${error}`);
+  }
+};
+
 export const deployAndSetupContracts = async (
   deployer: Signer,
   oracleAddresses: INetworkOracles,
@@ -400,21 +426,21 @@ export const deployAndSetupContracts = async (
       _useRealPriceFeed, 
       overrides
     ).then(
-      async ([addresses, startBlock]) => ({
+      async ([firstDeploymentAddresses, startBlock]) => ({
         startBlock,
 
         addresses: {
-          ...addresses,
+          ...firstDeploymentAddresses,
           thusdToken: stablecoinAddress ? stablecoinAddress : "",
           bamm: stablecoinAddress 
           ? await deployContract(
               deployer, 
               getContractFactory, 
               "BAMM",
-              addresses.chainlink,
-              addresses.stabilityPool,
+              firstDeploymentAddresses.chainlink,
+              firstDeploymentAddresses.stabilityPool,
               stablecoinAddress,
-              addresses.erc20,
+              firstDeploymentAddresses.erc20,
               400,
               process.env.BAMM_FEE_POOL || contractOwners["feePool"],
               process.env.BAMM_OWNER || contractOwners["bammOwner"],
@@ -447,7 +473,7 @@ export const deployAndSetupContracts = async (
         _useRealPriceFeed, 
         overrides
       ).then(
-        async ([addresses, startBlock]) => {
+        async ([secondDeploymentAddresses, startBlock]) => {
           
           const thusdToken = await deployContract(
             deployer,
@@ -456,9 +482,9 @@ export const deployAndSetupContracts = async (
             firstDeployment.addresses.troveManager,
             firstDeployment.addresses.stabilityPool,
             firstDeployment.addresses.borrowerOperations,
-            addresses.troveManager,
-            addresses.stabilityPool,
-            addresses.borrowerOperations,
+            secondDeploymentAddresses.troveManager,
+            secondDeploymentAddresses.stabilityPool,
+            secondDeploymentAddresses.borrowerOperations,
             delay,
             { ...overrides }
           )
@@ -468,10 +494,10 @@ export const deployAndSetupContracts = async (
             deployer, 
             getContractFactory, 
             "BAMM",
-            addresses.chainlink,
-            addresses.stabilityPool,
+            secondDeploymentAddresses.chainlink,
+            secondDeploymentAddresses.stabilityPool,
             thusdToken,
-            addresses.erc20,
+            secondDeploymentAddresses.erc20,
             400,
             process.env.BAMM_FEE_POOL || contractOwners["feePool"],
             process.env.BAMM_OWNER || contractOwners["bammOwner"],
@@ -481,7 +507,7 @@ export const deployAndSetupContracts = async (
           return {
             startBlock,
             addresses: {
-              ...addresses,
+              ...secondDeploymentAddresses,
               thusdToken: thusdToken,
               bamm: bamm
             }
