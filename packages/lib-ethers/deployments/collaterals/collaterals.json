@@ -13,11 +13,11 @@
       ]
     },
     {
-      "path": "deployments/default/tst",
-      "name": "tst",
+      "path": "deployments/default/tbtc",
+      "name": "tbtc",
       "subfolders": [
         {
-          "path": "deployments/default/tst/v1",
+          "path": "deployments/default/tbtc/v1",
           "name": "v1"
         }
       ]
