@@ -11,14 +11,13 @@ import {
 interface IOwners {
   feePool: string
   bammOwner: string
-  legalEntity: string
   governorBravo: string
 }
 
 const contractOwners: IOwners = {
   feePool: "0x7095F0B91A1010c11820B4E263927835A4CF52c9",
+  // Waiting for the bamm owner multisig 
   bammOwner: "0x0000000000000000000000000000000000000001",
-  legalEntity: "0xf642Bd6A9F76294d86E99c2071cFE2Aa3B61fBDa",
   governorBravo: "0x87F005317692D05BAA4193AB0c961c69e175f45f"
 }
 
@@ -68,10 +67,9 @@ const deployContracts = async (
   collateralAddress: string | undefined,
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
   delay: number,
-  stablecoinAddress: string,
-  priceFeedIsTestnet = true,
+  _useRealPriceFeed: boolean,
   overrides?: Overrides
-): Promise<[addresses: _LiquityContractAddresses, startBlock: number]> => {
+): Promise<[addresses: Omit<_LiquityContractAddresses, "thusdToken" | "bamm">, startBlock: number]> => {
   const [activePoolAddress, startBlock] = await deployContractAndGetBlockNumber(
     deployer,
     getContractFactory,
@@ -110,8 +108,16 @@ const deployContracts = async (
     : await deployContract(deployer, getContractFactory, "ERC20Test", {
       ...overrides
     }),
+    priceFeed: await deployContract(
+      deployer,
+      getContractFactory,
+      _useRealPriceFeed ? "PriceFeed" : "PriceFeedTestnet",
+      8,
+      { ...overrides }
+    ),
   };
-  const chainlink = (priceFeedIsTestnet === false) 
+
+  const chainlink = (_useRealPriceFeed === true) 
     ? oracleAddresses["mainnet"][collateralSymbol as keyof IAssets]["chainlink"]
     : await deployContract(
         deployer,
@@ -121,43 +127,9 @@ const deployContracts = async (
         { ...overrides }
       )
 
-  const thusdToken = (stablecoinAddress != "") ? stablecoinAddress : await deployContract(
-    deployer,
-    getContractFactory,
-    "THUSDToken",
-    addresses.troveManager,
-    addresses.stabilityPool,
-    addresses.borrowerOperations,
-    delay,
-    { ...overrides }
-  );
-
-  const bamm = await deployContract(
-    deployer, 
-    getContractFactory, 
-    "BAMM",
-    chainlink,
-    addresses.stabilityPool,
-    thusdToken,
-    addresses.erc20,
-    400,
-    process.env.BAMM_FEE_POOL || contractOwners["feePool"],
-    process.env.BAMM_OWNER || contractOwners["bammOwner"],
-    { ...overrides }
-  );
-
   return [
     {
       ...addresses,
-      priceFeed: await deployContract(
-        deployer,
-        getContractFactory,
-        priceFeedIsTestnet ? "PriceFeedTestnet" : "PriceFeed",
-        8,
-        { ...overrides }
-      ),
-      bamm: bamm,
-      thusdToken: thusdToken,
       chainlink: chainlink as string,
       multiTroveGetter: await deployContract(
         deployer,
@@ -308,11 +280,20 @@ const connectContracts = async (
   }
 };
 
+export const isDeployerOwner = async (
+  contract: { owner: () => Promise<string> },
+  deployerAddress: string
+): Promise<boolean> => {
+  const ownerAddress = await contract.owner();
+  return ownerAddress.toLowerCase() === deployerAddress.toLowerCase();
+};
+
 export const transferContractsOwnership = async (
   {
     thusdToken,
     pcv,
-    priceFeed
+    priceFeed,
+    bamm
   }: _LiquityContracts,
   deployer: Signer,
   overrides?: Overrides
@@ -320,54 +301,78 @@ export const transferContractsOwnership = async (
   if (!deployer.provider) {
     throw new Error("Signer must have a provider.");
   }
+  const deployerAddress = await deployer.getAddress();
+  const txCount = await deployer.provider.getTransactionCount(deployerAddress);
 
-  const txCount = await deployer.provider.getTransactionCount(deployer.getAddress());
+  const contracts: ((nonce: number) => Promise<ContractTransaction | undefined>)[] = [
+    // No ownership check for pcv and priceFeed
+    nonce => pcv.transferOwnership(
+      process.env.GOVERNOR_BRAVO || contractOwners["governorBravo"],
+      {
+        ...overrides,
+        nonce
+      }
+    ),
 
-  const contracts: ((nonce: number) => Promise<ContractTransaction>)[] = [
-    nonce =>
-      thusdToken.transferOwnership(
-        process.env.LEGAL_ENTITY || contractOwners["legalEntity"], 
-        {
-          ...overrides,
-          nonce
-        }),
+    nonce => priceFeed.transferOwnership(
+      process.env.GOVERNOR_BRAVO || contractOwners["governorBravo"],
+      {
+        ...overrides,
+        nonce
+      }
+    ),
 
-    nonce => 
-      pcv.transferOwnership(
-        process.env.GOVERNOR_BRAVO || contractOwners["governorBravo"], 
-        {
-          ...overrides, 
-          nonce 
-        }),
+    nonce => bamm.transferOwnership(
+      process.env.GOVERNOR_BRAVO || contractOwners["governorBravo"],
+      {
+        ...overrides,
+        nonce
+      }
+    ),
 
-    nonce =>
-      priceFeed.transferOwnership(
-        process.env.LEGAL_ENTITY || contractOwners["legalEntity"], 
-        { 
-          ...overrides, 
-          nonce 
-        })
+    async nonce => {
+      if (await isDeployerOwner(thusdToken, deployerAddress)) {
+        return thusdToken.transferOwnership(
+          process.env.GOVERNOR_BRAVO || contractOwners["governorBravo"],
+          {
+            ...overrides,
+            nonce
+          }
+        );
+      }
+      log("Deployer is not the owner of thusdToken. Skipping transfer.");
+      return undefined;
+    },
   ];
 
   for (const [index, transfer] of contracts.entries()) {
-    await transfer(txCount + index)    
-      .then(async (tx: ContractTransaction) =>  await tx.wait())
-      .then(() => log(`Transferred ${index}`))
+    try {
+      const tx = transfer && await transfer(txCount + index);
+      if (tx) {
+        await tx.wait();
+        log(`Transferred ${index}`);
+      }
+    } catch (error) {
+      log(`Failed to transfer ${index}: ${error}`);
+    }
   }
 };
 
 export const deployAndSetupContracts = async (
   deployer: Signer,
   oracleAddresses: INetworkOracles,
-  collateralSymbol: keyof IAssets,
-  collateralAddress: string | undefined,
+  firstCollateralSymbol: keyof IAssets,
+  firstCollateralAddress: string,
+  secondCollateralSymbol: keyof IAssets,
+  secondCollateralAddress: string,
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
   delay: number,
   stablecoinAddress: string,
-  _priceFeedIsTestnet = true,
+  contractsVersion: string,
+  _useRealPriceFeed: boolean,
   _isDev = true,
   overrides?: Overrides
-): Promise<_LiquityDeploymentJSON> => {
+): Promise<_LiquityDeploymentJSON[]> => {
   if (!deployer.provider) {
     throw new Error("Signer must have a provider.");
   }
@@ -375,30 +380,148 @@ export const deployAndSetupContracts = async (
   log("Deploying contracts...");
   log();
 
-  const deployment: _LiquityDeploymentJSON = {
+  const deployments: _LiquityDeploymentJSON[] = []
+
+  let firstDeployment: _LiquityDeploymentJSON = {
     chainId: await deployer.getChainId(),
-    version: "unknown",
+    version: contractsVersion,
+    collateralSymbol: firstCollateralSymbol,
     deploymentDate: new Date().getTime(),
-    _priceFeedIsTestnet,
+    _useRealPriceFeed,
     _isDev,
 
-    ...(await deployContracts(deployer, oracleAddresses, collateralSymbol, collateralAddress, getContractFactory, delay, stablecoinAddress, _priceFeedIsTestnet, overrides).then(
+    ...(await deployContracts(
+      deployer, 
+      oracleAddresses, 
+      firstCollateralSymbol, 
+      firstCollateralAddress, 
+      getContractFactory, 
+      delay, 
+      _useRealPriceFeed, 
+      overrides
+    ).then(
       async ([addresses, startBlock]) => ({
         startBlock,
 
         addresses: {
-          ...addresses
+          ...addresses,
+          thusdToken: stablecoinAddress ? stablecoinAddress : "",
+          bamm: stablecoinAddress 
+          ? await deployContract(
+              deployer, 
+              getContractFactory, 
+              "BAMM",
+              addresses.chainlink,
+              addresses.stabilityPool,
+              stablecoinAddress,
+              addresses.erc20,
+              400,
+              process.env.BAMM_FEE_POOL || contractOwners["feePool"],
+              process.env.BAMM_OWNER || contractOwners["bammOwner"],
+              { ...overrides }
+            )
+          : ""
         }
       })
     ))
   };
 
-  const contracts = _connectToContracts(deployer, deployment);
+  if (!stablecoinAddress) {
+    let thusdTokenAddress = ""
 
-  log("Connecting contracts...");
-  await connectContracts(contracts, deployer, overrides);
+    const secondDeployment: _LiquityDeploymentJSON = {
+      chainId: await deployer.getChainId(),
+      version: contractsVersion,
+      collateralSymbol: secondCollateralSymbol,
+      deploymentDate: new Date().getTime(),
+      _useRealPriceFeed,
+      _isDev,
+  
+      ...(await deployContracts(
+        deployer, 
+        oracleAddresses, 
+        secondCollateralSymbol, 
+        secondCollateralAddress, 
+        getContractFactory, 
+        delay, 
+        _useRealPriceFeed, 
+        overrides
+      ).then(
+        async ([addresses, startBlock]) => {
+          
+          const thusdToken = await deployContract(
+            deployer,
+            getContractFactory,
+            "THUSDToken",
+            firstDeployment.addresses.troveManager,
+            firstDeployment.addresses.stabilityPool,
+            firstDeployment.addresses.borrowerOperations,
+            addresses.troveManager,
+            addresses.stabilityPool,
+            addresses.borrowerOperations,
+            delay,
+            { ...overrides }
+          )
+          thusdTokenAddress = thusdToken
 
-  return {
-    ...deployment
-  };
+          const bamm = await deployContract(
+            deployer, 
+            getContractFactory, 
+            "BAMM",
+            addresses.chainlink,
+            addresses.stabilityPool,
+            thusdToken,
+            addresses.erc20,
+            400,
+            process.env.BAMM_FEE_POOL || contractOwners["feePool"],
+            process.env.BAMM_OWNER || contractOwners["bammOwner"],
+            { ...overrides }
+          )
+          
+          return {
+            startBlock,
+            addresses: {
+              ...addresses,
+              thusdToken: thusdToken,
+              bamm: bamm
+            }
+          }}
+      ))
+    };
+
+    if (thusdTokenAddress) {
+      firstDeployment = {
+        ...firstDeployment,
+        addresses: {
+          ...(firstDeployment.addresses),
+          thusdToken: thusdTokenAddress,
+          bamm: await deployContract(
+            deployer, 
+            getContractFactory, 
+            "BAMM",
+            firstDeployment.addresses.chainlink,
+            firstDeployment.addresses.stabilityPool,
+            thusdTokenAddress,
+            firstDeployment.addresses.erc20,
+            400,
+            process.env.BAMM_FEE_POOL || contractOwners["feePool"],
+            process.env.BAMM_OWNER || contractOwners["bammOwner"],
+            { ...overrides }
+        )
+        }
+      }
+    }
+    deployments.push(firstDeployment, secondDeployment)
+  } else {
+    deployments.push(firstDeployment)
+  }
+  log("deployments: ", deployments)
+  for (const deployment of deployments) {
+    const contracts = _connectToContracts(deployer, deployment);
+
+    log("Connecting contracts...");
+    await connectContracts(contracts, deployer, overrides);
+  }
+
+  return deployments;
 };

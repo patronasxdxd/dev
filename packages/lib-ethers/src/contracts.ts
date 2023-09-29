@@ -193,7 +193,7 @@ export type _LiquityContractAddresses = Record<_LiquityContractsKey, string>;
 
 type LiquityContractAbis = Record<_LiquityContractsKey, JsonFragment[]>;
 
-const getAbi = (priceFeedIsTestnet: boolean): LiquityContractAbis => ({
+const getAbi = (useRealPriceFeed: boolean): LiquityContractAbis => ({
   activePool: activePoolAbi,
   borrowerOperations: borrowerOperationsAbi,
   troveManager: troveManagerAbi,
@@ -202,7 +202,7 @@ const getAbi = (priceFeedIsTestnet: boolean): LiquityContractAbis => ({
   hintHelpers: hintHelpersAbi,
   pcv: pcvAbi,
   multiTroveGetter: multiTroveGetterAbi,
-  priceFeed: priceFeedIsTestnet ? priceFeedTestnetAbi : priceFeedAbi,
+  priceFeed: useRealPriceFeed ? priceFeedAbi : priceFeedTestnetAbi,
   sortedTroves: sortedTrovesAbi,
   stabilityPool: stabilityPoolAbi,
   bamm: bammAbi,
@@ -216,11 +216,12 @@ const getAbi = (priceFeedIsTestnet: boolean): LiquityContractAbis => ({
 /** @internal */
 export interface _LiquityDeploymentJSON {
   readonly chainId: number;
+  readonly collateralSymbol: string;
   readonly addresses: _LiquityContractAddresses;
   readonly version: string;
   readonly deploymentDate: number;
   readonly startBlock: number;
-  readonly _priceFeedIsTestnet: boolean;
+  readonly _useRealPriceFeed: boolean;
   readonly _isDev: boolean;
 }
 
@@ -247,14 +248,14 @@ const mapLiquityContracts = <T, U>(
 /** @internal */
 export const _connectToContracts = (
   signerOrProvider: EthersSigner | EthersProvider,
-  { addresses, _priceFeedIsTestnet }: _LiquityDeploymentJSON
+  { addresses, _useRealPriceFeed }: _LiquityDeploymentJSON
 ): _LiquityContracts => {
   // Check that addresses is not null or undefined
   if (!addresses) {
     throw new Error('Addresses object cannot be null or undefined');
   }
 
-  const abi = getAbi(_priceFeedIsTestnet);
+  const abi = getAbi(_useRealPriceFeed);
 
   return mapLiquityContracts(
     addresses,

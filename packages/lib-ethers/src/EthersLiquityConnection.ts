@@ -60,7 +60,7 @@ export interface EthersLiquityConnection extends EthersLiquityConnectionOptional
   readonly addresses: Record<string, string>;
 
   /** @internal */
-  readonly _priceFeedIsTestnet: boolean;
+  readonly _useRealPriceFeed: boolean;
 
   /** @internal */
   readonly _isDev: boolean;
