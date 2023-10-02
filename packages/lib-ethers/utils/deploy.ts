@@ -16,8 +16,7 @@ interface IOwners {
 
 const contractOwners: IOwners = {
   feePool: "0x7095F0B91A1010c11820B4E263927835A4CF52c9",
-  // Waiting for the bamm owner multisig 
-  bammOwner: "0x0000000000000000000000000000000000000001",
+  bammOwner: "0x788c26aB09728A2f17F2372a4D65CcA184940E83",
   governorBravo: "0x87F005317692D05BAA4193AB0c961c69e175f45f"
 }
 
