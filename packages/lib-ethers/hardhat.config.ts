@@ -15,13 +15,13 @@ import "@nomiclabs/hardhat-ethers";
 
 import { Decimal } from "@liquity/lib-base";
 
-import { deployAndSetupContracts, deployTellorCaller, setSilent, transferContractsOwnership } from "./utils/deploy";
+import { deployAndSetupContracts, deployTellorCaller, initiatePCV, setSilent, transferContractsOwnership } from "./utils/deploy";
 import { _connectToContracts, _LiquityDeploymentJSON, _priceFeedIsTestnet } from "./src/contracts";
 
 import accounts from "./accounts.json";
 import { getFolderInfo } from "./utils/fsScripts";
 import { mkdir, writeFile } from "fs/promises";
-import { ZERO_ADDRESS } from "./utils/constants";
+import { ZERO_ADDRESS, MAINNET_TBTC_ADDRESS } from "./utils/constants";
 
 interface IOracles {
   chainlink: string,
@@ -29,7 +29,7 @@ interface IOracles {
 }
 
 export interface IAssets {
-  [eth: string]: IOracles,
+  eth: IOracles,
   tbtc: IOracles,
 }
 
@@ -40,8 +40,8 @@ export interface INetworkOracles {
 }
 
 export interface IQueryIds {
-  eth: string,
-  tbtc: string,
+  ["eth"]: string,
+  ["tbtc"]: string,
 }
 
 dotenv.config();
@@ -165,60 +165,67 @@ declare module "hardhat/types/runtime" {
     deployLiquity: (
       deployer: Signer,
       oracleAddresses: INetworkOracles,
-      collateralSymbol: (keyof IAssets),
-      collateralAddress?: string,
+      firstCollateralSymbol: (keyof IAssets),
+      firstCollateralAddress: string,
+      secondCollateralSymbol: (keyof IAssets),
+      secondCollateralAddress: string,
       delay?: number,
       stablecoinAddress?: string,
+      contractsVersion?: string,
       useRealPriceFeed?: boolean,
       overrides?: Overrides
-    ) => Promise<_LiquityDeploymentJSON>;
+    ) => Promise<_LiquityDeploymentJSON[]>;
   }
 }
 
 const getLiveArtifact = (name: string): { abi: JsonFragment[]; bytecode: string } =>
   require(`./live/${name}.json`);
 
-const getContractFactory: (
-  env: HardhatRuntimeEnvironment
-) => (name: string, signer: Signer) => Promise<ContractFactory> = useLiveVersion
-  ? env => (name, signer) => {
-      const { abi, bytecode } = getLiveArtifact(name);
-      return env.ethers.getContractFactory(abi, bytecode, signer);
-    }
-  : env => env.ethers.getContractFactory;
+  const getContractFactory: (
+    env: HardhatRuntimeEnvironment
+  ) => (name: string, signer: Signer) => Promise<ContractFactory> = useLiveVersion
+    ? env => (name, signer) => {
+        const { abi, bytecode } = getLiveArtifact(name);
+        return env.ethers.getContractFactory(abi, bytecode, signer);
+      }
+    : env => env.ethers.getContractFactory;
 
 extendEnvironment(env => {
   env.deployLiquity = async (
     deployer,
     oracleAddresses,
-    collateralSymbol = "tst",
-    collateralAddress,
+    firstCollateralSymbol = "eth",
+    firstCollateralAddress = ZERO_ADDRESS,
+    secondCollateralSymbol = "tbtc",
+    secondCollateralAddress = MAINNET_TBTC_ADDRESS,
     delay = 90 * 24 * 60 * 60,
     stablecoinAddress = "",
+    contractsVersion = "v1",
     useRealPriceFeed = false,
     overrides?: Overrides
-  ) => {
-    const deployment = await deployAndSetupContracts(
+  ) => await deployAndSetupContracts(
       deployer,
       oracleAddresses,
-      collateralSymbol,
-      collateralAddress,
+      firstCollateralSymbol,
+      firstCollateralAddress,
+      secondCollateralSymbol,
+      secondCollateralAddress,
       getContractFactory(env),
       delay,
       stablecoinAddress,
-      !useRealPriceFeed,
+      contractsVersion,
+      useRealPriceFeed,
       env.network.name === "dev",
       overrides
     );
-
-    return { ...deployment, version: contractsVersion };
-  };
 });
 
 type DeployParams = {
   channel: string;
-  collateralSymbol: string;
-  collateralAddress: string;
+  firstCollateralSymbol: keyof IAssets;
+  firstCollateralAddress: string;
+  secondCollateralSymbol: keyof IAssets;
+  secondCollateralAddress: string
   contractsVersion: string;
   delay: number;
   stablecoinAddress: string;
@@ -227,16 +234,20 @@ type DeployParams = {
 };
 
 const defaultChannel = process.env.DEFAULT_CHANNEL || "default";
-const defaultCollateralSymbol = process.env.DEFAULT_COLLATERAL_SYMBOL || "eth";
-const defaultCollateralAddress = process.env.DEFAULT_COLLATERAL_ADDRESS || ZERO_ADDRESS;
+const firstDefaultCollateralSymbol = process.env.FIRST_DEFAULT_COLLATERAL_SYMBOL || "eth";
+const firstDefaultCollateralAddress = process.env.FIRST_DEFAULT_COLLATERAL_ADDRESS || ZERO_ADDRESS;
+const secondDefaultCollateralSymbol = process.env.SECOND_DEFAULT_COLLATERAL_SYMBOL || "tbtc";
+const secondDefaultCollateralAddress = process.env.SECOND_DEFAULT_COLLATERAL_ADDRESS || MAINNET_TBTC_ADDRESS;
 const defaultVersion = process.env.DEFAULT_VERSION || "v1";
 const defaultThusdAddress = process.env.DEFAULT_THUSD_ADDRESS || "";
 const defaultDelay = process.env.DEFAULT_DELAY || 90 * 24 * 60 * 60;
 
 task("deploy", "Deploys the contracts to the network")
   .addOptionalParam("channel", "Deployment channel to deploy into", defaultChannel, types.string)
-  .addOptionalParam("collateralSymbol", "Asset symbol to use as collateral", defaultCollateralSymbol, types.string)
-  .addOptionalParam("collateralAddress", "Asset address to use as collateral", defaultCollateralAddress, types.string)
+  .addOptionalParam("firstCollateralSymbol", "Asset symbol to use as collateral", firstDefaultCollateralSymbol, types.string)
+  .addOptionalParam("firstCollateralAddress", "Asset address to use as collateral", firstDefaultCollateralAddress, types.string)
+  .addOptionalParam("secondCollateralSymbol", "Asset symbol to use as collateral", secondDefaultCollateralSymbol, types.string)
+  .addOptionalParam("secondCollateralAddress", "Asset address to use as collateral", secondDefaultCollateralAddress, types.string)
   .addOptionalParam("contractsVersion", "Version of contracts for collateral type", defaultVersion, types.string)
   .addOptionalParam("gasPrice", "Price to pay for 1 gas [Gwei]", undefined, types.float)
   .addOptionalParam(
@@ -258,7 +269,18 @@ task("deploy", "Deploys the contracts to the network")
     types.string
   )
   .setAction(
-    async ({ channel, collateralSymbol, collateralAddress, contractsVersion, delay, stablecoinAddress, gasPrice, useRealPriceFeed }: DeployParams, env) => {     
+    async ({ 
+      channel, 
+      firstCollateralSymbol, 
+      firstCollateralAddress, 
+      secondCollateralSymbol, 
+      secondCollateralAddress, 
+      contractsVersion, 
+      delay, 
+      stablecoinAddress, 
+      gasPrice, 
+      useRealPriceFeed 
+    }: DeployParams, env) => {     
       const overrides = { gasPrice: gasPrice && Decimal.from(gasPrice).div(1000000000).hex };
       const [deployer] = await env.ethers.getSigners();
       useRealPriceFeed ??= env.network.name === "mainnet";
@@ -268,78 +290,90 @@ task("deploy", "Deploys the contracts to the network")
       }
 
       console.log('network', env.network.name);
-      console.log('collateralSymbol', collateralSymbol);
-      console.log('collateralAddress', collateralAddress);
+      console.log('firstCollateralSymbol', firstCollateralSymbol);
+      console.log('firstCollateralAddress', firstCollateralAddress);
+      console.log('secondCollateralSymbol', secondCollateralSymbol);
+      console.log('secondCollateralAddress', secondCollateralAddress);
       console.log('version', contractsVersion);
       console.log('delay', delay);
       console.log('stablecoin address:', stablecoinAddress);
       console.log('gas price: ', gasPrice);
       setSilent(false);
 
-      const deployment = await env
+      const deployments = await env
         .deployLiquity(
           deployer, 
           oracleAddresses, 
-          collateralSymbol, 
-          collateralAddress, 
+          firstCollateralSymbol, 
+          firstCollateralAddress,
+          secondCollateralSymbol, 
+          secondCollateralAddress, 
           delay, 
           stablecoinAddress, 
-          useRealPriceFeed, 
+          contractsVersion,
+          useRealPriceFeed,
           overrides
         );
-      const contracts = _connectToContracts(deployer, deployment);
 
-      if (useRealPriceFeed) {
-        assert(!_priceFeedIsTestnet(contracts.priceFeed));
+      for (const deployment of deployments) {
+        const contracts = _connectToContracts(deployer, deployment);
 
-        if (hasOracles(env.network.name)) {
-          const tellorCallerAddress = await deployTellorCaller(
-            deployer,
-            getContractFactory(env),
-            oracleAddresses[env.network.name][collateralSymbol as keyof IAssets].tellor,
-            tellorQueryIds[collateralSymbol as keyof IQueryIds],
-            overrides
-          );
+        if (useRealPriceFeed) {
+          assert(!_priceFeedIsTestnet(contracts.priceFeed));
 
-          console.log(`Hooking up PriceFeed with oracles ...`);
+          if (hasOracles(env.network.name)) {
+            const tellorCallerAddress = await deployTellorCaller(
+              deployer,
+              getContractFactory(env),
+              oracleAddresses[env.network.name][deployment.collateralSymbol as keyof IAssets].tellor,
+              tellorQueryIds[deployment.collateralSymbol as keyof IQueryIds],
+              overrides
+            );
 
-          const tx = await contracts.priceFeed.setAddresses(
-            oracleAddresses[env.network.name][collateralSymbol as keyof IAssets].chainlink,
-            tellorCallerAddress,
-            overrides
-          );
+            console.log(`Hooking up PriceFeed with oracles ...`);
 
-          await tx.wait();
+            const tx = await contracts.priceFeed.setAddresses(
+              oracleAddresses[env.network.name][deployment.collateralSymbol as keyof IAssets].chainlink,
+              tellorCallerAddress,
+              overrides
+            );
+
+            await tx.wait();
+          }
         }
+
+        console.log("Initiating PCV...");
+        await initiatePCV(contracts, deployer, overrides);
+
+        console.log("Transferring Contracts Ownership...");
+        await transferContractsOwnership(contracts, deployer, overrides);
+        
+        const deploymentChannelPath = path.posix.join("deployments", channel);
+
+        try {
+          await mkdir(path.join("deployments", channel, deployment.collateralSymbol, contractsVersion), { recursive: true });
+          await writeFile(
+            path.join("deployments", channel, deployment.collateralSymbol, contractsVersion, `${env.network.name}.json`),
+            JSON.stringify(deployment, undefined, 2),
+            { flag: 'w+' } // add the flag option to overwrite the file if it exists
+          );
+        
+          const folderInfo = await getFolderInfo(deploymentChannelPath);
+        
+          await mkdir(path.join("deployments", "collaterals"), { recursive: true });
+          await writeFile(
+            path.join("deployments", "collaterals", "collaterals.json"),
+            JSON.stringify(folderInfo, null, 2),
+            { flag: 'w+' } // add the flag option to overwrite the file if it exists
+          );
+        } catch (err) {
+          console.error(err);
+        }
+
+        console.log();
+        console.log(deployment);
+        console.log();
       }
-
-      await transferContractsOwnership(contracts, deployer, overrides);
-      
-      const deploymentChannelPath = path.posix.join("deployments", channel);
-
-      try {
-        await mkdir(path.join("deployments", channel, collateralSymbol, contractsVersion), { recursive: true });
-        await writeFile(
-          path.join("deployments", channel, collateralSymbol, contractsVersion, `${env.network.name}.json`),
-          JSON.stringify(deployment, undefined, 2),
-          { flag: 'w+' } // add the flag option to overwrite the file if it exists
-        );
-      
-        const folderInfo = await getFolderInfo(deploymentChannelPath);
-      
-        await mkdir(path.join("deployments", "collaterals"), { recursive: true });
-        await writeFile(
-          path.join("deployments", "collaterals", "collaterals.json"),
-          JSON.stringify(folderInfo, null, 2),
-          { flag: 'w+' } // add the flag option to overwrite the file if it exists
-        );
-      } catch (err) {
-        console.error(err);
-      }
-
-      console.log();
-      console.log(deployment);
-      console.log();
     }
   );
 

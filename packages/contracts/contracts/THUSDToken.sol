@@ -73,14 +73,20 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
 
     constructor
     (
-        address _troveManagerAddress,
-        address _stabilityPoolAddress,
-        address _borrowerOperationsAddress,
+        address _troveManagerAddress1,
+        address _stabilityPoolAddress1,
+        address _borrowerOperationsAddress1,
+        address _troveManagerAddress2,
+        address _stabilityPoolAddress2,
+        address _borrowerOperationsAddress2,
         uint256 _governanceTimeDelay
     )
     {
         // when created its linked to one set of contracts and collateral, other collateral types can be added via governance
-        _addSystemContracts(_troveManagerAddress, _stabilityPoolAddress, _borrowerOperationsAddress);
+        _addSystemContracts(_troveManagerAddress1, _stabilityPoolAddress1, _borrowerOperationsAddress1);
+        if (_troveManagerAddress2 != address(0)) {
+            _addSystemContracts(_troveManagerAddress2, _stabilityPoolAddress2, _borrowerOperationsAddress2);
+        }
         bytes32 hashedName = keccak256(bytes(_NAME));
         bytes32 hashedVersion = keccak256(bytes(_VERSION));
 
