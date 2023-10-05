@@ -111,7 +111,7 @@ const deployContracts = async (
       deployer,
       getContractFactory,
       _useRealPriceFeed ? "PriceFeed" : "PriceFeedTestnet",
-      8,
+      18,
       { ...overrides }
     ),
   };
