@@ -28,11 +28,11 @@ export const MintErc20 = ({ version, collateral }: MintErc20Props): JSX.Element 
   const collateralThreshold = threshold.find((versionedThreshold) => {
     return versionedThreshold.version === version && versionedThreshold.collateral === collateral;
   })!;
-  const canMint = collateralThreshold.store.connection._priceFeedIsTestnet
+  const isUsingRealPriceFeed = collateralThreshold.store.connection._useRealPriceFeed
 
   return (
     <SystemStat>
-      {canMint && symbol === "TST" ? (
+      {!isUsingRealPriceFeed && symbol === "TST" ? (
         <Flex sx={{ mb: 2, mt: 2, alignItems: "center", height: "1.2em", width: "100%" }}>
           <Transaction
             id="set-price"

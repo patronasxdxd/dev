@@ -39,7 +39,7 @@ const UnsupportedMainnetFallback = (): JSX.Element => (
     </Heading>
 
     <Paragraph sx={{ mb: 3 }}>
-      Please change your network to Sepolia.
+      Please change your network to Mainnet or Sepolia.
     </Paragraph>
   </Flex>
 );
@@ -61,7 +61,7 @@ export const ThresholdFrontend = ({ loader }: ThresholdFrontendProps): JSX.Eleme
           {chainId === 1 ? "Ethereum Mainnet" : supportedNetworks[chainId] ?? "this network"}
         </Flex>.
       </Heading>
-      Please switch to Sepolia.
+      Please switch to Mainnet or Sepolia.
     </Flex>
   );
 

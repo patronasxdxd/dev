@@ -9,7 +9,7 @@ export const VaultPage = (): JSX.Element => {
     <Container variant="singlePage">
       <PageHeading
         heading="Open a Vault"
-        description={`To borrow you must open a Vault and deposit a certain amount of collateral to it. Then you can draw ${ COIN } up to a collateral ratio of 120%. A minimum debt of 2,000 ${ COIN } is required.`}
+        description={`To borrow you must open a Vault and deposit a certain amount of collateral to it. Then you can draw ${ COIN } up to a collateral ratio of 110%. A minimum debt of 2,000 ${ COIN } is required.`}
         link="https://github.com/Threshold-USD/dev"
       />
       <PageRow Component={Vault} />

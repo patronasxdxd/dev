@@ -118,15 +118,9 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
               { collateralStore.store.total.collateral.shorten() } { collateralStore.store.symbol }
             </SystemStat>
           ))}
-          {/* <SystemStat
-            info={`${ COIN } in Stability Pool`}
-            tooltip={`The total ${ COIN } currently held in the Stability Pool, expressed as an amount and a fraction of the ${ COIN } supply.`}
-          >
-            {thusdInSP.shorten()}
-          </SystemStat> */}
           <SystemStat
             info={`${ COIN } in B.AMM`}
-            tooltip={`The total ${ COIN } currently held in the Backstop AMM, expressed as an amount and a fraction of the ${ COIN } supply.`}
+            tooltip={`The total ${ COIN } currently held in the Backstop AMM, expressed as an amount.`}
           >
             {thusdInBammm.shorten()}
           </SystemStat>

@@ -44,7 +44,7 @@ export const EditPrice = ({ version, collateral }: EditPriceProps): JSX.Element 
     return versionedThreshold.version === version && versionedThreshold.collateral === collateral;
   })!;
   
-  const canSetPrice = collateralThreshold.store.connection._priceFeedIsTestnet
+  const isUsingRealPriceFeed = collateralThreshold.store.connection._useRealPriceFeed
   const [editedPrice, setEditedPrice] = useState(price.toString(2))
 
   return (
@@ -58,12 +58,12 @@ export const EditPrice = ({ version, collateral }: EditPriceProps): JSX.Element 
       }}>
         { symbol } Price - {version}
       </Flex>
-        {canSetPrice ? (
+        {isUsingRealPriceFeed ? (
+          price.toString(2)
+        ) : (
           <Flex sx={{ mb:1, textAlign:"left", height: "1.2em", }}>
             {editedPrice}
           </Flex>
-        ) : (
-          price.toString(2)
         )}
     </Flex>
   );
