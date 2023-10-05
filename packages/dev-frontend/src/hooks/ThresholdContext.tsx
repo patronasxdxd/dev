@@ -43,8 +43,8 @@ type ThresholdProviderProps = {
   unsupportedMainnetFallback?: React.ReactNode;
 };
 
-const wsParams = (network: string, infuraApiKey: string): [string, string] => [
-  `wss://${network === "homestead" ? "mainnet" : network}.infura.io/ws/v3/${infuraApiKey}`,
+const wsParams = (network: string, alchemyApiKey: string): [string, string] => [
+  `wss://eth-${network === "homestead" ? "mainnet" : network}.g.alchemy.com/v2/${alchemyApiKey}`,
   network
 ];
 
@@ -52,7 +52,7 @@ export const supportedNetworks: SupportedNetworks = { 1: "homestead", 5: "goerli
 
 const getCollateralVersions = async (chainId: number): Promise<CollateralsVersionedDeployments> => {
   const network = supportedNetworks[chainId];
-  return await getCollateralsDeployments(network);
+  return await getCollateralsDeployments(network === "homestead" ? "mainnet" : network);
 }
 
 async function getConnections(
@@ -132,7 +132,6 @@ export const ThresholdProvider = ({
       .catch((err) => console.error('get collateral error: ', err))
   }, [chainId, provider, address, config])
 
-  
   useEffect(() => {
     getConfig().then(setConfig);
   }, []);
@@ -165,8 +164,8 @@ export const ThresholdProvider = ({
         }
         if (isWebSocketAugmentedProvider(provider)) {
           const network = getNetwork(chainId);
-          if (network.name && Object.keys(supportedNetworks).includes(network.name) && config.infuraApiKey) {
-            provider.openWebSocket(...wsParams(network.name, config.infuraApiKey));
+          if (network.name && Object.keys(supportedNetworks).includes(network.name) && process.env.REACT_APP_ALCHEMY_ID) {
+            provider.openWebSocket(...wsParams(network.name, process.env.REACT_APP_ALCHEMY_ID));
           } else if (connections[0]._isDev) {
             provider.openWebSocket(`ws://${window.location.hostname}:8546`, chainId);
           }

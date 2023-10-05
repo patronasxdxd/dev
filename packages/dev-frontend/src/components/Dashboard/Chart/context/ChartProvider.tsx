@@ -32,6 +32,11 @@ export type FunctionalPanelProps = {
   children?: React.ReactNode;
 };
 
+const coingeckoIdsBySymbol = {
+  eth: "ethereum",
+  tbtc: "tbtc"
+}
+
 const fetchBlockByTimestamp = (timestamp: number, blocksApiUrl: string) => {
   const query = `
   query {
@@ -176,7 +181,7 @@ export const ChartProvider = ({ children }: FunctionalPanelProps): JSX.Element  
 
   // Destructure values from useThreshold hook
   const { threshold, config, provider } = useThreshold();
-  const { blocksApiUrl, thresholdUsdApiUrl, coingeckoIdsBySymbol } = config;
+  const { blocksApiUrl, thresholdUsdApiUrl } = config;
 
   // Define the getTVLData function for fetching TVL data
   const getTVLData = () => {
@@ -190,8 +195,8 @@ export const ChartProvider = ({ children }: FunctionalPanelProps): JSX.Element  
     // Get the network name and corresponding blocks URL
     return provider.getNetwork()
       .then((network) => {
-        const networkName = network.name === 'homestead' ? 'ethereum' : network.name;
-        const blocksUrlByNetwork = `https://${blocksApiUrl}/${networkName}-blocks`;
+        const networkName = network.name === 'homestead' ? 'mainnet' : network.name;
+        const blocksUrlByNetwork = `https://${blocksApiUrl}/${networkName === 'mainnet' ? 'ethereum' : network.name}-blocks`;
         
         // Loop through the collaterals in the threshold object and fetch the TVL data for each collateral
         for (const thresholdCollateral of threshold) {

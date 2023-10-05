@@ -77,13 +77,13 @@ if (window.ethereum) {
 
 function getRpcUrl(chainIdHex: '0x1' | '0x5' | '0xaa36a7') {
   const publicRpcUrls = {
-    '0x1': 'https://mainnet.eth.aragon.network/',
+    '0x1': 'https://cloudflare-eth.com/',
     '0x5': 'https://goerli.eth.aragon.network/',
     '0xaa36a7': 'https://sepolia.eth.aragon.network/'
   };
 
   if (process.env.REACT_APP_INFURA_ID) {
-    return `https://${chainIdHex === '0x1' ? 'mainnet' : chainIdHex === '0x5' ? 'goerli' : 'sepolia'}.infura.io/v3/${process.env.REACT_APP_INFURA_ID}`;
+    return `https://eth-${chainIdHex === '0x1' ? 'mainnet' : chainIdHex === '0x5' ? 'goerli' : 'sepolia'}.g.alchemy.com/v2/${process.env.REACT_APP_ALCHEMY_ID}`;
   } else {
     return publicRpcUrls[chainIdHex];
   }
