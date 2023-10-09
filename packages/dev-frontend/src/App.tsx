@@ -19,7 +19,7 @@ const wcV2InitOptions = {
   /**
    * Chains required to be supported by all wallets connecting to your DApp
    */
-  requiredChains: [1, 11155111],
+  requiredChains: [1],
   /**
    * Defaults to `appMetadata.explore` that is supplied to the web3-onboard init
    * Strongly recommended to provide atleast one URL as it is required by some wallets (i.e. MetaMask)
