@@ -15,7 +15,7 @@ const wcV2InitOptions = {
   /**
    * Project ID associated with [WalletConnect account](https://cloud.walletconnect.com)
    */
-  projectId: process.env.WALLETCONNECT_PROJECT_ID || "",
+  projectId: process.env.REACT_APP_WALLETCONNECT_ID as string,
   /**
    * Chains required to be supported by all wallets connecting to your DApp
    */
