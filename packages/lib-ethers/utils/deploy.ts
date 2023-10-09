@@ -188,6 +188,13 @@ const connectContracts = async (
       }),
 
     nonce => 
+      gasPool.setAddresses(
+        troveManager.address,
+        thusdToken.address,
+        { ...overrides, nonce }
+      ),
+
+    nonce => 
       troveManager.setAddresses(
         borrowerOperations.address,
         activePool.address,
