@@ -11,9 +11,26 @@ import theme from "./theme";
 import { DisposableWalletProvider } from "./testUtils/DisposableWalletProvider";
 import { ThresholdFrontend } from "./ThresholdFrontend";
 
+const wcV2InitOptions = {
+  /**
+   * Project ID associated with [WalletConnect account](https://cloud.walletconnect.com)
+   */
+  projectId: process.env.WALLETCONNECT_PROJECT_ID || "",
+  /**
+   * Chains required to be supported by all wallets connecting to your DApp
+   */
+  requiredChains: [1, 11155111],
+  /**
+   * Defaults to `appMetadata.explore` that is supplied to the web3-onboard init
+   * Strongly recommended to provide atleast one URL as it is required by some wallets (i.e. MetaMask)
+   * To connect with WalletConnect
+   */
+  dappUrl: 'http://app.thresholdusd.org'
+}
+
 const injected = injectedModule();
 const coinbase = coinbaseModule();
-const walletConnect = walletConnectModule();
+const walletConnect = walletConnectModule(wcV2InitOptions)
 const taho = tahoModule();
 
 const wallets = [
@@ -82,7 +99,7 @@ function getRpcUrl(chainIdHex: '0x1' | '0x5' | '0xaa36a7') {
     '0xaa36a7': 'https://sepolia.eth.aragon.network/'
   };
 
-  if (process.env.REACT_APP_INFURA_ID) {
+  if (process.env.REACT_APP_ALCHEMY_ID) {
     return `https://eth-${chainIdHex === '0x1' ? 'mainnet' : chainIdHex === '0x5' ? 'goerli' : 'sepolia'}.g.alchemy.com/v2/${process.env.REACT_APP_ALCHEMY_ID}`;
   } else {
     return publicRpcUrls[chainIdHex];
