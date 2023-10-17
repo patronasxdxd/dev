@@ -29,7 +29,7 @@ contract BAMM is CropJoinAdapter, PriceFormula, Ownable, CheckContract, SendColl
     uint256 public constant MAX_FEE = 100; // 1%
     uint256 public fee = 0; // fee in bps
     uint256 public A = 20;
-    uint256 public constant MIN_A = 20;
+    uint256 public constant MIN_A = 1;
     uint256 public constant MAX_A = 200;    
 
     uint256 public immutable maxDiscount; // max discount in bips

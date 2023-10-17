@@ -726,7 +726,7 @@ contract('BAMM', async accounts => {
       
       it('test set params sad path', async () => {
         await assertRevert(bamm.setParams(210, 100, {from: bProtocolOwner}), 'setParams: A too big')
-        await assertRevert(bamm.setParams(9, 100, {from: bProtocolOwner}), 'setParams: A too small')
+        await assertRevert(bamm.setParams(0, 100, {from: bProtocolOwner}), 'setParams: A too small')
         await assertRevert(bamm.setParams(10, 101, {from: bProtocolOwner}), 'setParams: fee is too big')             
         await assertRevert(bamm.setParams(20, 100, {from: bammOwner}), 'Ownable: caller is not the B.Protocol owner')      
       })
