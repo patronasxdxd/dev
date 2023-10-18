@@ -1,7 +1,7 @@
 const fs = require("fs");
 
-const network = process.argv[2] || "sepolia";
-const { addresses, startBlock } = require(`@liquity/lib-ethers/deployments/${network}.json`);
+const network = process.argv[2] || "mainnet";
+const { addresses, startBlock } = require(`@liquity/lib-ethers/deployments/default/tbtc/v1/${network}.json`);
 
 console.log(`Preparing subgraph manifest for network "${network}"`);
 
@@ -20,7 +20,7 @@ schema:
 dataSources:
   - name: TroveManager
     kind: ethereum/contract
-    network: sepolia
+    network: mainnet
     source:
       abi: TroveManager
       address: "${addresses.troveManager}"
@@ -55,7 +55,7 @@ dataSources:
           handler: handleLTermsUpdated
   - name: BorrowerOperations
     kind: ethereum/contract
-    network: sepolia
+    network: mainnet
     source:
       abi: BorrowerOperations
       address: "${addresses.borrowerOperations}"
@@ -82,7 +82,7 @@ dataSources:
           handler: handleTHUSDBorrowingFeePaid
   - name: PriceFeed
     kind: ethereum/contract
-    network: sepolia
+    network: mainnet
     source:
       abi: PriceFeed
       address: "${addresses.priceFeed}"
@@ -105,7 +105,7 @@ dataSources:
           handler: handleLastGoodPriceUpdated
   - name: StabilityPool
     kind: ethereum/contract
-    network: sepolia
+    network: mainnet
     source:
       abi: StabilityPool
       address: "${addresses.stabilityPool}"
@@ -133,7 +133,7 @@ dataSources:
           handler: handleCollateralGainWithdrawn
   - name: CollSurplusPool
     kind: ethereum/contract
-    network: sepolia
+    network: mainnet
     source:
       abi: CollSurplusPool
       address: "${addresses.collSurplusPool}"
@@ -162,7 +162,7 @@ ${[
   ([name, address]) => yaml`
   - name: ${name}
     kind: ethereum/contract
-    network: sepolia
+    network: mainnet
     source:
       abi: ERC20
       address: "${address}"
