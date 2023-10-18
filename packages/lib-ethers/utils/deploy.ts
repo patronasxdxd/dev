@@ -7,6 +7,11 @@ import {
   _LiquityDeploymentJSON,
   _connectToContracts
 } from "../src/contracts";
+import { BammDeposit, Decimal, Decimalish } from "@liquity/lib-base";
+import { decimalify } from "../src/_utils";
+import { BAMM, PCV, PriceFeed, PriceFeedTestnet, StabilityPool } from "../types";
+import { BigNumber } from "ethers";
+import { MAX_BYTES_32 } from "./constants";
 
 interface IOwners {
   feePool: string
@@ -182,7 +187,7 @@ const connectContracts = async (
 
   const connections: ((nonce: number) => Promise<ContractTransaction>)[] = [
     nonce =>
-      sortedTroves.setParams(1e6, troveManager.address, borrowerOperations.address, {
+      sortedTroves.setParams(MAX_BYTES_32, troveManager.address, borrowerOperations.address, {
         ...overrides,
         nonce
       }),
@@ -311,7 +316,6 @@ export const transferContractsOwnership = async (
   const txCount = await deployer.provider.getTransactionCount(deployerAddress);
 
   const contracts: ((nonce: number) => Promise<ContractTransaction | undefined>)[] = [
-    // No ownership check for pcv and priceFeed
     nonce => pcv.transferOwnership(
       process.env.GOVERNOR_BRAVO || contractOwners["governorBravo"],
       {
@@ -364,29 +368,85 @@ export const transferContractsOwnership = async (
   }
 };
 
-export const initiatePCV = async (
-  {
-    pcv
+export const getWithdrawsSpShare = async (
+  { 
+    pcv,
+    bamm,
+    priceFeed,
+    stabilityPool
   }: _LiquityContracts,
+    withdrawAmount: Decimalish,
+    overrides?: Overrides
+  ): Promise<string> => {
+    const [
+      stake,
+      {currentUSD}
+    ] = await Promise.all([
+      bamm.stake(pcv.address),
+      getBammDeposit(
+        {
+          pcv,
+          bamm,
+          priceFeed,
+          stabilityPool
+        }, 
+        overrides
+      )
+    ]);
+
+    // amount * stake / currentUSD
+    const spShare = currentUSD 
+      ? decimalify(stake).mul(Decimal.from(withdrawAmount)).div(currentUSD).toString() 
+      : Decimal.from(0).toString() 
+
+    return spShare
+  }
+
+export const initiatePCVAndWithdrawFromBamm = async (
+  liquityContracts: _LiquityContracts,
   deployer: Signer,
   overrides?: Overrides
 ): Promise<void> => {
   if (!deployer.provider) {
     throw new Error("Signer must have a provider.");
   }
+  const { pcv } = liquityContracts;
   const deployerAddress = await deployer.getAddress();
-  const txCount = await deployer.provider.getTransactionCount(deployerAddress);
+  let txCount = await deployer.provider.getTransactionCount(deployerAddress);
 
+  console.log("Initiating PCV...");
   try {
     const tx = await pcv.initialize({
       ...overrides,
       nonce: txCount
     });
     await tx.wait();
-
+    txCount += 1;
     console.log(`Successfully initiated PCV contract.`);
   } catch (error) {
     console.log(`Failed to initiate PCV contract: ${error}`);
+  }
+
+  const spShareToWithdraw = await getWithdrawsSpShare(
+    liquityContracts,
+    Decimal.from(50000000),
+    overrides
+  )
+
+  console.log("withdrawing from BAMM...");
+  console.log("spShareToWithdraw: ", spShareToWithdraw);
+  try {
+    const tx = await pcv.withdrawFromBAMM(
+      Decimal.from(spShareToWithdraw).hex,
+      {
+        ...overrides,
+        nonce: txCount
+      });
+    await tx.wait();
+
+    console.log(`Successfully withdraw thUSD from BAMM contract.`);
+  } catch (error) {
+    console.log(`Failed to withdraw thUSD from BAMM contract: ${error}`);
   }
 };
 
@@ -557,3 +617,78 @@ export const deployAndSetupContracts = async (
 
   return deployments;
 };
+
+const getBammDeposit = async (
+  {
+    pcv,
+    bamm,
+    priceFeed,
+    stabilityPool
+  }:
+  {
+    pcv: PCV;
+    bamm: BAMM;
+    priceFeed: PriceFeed | PriceFeedTestnet;
+    stabilityPool: StabilityPool;
+  },
+  overrides?: Overrides
+): Promise<BammDeposit> => {
+  const _1e18 = BigNumber.from(10).pow(18)
+
+  const [
+    initialValue,
+    currentBammTHUSD,
+    bammPendingCollateral,
+    total,
+    stake,
+    totalThusdInSp,
+  ] = await Promise.all([
+    stabilityPool.deposits(pcv.address, { ...overrides }),
+    stabilityPool.getCompoundedTHUSDDeposit(bamm.address, { ...overrides }),
+    stabilityPool.getDepositorCollateralGain(bamm.address, { ...overrides }),
+    bamm.totalSupply({ ...overrides }),
+    bamm.stake(pcv.address, { ...overrides}),
+    stabilityPool.getTotalTHUSDDeposits({ ...overrides }),
+  ]);
+  const isTotalGreaterThanZero = total.gt(BigNumber.from(0))
+  const isTotalThusdInSpGreaterThanZero = totalThusdInSp.gt(BigNumber.from(0))
+  
+  // stake times thUSD divided by total
+  const currentTHUSD = isTotalGreaterThanZero 
+    ? stake.mul(currentBammTHUSD).div(total) 
+    : BigNumber.from(0)
+
+  // bammDeposit.currentLUSD.mulDiv(100, thusdInBammPool);
+  const bammShare = isTotalThusdInSpGreaterThanZero 
+    ? Decimal.fromBigNumber(currentBammTHUSD).mul(100).div(Decimal.fromBigNumber(totalThusdInSp)) 
+    : Decimal.from(0)
+
+  // bamm share in SP times stake div by total
+  const poolShare = isTotalGreaterThanZero 
+    ? bammShare.mul(Decimal.fromBigNumber(stake)).div(Decimal.fromBigNumber(total)) 
+    : Decimal.from(0)
+
+  const bammCollateralBalance = (await bamm.provider.getBalance(bamm.address)).add(bammPendingCollateral)
+  const currentCollateral = isTotalGreaterThanZero 
+    ? stake.mul(bammCollateralBalance).div(total) 
+    : BigNumber.from(0)
+  
+  const price = await priceFeed.callStatic.fetchPrice({ ...overrides })
+
+  const currentUSD = currentTHUSD.add(currentCollateral.mul(price).div(_1e18))
+
+  const bammPoolShare = isTotalGreaterThanZero 
+    ? Decimal.fromBigNumber(stake).mulDiv(100, Decimal.fromBigNumber(total)) 
+    : Decimal.from(0)
+  
+  return new BammDeposit(
+    bammPoolShare,
+    poolShare,
+    decimalify(initialValue),
+    Decimal.fromBigNumber(currentUSD),
+    Decimal.fromBigNumber(currentTHUSD),
+    Decimal.fromBigNumber(currentCollateral),
+    Decimal.fromBigNumber(bammCollateralBalance),
+    Decimal.fromBigNumber(currentBammTHUSD)
+  );
+}

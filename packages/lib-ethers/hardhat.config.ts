@@ -15,13 +15,13 @@ import "@nomiclabs/hardhat-ethers";
 
 import { Decimal } from "@liquity/lib-base";
 
-import { deployAndSetupContracts, deployTellorCaller, initiatePCV, setSilent, transferContractsOwnership } from "./utils/deploy";
+import { deployAndSetupContracts, deployTellorCaller, initiatePCVAndWithdrawFromBamm, setSilent, transferContractsOwnership } from "./utils/deploy";
 import { _connectToContracts, _LiquityDeploymentJSON, _priceFeedIsTestnet } from "./src/contracts";
 
 import accounts from "./accounts.json";
 import { getFolderInfo } from "./utils/fsScripts";
 import { mkdir, writeFile } from "fs/promises";
-import { ZERO_ADDRESS, MAINNET_TBTC_ADDRESS } from "./utils/constants";
+import { ZERO_ADDRESS, MAINNET_TBTC_ADDRESS, SEPOLIA_TBTC_ADDRESS } from "./utils/constants";
 
 interface IOracles {
   chainlink: string,
@@ -342,8 +342,7 @@ task("deploy", "Deploys the contracts to the network")
           }
         }
 
-        console.log("Initiating PCV...");
-        await initiatePCV(contracts, deployer, overrides);
+        await initiatePCVAndWithdrawFromBamm(contracts, deployer, overrides);
 
         console.log("Transferring Contracts Ownership...");
         await transferContractsOwnership(contracts, deployer, overrides);
