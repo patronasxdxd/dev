@@ -128,7 +128,7 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
             info={`${ COIN } in PCV`}
             tooltip={`The total ${ COIN } currently held in the PCV, expressed as an amount and a fraction of the ${ COIN } supply.`}
           >
-            {pcvBal.prettify()}
+            {pcvBal.shorten()}
           </SystemStat>             
           <SystemStat
             info={`${ COIN } Supply`}
