@@ -26,7 +26,7 @@ import "./Dependencies/Ownable.sol";
 contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
 
     uint256 private _totalSupply;
-    string constant internal _NAME = "thUSD Stablecoin";
+    string constant internal _NAME = "Threshold USD";
     string constant internal _SYMBOL = "thUSD";
     string constant internal _VERSION = "1";
     uint8 constant internal _DECIMALS = 18;
