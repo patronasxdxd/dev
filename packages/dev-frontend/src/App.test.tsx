@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 
-import { Decimal, THUSD_MINIMUM_NET_DEBT, Trove as Vault } from "@liquity/lib-base";
+import { Decimal, THUSD_MINIMUM_NET_DEBT, Trove } from "@threshold-usd/lib-base";
 
 import App from "./App";
 

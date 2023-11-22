@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { Button, Flex, Spinner } from "theme-ui";
 
-import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
-import { useThresholdSelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState } from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 
 import { useThreshold } from "../hooks/ThresholdContext";
 

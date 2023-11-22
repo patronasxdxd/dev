@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Box, Card, Flex } from "theme-ui";
-import { Decimal, Percent, LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
-import { useThresholdSelector } from "@liquity/lib-react";
+import { Decimal, Percent, LiquityStoreState as ThresholdStoreState } from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 import { COIN } from "../utils/constants";
 
 import { SystemStat } from "./SystemStat";

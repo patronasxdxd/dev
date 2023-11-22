@@ -5,8 +5,8 @@ import { defaultAbiCoder } from "@ethersproject/abi";
 
 import "react-circular-progressbar/dist/styles.css";
 
-import { EthersTransactionOverrides, EthersTransactionCancelledError } from "@liquity/lib-ethers";
-import { SentLiquityTransaction as SentThresholdTransaction, LiquityReceipt as ThresholdReceipt } from "@liquity/lib-base";
+import { EthersTransactionOverrides, EthersTransactionCancelledError } from "@threshold-usd/lib-ethers";
+import { SentLiquityTransaction as SentThresholdTransaction, LiquityReceipt as ThresholdReceipt } from "@threshold-usd/lib-base";
 
 import { useThreshold } from "../hooks/ThresholdContext";
 

@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState } from "react";
-import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
+import { LiquityStoreState as ThresholdStoreState } from "@threshold-usd/lib-base";
 
 import { equals } from "../utils/equals";
 import { useThresholdStore } from "./useThresholdStore";

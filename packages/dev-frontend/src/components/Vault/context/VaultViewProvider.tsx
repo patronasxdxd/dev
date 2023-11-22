@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { useThresholdSelector} from "@liquity/lib-react";
-import { LiquityStoreState as ThresholdStoreState, UserTroveStatus as UserVaultStatus } from "@liquity/lib-base";
+import { useThresholdSelector} from "@threshold-usd/lib-react";
+import { LiquityStoreState as ThresholdStoreState, UserTroveStatus as UserVaultStatus } from "@threshold-usd/lib-base";
 import { VaultViewContext } from "./VaultViewContext";
 import type { VaultView, VaultEvent } from "./types";
 

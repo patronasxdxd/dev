@@ -1,7 +1,7 @@
 import { hexlify } from "@ethersproject/bytes";
 import { Wallet } from "@ethersproject/wallet";
 
-import { Decimal, Decimalish } from "@liquity/lib-base";
+import { Decimal, Decimalish } from "@threshold-usd/lib-base";
 
 export class DisposableWalletProvider {
   private readonly url: string;

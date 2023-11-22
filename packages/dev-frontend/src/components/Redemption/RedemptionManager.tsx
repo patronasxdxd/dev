@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Box, Flex, Card, Link } from "theme-ui";
 
-import { Decimal, Percent, LiquityStoreState as ThresholdStoreState, MINIMUM_COLLATERAL_RATIO } from "@liquity/lib-base";
-import { useThresholdSelector } from "@liquity/lib-react";
+import { Decimal, Percent, LiquityStoreState as ThresholdStoreState, MINIMUM_COLLATERAL_RATIO } from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 
 import { COIN } from "../../utils/constants";
 

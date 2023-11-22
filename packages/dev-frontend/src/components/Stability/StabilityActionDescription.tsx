@@ -1,8 +1,8 @@
-import { Decimal, BammDeposit, BammDepositChange, Difference, LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
+import { Decimal, BammDeposit, BammDepositChange, Difference, LiquityStoreState as ThresholdStoreState} from "@threshold-usd/lib-base";
 
 import { COIN } from "../../utils/constants";
 import { ActionDescription, Amount } from "../ActionDescription";
-import { useThresholdSelector } from "@liquity/lib-react";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 import { Box } from "theme-ui";
 
 export const select = ({

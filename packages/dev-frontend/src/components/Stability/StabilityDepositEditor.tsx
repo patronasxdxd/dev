@@ -14,9 +14,9 @@ import {
   BammDeposit,
   LiquityStoreState as ThresholdStoreState,
   Difference
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
-import { useThresholdSelector } from "@liquity/lib-react";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 
 import { COIN } from "../../utils/constants";
 

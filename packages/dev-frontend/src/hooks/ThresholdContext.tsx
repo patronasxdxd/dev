@@ -3,18 +3,18 @@ import { Provider } from "@ethersproject/abstract-provider";
 import { getNetwork } from "@ethersproject/networks";
 import { Web3Provider } from "@ethersproject/providers";
 
-import { isBatchedProvider, isWebSocketAugmentedProvider } from "@liquity/providers";
+import { isBatchedProvider, isWebSocketAugmentedProvider } from "@threshold-usd/providers";
 import {
   EthersLiquity as EthersThreshold,
   _connectByChainId,
   getCollateralsDeployments,
   _LiquityDeploymentJSON,
   EthersLiquityConnection
-} from "@liquity/lib-ethers";
-import { CollateralsVersionedDeployments } from "@liquity/lib-ethers/src/contracts";
+} from "@threshold-usd/lib-ethers";
+import { CollateralsVersionedDeployments } from "@threshold-usd/lib-ethers/src/contracts";
 
 import { ThresholdConfig, getConfig } from "../config";
-import { Threshold } from "@liquity/lib-react";
+import { Threshold } from "@threshold-usd/lib-react";
 import { useWalletConnector } from "./WalletConnectorContext";
 
 type Version = {

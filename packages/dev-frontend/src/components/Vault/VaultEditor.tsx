@@ -9,8 +9,8 @@ import {
   Trove as Vault,
   LiquityStoreState,
   THUSD_LIQUIDATION_RESERVE
-} from "@liquity/lib-base";
-import { useThresholdSelector } from "@liquity/lib-react";
+} from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 
 import { COIN } from "../../utils/constants";
 

@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from "react";
 import { Button, Flex, Link } from "theme-ui";
 
-import { Decimal, Decimalish, LiquityStoreState } from "@liquity/lib-base";
-import { ThresholdStoreUpdate, useThresholdReducer, useThresholdSelector } from "@liquity/lib-react";
+import { Decimal, Decimalish, LiquityStoreState } from "@threshold-usd/lib-base";
+import { ThresholdStoreUpdate, useThresholdReducer, useThresholdSelector } from "@threshold-usd/lib-react";
 
 import { useMyTransactionState } from "../Transaction";
 

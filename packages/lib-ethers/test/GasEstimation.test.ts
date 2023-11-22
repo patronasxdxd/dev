@@ -18,7 +18,7 @@ import {
   THUSD_MINIMUM_DEBT,
   THUSD_MINIMUM_NET_DEBT,
   MINIMUM_BORROWING_RATE
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 // project imports
 import { _LiquityDeploymentJSON } from "../src/contracts";

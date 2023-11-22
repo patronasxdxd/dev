@@ -7,7 +7,7 @@ import { Adjusting } from "./Adjusting";
 import { RedeemedVault } from "./RedeemedVault";
 import { useVaultView } from "./context/VaultViewContext";
 import { LiquidatedVault } from "./LiquidatedVault";
-import { Decimal } from "@liquity/lib-base";
+import { Decimal } from "@threshold-usd/lib-base";
 import { VaultStatus } from "./context/VaultViewProvider";
 
 export type VaultProps = {

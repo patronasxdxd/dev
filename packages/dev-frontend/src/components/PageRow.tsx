@@ -1,5 +1,5 @@
-import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
-import { useThresholdSelector, VersionedCollateral } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState } from "@threshold-usd/lib-base";
+import { useThresholdSelector, VersionedCollateral } from "@threshold-usd/lib-react";
 import { useEffect, useState } from "react";
 import { Box, Container, Flex, Heading } from "theme-ui";
 import { SystemStatsCard } from "./SystemStatsCard";

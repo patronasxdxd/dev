@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "theme-ui";
-import { Decimal, LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
-import { useThresholdSelector} from "@liquity/lib-react";
+import { Decimal, LiquityStoreState as ThresholdStoreState} from "@threshold-usd/lib-base";
+import { useThresholdSelector} from "@threshold-usd/lib-react";
 
 import { TopCard } from "./TopCard";
 

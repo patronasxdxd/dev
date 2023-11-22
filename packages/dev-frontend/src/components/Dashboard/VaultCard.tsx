@@ -1,7 +1,7 @@
 import { Card } from "theme-ui";
 
-import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
-import { useThresholdSelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState } from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 import { VaultView } from "../Vault/context/types";
 import { useVaultView } from "../Vault/context/VaultViewContext";
 

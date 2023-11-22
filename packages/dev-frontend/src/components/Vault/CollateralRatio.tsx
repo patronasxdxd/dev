@@ -1,6 +1,6 @@
 import { Flex, Card, SxProp } from "theme-ui";
 
-import { CRITICAL_COLLATERAL_RATIO, Decimal, Difference, Percent } from "@liquity/lib-base";
+import { CRITICAL_COLLATERAL_RATIO, Decimal, Difference, Percent } from "@threshold-usd/lib-base";
 
 import { StaticRow } from "./Editor";
 import { InfoIcon } from "../InfoIcon";

@@ -1,5 +1,5 @@
-import { Decimal, LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
-import { useThresholdSelector } from "@liquity/lib-react";
+import { Decimal, LiquityStoreState as ThresholdStoreState } from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 import { useState } from "react";
 import { Button, Flex, Input, ThemeUICSSProperties } from "theme-ui";
 import { useThreshold } from "../../hooks/ThresholdContext";

@@ -16,7 +16,7 @@ import {
   ScriptableContext,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { Decimal } from "@liquity/lib-base";
+import { Decimal } from "@threshold-usd/lib-base";
 import { useHover } from "../../../utils/hooks";
 import { LoadingChart } from "./LoadingChart";
 

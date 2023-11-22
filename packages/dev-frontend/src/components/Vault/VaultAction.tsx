@@ -1,6 +1,6 @@
 import { Button } from "theme-ui";
 
-import { Decimal, TroveChange as VaultChange } from "@liquity/lib-base";
+import { Decimal, TroveChange as VaultChange } from "@threshold-usd/lib-base";
 
 import { useThreshold } from "../../hooks/ThresholdContext";
 import { useTransactionFunction } from "../Transaction";

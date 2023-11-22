@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { Card, Box, Flex, Button, Link } from "theme-ui";
-import { useThresholdSelector} from "@liquity/lib-react";
-import { LiquityStoreState as ThresholdStoreState, UserTrove} from "@liquity/lib-base";
+import { useThresholdSelector} from "@threshold-usd/lib-react";
+import { LiquityStoreState as ThresholdStoreState, UserTrove} from "@threshold-usd/lib-base";
 import { DisabledEditableRow } from "./Editor";
 import { useVaultView } from "./context/VaultViewContext";
 import { Icon } from "../Icon";
