@@ -1,3 +1,5 @@
 export const ZERO_ADDRESS = '0x' + '0'.repeat(40)
+export const MAX_BYTES_32 = '0x' + 'f'.repeat(64)
 export const MAINNET_TBTC_ADDRESS = "0x18084fbA666a33d37592fA2633fD49a74DD93a88"
 export const GOERLI_TBTC_ADDRESS = "0x679874fbe6d4e7cc54a59e315ff1eb266686a937"
+export const SEPOLIA_TBTC_ADDRESS = "0x123cB4a2AB190F88a50646D5436aB3F5859107Ed"

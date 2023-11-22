@@ -15,13 +15,13 @@ import "@nomiclabs/hardhat-ethers";
 
 import { Decimal } from "@liquity/lib-base";
 
-import { deployAndSetupContracts, deployTellorCaller, initiatePCV, setSilent, transferContractsOwnership } from "./utils/deploy";
+import { deployAndSetupContracts, deployTellorCaller, initiatePCVAndWithdrawFromBamm, setSilent, transferContractsOwnership } from "./utils/deploy";
 import { _connectToContracts, _LiquityDeploymentJSON, _priceFeedIsTestnet } from "./src/contracts";
 
 import accounts from "./accounts.json";
 import { getFolderInfo } from "./utils/fsScripts";
 import { mkdir, writeFile } from "fs/promises";
-import { ZERO_ADDRESS, MAINNET_TBTC_ADDRESS } from "./utils/constants";
+import { ZERO_ADDRESS, MAINNET_TBTC_ADDRESS, SEPOLIA_TBTC_ADDRESS } from "./utils/constants";
 
 interface IOracles {
   chainlink: string,
@@ -35,7 +35,6 @@ export interface IAssets {
 
 export interface INetworkOracles {
   mainnet: IAssets,
-  goerli: IAssets,
   sepolia: IAssets,
 }
 
@@ -93,31 +92,21 @@ export const oracleAddresses: INetworkOracles = {
   mainnet: {
     tbtc: {
       chainlink: "0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c",
-      tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
+      tellor: "0x8cFc184c877154a8F9ffE0fe75649dbe5e2DBEbf"
     },
     eth: {
       chainlink: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-      tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
-    }
-  },
-  goerli: {
-    tbtc: {
-      chainlink: "0xA39434A63A52E749F02807ae27335515BA4b07F7",
-      tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
-    },
-    eth: {
-      chainlink: "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e",
-      tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
+      tellor: "0x8cFc184c877154a8F9ffE0fe75649dbe5e2DBEbf"
     }
   },
   sepolia: {
     tbtc: {
       chainlink: "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43",
-      tellor: "0x199839a4907ABeC8240D119B606C98c405Bb0B33"
+      tellor: "0xB19584Be015c04cf6CFBF6370Fe94a58b7A38830"
     },
     eth: {
       chainlink: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
-      tellor: "0x199839a4907ABeC8240D119B606C98c405Bb0B33"
+      tellor: "0xB19584Be015c04cf6CFBF6370Fe94a58b7A38830"
     }
   },
 };
@@ -342,8 +331,7 @@ task("deploy", "Deploys the contracts to the network")
           }
         }
 
-        console.log("Initiating PCV...");
-        await initiatePCV(contracts, deployer, overrides);
+        await initiatePCVAndWithdrawFromBamm(contracts, deployer, overrides);
 
         console.log("Transferring Contracts Ownership...");
         await transferContractsOwnership(contracts, deployer, overrides);

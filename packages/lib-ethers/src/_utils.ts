@@ -5,7 +5,11 @@ import { Decimal } from "@liquity/lib-base";
 export const DEFAULT_COLLATERAL_FOR_TESTING = "tst";
 export const DEFAULT_VERSION_FOR_TESTING = "v1";
 
-export const supportedNetworks: SupportedNetworks = { 1: "mainnet", 5: "goerli", 11155111: "sepolia"};
+export const supportedNetworks: SupportedNetworks = { 
+  1: "mainnet", 
+  5: "goerli", 
+  11155111: "sepolia"
+};
 
 export const numberify = (bigNumber: BigNumber): number => bigNumber.toNumber();
 
