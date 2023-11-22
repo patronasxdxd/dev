@@ -1,19 +1,18 @@
 {
-  "name": "@liquity/lib-react",
+  "name": "@threshold-usd/lib-react",
   "version": "0.0.0-semantic-release",
-  "description": "Components and hooks for React-based Liquity frontends",
+  "description": "Components and hooks for React-based Threshold USD frontends",
   "keywords": [
-    "Liquity",
+    "Threshold USD",
     "protocol",
     "DeFi",
     "Ethereum"
   ],
-  "homepage": "https://github.com/liquity/liquity#readme",
+  "homepage": "https://github.com/thresholdusd/threshold-usd#readme",
   "license": "MIT",
-  "author": "Daniel Simon <dani@liquity.org>",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "repository": "https://github.com/liquity/dev",
+  "repository": "https://github.com/thresholdusd/dev",
   "scripts": {
     "eslint": "eslint",
     "prepare": "run-s prepare:*",
@@ -21,7 +20,7 @@
     "prepare:tsc": "tsc --project tsconfig.dist.json"
   },
   "peerDependencies": {
-    "@liquity/lib-base": "^3.0.0",
+    "@threshold-usd/lib-base": "^3.0.0",
     "react": "^16.13.1"
   },
   "devDependencies": {
