@@ -1,6 +1,6 @@
 {
   "name": "@threshold-usd/providers",
-  "version": "0.0.0-semantic-release",
+  "version": "1.0.1",
   "description": "Custom Ethers Providers used by Threshold USD Dev UI",
   "keywords": [
     "Threshold USD",

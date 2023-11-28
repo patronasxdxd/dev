@@ -1,6 +1,6 @@
 {
   "name": "@threshold-usd/lib-ethers",
-  "version": "0.0.0-semantic-release",
+  "version": "3.4.0",
   "description": "Threshold USD SDK Ethers-based implementation",
   "keywords": [
     "Threshold USD",
