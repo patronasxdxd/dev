@@ -1,8 +1,8 @@
 (THUSD THUSDFee thUSD).THUSD# Threshold USD: Decentralized Borrowing Protocol
 
 
-Threshold USD is a decentralized protocol that allows Collateral and tBTC holders to obtain maximum liquidity against
-their collateral without paying interest. After locking up collateral or tBTC as collateral in a smart contract and
+Threshold USD is a decentralized protocol that allows ETH and tBTC holders to obtain maximum liquidity against
+their collateral without paying interest. After locking up ETH or tBTC as collateral in a smart contract and
 creating an individual position called a "vault", the user can get instant liquidity by minting thUSD,
 a USD-pegged stablecoin. Each vault is required to be collateralized at a minimum of 110%. Any
 owner of thUSD can redeem their stablecoins for the underlying collateral at any time. The redemption
@@ -98,27 +98,23 @@ Visit [thresholdusd.org](https://www.thresholdusd.org) to find out more and join
     - [Start dev-frontend in development mode](#start-dev-frontend-in-development-mode)
     - [Start dev-frontend in demo mode](#start-dev-frontend-in-demo-mode)
     - [Build dev-frontend for production](#build-dev-frontend-for-production)
-  - [Configuring your custom frontend](#configuring-your-custom-dev-ui)
-- [Running a frontend with Docker](#running-dev-ui-with-docker)
-  - [Prerequisites](#prerequisites-1)
-  - [Running with `docker`](#running-with-docker)
 - [Known Issues](#known-issues)
   - [Front-running issues](#front-running-issues)
 - [Disclaimer](#disclaimer)
 
 ## Threshold USD Overview
 
-Threshold USD is a collateralized debt platform. Users can lock up Collateral, and issue stablecoin tokens (thUSD) to their own Ethereum address, and subsequently transfer those tokens to any other Ethereum address. The individual collateralized debt positions are called Troves.
+Threshold USD is a collateralized debt platform. Users can lock up collateral, and issue stablecoin tokens (thUSD) to their own Ethereum address, and subsequently transfer those tokens to any other Ethereum address. The individual collateralized debt positions are called Troves.
 
 The stablecoin tokens are economically geared towards maintaining value of 1 thUSD = \$1 USD, due to the following properties:
 
-1. The system is designed to always be over-collateralized - the dollar value of the locked Collateral exceeds the dollar value of the issued stablecoins
+1. The system is designed to always be over-collateralized - the dollar value of the locked collateral exceeds the dollar value of the issued stablecoins
 
 2. The stablecoins are fully redeemable - users can always swap $x worth of thUSD for $x worth of collateral (minus fees), directly with the system.
 
 3. The system algorithmically controls the generation of thUSD through a variable issuance fee.
 
-After opening a Vault with some Collateral, users may issue ("borrow") tokens such that the collateralization ratio of their Vault remains above 110%. A user with $1000 worth of collateral in a Vault can issue up to 909.09 thUSD.
+After opening a Vault with some collateral, users may issue ("borrow") tokens such that the collateralization ratio of their Vault remains above 110%. A user with $1000 worth of collateral in a Vault can issue up to 909.09 thUSD.
 
 The tokens are freely exchangeable - anyone with an Ethereum address can send or receive thUSD tokens, whether they have an open Vault or not. The tokens are burned upon repayment of a Vault's debt.
 
@@ -134,9 +130,9 @@ Threshold USD utilizes a two-step liquidation mechanism in the following order o
 
 Threshold USD primarily uses the thUSD tokens in its Stability Pool to absorb the under-collateralized debt, i.e. to repay the liquidated borrower's liability.
 
-Any user may deposit thUSD tokens to the Stability Pool. This allows them to earn the collateral from the liquidated Vault. When a liquidation occurs, the liquidated debt is cancelled with the same amount of thUSD in the Pool (which is burned as a result), and the liquidated Collateral is proportionally distributed to depositors.
+Any user may deposit thUSD tokens to the Stability Pool. This allows them to earn the collateral from the liquidated Vault. When a liquidation occurs, the liquidated debt is cancelled with the same amount of thUSD in the Pool (which is burned as a result), and the liquidated collateral is proportionally distributed to depositors.
 
-Stability Pool depositors can expect to earn net gains from liquidations, as in most cases, the value of the liquidated Collateral will be greater than the value of the cancelled debt (since a liquidated Vault will likely have an ICR just slightly below 110%).
+Stability Pool depositors can expect to earn net gains from liquidations, as in most cases, the value of the liquidated collateral will be greater than the value of the cancelled debt (since a liquidated Vault will likely have an ICR just slightly below 110%).
 
 If the liquidated debt is higher than the amount of thUSD in the Stability Pool, the system tries to cancel as much debt as possible with the tokens in the Stability Pool, and then redistributes the remaining liquidated collateral and debt across all active Troves.
 
@@ -173,7 +169,7 @@ Here is the liquidation logic for a single Vault in Normal Mode and Recovery Mod
 
 ## Gains From Liquidations
 
-Stability Pool depositors gain Collateral over time, as liquidated debt is cancelled with their deposit. When they withdraw all or part of their deposited tokens, or top up their deposit, the system sends them their accumulated collateral gains.
+Stability Pool depositors gain collateral over time, as liquidated debt is cancelled with their deposit. When they withdraw all or part of their deposited tokens, or top up their deposit, the system sends them their accumulated collateral gains.
 
 Similarly, a Vault's accumulated gains from liquidations are automatically applied to the Vault when the owner performs any operation - e.g. adding/withdrawing collateral, or issuing/repaying thUSD.
 
@@ -260,7 +256,7 @@ The three main contracts - `BorrowerOperations.sol`, `TroveManager.sol` and `Sta
 
 `BorrowerOperations.sol` - contains the basic operations by which borrowers interact with their Vault: Vault creation, collateral top-up / withdrawal, stablecoin issuance and repayment. It also sends issuance fees to the `PCV` contract. BorrowerOperations functions call in to TroveManager, telling it to update Vault state, where necessary. BorrowerOperations functions also call in to the various Pools, telling them to move collateral/Tokens between Pools or between Pool <> user, where necessary.
 
-`TroveManager.sol` - contains functionality for liquidations and redemptions. It sends redemption fees to the `PCV` contract. Also contains the state of each Vault - i.e. a record of the Trove’s collateral and debt. TroveManager does not hold value (i.e. Collateral / other tokens). TroveManager functions call in to the various Pools to tell them to move collateral/tokens between Pools, where necessary.
+`TroveManager.sol` - contains functionality for liquidations and redemptions. It sends redemption fees to the `PCV` contract. Also contains the state of each Vault - i.e. a record of the Trove’s collateral and debt. TroveManager does not hold value (i.e. collateral / other tokens). TroveManager functions call in to the various Pools to tell them to move collateral/tokens between Pools, where necessary.
 
 `LiquityBase.sol` - Both TroveManager and BorrowerOperations inherit from the parent contract LiquityBase, which contains global constants and some common functions.
 
@@ -362,7 +358,7 @@ ICRs are computed dynamically at runtime, and not stored on the node. This is be
 
 The list relies on the fact that a collateral and debt redistribution due to a liquidation preserves the ordering of all active Troves (though it does decrease the ICR of each active Vault above the MCR).
 
-The fact that ordering is maintained as redistributions occur, is not immediately obvious: please see the [mathematical proof](https://github.com/thresholdusd/dev/blob/main/papers) which shows that this holds in Threshold USD.
+The fact that ordering is maintained as redistributions occur, is not immediately obvious: please see the [mathematical proof](https://github.com/threshold-usd/dev/blob/main/papers) which shows that this holds in Threshold USD.
 
 A node inserted based on current ICR will maintain the correct position, relative to its peers, as liquidation gains accumulate, as long as its raw collateral and debt have not changed.
 
@@ -374,13 +370,13 @@ Thus, nodes need only be re-inserted to the sorted list upon a Vault operation -
 
 ![Flow of Collateral](images/ETH_flows.svg)
 
-Collateral in the system lives in three Pools: the ActivePool, the DefaultPool and the StabilityPool. When an operation is made, Collateral is transferred in one of three ways:
+Collateral in the system lives in three Pools: the ActivePool, the DefaultPool and the StabilityPool. When an operation is made, collateral is transferred in one of three ways:
 
 - From a user to a Pool
 - From a Pool to a user
 - From one Pool to another Pool
 
-Collateral is recorded on an _individual_ level, but stored in _aggregate_ in a Pool. An active Vault with collateral and debt has a struct in the TroveManager that stores its ether collateral value in a uint, but its actual Collateral is in the balance of the ActivePool contract.
+Collateral is recorded on an _individual_ level, but stored in _aggregate_ in a Pool. An active Vault with collateral and debt has a struct in the TroveManager that stores its ether collateral value in a uint, but its actual collateral is in the balance of the ActivePool contract.
 
 Likewise, the StabilityPool holds the total accumulated collateral gains from liquidations for all depositors.
 
@@ -467,7 +463,7 @@ Generally, borrowers call functions that trigger Vault operations on their own V
 
 Anyone may call the public liquidation functions, and attempt to liquidate one or several Troves.
 
-thUSD token holders may also redeem their tokens, and swap an amount of tokens 1-for-1 in value (minus fees) with Collateral.
+thUSD token holders may also redeem their tokens, and swap an amount of tokens 1-for-1 in value (minus fees) with collateral.
 
 ## Contract Ownership and Function Permissions
 
@@ -663,7 +659,7 @@ https://eips.ethereum.org/EIPS/eip-2612
 
 ## Supplying Hints to Vault operations
 
-Troves in Threshold USD are recorded in a sorted doubly linked list, sorted by their NICR, from high to low. NICR stands for the nominal collateral ratio that is simply the amount of collateral (in collateral) multiplied by 100e18 and divided by the amount of debt (in thUSD), without taking the collateral:USD price into account. Given that all Troves are equally affected by Collateral price changes, they do not need to be sorted by their real ICR.
+Troves in Threshold USD are recorded in a sorted doubly linked list, sorted by their NICR, from high to low. NICR stands for the nominal collateral ratio that is simply the amount of collateral (in collateral) multiplied by 100e18 and divided by the amount of debt (in thUSD), without taking the collateral:USD price into account. Given that all Troves are equally affected by collateral price changes, they do not need to be sorted by their real ICR.
 
 All Vault operations that change the collateralization ratio need to either insert or reinsert the Vault to the `SortedTroves` list. To reduce the computational complexity (and gas cost) of the insertion to the linked list, two ‘hints’ may be provided.
 
@@ -959,7 +955,7 @@ A mathematical manipulation allows us to factor out the initial deposit, and acc
 
 The formula for a depositor’s accumulated collateral gain is derived here:
 
-[Scalable reward distribution for compounding, decreasing stake](https://github.com/thresholdusd/dev/blob/main/papers/Scalable_Reward_Distribution_with_Compounding_Stakes.pdf)
+[Scalable reward distribution for compounding, decreasing stake](https://github.com/threshold-usd/dev/blob/main/papers/Scalable_Reward_Distribution_with_Compounding_Stakes.pdf)
 
 Each liquidation updates `P` and `S`. After a series of liquidations, a compounded deposit and corresponding collateral gain can be calculated using the initial deposit, the depositor’s snapshots, and the current values of `P` and `S`.
 
@@ -1026,7 +1022,7 @@ When a liquidation occurs and the Stability Pool is empty or smaller than the li
 
 For two Troves A and B with collateral `A.coll > B.coll`, Vault A should earn a bigger share of the liquidated collateral and debt.
 
-In Threshold USD it is important that all active Troves remain ordered by their ICR. We have proven that redistribution of the liquidated debt and collateral proportional to active Troves’ collateral, preserves the ordering of active Troves by ICR, as liquidations occur over time.  Please see the [proofs section](https://github.com/thresholdusd/dev/tree/main/papers).
+In Threshold USD it is important that all active Troves remain ordered by their ICR. We have proven that redistribution of the liquidated debt and collateral proportional to active Troves’ collateral, preserves the ordering of active Troves by ICR, as liquidations occur over time.  Please see the [proofs section](https://github.com/threshold-usd/dev/tree/main/papers).
 
 However, when it comes to implementation, Ethereum gas costs make it too expensive to loop over all Troves and write new data to storage for each one. When a Vault receives redistribution rewards, the system does not update the Vault's collateral and debt properties - instead, the Trove’s rewards remain "pending" until the borrower's next operation.
 
@@ -1040,7 +1036,7 @@ Consider the case where new Vault is created after all active Troves have receiv
 
 The fresh vault would earns rewards based on its **entire** collateral, whereas old Troves would earn rewards based only on **some portion** of their collateral - since a part of their collateral is pending, and not included in the Trove’s `coll` property.
 
-This can break the ordering of Troves by ICR - see the [proofs section](https://github.com/thresholdusd/dev/tree/main/papers).
+This can break the ordering of Troves by ICR - see the [proofs section](https://github.com/threshold-usd/dev/tree/main/papers).
 
 ### Corrected Stake Solution
 
@@ -1058,7 +1054,7 @@ It then earns redistribution rewards based on this corrected stake. A newly open
 
 Whenever a borrower adjusts their Trove’s collateral, their pending rewards are applied, and a fresh corrected stake is computed.
 
-To convince yourself this corrected stake preserves ordering of active Troves by ICR, please see the [proofs section](https://github.com/thresholdusd/dev/blob/main/papers).
+To convince yourself this corrected stake preserves ordering of active Troves by ICR, please see the [proofs section](https://github.com/threshold-usd/dev/blob/main/papers).
 
 ## Math Proofs
 
@@ -1069,7 +1065,7 @@ In particular, we have:
 - Proofs that Vault ordering is maintained throughout a series of liquidations and new Vault openings
 - A derivation of a formula and implementation for a highly scalable (O(1) complexity) reward distribution in the Stability Pool, involving compounding and decreasing stakes.
 
-PDFs of these can be found in https://github.com/thresholdusd/dev/blob/main/papers
+PDFs of these can be found in https://github.com/threshold-usd/dev/blob/main/papers
 
 ## Definitions
 
@@ -1161,7 +1157,7 @@ Note: you can skip the manual installation of node-gyp itself (`npm install -g n
 ### Clone & Install
 
 ```
-git clone https://github.com/thresholdusd/dev.git thresholdusd
+git clone https://github.com/threshold-usd/dev.git thresholdusd
 cd thresholdusd
 yarn
 ```
@@ -1222,10 +1218,10 @@ Starts an openethereum node in a Docker container, running the [private developm
 
 You may want to use this before starting the dev-frontend in development mode. To use the newly deployed contracts, switch MetaMask to the built-in "Localhost 8545" network.
 
-> Q: How can I get Collateral on the local blockchain?  
+> Q: How can I get collateral on the local blockchain?  
 > A: Import this private key into MetaMask:  
 > `0x4d5db4107d237df6a3d58ee5f70ae63d73d7658d4026f2eefd2f204c81682cb7`  
-> This account has all the Collateral you'll ever need.
+> This account has all the collateral you'll ever need.
 
 Once you no longer need the local node, stop it with:
 
@@ -1279,90 +1275,15 @@ This combines the top-level `prepare` and `build` scripts.
 
 You'll find the output in `packages/dev-frontend/build`.
 
-### Configuring your custom frontend
-
-Your custom built frontend can be configured by putting a file named `config.json` inside the same directory as `index.html` built in the previous step. The format of this file is:
-
-```
-{
-  "infuraApiKey": "158b6511a5c74d1ac028a8a2afe8f626"
-}
-```
-
-## Running a frontend with Docker
-
-The quickest way to get a frontend up and running is to use the [prebuilt image](https://hub.docker.com/r/thresholdusd/dev-frontend) available on Docker Hub.
-
-### Prerequisites
-
-You will need to have [Docker](https://docs.docker.com/get-docker/) installed.
-
-### Running with `docker`
-
-```
-docker pull thresholdusd/dev-frontend
-docker run --name thresholdusd -d --rm -p 3000:80 thresholdusd/dev-frontend
-```
-
-This will start serving your frontend using HTTP on port 3000. If everything went well, you should be able to open http://localhost:3000/ in your browser. To use a different port, just replace 3000 with your desired port number.
-
-To stop the service:
-
-```
-docker kill thresholdusd
-```
-
-### Configuring a public frontend
-
-If you're planning to publicly host a frontend, you might need to pass the Docker container some extra configuration in the form of environment variables.
-
-#### INFURA_API_KEY
-
-This is an optional parameter. If you'd like your frontend to use Infura's [WebSocket endpoint](https://infura.io/docs/ethereum#section/Websockets) for receiving blockchain events, set this variable to an Infura Project ID.
-
-### Next steps for hosting a frontend
-
-You'll need to decide how you want to host your frontend. There are way too many options to list here, so these are going to be just a few examples.
-
-#### Example 1: using static website hosting
-
-A frontend doesn't require any database or server-side computation, so the easiest way to host it is to use a service that lets you upload a folder of static files (HTML, CSS, JS, etc).
-
-To obtain the files you need to upload, you need to extract them from a frontend Docker container. You can create it with a command like this (remember to use your own `INFURA_API_KEY`):
-
-```
-docker run --name thresholdusd -d --rm \
-  -e INFURA_API_KEY=158b6511a5c74d1ac028a8a2afe8f626 \
-  thresholdusd/dev-frontend
-```
-
-While the container is running, use `docker cp` to extract the frontend's files to a folder of your choosing. For example to extract them to a new folder named "devui" inside the current folder, run:
-
-```
-docker cp thresholdusd:/usr/share/nginx/html ./devui
-```
-
-Upload the contents of this folder to your chosen hosting service (or serve them using your own infrastructure), and you're set!
-
-#### Example 2: wrapping the frontend container in HTTPS
-
-If you have command line access to a server with Docker installed, hosting a frontend from a Docker container is a viable option.
-
-The frontend Docker container simply serves files using plain HTTP, which is susceptible to man-in-the-middle attacks. Therefore it is highly recommended to wrap it in HTTPS using a reverse proxy. You can find an example docker-compose config [here](packages/dev-frontend/docker-compose-example/docker-compose.yml) that secures the frontend using [SWAG (Secure Web Application Gateway)](https://github.com/linuxserver/docker-swag) and uses [watchtower](https://github.com/containrrr/watchtower) for automatically updating the frontend image to the latest version on Docker Hub.
-
-Remember to customize both [docker-compose.yml](packages/dev-frontend/docker-compose-example/docker-compose.yml) and the [site config](packages/dev-frontend/docker-compose-example/config/nginx/site-confs/thresholdusd.example.com).
-
-## Known Issues
-
 ### Temporary and slightly inaccurate TCR calculation within `batchLiquidateTroves` in Recovery Mode.
 
 When liquidating a vault with `ICR > 110%`, a collateral surplus remains claimable by the borrower. This collateral surplus should be excluded from subsequent TCR calculations, but within the liquidation sequence in `batchLiquidateTroves` in Recovery Mode, it is not. This results in a slight distortion to the TCR value used at each step of the liquidation sequence going forward. This distortion only persists for the duration the `batchLiquidateTroves` function call, and the TCR is again calculated correctly after the liquidation sequence ends. In most cases there is no impact at all, and when there is, the effect tends to be minor. The issue is not present at all in Normal Mode.
 
-There is a theoretical and extremely rare case where it incorrectly causes a loss for Stability Depositors instead of a gain. It relies on the stars aligning: the system must be in Recovery Mode, the TCR must be very close to the 150% boundary, a large vault must be liquidated, and the collateral price must drop by >10% at exactly the right moment. No profitable exploit is possible. For more details, please see [this security advisory](https://github.com/thresholdusd/dev/security/advisories/GHSA-xh2p-7p87-fhgh).
+There is a theoretical and extremely rare case where it incorrectly causes a loss for Stability Depositors instead of a gain. It relies on the stars aligning: the system must be in Recovery Mode, the TCR must be very close to the 150% boundary, a large vault must be liquidated, and the collateral price must drop by >10% at exactly the right moment. No profitable exploit is possible. For more details, please see [this security advisory](https://github.com/threshold-usd/dev/security/advisories/GHSA-xh2p-7p87-fhgh).
 
 ### SortedTroves edge cases - top and bottom of the sorted list
 
-When the vault is at one end of the `SortedTroves` list and adjusted such that its ICR moves further away from its neighbor, `findInsertPosition` returns unhelpful positional hints, which if used can cause the `adjustTrove` transaction to run out of gas. This is due to the fact that one of the returned addresses is in fact the address of the vault to move - however, at re-insertion, it has already been removed from the list. As such the insertion logic defaults to `0x0` for that hint address, causing the system to search for the vault starting at the opposite end of the list. A workaround is possible, and this has been corrected in the SDK used by front ends.
+When the vault is at one end of the `SortedTroves` list and adjusted such that its ICR moves further away from its neighbor, `findInsertPosition` returns unhelpful positional hints, which if used can cause the `adjustTrove` transaction to run out of gas. This is due to the fact that one of the returned addresses is in fact the address of the vault to move - however, at re-insertion, it has already been removed from the list. As such the insertion logic defaults to `0x0` for that hint address, causing the system to search for the vault starting at the opposite end of the list.
 
 ### Front-running issues
 
@@ -1406,7 +1327,7 @@ Such flash deposit-liquidations would actually be beneficial (in terms of TCR) t
 
 It’s theoretically possible to increase the number of the troves that need to be traversed on-chain. That is, an attacker that sees a pending borrower transaction (or redemption or liquidation transaction) could try to increase the number of traversed troves by introducing additional troves on the way. However, the number of troves that an attacker can inject before the pending transaction gets mined is limited by the amount of spendable gas. Also, the total costs of making the path longer by 1 are significantly higher (gas costs of opening a vault, plus the 0.5% borrowing fee) than the costs of one extra traversal step (simply reading from storage). The attacker also needs significant capital on-hand, since the minimum debt for a vault is 2000 thUSD.
 
-In case of a redemption, the “last” vault affected by the transaction may end up being only partially redeemed from, which means that its ICR will change so that it needs to be reinserted at a different place in the sorted vault list (note that this is not the case for partial liquidations in recovery mode, which preserve the ICR). A special ICR hint therefore needs to be provided by the transaction sender for that matter, which may become incorrect if another transaction changes the order before the redemption is processed. The protocol gracefully handles this by terminating the redemption sequence at the last fully redeemed vault (see [here](https://github.com/thresholdusd/dev#hints-for-redeemcollateral)).
+In case of a redemption, the “last” vault affected by the transaction may end up being only partially redeemed from, which means that its ICR will change so that it needs to be reinserted at a different place in the sorted vault list (note that this is not the case for partial liquidations in recovery mode, which preserve the ICR). A special ICR hint therefore needs to be provided by the transaction sender for that matter, which may become incorrect if another transaction changes the order before the redemption is processed. The protocol gracefully handles this by terminating the redemption sequence at the last fully redeemed vault (see [here](https://github.com/threshold-usd/dev#hints-for-redeemcollateral)).
 
 An attacker trying to DoS redemptions could be bypassed by redeeming an amount that exactly corresponds to the debt of the affected vault(s).
 
@@ -1417,7 +1338,7 @@ Finally, this DoS could be avoided if the initial transaction avoids the public 
 
 The content of this readme document (“Readme”) is of purely informational nature. In particular, none of the content of the Readme shall be understood as advice provided by Threshold USD AG, any Threshold USD Project Team member or other contributor to the Readme, nor does any of these persons warrant the actuality and accuracy of the Readme.
 
-Please read this Disclaimer carefully before accessing, interacting with, or using the Threshold USD Protocol software, consisting of the Threshold USD Protocol technology stack (in particular its smart contracts) as well as any other Threshold USD technology such as e.g., the launch kit for frontend operators (together the “Threshold USD Protocol Software”).
+Please read this Disclaimer carefully before accessing, interacting with, or using the Threshold USD Protocol software, consisting of the Threshold USD Protocol technology stack (in particular its smart contracts) as well as any other Threshold USD technology.
 
 While Threshold USD AG developed the Threshold USD Protocol Software, the Threshold USD Protocol Software runs in a fully decentralized and autonomous manner on the Ethereum network. Threshold USD AG is not involved in the operation of the Threshold USD Protocol Software nor has it any control over transactions made using its smart contracts. Further, Threshold USD AG does neither enter into any relationship with users of the Threshold USD Protocol Software. Any and all functionalities of the Threshold USD Protocol Software, including the thUSD, are of purely technical nature and there is no claim towards any private individual or legal entity in this regard.
 
