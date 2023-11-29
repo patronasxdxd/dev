@@ -456,7 +456,6 @@ The only time thUSD is transferred to/from a Threshold USD contract, is when a u
 | provideToSP    | deposit / top-up | thUSD._transfer(msg.sender, stabilityPoolAddress, _amount);  |
 | withdrawFromSP | withdrawal       | thUSD._transfer(stabilityPoolAddress, msg.sender, _amount);  |
 
-
 ## Expected User Behaviors
 
 Generally, borrowers call functions that trigger Vault operations on their own Vault. Stability Pool users (who may or may not also be borrowers) call functions that trigger Stability Pool operations, such as depositing or withdrawing tokens to/from the Stability Pool.
@@ -475,7 +474,7 @@ Several public and external functions have modifiers such as `requireCallerIsTro
 
 The Hardhat migrations script and deployment helpers in `utils/deploymentHelpers.js` deploy all contracts, and connect all contracts to their dependency contracts, by setting the necessary deployed addresses.
 
-The project is deployed on the Ropsten testnet.
+The project is deployed on the Sepolia testnet.
 
 ## Running Tests
 
@@ -1177,28 +1176,28 @@ yarn test
 E.g.:
 
 ```
-yarn deploy --network ropsten
+yarn deploy --network sepolia
 ```
 
-Supported networks are currently: goerli and sepolia. The above command will deploy into the default channel (the one that's used by the public dev-frontend). To deploy into the internal channel instead:
+Supported networks are currently: sepolia. The above command will deploy into the default channel (the one that's used by the public dev-frontend). To deploy into the internal channel instead:
 
 ```
-yarn deploy --network ropsten --channel internal
+yarn deploy --network sepolia --channel internal
 ```
 
 You can optionally specify an explicit gas price too:
 
 ```
-yarn deploy --network ropsten --gas-price 20
+yarn deploy --network sepolia --gas-price 20
 ```
 
 After a successful deployment, the addresses of the newly deployed contracts will be written to a version-controlled JSON file under `packages/lib-ethers/deployments/default`.
 
 To publish a new deployment, you must execute the above command for all of the following combinations:
 
-| Network  | Network | Channel  |
-| -------  | ------- | -------- |
-| sepolia  | goerli  | default  |
+| Network  | Channel  |
+| -------  | -------- |
+| sepolia  | default  |
 
 At some point in the future, we will make this process automatic. Once you're done deploying to all the networks, execute the following command:
 
