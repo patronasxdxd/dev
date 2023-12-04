@@ -368,8 +368,6 @@ Thus, nodes need only be re-inserted to the sorted list upon a Vault operation -
 
 ### Flow of Collateral in Threshold USD
 
-![Flow of Collateral](images/ETH_flows.svg)
-
 Collateral in the system lives in three Pools: the ActivePool, the DefaultPool and the StabilityPool. When an operation is made, collateral is transferred in one of three ways:
 
 - From a user to a Pool
@@ -382,7 +380,7 @@ Likewise, the StabilityPool holds the total accumulated collateral gains from li
 
 **Borrower Operations**
 
-| Function                     | collateral quantity                        | Path                                       |
+| Function                     | Collateral quantity                        | Path                                       |
 |------------------------------|-------------------------------------|--------------------------------------------|
 | openTrove                    | msg.value                           | msg.sender->BorrowerOperations->ActivePool |
 | addColl                      | msg.value                           | msg.sender->BorrowerOperations->ActivePool |
@@ -394,7 +392,7 @@ Likewise, the StabilityPool holds the total accumulated collateral gains from li
 
 **Vault Manager**
 
-| Function                                | collateral quantity                           | Path                          |
+| Function                                | Collateral quantity                           | Path                          |
 |-----------------------------------------|----------------------------------------|-------------------------------|
 | liquidate (offset)                      | collateral to be offset                | ActivePool->StabilityPool     |
 | liquidate (redistribution)              | collateral to be redistributed         | ActivePool->DefaultPool       |
@@ -408,7 +406,7 @@ Likewise, the StabilityPool holds the total accumulated collateral gains from li
 
 **Stability Pool**
 
-| Function               | collateral quantity                     | Path                                              |
+| Function               | Collateral quantity                     | Path                                              |
 |------------------------|----------------------------------|---------------------------------------------------|
 | provideToSP            | depositor's accumulated collateral gain | StabilityPool -> msg.sender                       |
 | withdrawFromSP         | depositor's accumulated collateral gain | StabilityPool -> msg.sender                       |
