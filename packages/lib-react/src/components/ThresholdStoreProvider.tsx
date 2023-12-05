@@ -1,5 +1,5 @@
-import { LiquityStore as ThresholdBaseStore } from "@liquity/lib-base";
-import { BlockPolledLiquityStore as BlockPolledThresholdStore, CollateralsVersionedDeployments, EthersLiquityWithStore as EthersThresholdWithStore } from "@liquity/lib-ethers";
+import { LiquityStore as ThresholdBaseStore } from "@threshold-usd/lib-base";
+import { BlockPolledLiquityStore as BlockPolledThresholdStore, CollateralsVersionedDeployments, EthersLiquityWithStore as EthersThresholdWithStore } from "@threshold-usd/lib-ethers";
 
 import React, { createContext, useEffect, useState } from "react";
 

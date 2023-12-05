@@ -11,7 +11,7 @@ import {
   LiquityStoreState as ThresholdStoreState,
   TroveClosureParams as VaultClosureParams,
   TroveCreationParams as VaultCreationParams
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 import { COIN,  } from "../../../utils/constants";
 

@@ -12,7 +12,7 @@ import {
   Fees,
   Trove,
   THUSD_MINIMUM_DEBT,
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 import { _LiquityDeploymentJSON } from "../src/contracts";
 import { EthersLiquity } from "../src/EthersLiquity";

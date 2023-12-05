@@ -3,7 +3,7 @@ import { useConnectWallet } from '@web3-onboard/react'
 
 import { Button, Flex, Spinner, Box, Paragraph, useColorMode } from "theme-ui";
 import { GenericIcon } from "../components/GenericIcon";
-import { BatchedWebSocketAugmentedWeb3Provider } from "@liquity/providers";
+import { BatchedWebSocketAugmentedWeb3Provider } from "@threshold-usd/providers";
 import { Web3Provider } from '@ethersproject/providers'
 
 type Account = {

@@ -5,8 +5,8 @@ import { useTransactionFunction } from "../Transaction";
 import { useThreshold } from "./../../hooks/ThresholdContext";
 import { COIN, DARK_FILTER } from "../../utils/constants";
 import { InfoIcon } from "../InfoIcon";
-import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
-import { useThresholdSelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState } from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 import { GenericIcon } from "../GenericIcon";
 import { ActionDescription } from "../ActionDescription";
 

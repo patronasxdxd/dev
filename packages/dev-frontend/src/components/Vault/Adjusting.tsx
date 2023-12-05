@@ -8,8 +8,8 @@ import {
   Percent,
   Difference,
   UserTrove
-} from "@liquity/lib-base";
-import { useThresholdSelector } from "@liquity/lib-react";
+} from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 
 import { useStableVaultChange } from "../../hooks/useStableVaultChange";
 import { useValidationState } from "./validation/useValidationState";

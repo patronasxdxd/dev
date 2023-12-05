@@ -1,9 +1,9 @@
 import { useCallback, useEffect } from "react";
 import { Button, Flex, Link } from "theme-ui";
 
-import { LiquityStoreState as ThresholdStoreState, Decimal, Trove as Vault, Decimalish, THUSD_MINIMUM_DEBT } from "@liquity/lib-base";
+import { LiquityStoreState as ThresholdStoreState, Decimal, Trove as Vault, Decimalish, THUSD_MINIMUM_DEBT } from "@threshold-usd/lib-base";
 
-import { ThresholdStoreUpdate, useThresholdReducer, useThresholdSelector} from "@liquity/lib-react";
+import { ThresholdStoreUpdate, useThresholdReducer, useThresholdSelector} from "@threshold-usd/lib-react";
 
 import { ActionDescription } from "../ActionDescription";
 import { useMyTransactionState } from "../Transaction";

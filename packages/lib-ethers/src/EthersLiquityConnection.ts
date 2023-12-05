@@ -235,7 +235,7 @@ export interface EthersLiquityConnectionOptionalParams {
   readonly userAddress?: string;
 
   /**
-   * Create a {@link @liquity/lib-base#LiquityStore} and expose it as the `store` property.
+   * Create a {@link @threshold-usd/lib-base#LiquityStore} and expose it as the `store` property.
    *
    * @remarks
    * When set to one of the available {@link EthersLiquityStoreOption | options},
@@ -245,7 +245,7 @@ export interface EthersLiquityConnectionOptionalParams {
    * {@link EthersLiquityWithStore}.
    *
    * Note that the store won't start monitoring the blockchain until its
-   * {@link @liquity/lib-base#LiquityStore.start | start()} function is called.
+   * {@link @threshold-usd/lib-base#LiquityStore.start | start()} function is called.
    */
   readonly useStore?: EthersLiquityStoreOption;
 }
@@ -313,7 +313,7 @@ export async function getCollateralsDeployments(network: string): Promise<Collat
     await Promise.all((collateral.subfolders as FolderInfo[]).map(async (versionDeployment) => {
       
       // Construct the absolute path of the JSON file for the specified network and version.
-      import(`@liquity/lib-ethers/${versionDeployment.path}/${network}.json`)
+      import(`@threshold-usd/lib-ethers/${versionDeployment.path}/${network}.json`)
         .then((deployment) => {
           // Load the JSON file for the specified network and version.
           versionedDeployments[collateral.name] = {

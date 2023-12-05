@@ -1,8 +1,8 @@
 import React from "react";
 import { Wallet } from "@ethersproject/wallet";
 
-import { Decimal, Difference, Trove as Vault } from "@liquity/lib-base";
-import { ThresholdStoreProvider } from "@liquity/lib-react";
+import { Decimal, Difference, Trove as Vault } from "@threshold-usd/lib-base";
+import { ThresholdStoreProvider } from "@threshold-usd/lib-react";
 
 import { useThreshold } from "../hooks/ThresholdContext";
 import { VaultViewProvider } from "./Vault/context/VaultViewProvider";

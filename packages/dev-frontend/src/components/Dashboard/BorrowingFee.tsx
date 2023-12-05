@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Card } from "theme-ui";
-import { Percent, LiquityStoreState, Decimal } from "@liquity/lib-base";
-import { useThresholdSelector } from "@liquity/lib-react";
+import { Percent, LiquityStoreState, Decimal } from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 
 import { TopCard } from "./TopCard";
 

@@ -1,5 +1,5 @@
 import { Button } from "theme-ui";
-import { Decimal, BammDepositChange } from "@liquity/lib-base";
+import { Decimal, BammDepositChange } from "@threshold-usd/lib-base";
 
 import { useThreshold } from "../../hooks/ThresholdContext";
 import { useTransactionFunction } from "../Transaction";

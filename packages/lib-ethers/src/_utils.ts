@@ -1,6 +1,6 @@
 import { BigNumber } from "@ethersproject/bignumber";
 
-import { Decimal } from "@liquity/lib-base";
+import { Decimal } from "@threshold-usd/lib-base";
 
 export const DEFAULT_COLLATERAL_FOR_TESTING = "tst";
 export const DEFAULT_VERSION_FOR_TESTING = "v1";

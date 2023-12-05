@@ -10,7 +10,7 @@ import {
   SuccessfulReceipt,
   SentLiquityTransaction,
   TroveCreationParams,
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 import { _connectToDeployment } from "../src/EthersLiquityConnection";
 import { _LiquityDeploymentJSON } from "../src/contracts";

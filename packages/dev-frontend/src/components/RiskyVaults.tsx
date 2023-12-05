@@ -7,9 +7,9 @@ import {
   CRITICAL_COLLATERAL_RATIO,
   UserTrove as UserVault,
   Decimal
-} from "@liquity/lib-base";
-import { BlockPolledLiquityStoreState as BlockPolledThresholdStoreState } from "@liquity/lib-ethers";
-import { useThresholdSelector } from "@liquity/lib-react";
+} from "@threshold-usd/lib-base";
+import { BlockPolledLiquityStoreState as BlockPolledThresholdStoreState } from "@threshold-usd/lib-ethers";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 import { Web3Provider } from "@ethersproject/providers";
 import { useWeb3React } from "@web3-react/core";
 

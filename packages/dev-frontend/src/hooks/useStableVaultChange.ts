@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Decimal, TroveChange as VaultChange } from "@liquity/lib-base";
+import { Decimal, TroveChange as VaultChange } from "@threshold-usd/lib-base";
 
 export type ValidVaultChange = Exclude<VaultChange<Decimal>, { type: "invalidCreation" }>;
 

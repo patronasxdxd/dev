@@ -6,7 +6,7 @@ import {
   THUSD_MINIMUM_DEBT,
   Trove,
   TroveWithPendingRedistribution
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 import { Fixture } from "../fixture";
 import { deployer, funder, provider, subgraph } from "../globals";

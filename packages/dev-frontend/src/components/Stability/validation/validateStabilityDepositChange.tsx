@@ -2,11 +2,11 @@ import {
   Decimal,
   BammDeposit,
   BammDepositChange
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 import {
   Difference
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 import { COIN } from "../../../utils/constants";
 import { Amount } from "../../ActionDescription";

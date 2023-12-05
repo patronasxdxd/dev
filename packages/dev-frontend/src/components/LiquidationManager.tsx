@@ -4,8 +4,8 @@ import { StaticAmounts, Row } from "./Vault/Editor";
 import { useThreshold } from "../hooks/ThresholdContext";
 import { Transaction } from "./Transaction";
 import { InfoIcon } from "./InfoIcon";
-import { LiquityStoreState as ThresholdStoreState} from "@liquity/lib-base";
-import { useThresholdSelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState} from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 
 const editableStyle: ThemeUICSSProperties = {
   backgroundColor: "terciary",

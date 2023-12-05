@@ -15,7 +15,7 @@ import {
   THUSD_MINIMUM_NET_DEBT,
   MAXIMUM_BORROWING_RATE,
   MINIMUM_BORROWING_RATE
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 // project imports
 import erc20Abi from "../abi/ERC20Test.json";

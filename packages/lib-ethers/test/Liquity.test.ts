@@ -23,7 +23,7 @@ import {
   MINIMUM_BORROWING_RATE,
   THUSD_MINIMUM_DEBT,
   THUSD_MINIMUM_NET_DEBT
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 import { HintHelpers } from "../types";
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ChartContext } from "./ChartContext";
 
 import { useThreshold } from "../../../../hooks/ThresholdContext";
-import { Decimal } from "@liquity/lib-base";
+import { Decimal } from "@threshold-usd/lib-base";
 import { fetchCoinGeckoPrice } from "./fetchCoinGeckoPrice";
 import axios from "axios";
 

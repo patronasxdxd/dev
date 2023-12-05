@@ -13,7 +13,7 @@ import { task, HardhatUserConfig, types, extendEnvironment } from "hardhat/confi
 import { HardhatRuntimeEnvironment, NetworkUserConfig } from "hardhat/types";
 import "@nomiclabs/hardhat-ethers";
 
-import { Decimal } from "@liquity/lib-base";
+import { Decimal } from "@threshold-usd/lib-base";
 
 import { deployAndSetupContracts, deployTellorCaller, initiatePCVAndWithdrawFromBamm, setSilent, transferContractsOwnership } from "./utils/deploy";
 import { _connectToContracts, _LiquityDeploymentJSON, _priceFeedIsTestnet } from "./src/contracts";

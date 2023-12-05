@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { useThresholdSelector } from "@liquity/lib-react";
-import { LiquityStoreState as ThresholdStoreState, BammDeposit } from "@liquity/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
+import { LiquityStoreState as ThresholdStoreState, BammDeposit } from "@threshold-usd/lib-base";
 import { StabilityViewContext } from "./StabilityViewContext";
 import type { StabilityView, StabilityEvent } from "./types";
 

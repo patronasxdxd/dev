@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from "react";
 import { Card, Box, Flex, Button, Link } from "theme-ui";
 
-import { LiquityStoreState as ThresholdStoreState } from "@liquity/lib-base";
-import { useThresholdSelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState } from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 
 import { COIN } from "../../utils/constants";
 import { Icon } from "../Icon";

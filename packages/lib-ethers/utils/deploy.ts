@@ -7,7 +7,7 @@ import {
   _LiquityDeploymentJSON,
   _connectToContracts
 } from "../src/contracts";
-import { BammDeposit, Decimal, Decimalish } from "@liquity/lib-base";
+import { BammDeposit, Decimal, Decimalish } from "@threshold-usd/lib-base";
 import { decimalify } from "../src/_utils";
 import { BAMM, PCV, PriceFeed, PriceFeedTestnet, StabilityPool } from "../types";
 import { BigNumber } from "ethers";

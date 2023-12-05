@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
-import { Decimal, TroveChange as VaultChange } from "@liquity/lib-base";
-import { PopulatedEthersLiquityTransaction as PopulatedEthersThresholdTransaction } from "@liquity/lib-ethers";
+import { Decimal, TroveChange as VaultChange } from "@threshold-usd/lib-base";
+import { PopulatedEthersLiquityTransaction as PopulatedEthersThresholdTransaction } from "@threshold-usd/lib-ethers";
 
 import { useThreshold } from "../../hooks/ThresholdContext";
 import { Warning } from "../Warning";

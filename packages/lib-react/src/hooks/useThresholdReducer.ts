@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 
-import { LiquityStoreState as ThresholdStoreState, LiquityStore as ThresholdBaseStore } from "@liquity/lib-base";
+import { LiquityStoreState as ThresholdStoreState, LiquityStore as ThresholdBaseStore } from "@threshold-usd/lib-base";
 
 import { equals } from "../utils/equals";
 import { useThresholdStore } from "./useThresholdStore";
