@@ -39,7 +39,7 @@ contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgr
         thusdToken.finalizeRevokeMintList();
     }
 
-    function transferOwnershiptoGovernorBravo(address _account) 
+    function transferOwnershipToGovernorBravo(address _account) 
         external 
         onlyOwner 
     {
