@@ -7,7 +7,7 @@ import "../Dependencies/CheckContract.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract THUSDOwnerUpgradeableProxy is Initializable, OwnableUpgradeable {
+contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgradeable {
     ITHUSDToken private thusdToken;
 
     // --- Addresses to Revoke ---
@@ -150,7 +150,7 @@ contract THUSDOwnerUpgradeableProxy is Initializable, OwnableUpgradeable {
     // --- Internal operations ---
     
     function _addAddressToRevokeList(address _account) internal {
-        require(checkContract(_account), "Address is not a contract");
+        checkContract(_account);
         addressesToRevokeList[_account] = true;
     }
 }
