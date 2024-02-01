@@ -14,18 +14,17 @@ contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgr
     mapping(address => bool) public addressesToRevokeList;
 
     uint256 public governanceTimeDelay;
-
     address public pendingRevokedMintAddress;
-
     uint256 public revokeMintListInitiated;
+
+    address public integrationsGuild;
 
     function initialize(
         address _governorBravoAddress, 
         address _thusdTokenAddress,
         address _borrowerOperationsAddress1,
         address _borrowerOperationsAddress2,
-        address _borrowerOperationsAddress3,
-        address _borrowerOperationsAddress4,
+        address _integrationsGuild,
         uint256 _governanceTimeDelay
     ) 
         public 
@@ -36,15 +35,25 @@ contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgr
 
         _addAddressToRevokeList(_borrowerOperationsAddress1);
         _addAddressToRevokeList(_borrowerOperationsAddress2);
-        _addAddressToRevokeList(_borrowerOperationsAddress3);
-        _addAddressToRevokeList(_borrowerOperationsAddress4);
 
         thusdToken = ITHUSDToken(_thusdTokenAddress);
+
+        require(_integrationsGuild != address(0), "Integrations Guild owner must be specified");
+        integrationsGuild = _integrationsGuild;
 
         governanceTimeDelay = _governanceTimeDelay;
         require(governanceTimeDelay <= 30 weeks, "Governance delay is too big");
 
         _transferOwnership(_governorBravoAddress);
+    }
+
+    modifier onlyIntegrationsGuildOrOwner() {
+        require(
+            msg.sender == owner() || 
+            msg.sender == integrationsGuild, 
+            "Ownable: caller must be integration's guild or owner"
+        );
+        _;
     }
 
     modifier onlyAfterGovernanceDelay(
@@ -65,6 +74,7 @@ contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgr
     }
 
     function cancelRevokeMintList() external onlyOwner {
+        require(revokeMintListInitiated == 0, "There is an old set being revoked from the mint list");
         thusdToken.cancelRevokeMintList();
     }
 
@@ -119,9 +129,12 @@ contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgr
         thusdToken.finalizeRevokeBurnList();
     }
 
-    // --- External functions ---
+    // --- Integration's Guild functions ---
 
-    function startRevokeOldMintList(address _account) external {
+    function startRevokeOldMintList(address _account) 
+        external 
+        onlyIntegrationsGuildOrOwner
+    {
         require(addressesToRevokeList[_account], "Incorrect address to revoke");
 
         revokeMintListInitiated = block.timestamp;
@@ -129,7 +142,10 @@ contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgr
         thusdToken.startRevokeMintList(_account);
     }
 
-    function cancelRevokeOldMintList() external {
+    function cancelRevokeOldMintList() 
+        external 
+        onlyIntegrationsGuildOrOwner 
+    {
         require(revokeMintListInitiated != 0, "Revoking from mint list is not started");
 
         revokeMintListInitiated = 0;
@@ -139,7 +155,7 @@ contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgr
 
     function finalizeRevokeOldMintList()
         external
-        onlyAfterGovernanceDelay(revokeMintListInitiated)
+        onlyIntegrationsGuildOrOwner
     {
         addressesToRevokeList[pendingRevokedMintAddress] = false;
         revokeMintListInitiated = 0;
