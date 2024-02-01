@@ -15,7 +15,7 @@ interface ITHUSDToken is IERC20Metadata, IERC2612 {
 
     event THUSDTokenBalanceUpdated(address _user, uint256 _amount);
 
-    // --- Functions ---
+    // --- External Functions ---
     function mintList(address contractAddress) external view returns (bool);
     function burnList(address contractAddress) external view returns (bool);
 
@@ -26,4 +26,21 @@ interface ITHUSDToken is IERC20Metadata, IERC2612 {
     function increaseAllowance(address spender, uint256 addedValue) external returns (bool);
 
     function decreaseAllowance(address spender, uint256 subtractedValue) external returns (bool);
+
+    // --- Governance functions ---
+    function startRevokeMintList(address _account) external;
+    function cancelRevokeMintList() external;
+    function finalizeRevokeMintList() external;
+
+    function startAddMintList(address _account) external;
+    function cancelAddMintList() external;
+    function finalizeAddMintList() external;
+
+    function startAddContracts(address _troveManagerAddress, address _stabilityPoolAddress, address _borrowerOperationsAddress) external;
+    function cancelAddContracts() external;
+    function finalizeAddContracts() external;
+
+    function startRevokeBurnList(address _account) external;
+    function cancelRevokeBurnList() external;
+    function finalizeRevokeBurnList() external;
 }
