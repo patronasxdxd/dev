@@ -8,7 +8,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgradeable {
-   ITHUSDToken private thusdToken;
+    ITHUSDToken private thusdToken;
 
     address public governorBravoAddress;
 
@@ -29,6 +29,7 @@ contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgr
         require(_governorBravoAddress != address(0), "Governor Bravo address must be specified");
 
         governorBravoAddress = _governorBravoAddress;
+
         _transferOwnership(_integrationsGuild);
     }
 
