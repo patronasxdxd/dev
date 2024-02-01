@@ -31,10 +31,6 @@ contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgr
         thusdToken.startRevokeMintList(_account);
     }
 
-    function cancelRevokeMintList() external onlyOwner {
-        thusdToken.cancelRevokeMintList();
-    }
-
     function finalizeRevokeMintList() external onlyOwner {
         thusdToken.finalizeRevokeMintList();
     }
