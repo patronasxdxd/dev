@@ -29,18 +29,6 @@ interface ITHUSDToken is IERC20Metadata, IERC2612 {
 
     // --- Governance functions ---
     function startRevokeMintList(address _account) external;
-    function cancelRevokeMintList() external;
     function finalizeRevokeMintList() external;
-
-    function startAddMintList(address _account) external;
-    function cancelAddMintList() external;
-    function finalizeAddMintList() external;
-
-    function startAddContracts(address _troveManagerAddress, address _stabilityPoolAddress, address _borrowerOperationsAddress) external;
-    function cancelAddContracts() external;
-    function finalizeAddContracts() external;
-
-    function startRevokeBurnList(address _account) external;
-    function cancelRevokeBurnList() external;
-    function finalizeRevokeBurnList() external;
+    function transferOwnership(address newOwner) external;
 }

@@ -4,24 +4,18 @@ pragma solidity ^0.8.17;
 
 import "../Interfaces/ITHUSDToken.sol";
 import "../Dependencies/CheckContract.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "../Dependencies/Ownable.sol";
 
-contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgradeable {
+contract THUSDOwner is Ownable, CheckContract {
     ITHUSDToken private thusdToken;
 
     address public governorBravoAddress;
 
-    function initialize(
+    constructor(
         address _governorBravoAddress, 
         address _thusdTokenAddress,
         address _integrationsGuild
-    ) 
-        public 
-        initializer 
-    {
-        __Ownable_init();
-        
+    ) {
         checkContract(_thusdTokenAddress);
         thusdToken = ITHUSDToken(_thusdTokenAddress);
 
@@ -30,7 +24,7 @@ contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgr
 
         governorBravoAddress = _governorBravoAddress;
 
-        _transferOwnership(_integrationsGuild);
+        transferOwnership(_integrationsGuild);
     }
 
     function startRevokeMintList(address _account) external onlyOwner {
@@ -46,7 +40,6 @@ contract THUSDOwnerUpgradeableProxy is Initializable, CheckContract, OwnableUpgr
         onlyOwner 
     {
         require(_account == governorBravoAddress, "THUSDOwner: new owner must be Governor Bravo");
-        _transferOwnership(_account);
+        thusdToken.transferOwnership(_account);
     }
-
 }
