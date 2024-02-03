@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.17;
 
-import "../Interfaces/ITHUSDToken.sol";
-import "../Dependencies/CheckContract.sol";
-import "../Dependencies/Ownable.sol";
+import "./Interfaces/ITHUSDToken.sol";
+import "./Dependencies/CheckContract.sol";
+import "./Dependencies/Ownable.sol";
 
 contract THUSDOwner is Ownable, CheckContract {
     ITHUSDToken private thusdToken;
