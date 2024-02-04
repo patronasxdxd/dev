@@ -24,7 +24,7 @@ contract THUSDOwner is Ownable, CheckContract {
 
         governorBravoAddress = _governorBravoAddress;
 
-        transferOwnership(_integrationsGuild);
+        _transferOwnership(_integrationsGuild);
     }
 
     function startRevokeMintList(address _account) external onlyOwner {
@@ -35,7 +35,7 @@ contract THUSDOwner is Ownable, CheckContract {
         thusdToken.finalizeRevokeMintList();
     }
 
-    function transferOwnershipToGovernorBravo(address _account) 
+    function transferThusdOwnershipToGovernorBravo(address _account) 
         external 
         onlyOwner 
     {
