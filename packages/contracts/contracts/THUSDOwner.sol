@@ -7,9 +7,9 @@ import "./Dependencies/CheckContract.sol";
 import "./Dependencies/Ownable.sol";
 
 contract THUSDOwner is Ownable, CheckContract {
-    ITHUSDToken private thusdToken;
+    ITHUSDToken public immutable thusdToken;
 
-    address public governorBravoAddress;
+    address public immutable governorBravoAddress;
 
     constructor(
         address _governorBravoAddress, 
@@ -35,11 +35,7 @@ contract THUSDOwner is Ownable, CheckContract {
         thusdToken.finalizeRevokeMintList();
     }
 
-    function transferThusdOwnershipToGovernorBravo(address _account) 
-        external 
-        onlyOwner 
-    {
-        require(_account == governorBravoAddress, "THUSDOwner: new owner must be Governor Bravo");
-        thusdToken.transferOwnership(_account);
+    function transferThusdOwnershipToGovernorBravo() external onlyOwner {
+        thusdToken.transferOwnership(governorBravoAddress);
     }
 }

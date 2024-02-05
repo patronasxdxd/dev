@@ -120,23 +120,13 @@ contract('THUSDOwner', async accounts => {
 
   it('transferThusdOwnershipToGovernorBravo(): reverts when caller is not owner', async () => {
     await assertRevert(thusdOwner.transferThusdOwnershipToGovernorBravo(
-      governorBravo, 
       { from: owner }), 
       "Ownable: caller is not the owner"
-    )
-  })
-
-  it('transferThusdOwnershipToGovernorBravo(): reverts when new owner is not governor bravo', async () => {
-    await assertRevert(thusdOwner.transferThusdOwnershipToGovernorBravo(
-      owner, 
-      { from: integrationsGuild }), 
-      "THUSDOwner: new owner must be Governor Bravo"
     )
   })
   
   it('transferThusdOwnershipToGovernorBravo(): transfer thusd ownership to governor bravo', async () => {
     await thusdOwner.transferThusdOwnershipToGovernorBravo(
-      governorBravo, 
       { from: integrationsGuild }
     )
     await assert.equal(await thusdToken.owner(), governorBravo)
