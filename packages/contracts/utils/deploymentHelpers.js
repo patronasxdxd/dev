@@ -2,6 +2,7 @@ const SortedTroves = artifacts.require("./SortedTroves.sol")
 const TroveManager = artifacts.require("./TroveManager.sol")
 const PriceFeedTestnet = artifacts.require("./PriceFeedTestnet.sol")
 const THUSDToken = artifacts.require("./THUSDToken.sol")
+const THUSDOwner = artifacts.require("./THUSDOwner.sol")
 const ActivePool = artifacts.require("./ActivePool.sol");
 const DefaultPool = artifacts.require("./DefaultPool.sol");
 const StabilityPool = artifacts.require("./StabilityPool.sol")
@@ -75,7 +76,7 @@ class DeploymentHelper {
       delay
     )
     const pcv = await PCV.new(delay)
-
+    
     PCV.setAsDeployed(pcv)
     THUSDToken.setAsDeployed(thusdToken)
     DefaultPool.setAsDeployed(defaultPool)
@@ -120,6 +121,7 @@ class DeploymentHelper {
   }
 
   static async deployTesterContractsHardhat(accounts) {
+    const [owner, integrationsGuild, governorBravo] = accounts;
     const testerContracts = {}
 
     // Contract without testers (yet)
@@ -137,11 +139,16 @@ class DeploymentHelper {
     testerContracts.troveManager = await TroveManagerTester.new()
     testerContracts.functionCaller = await FunctionCaller.new()
     testerContracts.hintHelpers = await HintHelpers.new()
-    testerContracts.thusdToken =  await THUSDTokenTester.new(
+    testerContracts.thusdToken = await THUSDTokenTester.new(
       testerContracts.troveManager.address,
       testerContracts.stabilityPool.address,
       testerContracts.borrowerOperations.address,
       delay
+    )
+    testerContracts.thusdOwner = await THUSDOwner.new(
+      governorBravo,
+      testerContracts.thusdToken.address,
+      integrationsGuild
     )
     testerContracts.pcv = await PCV.new(delay)
     
