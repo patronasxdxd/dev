@@ -4,9 +4,8 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "../Dependencies/IERC2612.sol";
-import "../Dependencies/IOwnable.sol";
 
-interface ITHUSDToken is IERC20Metadata, IOwnable, IERC2612 {
+interface ITHUSDToken is IERC20Metadata, IERC2612 {
 
     // --- Events ---
 

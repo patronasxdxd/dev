@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.17;
 
-import "./IOwnable.sol";
-
 /**
  * Based on OpenZeppelin's Ownable contract:
  * https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
@@ -16,7 +14,7 @@ import "./IOwnable.sol";
  * `onlyOwner`, which can be applied to your functions to restrict their use to
  * the owner.
  */
-contract Ownable is IOwnable {
+contract Ownable {
     address private _owner;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
