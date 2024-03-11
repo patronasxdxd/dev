@@ -680,7 +680,7 @@ https://eips.ethereum.org/EIPS/eip-2612
 
 `removeRecipientFromWhitelist(address _recipient)`: This function removes a recipient to the recipients' whitelist. Before proceeding, it verifies that the recipient is included in the whitelist. Upon verification, it removes the `_recipient` address to the `recipientsWhitelist` whitelist.
 
-`removeRecipientsFromWhitelist(address _recipient)`: This function removes an array of recipients to the recipients' whitelist. Before proceeding, it verifies that the length of the `_recipients` array is greater than zero. Once verified, it removes each recipient address of the array to the `recipientsWhitelist`.
+`removeRecipientsFromWhitelist(address[] _recipients)`: This function removes an array of recipients to the recipients' whitelist. Before proceeding, it verifies that the length of the `_recipients` array is greater than zero. Once verified, it removes each recipient address of the array to the `recipientsWhitelist`.
 
 ### PriceFeed - `PriceFeed.sol`
 
