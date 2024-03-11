@@ -1,7 +1,7 @@
-(THUSD THUSDFee thUSD).THUSD# Threshold USD: Decentralized Borrowing Protocol
+Threshold USD: Decentralized Borrowing Protocol
 
-
-Threshold USD is a decentralized protocol that allows ETH and tBTC holders to obtain maximum liquidity against
+Threshold USD is a modified fork of Liquity Protocol built to be self-sustained through a PCV 
+("Protocol Controlled Value"). It allows ETH and tBTC holders to obtain maximum liquidity against
 their collateral without paying interest. After locking up ETH or tBTC as collateral in a smart contract and
 creating an individual position called a "vault", the user can get instant liquidity by minting thUSD,
 a USD-pegged stablecoin. Each vault is required to be collateralized at a minimum of 110%. Any
@@ -1330,6 +1330,8 @@ This combines the top-level `prepare` and `build` scripts.
 
 You'll find the output in `packages/dev-frontend/build`.
 
+## Known Issues
+
 ### Temporary and slightly inaccurate TCR calculation within `batchLiquidateTroves` in Recovery Mode.
 
 When liquidating a vault with `ICR > 110%`, a collateral surplus remains claimable by the borrower. This collateral surplus should be excluded from subsequent TCR calculations, but within the liquidation sequence in `batchLiquidateTroves` in Recovery Mode, it is not. This results in a slight distortion to the TCR value used at each step of the liquidation sequence going forward. This distortion only persists for the duration the `batchLiquidateTroves` function call, and the TCR is again calculated correctly after the liquidation sequence ends. In most cases there is no impact at all, and when there is, the effect tends to be minor. The issue is not present at all in Normal Mode.
@@ -1391,13 +1393,13 @@ Finally, this DoS could be avoided if the initial transaction avoids the public 
 
 ## Disclaimer
 
-The content of this readme document (“Readme”) is of purely informational nature. In particular, none of the content of the Readme shall be understood as advice provided by Threshold USD AG, any Threshold USD Project Team member or other contributor to the Readme, nor does any of these persons warrant the actuality and accuracy of the Readme.
+The content of this readme document (“Readme”) is of purely informational nature. In particular, none of the content of the Readme shall be understood as advice provided by Threshold USD Foundation, any Threshold USD Project Team member or other contributor to the Readme, nor does any of these persons warrant the actuality and accuracy of the Readme.
 
 Please read this Disclaimer carefully before accessing, interacting with, or using the Threshold USD Protocol software, consisting of the Threshold USD Protocol technology stack (in particular its smart contracts) as well as any other Threshold USD technology.
 
-While Threshold USD AG developed the Threshold USD Protocol Software, the Threshold USD Protocol Software runs in a fully decentralized and autonomous manner on the Ethereum network. Threshold USD AG is not involved in the operation of the Threshold USD Protocol Software nor has it any control over transactions made using its smart contracts. Further, Threshold USD AG does neither enter into any relationship with users of the Threshold USD Protocol Software. Any and all functionalities of the Threshold USD Protocol Software, including the thUSD, are of purely technical nature and there is no claim towards any private individual or legal entity in this regard.
+While Threshold USD Foundation developed the Threshold USD Protocol Software, the Threshold USD Protocol Software runs in a fully decentralized and autonomous manner on the Ethereum network. Threshold USD Foundation is not involved in the operation of the Threshold USD Protocol Software nor has it any control over transactions made using its smart contracts. Further, Threshold USD Foundation does neither enter into any relationship with users of the Threshold USD Protocol Software. Any and all functionalities of the Threshold USD Protocol Software, including the thUSD, are of purely technical nature and there is no claim towards any private individual or legal entity in this regard.
 
-THRESHOLD USD AG IS NOT LIABLE TO ANY USER FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE, IN CONNECTION WITH THE USE OR INABILITY TO USE THE THRESHOLD USD PROTOCOL SOFTWARE (INCLUDING BUT NOT LIMITED TO LOSS OF collateral, thUSD, LOSS OF DATA, BUSINESS INTERRUPTION, DATA BEING RENDERED INACCURATE OR OTHER LOSSES SUSTAINED BY A USER OR THIRD PARTIES AS A RESULT OF THE THRESHOLD USD PROTOCOL SOFTWARE OR A FAILURE OF THE THRESHOLD USD PROTOCOL SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE).
+THRESHOLD USD FOUNDATION IS NOT LIABLE TO ANY USER FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE, IN CONNECTION WITH THE USE OR INABILITY TO USE THE THRESHOLD USD PROTOCOL SOFTWARE (INCLUDING BUT NOT LIMITED TO LOSS OF collateral, thUSD, LOSS OF DATA, BUSINESS INTERRUPTION, DATA BEING RENDERED INACCURATE OR OTHER LOSSES SUSTAINED BY A USER OR THIRD PARTIES AS A RESULT OF THE THRESHOLD USD PROTOCOL SOFTWARE OR A FAILURE OF THE THRESHOLD USD PROTOCOL SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE).
 
 The Threshold USD Protocol Software has been developed and published under the GNU GPL v3 open-source license, which forms an integral part of this disclaimer.
 
