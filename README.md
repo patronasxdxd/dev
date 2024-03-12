@@ -1,4 +1,4 @@
-Threshold USD: Decentralized Borrowing Protocol
+# Threshold USD: Decentralized Borrowing Protocol
 
 Threshold USD is a modified fork of Liquity Protocol built to be self-sustained through a PCV 
 ("Protocol Controlled Value"). It allows ETH and tBTC holders to obtain maximum liquidity against
