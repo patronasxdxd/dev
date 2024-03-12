@@ -15,7 +15,8 @@ than by active governance or monetary interventions.
 
 ## More information
 
-Visit [thresholdusd.org](https://www.thresholdusd.org) to find out more and join the discussion.
+- Visit [thresholdusd.org](https://www.thresholdusd.org) to find out more and join the discussion.
+- Visit our page on [Immunefi](https://immunefi.com/bounty/thusd/) for information on our ongoing bounty program.
 
 ## Threshold USD System Summary
 
