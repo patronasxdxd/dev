@@ -20,7 +20,6 @@ than by active governance or monetary interventions.
 
 ## Threshold USD System Summary
 
-- [Disclaimer](#disclaimer)
 - [Threshold USD Overview](#thresholdusd-overview)
 - [Liquidation and the Stability Pool](#liquidation-and-the-stability-pool)
   - [Liquidation gas costs](#liquidation-gas-costs)
