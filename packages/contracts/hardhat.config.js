@@ -1,6 +1,6 @@
 require("@nomiclabs/hardhat-truffle5");
 require("@nomiclabs/hardhat-ethers");
-require("@nomiclabs/hardhat-etherscan");
+require("@nomicfoundation/hardhat-verify");
 require("solidity-coverage");
 require("hardhat-gas-reporter");
 
@@ -22,13 +22,6 @@ const alchemyUrl = () => {
     return `https://eth-mainnet.alchemyapi.io/v2/${getSecret('alchemyAPIKey')}`
 }
 
-const alchemyUrlRinkeby = () => {
-    return `https://eth-rinkeby.alchemyapi.io/v2/${getSecret('alchemyAPIKeyRinkeby')}`
-}
-
-const alchemyUrlRopsten = () => {
-    return `https://eth-ropsten.alchemyapi.io/v2/${getSecret('alchemyAPIKeyRopsten')}`
-}
 
 module.exports = {
     paths: {
@@ -48,6 +41,9 @@ module.exports = {
             }
         ]
     },
+    sourcify: {
+        enabled: true
+      },
     networks: {
         hardhat: {
             accounts: accountsList,
@@ -65,19 +61,29 @@ module.exports = {
                 getSecret('ACCOUNT2_PRIVATEKEY', '0x3ec7cedbafd0cb9ec05bf9f7ccfa1e8b42b3e3a02c75addfccbfeb328d1b383b')
             ]
         },
-        rinkeby: {
-            url: alchemyUrlRinkeby(),
-            gas: 10000000,  // tx gas limit
-            accounts: [getSecret('RINKEBY_DEPLOYER_PRIVATEKEY', '0x60ddfe7f579ab6867cbe7a2dc03853dc141d7a4ab6dbefc0dae2d2b1bd4e487f')]
+        bob_testnet: {
+            url: "https://testnet.rpc.gobob.xyz/",
+            chainId: 111,
+            accounts: [
+                getSecret('DEPLOYER_PRIVATEKEY', '0x60ddfe7f579ab6867cbe7a2dc03853dc141d7a4ab6dbefc0dae2d2b1bd4e487f'),
+                getSecret('ACCOUNT2_PRIVATEKEY', '0x3ec7cedbafd0cb9ec05bf9f7ccfa1e8b42b3e3a02c75addfccbfeb328d1b383b')
+            ]
         },
-        ropsten: {
-            url: alchemyUrlRopsten(),
-            gas: 120000000,  // tx gas limit
-            accounts: [getSecret('RINKEBY_DEPLOYER_PRIVATEKEY', '0x60ddfe7f579ab6867cbe7a2dc03853dc141d7a4ab6dbefc0dae2d2b1bd4e487f')]
-        }
     },
     etherscan: {
-        apiKey: getSecret("ETHERSCAN_API_KEY")
+        apiKey: {
+            bob_testnet: getSecret("ETHERSCAN_API_KEY")
+        },
+        customChains: [
+            {
+              network: "bob_testnet",
+              chainId: 111,
+              urls: {
+                apiURL: "https://testnet-explorer.gobob.xyz/api?",
+                browserURL: "https://testnet.rpc.gobob.xyz"
+              }
+            },
+        ],
     },
     mocha: {
         timeout: 12000000,
