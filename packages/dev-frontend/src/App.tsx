@@ -25,7 +25,7 @@ const wcV2InitOptions = {
    * Strongly recommended to provide atleast one URL as it is required by some wallets (i.e. MetaMask)
    * To connect with WalletConnect
    */
-  dappUrl: 'http://app.thresholdusd.org'
+  dappUrl: 'https://app.thresholdusd.org'
 }
 
 const injected = injectedModule();
@@ -40,6 +40,13 @@ const wallets = [
   walletConnect
 ]
 
+const publicRpcUrls = {
+  '0x1': 'https://cloudflare-eth.com/',
+  '0xaa36a7': 'https://sepolia.eth.aragon.network/',
+  '0x6f': "wss://testnet.rpc.gobob.xyz",
+  '0xed88': "wss://rpc.gobob.xyz",
+};
+
 const chains = [
   {
     id: '0x1',
@@ -48,16 +55,22 @@ const chains = [
     rpcUrl: getRpcUrl('0x1')
   },
   {
-    id: '0x5',
-    token: 'ETH',
-    label: 'Goerli',
-    rpcUrl: getRpcUrl('0x5')
-  },
-  {
     id: '0xaa36a7',
     token: 'ETH',
     label: 'Sepolia',
     rpcUrl: getRpcUrl('0xaa36a7')
+  },
+  {
+    id: '0x6f',
+    token: 'ETH',
+    label: 'BOB Testnet',
+    rpcUrl: getRpcUrl('0x6f')
+  },
+  {
+    id: '0xed88',
+    token: 'ETH',
+    label: 'Ethereum Mainnet',
+    rpcUrl: getRpcUrl('0xed88')
   },
 ]
 
@@ -92,15 +105,9 @@ if (window.ethereum) {
   Object.assign(window.ethereum, { autoRefreshOnNetworkChange: false });
 }
 
-function getRpcUrl(chainIdHex: '0x1' | '0x5' | '0xaa36a7') {
-  const publicRpcUrls = {
-    '0x1': 'https://cloudflare-eth.com/',
-    '0x5': 'https://goerli.eth.aragon.network/',
-    '0xaa36a7': 'https://sepolia.eth.aragon.network/'
-  };
-
-  if (process.env.REACT_APP_ALCHEMY_ID) {
-    return `https://eth-${chainIdHex === '0x1' ? 'mainnet' : chainIdHex === '0x5' ? 'goerli' : 'sepolia'}.g.alchemy.com/v2/${process.env.REACT_APP_ALCHEMY_ID}`;
+function getRpcUrl(chainIdHex: keyof typeof publicRpcUrls) {
+  if (process.env.REACT_APP_ALCHEMY_ID && (chainIdHex === "0x1" || chainIdHex === "0xaa36a7")) {
+    return `https://eth-${chainIdHex === '0x1' ? 'mainnet' : 'sepolia'}.g.alchemy.com/v2/${process.env.REACT_APP_ALCHEMY_ID}`;
   } else {
     return publicRpcUrls[chainIdHex];
   }

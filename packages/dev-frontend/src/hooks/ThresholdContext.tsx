@@ -31,7 +31,7 @@ type ThresholdContextValue = {
 };
 
 type SupportedNetworks = {
-  [key: string]: "homestead" | "goerli" | "sepolia";
+  [key: string]: "homestead" | "goerli" | "sepolia" | "bob_testnet" | "bob_mainnet";
 };
 
 const ThresholdContext = createContext<ThresholdContextValue | undefined>(undefined);
@@ -43,12 +43,25 @@ type ThresholdProviderProps = {
   unsupportedMainnetFallback?: React.ReactNode;
 };
 
-const wsParams = (network: string, alchemyApiKey: string): [string, string] => [
-  `wss://eth-${network === "homestead" ? "mainnet" : network}.g.alchemy.com/v2/${alchemyApiKey}`,
+const wsParams = (network: string): [string, string] => [
+  wssParam[network],
   network
 ];
 
-export const supportedNetworks: SupportedNetworks = { 1: "homestead", 5: "goerli", 11155111: "sepolia"};
+const wssParam: Record<string, string> = {
+  homestead: `wss://eth-mainnet.g.alchemy.com/v2/${process.env.REACT_APP_ALCHEMY_ID}`,
+  sepolia: `wss://eth-sepolia.g.alchemy.com/v2/${process.env.REACT_APP_ALCHEMY_ID}`,
+  bob_testnet: "wss://testnet.rpc.gobob.xyz",
+  bob_mainnet: "wss://rpc.gobob.xyz",
+}
+
+
+export const supportedNetworks: SupportedNetworks = { 
+  1: "homestead", 
+  11155111: "sepolia", 
+  111: "bob_testnet", 
+  60808: "bob_mainnet",
+};
 
 const getCollateralVersions = async (chainId: number): Promise<CollateralsVersionedDeployments> => {
   const network = supportedNetworks[chainId];
@@ -133,8 +146,8 @@ export const ThresholdProvider = ({
   }, [chainId, provider, address, config])
 
   useEffect(() => {
-    getConfig().then(setConfig);
-  }, []);
+    getConfig(chainId).then(setConfig);
+  }, [chainId]);
 
   useEffect(() => {
     if (!chainId || !(chainId in supportedNetworks)) {
@@ -165,7 +178,7 @@ export const ThresholdProvider = ({
         if (isWebSocketAugmentedProvider(provider)) {
           const network = getNetwork(chainId);
           if (network.name && Object.keys(supportedNetworks).includes(network.name) && process.env.REACT_APP_ALCHEMY_ID) {
-            provider.openWebSocket(...wsParams(network.name, process.env.REACT_APP_ALCHEMY_ID));
+            provider.openWebSocket(...wsParams(network.name));
           } else if (connections[0]._isDev) {
             provider.openWebSocket(`ws://${window.location.hostname}:8546`, chainId);
           }
