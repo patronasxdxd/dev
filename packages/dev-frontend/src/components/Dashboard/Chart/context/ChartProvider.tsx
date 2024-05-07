@@ -174,18 +174,20 @@ async function fetchData(API_URL: string, query: string) {
 
 export const ChartProvider = ({ children }: FunctionalPanelProps): JSX.Element  => {
   const timestamps: Array<TimestampsObject> = createListOfTimestamps();
-  // Define the state variables for the component using useState hook
   const [isTVLDataAvailable, setisTVLDataAvailable] = useState<boolean>(true);
   const [tvl, setTvl] = useState<Tvl[]>([]);
   const [isMounted, setIsMounted] = useState<boolean>(true);
 
-  // Destructure values from useThreshold hook
   const { threshold, config, provider } = useThreshold();
-  const { blocksApiUrl, thresholdUsdApiUrl } = config;
+  const { blocksApiUrl, thresholdUsdApiUrl, isUnsupportedNetwork } = config;
 
-  // Define the getTVLData function for fetching TVL data
   const getTVLData = () => {
-    // Check if the required config properties are present
+    if (isUnsupportedNetwork) {
+      console.error(`The network is unsupported in config.json file`);
+      setisTVLDataAvailable(false);
+      return;
+    }
+
     if (!blocksApiUrl || !thresholdUsdApiUrl || !coingeckoIdsBySymbol) {
       console.error(`You must add a config.json file into the public source folder.`);
       setisTVLDataAvailable(false);
@@ -223,28 +225,28 @@ export const ChartProvider = ({ children }: FunctionalPanelProps): JSX.Element  
       });
   };
   
-  // Use the useEffect hook to fetch TVL data only once when the component mounts
   useEffect(() => {
     if (!isMounted) {
       return;
     }
     getTVLData();
 
-    // Clean up function to set isMounted to false when the component unmounts
     return () => {
       setIsMounted(false);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted]);
 
-  // Return the children wrapped in ChartContext.Provider if TVL data is available
+  if (isUnsupportedNetwork) return <ChartContext.Provider value={{ isUnsupportedNetwork }}>{children}</ChartContext.Provider>;
+
   if (!isTVLDataAvailable || !timestamps || tvl.length !== threshold.length) {
     return <>{children}</>
   };
 
   const chartProvider = {
     tvl,
-    timestamps
+    timestamps,
+    isUnsupportedNetwork: false,
   };
   
   return <ChartContext.Provider value={chartProvider}>{children}</ChartContext.Provider>;

@@ -24,11 +24,20 @@ type WalletConnectorProps = {
   children: React.ReactNode
 };
 type HexChains = {
-  "0x1": number;
-  "0x5": number;
-  "0xaa36a7": number;
+  "0x1": 1;
+  "0x5": 5;
+  "0xaa36a7": 11155111;
+  "0x6f": 111;
+  "0xed88": 60808;
 }
-const hexChains: HexChains = {"0x1": 1, "0x5": 5, "0xaa36a7": 11155111}
+
+const hexChains: HexChains = {
+  "0x1": 1, 
+  "0x5": 5, 
+  "0xaa36a7": 11155111, 
+  "0x6f": 111, 
+  "0xed88": 60808
+}
 
 export const WalletConnectorProvider = ({ children }: WalletConnectorProps): JSX.Element => {
   const [colorMode] = useColorMode()

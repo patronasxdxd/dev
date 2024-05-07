@@ -301,32 +301,28 @@ export function _connectByChainId(
  */
 /** @public */
 export async function getCollateralsDeployments(network: string): Promise<CollateralsVersionedDeployments> {
-  // Initialize an empty object to hold the versioned deployments.
   const versionedDeployments: CollateralsVersionedDeployments = {};
   
-  // Get an array of DeploymentFolder objects for all the collaterals.
   const collateralDeployments: FolderInfo[] = deployments.subfolders;
-  // Loop through each collateral DeploymentFolder and map over its subfolders.
- for (let index = 0; index < collateralDeployments.length; index++) {
+  for (let index = 0; index < collateralDeployments.length; index++) {
     const collateral = collateralDeployments[index]
     
-    await Promise.all((collateral.subfolders as FolderInfo[]).map(async (versionDeployment) => {
-      
+    collateral.subfolders!.forEach(async (versionDeployment) => {
+
       // Construct the absolute path of the JSON file for the specified network and version.
       import(`@threshold-usd/lib-ethers/${versionDeployment.path}/${network}.json`)
-        .then((deployment) => {
-          // Load the JSON file for the specified network and version.
-          versionedDeployments[collateral.name] = {
+        .then((deployment) => versionedDeployments[collateral.name] = {
             ...versionedDeployments[collateralDeployments[index].name],
             [versionDeployment.name]: deployment,
           }
-        })
-        .catch((error) => console.error(`Failed to load deployment for ${collateralDeployments[index].name} version ${versionDeployment.name}: ${error}`));
-        // Add the versioned deployment to the corresponding collateral in the versionedDeployments object.
-    }))
+        )
+        .catch((error) => {
+          if (error.message.includes("Cannot find module")) return;
+          console.error(`Failed to load deployment for ${collateralDeployments[index].name} version ${versionDeployment.name}: ${error}`)
+        });
+    })
   }
 
-  // Return the versioned deployments object.
   return versionedDeployments;
 }
 

@@ -19,6 +19,7 @@ import { Line } from 'react-chartjs-2';
 import { Decimal } from "@threshold-usd/lib-base";
 import { useHover } from "../../../utils/hooks";
 import { LoadingChart } from "./LoadingChart";
+import { UnsupportedNetworkChart } from "./UnsupportedNetworkChart";
 
 ChartJS.register(
   CategoryScale,
@@ -65,12 +66,18 @@ export const LineChart = (): JSX.Element => {
   const [lastTvlDecimal, setLastTvlDecimal] = useState<Decimal>();
   const [lastTvlNumber, setLastTvlNumber] = useState<Array<number>>([]);
   const [chartLabels, setChartLabels] = useState<Array<TimestampsObject>>();
+  const [isUnsupportedNetwork, setIsUnsupportedNetwork] = useState<boolean>(false);
 
   useTvl()
     .then((result) => {
-      if (result === null || !isMounted) {
+      if (result?.isUnsupportedNetwork) {
+        setIsUnsupportedNetwork(true) 
         return
       }
+
+      if (!result?.tvl || !result.timestamps) return
+
+      setIsUnsupportedNetwork(false)
       setTvl(result.tvl)
       setTimestamps(result.timestamps)
       setLoadedChart(true);
@@ -81,33 +88,21 @@ export const LineChart = (): JSX.Element => {
     })
 
   useEffect(() => {
-    if (!isMounted) {
+    if (!isMounted || !loadedChart) {
       return;
     }
-    const cachedData = localStorage.getItem("chartData");
-    const cachedLabels = localStorage.getItem("chartLabels");
-    
-    if (cachedData && cachedLabels) {
-      setChartData(JSON.parse(cachedData));
-      setChartLabels(JSON.parse(cachedLabels));
-      setLastTvlDecimal(JSON.parse(cachedData)[cachedData.length - 1]);
-      setLoadedChart(true);
-    }
-  
-    if (!loadedChart) {
-      return;
-    }
-    let memeTvl: Decimal[] = [];
+
+    let queriedTvl: Decimal[] = [];
   
     for (const collateralTvl of tvl) {
       collateralTvl.tvl.forEach((tvl, index) => {
-        if (memeTvl[index] === undefined) {
-          memeTvl[index] = Decimal.from(0);
+        if (queriedTvl[index] === undefined) {
+          queriedTvl[index] = Decimal.from(0);
         }
-        memeTvl[index] = tvl.totalCollateral.add(memeTvl[index]);
+        queriedTvl[index] = tvl.totalCollateral.add(queriedTvl[index]);
       });
     }
-    setLastTvlNumber(memeTvl.map(decimal => parseInt(decimal.toString())))
+    setLastTvlNumber(queriedTvl.map(decimal => parseInt(decimal.toString())))
   
   
     return () => {
@@ -119,11 +114,7 @@ export const LineChart = (): JSX.Element => {
     if (lastTvlNumber.length > 0 && timestamps.length > 0) {
       setChartData(lastTvlNumber);
       setChartLabels(timestamps);
-      localStorage.setItem("chartData", JSON.stringify(lastTvlNumber));
-      localStorage.setItem("chartLabels", JSON.stringify(timestamps));
     }
-  
-
   }, [isMounted, lastTvlNumber, timestamps]);
 
   const labels: Array<{[date: string]: string}> = [];
@@ -276,9 +267,11 @@ export const LineChart = (): JSX.Element => {
           </>}
           <Box sx={{ display: "flex", paddingBottom: "1rem", height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }} ref={hoverRef}>
             {
-              !loadedChart 
-                ? <LoadingChart />
-                : <Line options={{ ...options, interaction: { mode: 'index', intersect: false } }}  data={data} />
+              isUnsupportedNetwork 
+                ? <UnsupportedNetworkChart />
+                : !loadedChart 
+                  ? <LoadingChart />
+                  : <Line options={{ ...options, interaction: { mode: 'index', intersect: false } }}  data={data} />
             }
           </Box>
         </Box>
