@@ -107,19 +107,19 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
     }
 
     function increaseGovernanceTimeDelay(
-        uint256 _governanceTimeDelay
+        uint256 _newGovernanceTimeDelay
     )
         external
         onlyOwner
     {
         require(
-            _governanceTimeDelay >= governanceTimeDelay,
+            _newGovernanceTimeDelay > governanceTimeDelay,
             "The governance time delay can only be increased"
         );
-        require(_governanceTimeDelay <= 30 weeks, "Governance delay is too big");
+        require(_newGovernanceTimeDelay <= 30 weeks, "Governance delay is too big");
 
-        governanceTimeDelay = _governanceTimeDelay;
-        emit GovernanceTimeDelayIncreased(_governanceTimeDelay);
+        governanceTimeDelay = _newGovernanceTimeDelay;
+        emit GovernanceTimeDelayIncreased(_newGovernanceTimeDelay);
     }
 
     // --- Governance ---
