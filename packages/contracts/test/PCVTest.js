@@ -7,6 +7,7 @@ const testHelpers = require("../utils/testHelpers.js")
 
 const th = testHelpers.TestHelper
 const ZERO_ADDRESS = th.ZERO_ADDRESS
+const SECONDS_IN_ONE_MINUTE = th.SECONDS_IN_ONE_MINUTE
 const assertRevert = th.assertRevert
 const toBN = th.toBN
 const dec = th.dec
@@ -68,8 +69,9 @@ contract('PCV', async accounts => {
       await pcv.startChangingRoles(council, treasury, { from: owner })
       await pcv.finalizeChangingRoles({ from: owner })
       await pcv.addRecipientsToWhitelist([alice, council, treasury], { from: owner })
+      await thusdToken.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
       
-      delay = (await pcv.governanceTimeDelay()).toNumber()
+      delay = (await thusdToken.governanceTimeDelay()).toNumber()
     })
 
     it('initialize(): reverts when trying to initialize second time', async () => {

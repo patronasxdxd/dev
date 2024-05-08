@@ -19,7 +19,8 @@ const {
   ZERO_ADDRESS, 
   getLatestBlockTimestamp,
   fastForwardTime,
-  getEventArgByIndex
+  getEventArgByIndex,
+  SECONDS_IN_ONE_MINUTE
 } = testHelpers.TestHelper
 
 const sign = (digest, privateKey) => {
@@ -72,8 +73,6 @@ contract('THUSDToken', async accounts => {
 
   let tokenName
   let tokenVersion
-  
-  let delay
 
   const testCorpus = ({ withProxy = false }) => {
     beforeEach(async () => {
@@ -98,8 +97,6 @@ contract('THUSDToken', async accounts => {
 
       tokenVersion = await thusdTokenOriginal.version()
       tokenName = await thusdTokenOriginal.name()
-      
-      delay = (await thusdTokenOriginal.governanceTimeDelay()).toNumber()
 
       // mint some tokens
       if (withProxy) {
@@ -393,6 +390,42 @@ contract('THUSDToken', async accounts => {
           newBorrowerOperations = await BorrowerOperationsTester.new()
         })
 
+        it("getGovernanceTimeDelay(): returns the governance time delay", async () => {
+          const governanceTimeDelay = await thusdTokenTester.getGovernanceTimeDelay()
+          assert.equal(governanceTimeDelay, 0)
+        })
+
+        it('increaseGovernanceTimeDelay(): increases the governance time delay', async () => {
+          await thusdTokenTester.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
+          assert.equal((await thusdTokenTester.governanceTimeDelay()).toNumber(), 60)
+          await thusdTokenTester.increaseGovernanceTimeDelay(2 * SECONDS_IN_ONE_MINUTE, { from: owner })
+          assert.equal((await thusdTokenTester.governanceTimeDelay()).toNumber(), 120)
+        })
+
+        it('increaseGovernanceTimeDelay(): fails trying to decrease the governance time delay', async () => {
+          await thusdTokenTester.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
+          assert.equal((await thusdTokenTester.governanceTimeDelay()).toNumber(), SECONDS_IN_ONE_MINUTE)
+          await assertRevert(thusdTokenTester.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner }), 
+          'The governance time delay can only be increased')
+          assert.equal((await thusdTokenTester.governanceTimeDelay()).toNumber(), SECONDS_IN_ONE_MINUTE)
+        })
+
+        it('increaseGovernanceTimeDelay(): fails trying to increase the governance time delay above the max cap', async () => {
+          await thusdTokenTester.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
+          assert.equal((await thusdTokenTester.governanceTimeDelay()).toNumber(), SECONDS_IN_ONE_MINUTE)
+          await assertRevert(thusdTokenTester.increaseGovernanceTimeDelay(20000000, { from: owner }), 
+          'Governance delay is too big')
+          assert.equal((await thusdTokenTester.governanceTimeDelay()).toNumber(), SECONDS_IN_ONE_MINUTE)
+        })
+
+        it('increaseGovernanceTimeDelay(): reverts when caller is not owner', async () => {
+          await thusdTokenTester.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
+          assert.equal((await thusdTokenTester.governanceTimeDelay()).toNumber(), SECONDS_IN_ONE_MINUTE)
+          await assertRevert(thusdTokenTester.increaseGovernanceTimeDelay(2 * SECONDS_IN_ONE_MINUTE, { from: alice }), 
+          'Ownable: caller is not the owner')
+          assert.equal((await thusdTokenTester.governanceTimeDelay()).toNumber(), SECONDS_IN_ONE_MINUTE)
+        })
+
         it('startAddContracts(): reverts when caller is not owner', async () => {
           await assertRevert(
             thusdTokenTester.startAddContracts(
@@ -500,6 +533,7 @@ contract('THUSDToken', async accounts => {
         })
 
         it('finalizeAddContracts(): reverts when passed not enough time', async () => {
+          await thusdTokenTester.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
           await thusdTokenTester.startAddContracts(
               newTroveManager.address, newStabilityPool.address, newBorrowerOperations.address, 
               { from: owner }
@@ -511,11 +545,12 @@ contract('THUSDToken', async accounts => {
         })
 
         it('finalizeAddContracts(): enables new system contracts roles', async () => {
+          await thusdTokenTester.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
           await thusdTokenTester.startAddContracts(
               newTroveManager.address, newStabilityPool.address, newBorrowerOperations.address, 
               { from: owner }
             )
-          await fastForwardTime(delay, web3.currentProvider)
+          await fastForwardTime(SECONDS_IN_ONE_MINUTE, web3.currentProvider)
           
           let tx = await thusdTokenTester.finalizeAddContracts({ from: owner })
 
@@ -606,6 +641,7 @@ contract('THUSDToken', async accounts => {
       })
 
       it('finalizeRevokeMintList(): reverts when passed not enough time', async () => {
+        await thusdTokenTester.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
         await thusdTokenTester.startRevokeMintList(
             borrowerOperations.address, 
             { from: owner }
@@ -617,11 +653,12 @@ contract('THUSDToken', async accounts => {
       })
 
       it('finalizeRevokeMintList(): removes account from minting list', async () => {
+        await thusdTokenTester.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
         await thusdTokenTester.startRevokeMintList(
             borrowerOperations.address, 
             { from: owner }
           )
-        await fastForwardTime(delay, web3.currentProvider)
+        await fastForwardTime(SECONDS_IN_ONE_MINUTE, web3.currentProvider)
         
         await thusdTokenTester.finalizeRevokeMintList({ from: owner })
 
@@ -697,6 +734,7 @@ contract('THUSDToken', async accounts => {
       })
 
       it('finalizeAddMintList(): reverts when passed not enough time', async () => {
+        await thusdTokenTester.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
         await thusdTokenTester.startAddMintList(alice, { from: owner })
         await assertRevert(
           thusdTokenTester.finalizeAddMintList(
@@ -705,8 +743,9 @@ contract('THUSDToken', async accounts => {
       })
 
       it('finalizeAddMintList(): adds account to minting list', async () => {
+        await thusdTokenTester.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
         await thusdTokenTester.startAddMintList(alice, { from: owner })
-        await fastForwardTime(delay, web3.currentProvider)
+        await fastForwardTime(SECONDS_IN_ONE_MINUTE, web3.currentProvider)
         
         await thusdTokenTester.finalizeAddMintList({ from: owner })
 
@@ -785,6 +824,7 @@ contract('THUSDToken', async accounts => {
       })
 
       it('finalizeRevokeBurnList(): reverts when passed not enough time', async () => {
+        await thusdTokenTester.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
         await thusdTokenTester.startRevokeBurnList(
             borrowerOperations.address, 
             { from: owner }
@@ -796,11 +836,12 @@ contract('THUSDToken', async accounts => {
       })
 
       it('finalizeRevokeBurnList(): removes account from minting list', async () => {
+        await thusdTokenTester.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
         await thusdTokenTester.startRevokeBurnList(
             borrowerOperations.address, 
             { from: owner }
           )
-        await fastForwardTime(delay, web3.currentProvider)
+        await fastForwardTime(SECONDS_IN_ONE_MINUTE, web3.currentProvider)
         
         await thusdTokenTester.finalizeRevokeBurnList({ from: owner })
 

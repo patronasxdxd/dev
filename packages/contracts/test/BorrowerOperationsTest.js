@@ -12,6 +12,7 @@ const dec = th.dec
 const toBN = th.toBN
 
 const ZERO_ADDRESS = th.ZERO_ADDRESS
+const SECONDS_IN_ONE_MINUTE = th.SECONDS_IN_ONE_MINUTE
 const assertRevert = th.assertRevert
 
 /* NOTE: Some of the borrowing tests do not test for specific THUSD fee values. They only test that the
@@ -79,6 +80,8 @@ contract('BorrowerOperations', async accounts => {
       THUSD_GAS_COMPENSATION = await borrowerOperations.THUSD_GAS_COMPENSATION()
       MIN_NET_DEBT = await borrowerOperations.MIN_NET_DEBT()
       BORROWING_FEE_FLOOR = await borrowerOperations.BORROWING_FEE_FLOOR()
+
+      await thusdToken.increaseGovernanceTimeDelay(SECONDS_IN_ONE_MINUTE, { from: owner })
       delay = (await contracts.thusdToken.governanceTimeDelay()).toNumber()
 
     })
