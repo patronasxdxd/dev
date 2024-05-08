@@ -13,18 +13,17 @@ import { task, HardhatUserConfig, types, extendEnvironment } from "hardhat/confi
 import { HardhatRuntimeEnvironment, NetworkUserConfig } from "hardhat/types";
 import "@nomiclabs/hardhat-ethers";
 
-import { Decimal } from "@threshold-usd/lib-base";
-
-import { deployAndSetupContracts, deployTellorCaller, initiatePCVAndWithdrawFromBamm, setSilent, transferContractsOwnership } from "./utils/deploy";
+import { deployAndSetupContracts, deployTellorCaller, increaseThusdGovernanceTimeDelay, initiatePCVAndWithdrawFromBamm, setSilent, transferContractsOwnership } from "./utils/deploy";
 import { _connectToContracts, _LiquityDeploymentJSON, _priceFeedIsTestnet } from "./src/contracts";
 
 import accounts from "./accounts.json";
 import { getFolderInfo } from "./utils/fsScripts";
 import { mkdir, writeFile } from "fs/promises";
-import { ZERO_ADDRESS, MAINNET_TBTC_ADDRESS, SEPOLIA_TBTC_ADDRESS } from "./utils/constants";
+import { ZERO_ADDRESS, BOB_MAINNET_TBTC_ADDRESS } from "./utils/constants";
+import { supportedNetworks } from "./src/_utils";
 
 interface IOracles {
-  chainlink: string,
+  chainlinkCompatible: string,
   tellor: string,
 }
 
@@ -36,6 +35,8 @@ export interface IAssets {
 export interface INetworkOracles {
   mainnet: IAssets,
   sepolia: IAssets,
+  bob_mainnet: IAssets,
+  bob_testnet: IAssets,
 }
 
 export interface IQueryIds {
@@ -76,14 +77,29 @@ const generateRandomAccounts = (numberOfAccounts: number) => {
 const deployerAccount = process.env.DEPLOYER_PRIVATE_KEY || Wallet.createRandom().privateKey;
 const devChainRichAccount = "0x4d5db4107d237df6a3d58ee5f70ae63d73d7658d4026f2eefd2f204c81682cb7";
 
-const infuraApiKey = "ad9cef41c9c844a7b54d10be24d416e5";
+const alchemyApiKey = process.env.DEPLOYER_PRIVATE_KEY;
 
-const infuraNetwork = (name: string): { [name: string]: NetworkUserConfig } => ({
-  [name]: {
-    url: `https://${name}.infura.io/v3/${infuraApiKey}`,
-    accounts: [deployerAccount]
+const urlNetwork = (name: string): { [name: string]: NetworkUserConfig } => {
+  const chainIdByNetworkName = Object.entries(supportedNetworks).reduce((acc, [key, value]) => {
+    acc[value] = Number(key);
+    return acc;
+  }, {} as Record<string, number>);
+
+  const rpcUrlByNetworkname: Record<string, string> = {
+    mainnet: `https://eth-mainnet.alchemyapi.io/v2/${alchemyApiKey}`,
+    sepolia: `https://eth-sepolia.alchemyapi.io/v2/${alchemyApiKey}`,
+    bob_mainnet: `https://rpc.gobob.xyz/`,
+    bob_testnet: `https://testnet.rpc.gobob.xyz/`,
+  };
+
+  return {
+    [name]: {
+      chainId: chainIdByNetworkName[name],
+      url: rpcUrlByNetworkname[name],
+      accounts: [deployerAccount],
+    }
   }
-});
+};
 
 // https://docs.chain.link/docs/ethereum-addresses
 // https://docs.tellor.io/tellor/the-basics/contracts-reference
@@ -91,22 +107,42 @@ const infuraNetwork = (name: string): { [name: string]: NetworkUserConfig } => (
 export const oracleAddresses: INetworkOracles = {
   mainnet: {
     tbtc: {
-      chainlink: "0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c",
+      chainlinkCompatible: "0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c",
       tellor: "0x8cFc184c877154a8F9ffE0fe75649dbe5e2DBEbf"
     },
     eth: {
-      chainlink: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+      chainlinkCompatible: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
       tellor: "0x8cFc184c877154a8F9ffE0fe75649dbe5e2DBEbf"
     }
   },
   sepolia: {
     tbtc: {
-      chainlink: "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43",
+      chainlinkCompatible: "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43",
       tellor: "0xB19584Be015c04cf6CFBF6370Fe94a58b7A38830"
     },
     eth: {
-      chainlink: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
+      chainlinkCompatible: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
       tellor: "0xB19584Be015c04cf6CFBF6370Fe94a58b7A38830"
+    }
+  },
+  bob_mainnet: {
+    tbtc: {
+      chainlinkCompatible: "0x77b5887f0f545cdfaf62e168c10a8ef1c4934c2c",
+      tellor: "0xC866DB9021fe81856fF6c5B3E3514BF9D1593D81"
+    },
+    eth: {
+      chainlinkCompatible: "0x77b5887f0f545cdfaf62e168c10a8ef1c4934c2c",
+      tellor: "0xC866DB9021fe81856fF6c5B3E3514BF9D1593D81"
+    }
+  },
+  bob_testnet: {
+    tbtc: {
+      chainlinkCompatible: "0x77b5887f0f545cdfaf62e168c10a8ef1c4934c2c",
+      tellor: "0xC866DB9021fe81856fF6c5B3E3514BF9D1593D81"
+    },
+    eth: {
+      chainlinkCompatible: "0x77b5887f0f545cdfaf62e168c10a8ef1c4934c2c",
+      tellor: "0xC866DB9021fe81856fF6c5B3E3514BF9D1593D81"
     }
   },
 };
@@ -138,9 +174,10 @@ const config: HardhatUserConfig = {
       accounts: [deployerAccount, devChainRichAccount, ...generateRandomAccounts(numAccounts - 2)]
     },
 
-    ...infuraNetwork("goerli"),
-    ...infuraNetwork("sepolia"),
-    ...infuraNetwork("mainnet")
+    ...urlNetwork("bob_testnet"),
+    ...urlNetwork("sepolia"),
+    ...urlNetwork("bob_mainnet"),
+    ...urlNetwork("mainnet"),
   },
 
   paths: {
@@ -158,7 +195,6 @@ declare module "hardhat/types/runtime" {
       firstCollateralAddress: string,
       secondCollateralSymbol: (keyof IAssets),
       secondCollateralAddress: string,
-      delay?: number,
       stablecoinAddress?: string,
       contractsVersion?: string,
       useRealPriceFeed?: boolean,
@@ -186,8 +222,7 @@ extendEnvironment(env => {
     firstCollateralSymbol = "eth",
     firstCollateralAddress = ZERO_ADDRESS,
     secondCollateralSymbol = "tbtc",
-    secondCollateralAddress = MAINNET_TBTC_ADDRESS,
-    delay = 90 * 24 * 60 * 60,
+    secondCollateralAddress = BOB_MAINNET_TBTC_ADDRESS,
     stablecoinAddress = "",
     contractsVersion = "v1",
     useRealPriceFeed = false,
@@ -200,7 +235,6 @@ extendEnvironment(env => {
       secondCollateralSymbol,
       secondCollateralAddress,
       getContractFactory(env),
-      delay,
       stablecoinAddress,
       contractsVersion,
       useRealPriceFeed,
@@ -226,10 +260,10 @@ const defaultChannel = process.env.DEFAULT_CHANNEL || "default";
 const firstDefaultCollateralSymbol = process.env.FIRST_DEFAULT_COLLATERAL_SYMBOL || "eth";
 const firstDefaultCollateralAddress = process.env.FIRST_DEFAULT_COLLATERAL_ADDRESS || ZERO_ADDRESS;
 const secondDefaultCollateralSymbol = process.env.SECOND_DEFAULT_COLLATERAL_SYMBOL || "tbtc";
-const secondDefaultCollateralAddress = process.env.SECOND_DEFAULT_COLLATERAL_ADDRESS || MAINNET_TBTC_ADDRESS;
+const secondDefaultCollateralAddress = process.env.SECOND_DEFAULT_COLLATERAL_ADDRESS || BOB_MAINNET_TBTC_ADDRESS;
 const defaultVersion = process.env.DEFAULT_VERSION || "v1";
 const defaultThusdAddress = process.env.DEFAULT_THUSD_ADDRESS || "";
-const defaultDelay = process.env.DEFAULT_DELAY || 90 * 24 * 60 * 60;
+const defaultDelay = process.env.DEFAULT_DELAY || 15 * 24 * 60 * 60;
 
 task("deploy", "Deploys the contracts to the network")
   .addOptionalParam("channel", "Deployment channel to deploy into", defaultChannel, types.string)
@@ -270,9 +304,13 @@ task("deploy", "Deploys the contracts to the network")
       gasPrice, 
       useRealPriceFeed 
     }: DeployParams, env) => {     
-      const overrides = { gasPrice: gasPrice && Decimal.from(gasPrice).div(1000000000).hex };
+      const provider = env.ethers.provider;
+      const currentGasPrice = await provider.getGasPrice();
+      // Increase the gas price by 20% as a buffer
+      const adjustedGasPrice = gasPrice ?? currentGasPrice.mul(200).div(100);
+      const overrides = { gasPrice: adjustedGasPrice.toString() };
       const [deployer] = await env.ethers.getSigners();
-      useRealPriceFeed ??= env.network.name === "mainnet";
+      useRealPriceFeed ??= env.network.name === "bob_mainnet" || env.network.name === "mainnet";
 
       if (useRealPriceFeed && !hasOracles(env.network.name)) {
         throw new Error(`PriceFeed not supported on ${env.network.name}`);
@@ -286,7 +324,8 @@ task("deploy", "Deploys the contracts to the network")
       console.log('version', contractsVersion);
       console.log('delay', delay);
       console.log('stablecoin address:', stablecoinAddress);
-      console.log('gas price: ', gasPrice);
+      console.log('adjustedGasPrice: ', adjustedGasPrice);
+      console.log('useRealPriceFeed: ', useRealPriceFeed);
       setSilent(false);
 
       const deployments = await env
@@ -294,10 +333,9 @@ task("deploy", "Deploys the contracts to the network")
           deployer, 
           oracleAddresses, 
           firstCollateralSymbol, 
-          firstCollateralAddress,
+          firstCollateralAddress, 
           secondCollateralSymbol, 
           secondCollateralAddress, 
-          delay, 
           stablecoinAddress, 
           contractsVersion,
           useRealPriceFeed,
@@ -322,7 +360,7 @@ task("deploy", "Deploys the contracts to the network")
             console.log(`Hooking up PriceFeed with oracles ...`);
 
             const tx = await contracts.priceFeed.setAddresses(
-              oracleAddresses[env.network.name][deployment.collateralSymbol as keyof IAssets].chainlink,
+              oracleAddresses[env.network.name][deployment.collateralSymbol as keyof IAssets].chainlinkCompatible,
               tellorCallerAddress,
               overrides
             );
@@ -332,8 +370,7 @@ task("deploy", "Deploys the contracts to the network")
         }
 
         await initiatePCVAndWithdrawFromBamm(contracts, deployer, overrides);
-
-        console.log("Transferring Contracts Ownership...");
+        await increaseThusdGovernanceTimeDelay(delay, contracts, deployer, overrides);
         await transferContractsOwnership(contracts, deployer, overrides);
         
         const deploymentChannelPath = path.posix.join("deployments", channel);
