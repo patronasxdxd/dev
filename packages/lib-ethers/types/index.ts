@@ -358,6 +358,7 @@ interface THUSDTokenCalls {
   burnList(arg0: string, _overrides?: CallOverrides): Promise<boolean>;
   decimals(_overrides?: CallOverrides): Promise<number>;
   domainSeparator(_overrides?: CallOverrides): Promise<string>;
+  getGovernanceTimeDelay(_overrides?: CallOverrides): Promise<BigNumber>;
   governanceTimeDelay(_overrides?: CallOverrides): Promise<BigNumber>;
   isOwner(_overrides?: CallOverrides): Promise<boolean>;
   mintList(arg0: string, _overrides?: CallOverrides): Promise<boolean>;
@@ -391,6 +392,7 @@ interface THUSDTokenTransactions {
   finalizeRevokeBurnList(_overrides?: Overrides): Promise<void>;
   finalizeRevokeMintList(_overrides?: Overrides): Promise<void>;
   increaseAllowance(spender: string, addedValue: BigNumberish, _overrides?: Overrides): Promise<boolean>;
+  increaseGovernanceTimeDelay(_governanceTimeDelay: BigNumberish, _overrides?: Overrides): Promise<void>;
   mint(_account: string, _amount: BigNumberish, _overrides?: Overrides): Promise<void>;
   permit(owner: string, spender: string, amount: BigNumberish, deadline: BigNumberish, v: BigNumberish, r: BytesLike, s: BytesLike, _overrides?: Overrides): Promise<void>;
   startAddContracts(_troveManagerAddress: string, _stabilityPoolAddress: string, _borrowerOperationsAddress: string, _overrides?: Overrides): Promise<void>;
@@ -407,6 +409,7 @@ export interface THUSDToken
   readonly filters: {
     Approval(owner?: string | null, spender?: string | null, value?: null): EventFilter;
     BorrowerOperationsAddressAdded(_newBorrowerOperationsAddress?: null): EventFilter;
+    GovernanceTimeDelayIncreased(_newGovernanceTimeDelay?: null): EventFilter;
     OwnershipTransferred(previousOwner?: string | null, newOwner?: string | null): EventFilter;
     StabilityPoolAddressAdded(_newStabilityPoolAddress?: null): EventFilter;
     THUSDTokenBalanceUpdated(_user?: null, _amount?: null): EventFilter;
@@ -415,6 +418,7 @@ export interface THUSDToken
   };
   extractEvents(logs: Log[], name: "Approval"): _TypedLogDescription<{ owner: string; spender: string; value: BigNumber }>[];
   extractEvents(logs: Log[], name: "BorrowerOperationsAddressAdded"): _TypedLogDescription<{ _newBorrowerOperationsAddress: string }>[];
+  extractEvents(logs: Log[], name: "GovernanceTimeDelayIncreased"): _TypedLogDescription<{ _newGovernanceTimeDelay: BigNumber }>[];
   extractEvents(logs: Log[], name: "OwnershipTransferred"): _TypedLogDescription<{ previousOwner: string; newOwner: string }>[];
   extractEvents(logs: Log[], name: "StabilityPoolAddressAdded"): _TypedLogDescription<{ _newStabilityPoolAddress: string }>[];
   extractEvents(logs: Log[], name: "THUSDTokenBalanceUpdated"): _TypedLogDescription<{ _user: string; _amount: BigNumber }>[];

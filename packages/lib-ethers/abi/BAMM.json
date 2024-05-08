@@ -732,22 +732,9 @@
     "name": "thusdToken",
     "outputs": [
       {
-        "internalType": "contract IERC20",
+        "internalType": "contract ITHUSDToken",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "total",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
