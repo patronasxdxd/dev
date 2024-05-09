@@ -195,6 +195,8 @@ declare module "hardhat/types/runtime" {
       firstCollateralAddress: string,
       secondCollateralSymbol: (keyof IAssets),
       secondCollateralAddress: string,
+      thusdDelay?: number,
+      pcvDelay?: number,
       stablecoinAddress?: string,
       contractsVersion?: string,
       useRealPriceFeed?: boolean,
@@ -223,6 +225,8 @@ extendEnvironment(env => {
     firstCollateralAddress = ZERO_ADDRESS,
     secondCollateralSymbol = "tbtc",
     secondCollateralAddress = BOB_MAINNET_TBTC_ADDRESS,
+    thusdDelay = 15 * 24 * 60 * 60,
+    pcvDelay = 120 * 24 * 60 * 60,
     stablecoinAddress = "",
     contractsVersion = "v1",
     useRealPriceFeed = false,
@@ -234,6 +238,8 @@ extendEnvironment(env => {
       firstCollateralAddress,
       secondCollateralSymbol,
       secondCollateralAddress,
+      thusdDelay,
+      pcvDelay,
       getContractFactory(env),
       stablecoinAddress,
       contractsVersion,
@@ -250,7 +256,8 @@ type DeployParams = {
   secondCollateralSymbol: keyof IAssets;
   secondCollateralAddress: string
   contractsVersion: string;
-  delay: number;
+  thusdDelay: number;
+  pcvDelay: number
   stablecoinAddress: string;
   gasPrice?: number;
   useRealPriceFeed?: boolean;
@@ -263,7 +270,8 @@ const secondDefaultCollateralSymbol = process.env.SECOND_DEFAULT_COLLATERAL_SYMB
 const secondDefaultCollateralAddress = process.env.SECOND_DEFAULT_COLLATERAL_ADDRESS || BOB_MAINNET_TBTC_ADDRESS;
 const defaultVersion = process.env.DEFAULT_VERSION || "v1";
 const defaultThusdAddress = process.env.DEFAULT_THUSD_ADDRESS || "";
-const defaultDelay = process.env.DEFAULT_DELAY || 15 * 24 * 60 * 60;
+const defaultThusdDelay = process.env.DEFAULT_THUSD_DELAY || 15 * 24 * 60 * 60;
+const defaultPcvDelay = process.env.DEFAULT_PCV_DELAY || 120 * 24 * 60 * 60;
 
 task("deploy", "Deploys the contracts to the network")
   .addOptionalParam("channel", "Deployment channel to deploy into", defaultChannel, types.string)
@@ -280,9 +288,15 @@ task("deploy", "Deploys the contracts to the network")
     types.boolean
   )
   .addOptionalParam(
-    "delay",
+    "thusdDelay",
     "Governance time set to thUSD contract",
-    defaultDelay,
+    defaultThusdDelay,
+    types.int
+  )
+  .addOptionalParam(
+    "pcvDelay",
+    "Governance time set to thUSD contract",
+    defaultPcvDelay,
     types.int
   )
   .addOptionalParam(
@@ -299,7 +313,8 @@ task("deploy", "Deploys the contracts to the network")
       secondCollateralSymbol, 
       secondCollateralAddress, 
       contractsVersion, 
-      delay, 
+      thusdDelay, 
+      pcvDelay,
       stablecoinAddress, 
       gasPrice, 
       useRealPriceFeed 
@@ -322,7 +337,8 @@ task("deploy", "Deploys the contracts to the network")
       console.log('secondCollateralSymbol', secondCollateralSymbol);
       console.log('secondCollateralAddress', secondCollateralAddress);
       console.log('version', contractsVersion);
-      console.log('delay', delay);
+      console.log('defaultThusdDelay', thusdDelay);
+      console.log('defaultPcvDelay', pcvDelay);
       console.log('stablecoin address:', stablecoinAddress);
       console.log('adjustedGasPrice: ', adjustedGasPrice);
       console.log('useRealPriceFeed: ', useRealPriceFeed);
@@ -335,7 +351,9 @@ task("deploy", "Deploys the contracts to the network")
           firstCollateralSymbol, 
           firstCollateralAddress, 
           secondCollateralSymbol, 
-          secondCollateralAddress, 
+          secondCollateralAddress,
+          thusdDelay, 
+          pcvDelay,
           stablecoinAddress, 
           contractsVersion,
           useRealPriceFeed,
@@ -370,7 +388,6 @@ task("deploy", "Deploys the contracts to the network")
         }
 
         await initiatePCVAndWithdrawFromBamm(contracts, deployer, overrides);
-        await increaseThusdGovernanceTimeDelay(delay, contracts, deployer, overrides);
         await transferContractsOwnership(contracts, deployer, overrides);
         
         const deploymentChannelPath = path.posix.join("deployments", channel);

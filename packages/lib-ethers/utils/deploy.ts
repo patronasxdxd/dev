@@ -71,6 +71,7 @@ const deployContracts = async (
   oracleAddresses: INetworkOracles,
   collateralSymbol: keyof IAssets,
   collateralAddress: string | undefined,
+  pcvDelay: number,
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
   _useRealPriceFeed: boolean,
   overrides?: Overrides
@@ -95,7 +96,7 @@ const deployContracts = async (
     }),
     defaultPool: await deployContract(deployer, getContractFactory, "DefaultPool", { ...overrides }),
     hintHelpers: await deployContract(deployer, getContractFactory, "HintHelpers", { ...overrides }),
-    pcv: await deployContract(deployer, getContractFactory, "PCV", { ...overrides }),
+    pcv: await deployContract(deployer, getContractFactory, "PCV", pcvDelay, { ...overrides }),
     sortedTroves: await deployContract(deployer, getContractFactory, "SortedTroves", {
       ...overrides
     }),
@@ -460,37 +461,6 @@ export const initiatePCVAndWithdrawFromBamm = async (
   }
 };
 
-export const increaseThusdGovernanceTimeDelay = async (
-  delay: number,
-  liquityContracts: _LiquityContracts,
-  deployer: Signer,
-  overrides?: Overrides
-): Promise<void> => {
-  if (!deployer.provider) {
-    throw new Error("Signer must have a provider.");
-  }
-  const { thusdToken } = liquityContracts;
-  const deployerAddress = await deployer.getAddress();
-  let txCount = await deployer.provider.getTransactionCount(deployerAddress);
-
-  log("increasing thUSD governance time delay...");
-  try {
-    const tx = await thusdToken.increaseGovernanceTimeDelay(
-      delay,
-      {
-      ...overrides,
-      nonce: txCount
-      }
-    );
-    await tx.wait();
-    txCount += 1;
-    log(`Successfully increased the thUSD governance time delay.`);
-  } catch (error) {
-    log(`Failed to increase the thUSD governance time delay: ${error}`);
-  }
-
-};
-
 export const deployAndSetupContracts = async (
   deployer: Signer,
   oracleAddresses: INetworkOracles,
@@ -498,6 +468,8 @@ export const deployAndSetupContracts = async (
   firstCollateralAddress: string,
   secondCollateralSymbol: keyof IAssets,
   secondCollateralAddress: string,
+  thusdDelay: number,
+  pcvDelay: number,
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
   stablecoinAddress: string,
   contractsVersion: string,
@@ -526,7 +498,8 @@ export const deployAndSetupContracts = async (
       deployer, 
       oracleAddresses, 
       firstCollateralSymbol, 
-      firstCollateralAddress, 
+      firstCollateralAddress,
+      pcvDelay,
       getContractFactory, 
       _useRealPriceFeed, 
       overrides
@@ -572,7 +545,8 @@ export const deployAndSetupContracts = async (
         deployer, 
         oracleAddresses, 
         secondCollateralSymbol, 
-        secondCollateralAddress, 
+        secondCollateralAddress,
+        pcvDelay,
         getContractFactory, 
         _useRealPriceFeed, 
         overrides
@@ -589,6 +563,7 @@ export const deployAndSetupContracts = async (
             secondDeploymentAddresses.troveManager,
             secondDeploymentAddresses.stabilityPool,
             secondDeploymentAddresses.borrowerOperations,
+            thusdDelay,
             { ...overrides }
           )
           thusdTokenAddress = thusdToken
