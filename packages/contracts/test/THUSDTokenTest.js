@@ -74,7 +74,7 @@ contract('THUSDToken', async accounts => {
 
   let tokenName
   let tokenVersion
-
+  
   let delay
 
   const testCorpus = ({ withProxy = false }) => {
