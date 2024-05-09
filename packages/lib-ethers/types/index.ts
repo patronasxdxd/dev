@@ -358,7 +358,6 @@ interface THUSDTokenCalls {
   burnList(arg0: string, _overrides?: CallOverrides): Promise<boolean>;
   decimals(_overrides?: CallOverrides): Promise<number>;
   domainSeparator(_overrides?: CallOverrides): Promise<string>;
-  getGovernanceTimeDelay(_overrides?: CallOverrides): Promise<BigNumber>;
   governanceTimeDelay(_overrides?: CallOverrides): Promise<BigNumber>;
   isOwner(_overrides?: CallOverrides): Promise<boolean>;
   mintList(arg0: string, _overrides?: CallOverrides): Promise<boolean>;
@@ -392,7 +391,7 @@ interface THUSDTokenTransactions {
   finalizeRevokeBurnList(_overrides?: Overrides): Promise<void>;
   finalizeRevokeMintList(_overrides?: Overrides): Promise<void>;
   increaseAllowance(spender: string, addedValue: BigNumberish, _overrides?: Overrides): Promise<boolean>;
-  increaseGovernanceTimeDelay(_governanceTimeDelay: BigNumberish, _overrides?: Overrides): Promise<void>;
+  increaseGovernanceTimeDelay(_newGovernanceTimeDelay: BigNumberish, _overrides?: Overrides): Promise<void>;
   mint(_account: string, _amount: BigNumberish, _overrides?: Overrides): Promise<void>;
   permit(owner: string, spender: string, amount: BigNumberish, deadline: BigNumberish, v: BigNumberish, r: BytesLike, s: BytesLike, _overrides?: Overrides): Promise<void>;
   startAddContracts(_troveManagerAddress: string, _stabilityPoolAddress: string, _borrowerOperationsAddress: string, _overrides?: Overrides): Promise<void>;

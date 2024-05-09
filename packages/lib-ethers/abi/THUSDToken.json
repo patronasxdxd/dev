@@ -30,6 +30,11 @@
         "internalType": "address",
         "name": "_borrowerOperationsAddress2",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_governanceTimeDelay",
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",
@@ -413,19 +418,6 @@
   },
   {
     "inputs": [],
-    "name": "getGovernanceTimeDelay",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "governanceTimeDelay",
     "outputs": [
       {
@@ -465,7 +457,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_governanceTimeDelay",
+        "name": "_newGovernanceTimeDelay",
         "type": "uint256"
       }
     ],
