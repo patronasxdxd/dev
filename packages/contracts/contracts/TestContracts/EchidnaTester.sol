@@ -55,7 +55,8 @@ contract EchidnaTester {
             address(borrowerOperations),
             address(0),
             address(0),
-            address(0)
+            address(0),
+            15 * 24 * 60 * 60
         );
 
         collSurplusPool = new CollSurplusPool();
