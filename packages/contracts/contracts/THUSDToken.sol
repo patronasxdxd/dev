@@ -78,7 +78,8 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
         address _borrowerOperationsAddress1,
         address _troveManagerAddress2,
         address _stabilityPoolAddress2,
-        address _borrowerOperationsAddress2
+        address _borrowerOperationsAddress2,
+        uint256 _governanceTimeDelay
     )
     {
         // when created its linked to one set of contracts and collateral, other collateral types can be added via governance
@@ -93,6 +94,9 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
         _HASHED_VERSION = hashedVersion;
         _CACHED_CHAIN_ID = block.chainid;
         _CACHED_DOMAIN_SEPARATOR = _buildDomainSeparator(_TYPE_HASH, hashedName, hashedVersion);
+
+        governanceTimeDelay = _governanceTimeDelay;
+        require(governanceTimeDelay <= 30 weeks, "Governance delay is too big");
     }
 
     modifier onlyAfterGovernanceDelay(
@@ -251,12 +255,6 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
     function burn(address _account, uint256 _amount) external override {
         require(burnList[msg.sender], "THUSDToken: Caller not allowed to burn");
         _burn(_account, _amount);
-    }
-
-    // --- thUSD property getters ---
-
-    function getGovernanceTimeDelay() external view override returns (uint256) {
-        return governanceTimeDelay;
     }
 
     // --- External functions ---

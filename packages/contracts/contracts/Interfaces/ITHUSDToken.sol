@@ -29,9 +29,6 @@ interface ITHUSDToken is IERC20Metadata, IERC2612 {
 
     function decreaseAllowance(address spender, uint256 subtractedValue) external returns (bool);
 
-    // --- Getters Functions ---
-    function getGovernanceTimeDelay() external view returns (uint256);
-
     // --- Governance functions ---
     function startRevokeMintList(address _account) external;
     function finalizeRevokeMintList() external;
