@@ -100,7 +100,7 @@ contract('THUSDToken', async accounts => {
 
       tokenVersion = await thusdTokenOriginal.version()
       tokenName = await thusdTokenOriginal.name()
-
+      
       delay = (await thusdTokenOriginal.governanceTimeDelay()).toNumber()
 
       // mint some tokens

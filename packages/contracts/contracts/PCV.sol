@@ -180,7 +180,6 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
         require(_council != council || _treasury != treasury, "PCV: these roles already set");
 
         changingRolesInitiated = block.timestamp;
-
         if (council == address(0) && treasury == address(0)) {
             changingRolesInitiated -= governanceTimeDelay; // skip delay if no roles set
         }
@@ -197,7 +196,6 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
     }
 
     function finalizeChangingRoles() external override onlyOwner {
-        
         require(changingRolesInitiated > 0, "PCV: Change not initiated");
         require(
             block.timestamp >= changingRolesInitiated + governanceTimeDelay,
