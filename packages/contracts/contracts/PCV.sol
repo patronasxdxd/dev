@@ -18,7 +18,7 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
 
     uint256 constant public BOOTSTRAP_LOAN = 1e26; // 100M thUSD
     
-    uint256 public governanceTimeDelay;
+    uint256 public immutable governanceTimeDelay;
 
     ITHUSDToken public thusdToken;
     BorrowerOperations public borrowerOperations;
@@ -37,6 +37,11 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
     address public pendingCouncilAddress;
     address public pendingTreasuryAddress;
     uint256 public changingRolesInitiated;
+
+    constructor(uint256 _governanceTimeDelay) {
+        governanceTimeDelay = _governanceTimeDelay;
+        require(governanceTimeDelay <= 30 weeks, "Governance delay is too big");
+    }
 
     modifier onlyAfterDebtPaid() {
         require(isInitialized && debtToPay == 0, "PCV: debt must be paid");
@@ -175,7 +180,6 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
         require(_council != council || _treasury != treasury, "PCV: these roles already set");
 
         changingRolesInitiated = block.timestamp;
-        governanceTimeDelay = thusdToken.getGovernanceTimeDelay();
 
         if (council == address(0) && treasury == address(0)) {
             changingRolesInitiated -= governanceTimeDelay; // skip delay if no roles set
@@ -193,7 +197,6 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
     }
 
     function finalizeChangingRoles() external override onlyOwner {
-        governanceTimeDelay = thusdToken.getGovernanceTimeDelay();
         
         require(changingRolesInitiated > 0, "PCV: Change not initiated");
         require(
