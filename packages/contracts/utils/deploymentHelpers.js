@@ -45,6 +45,9 @@ const {
 const ZERO_ADDRESS = '0x' + '0'.repeat(40)
 const maxBytes32 = '0x' + 'f'.repeat(64)
 
+const thusdDelay = 15 * 24 * 60 * 60  // 15 days in seconds
+const pcvDelay = 120 * 24 * 60 * 60  // 120 days in seconds
+
 class DeploymentHelper {
 
   static async deployLiquityCore(accounts) {
@@ -70,9 +73,10 @@ class DeploymentHelper {
       borrowerOperations.address,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
-      ZERO_ADDRESS
+      ZERO_ADDRESS,
+      thusdDelay
     )
-    const pcv = await PCV.new()
+    const pcv = await PCV.new(pcvDelay)
     
     PCV.setAsDeployed(pcv)
     THUSDToken.setAsDeployed(thusdToken)
@@ -139,14 +143,15 @@ class DeploymentHelper {
     testerContracts.thusdToken = await THUSDTokenTester.new(
       testerContracts.troveManager.address,
       testerContracts.stabilityPool.address,
-      testerContracts.borrowerOperations.address
+      testerContracts.borrowerOperations.address,
+      thusdDelay
     )
     testerContracts.thusdOwner = await THUSDOwner.new(
       governorBravo,
       testerContracts.thusdToken.address,
       integrationsGuild
     )
-    testerContracts.pcv = await PCV.new()
+    testerContracts.pcv = await PCV.new(pcvDelay)
     
     let index = 0;
     for (const account of accounts) {
@@ -167,7 +172,8 @@ class DeploymentHelper {
       contracts.borrowerOperations.address,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
-      ZERO_ADDRESS
+      ZERO_ADDRESS,
+      thusdDelay
     )
     return contracts
   }
@@ -176,7 +182,8 @@ class DeploymentHelper {
     contracts.thusdToken = await THUSDTokenTester.new(
       contracts.troveManager.address,
       contracts.stabilityPool.address,
-      contracts.borrowerOperations.address
+      contracts.borrowerOperations.address,
+      thusdDelay
     )
     return contracts
   }

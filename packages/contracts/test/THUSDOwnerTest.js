@@ -6,7 +6,6 @@ const {
   ZERO_ADDRESS, 
   getLatestBlockTimestamp,
   fastForwardTime,
-  SECONDS_IN_ONE_MINUTE
 } = testHelpers.TestHelper
 
 contract('THUSDOwner', async accounts => {
@@ -25,11 +24,6 @@ contract('THUSDOwner', async accounts => {
     thusdOwner = contracts.thusdOwner
     thusdToken = contracts.thusdToken
     borrowerOperations = contracts.borrowerOperations
-
-    await thusdToken.increaseGovernanceTimeDelay(
-      SECONDS_IN_ONE_MINUTE, 
-      { from: owner }
-    )
     
     await thusdToken.transferOwnership(
       thusdOwner.address, 
