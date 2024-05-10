@@ -16,13 +16,15 @@ import { MAX_BYTES_32 } from "./constants";
 interface IOwners {
   feePool: string
   bammOwner: string
+  bvi: string
   governorBravo: string
 }
 
 const contractOwners: IOwners = {
-  feePool: "0x7095F0B91A1010c11820B4E263927835A4CF52c9",
-  bammOwner: "0x788c26aB09728A2f17F2372a4D65CcA184940E83",
-  governorBravo: "0x87F005317692D05BAA4193AB0c961c69e175f45f"
+  feePool: "0x15424dC94D4da488DB0d0e0B7aAdB86835813a63",
+  bammOwner: "0x15424dC94D4da488DB0d0e0B7aAdB86835813a63",
+  bvi: "0x15424dC94D4da488DB0d0e0B7aAdB86835813a63",
+  governorBravo: "0x87F005317692D05BAA4193AB0c961c69e175f45f",
 }
 
 let silent = true;
@@ -69,8 +71,8 @@ const deployContracts = async (
   oracleAddresses: INetworkOracles,
   collateralSymbol: keyof IAssets,
   collateralAddress: string | undefined,
+  pcvDelay: number,
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
-  delay: number,
   _useRealPriceFeed: boolean,
   overrides?: Overrides
 ): Promise<[addresses: Omit<_LiquityContractAddresses, "thusdToken" | "bamm">, startBlock: number]> => {
@@ -94,7 +96,7 @@ const deployContracts = async (
     }),
     defaultPool: await deployContract(deployer, getContractFactory, "DefaultPool", { ...overrides }),
     hintHelpers: await deployContract(deployer, getContractFactory, "HintHelpers", { ...overrides }),
-    pcv: await deployContract(deployer, getContractFactory, "PCV", delay, { ...overrides }),
+    pcv: await deployContract(deployer, getContractFactory, "PCV", pcvDelay, { ...overrides }),
     sortedTroves: await deployContract(deployer, getContractFactory, "SortedTroves", {
       ...overrides
     }),
@@ -112,17 +114,24 @@ const deployContracts = async (
     : await deployContract(deployer, getContractFactory, "ERC20Test", {
       ...overrides
     }),
-    priceFeed: await deployContract(
-      deployer,
-      getContractFactory,
-      _useRealPriceFeed ? "PriceFeed" : "PriceFeedTestnet",
-      18,
-      { ...overrides }
-    ),
+    priceFeed: _useRealPriceFeed 
+    ? await deployContract(
+        deployer,
+        getContractFactory,
+        "PriceFeed",
+        18,
+        { ...overrides }
+      )
+    : await deployContract(
+        deployer,
+        getContractFactory,
+        "PriceFeedTestnet",
+        { ...overrides }
+      ),
   };
 
   const chainlink = (_useRealPriceFeed === true) 
-    ? oracleAddresses["mainnet"][collateralSymbol as keyof IAssets]["chainlink"]
+    ? oracleAddresses["bob_mainnet"][collateralSymbol as keyof IAssets]["chainlinkCompatible"]
     : await deployContract(
         deployer,
         getContractFactory,
@@ -312,12 +321,14 @@ export const transferContractsOwnership = async (
   if (!deployer.provider) {
     throw new Error("Signer must have a provider.");
   }
+
+  log("Transferring Contracts Ownership...");
   const deployerAddress = await deployer.getAddress();
   const txCount = await deployer.provider.getTransactionCount(deployerAddress);
 
   const contracts: ((nonce: number) => Promise<ContractTransaction | undefined>)[] = [
     nonce => pcv.transferOwnership(
-      process.env.GOVERNOR_BRAVO || contractOwners["governorBravo"],
+      process.env.BVI || contractOwners["bvi"],
       {
         ...overrides,
         nonce
@@ -325,7 +336,7 @@ export const transferContractsOwnership = async (
     ),
 
     nonce => priceFeed.transferOwnership(
-      process.env.GOVERNOR_BRAVO || contractOwners["governorBravo"],
+      process.env.BVI || contractOwners["bvi"],
       {
         ...overrides,
         nonce
@@ -333,7 +344,7 @@ export const transferContractsOwnership = async (
     ),
 
     nonce => bamm.transferOwnership(
-      process.env.GOVERNOR_BRAVO || contractOwners["governorBravo"],
+      process.env.BVI || contractOwners["bvi"],
       {
         ...overrides,
         nonce
@@ -343,7 +354,7 @@ export const transferContractsOwnership = async (
     async nonce => {
       if (await isDeployerOwner(thusdToken, deployerAddress)) {
         return thusdToken.transferOwnership(
-          process.env.GOVERNOR_BRAVO || contractOwners["governorBravo"],
+          process.env.BVI || contractOwners["bvi"],
           {
             ...overrides,
             nonce
@@ -457,8 +468,9 @@ export const deployAndSetupContracts = async (
   firstCollateralAddress: string,
   secondCollateralSymbol: keyof IAssets,
   secondCollateralAddress: string,
+  thusdDelay: number,
+  pcvDelay: number,
   getContractFactory: (name: string, signer: Signer) => Promise<ContractFactory>,
-  delay: number,
   stablecoinAddress: string,
   contractsVersion: string,
   _useRealPriceFeed: boolean,
@@ -486,9 +498,9 @@ export const deployAndSetupContracts = async (
       deployer, 
       oracleAddresses, 
       firstCollateralSymbol, 
-      firstCollateralAddress, 
+      firstCollateralAddress,
+      pcvDelay,
       getContractFactory, 
-      delay, 
       _useRealPriceFeed, 
       overrides
     ).then(
@@ -533,9 +545,9 @@ export const deployAndSetupContracts = async (
         deployer, 
         oracleAddresses, 
         secondCollateralSymbol, 
-        secondCollateralAddress, 
+        secondCollateralAddress,
+        pcvDelay,
         getContractFactory, 
-        delay, 
         _useRealPriceFeed, 
         overrides
       ).then(
@@ -551,7 +563,7 @@ export const deployAndSetupContracts = async (
             secondDeploymentAddresses.troveManager,
             secondDeploymentAddresses.stabilityPool,
             secondDeploymentAddresses.borrowerOperations,
-            delay,
+            thusdDelay,
             { ...overrides }
           )
           thusdTokenAddress = thusdToken
@@ -569,7 +581,7 @@ export const deployAndSetupContracts = async (
             process.env.BAMM_OWNER || contractOwners["bammOwner"],
             { ...overrides }
           )
-          
+
           return {
             startBlock,
             addresses: {
@@ -578,44 +590,44 @@ export const deployAndSetupContracts = async (
               bamm: bamm
             }
           }}
-      ))
-    };
+    ))
+  };
 
-    if (thusdTokenAddress) {
-      firstDeployment = {
-        ...firstDeployment,
-        addresses: {
-          ...(firstDeployment.addresses),
-          thusdToken: thusdTokenAddress,
-          bamm: await deployContract(
-            deployer, 
-            getContractFactory, 
-            "BAMM",
-            firstDeployment.addresses.chainlink,
-            firstDeployment.addresses.stabilityPool,
-            thusdTokenAddress,
-            firstDeployment.addresses.erc20,
-            400,
-            process.env.BAMM_FEE_POOL || contractOwners["feePool"],
-            process.env.BAMM_OWNER || contractOwners["bammOwner"],
-            { ...overrides }
-        )
-        }
+  if (thusdTokenAddress) {
+    firstDeployment = {
+      ...firstDeployment,
+      addresses: {
+        ...(firstDeployment.addresses),
+        thusdToken: thusdTokenAddress,
+        bamm: await deployContract(
+          deployer, 
+          getContractFactory, 
+          "BAMM",
+          firstDeployment.addresses.chainlink,
+          firstDeployment.addresses.stabilityPool,
+          thusdTokenAddress,
+          firstDeployment.addresses.erc20,
+          400,
+          process.env.BAMM_FEE_POOL || contractOwners["feePool"],
+          process.env.BAMM_OWNER || contractOwners["bammOwner"],
+          { ...overrides }
+      )
       }
     }
-    deployments.push(firstDeployment, secondDeployment)
-  } else {
-    deployments.push(firstDeployment)
   }
-  log("deployments: ", deployments)
-  for (const deployment of deployments) {
-    const contracts = _connectToContracts(deployer, deployment);
+  deployments.push(firstDeployment, secondDeployment)
+} else {
+  deployments.push(firstDeployment)
+}
+log("deployments: ", deployments)
+for (const deployment of deployments) {
+  const contracts = _connectToContracts(deployer, deployment);
 
-    log("Connecting contracts...");
-    await connectContracts(contracts, deployer, overrides);
-  }
+  log("Connecting contracts...");
+  await connectContracts(contracts, deployer, overrides);
+}
 
-  return deployments;
+return deployments;
 };
 
 const getBammDeposit = async (

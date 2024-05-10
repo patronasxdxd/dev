@@ -1233,6 +1233,8 @@ class TestHelper {
 }
 
 TestHelper.ZERO_ADDRESS = '0x' + '0'.repeat(40)
+TestHelper.ONE_HUNDRED_DAYS_IN_SECONDS = 100 * 24 * 60 * 60
+TestHelper.TWO_HUNDREDS_DAYS_IN_SECONDS = 200 * 24 * 60 * 60
 TestHelper.maxBytes32 = '0x' + 'f'.repeat(64)
 TestHelper._100pct = '1000000000000000000'
 TestHelper.latestRandomSeed = 31337

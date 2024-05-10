@@ -13,6 +13,8 @@ interface ITHUSDToken is IERC20Metadata, IERC2612 {
     event StabilityPoolAddressAdded(address _newStabilityPoolAddress);
     event BorrowerOperationsAddressAdded(address _newBorrowerOperationsAddress);
 
+    event GovernanceTimeDelayIncreased(uint256 _newGovernanceTimeDelay);
+
     event THUSDTokenBalanceUpdated(address _user, uint256 _amount);
 
     // --- External Functions ---
@@ -30,4 +32,5 @@ interface ITHUSDToken is IERC20Metadata, IERC2612 {
     // --- Governance functions ---
     function startRevokeMintList(address _account) external;
     function finalizeRevokeMintList() external;
+    function increaseGovernanceTimeDelay(uint256 _newGovernanceTimeDelay) external;
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Flex } from "theme-ui";
+import { Card, Flex, Link } from "theme-ui";
 
 import {
   Percent,
@@ -116,6 +116,7 @@ export const VaultEditor = ({
                   <Card variant="tooltip" sx={{ width: "240px" }}>
                     This amount is deducted from the borrowed amount as a one-time fee. There are no
                     recurring fees for borrowing, which is thus interest-free.
+                    <Link variant="cardLinks" href="https://docs.threshold.network/applications/threshold-usd/borrowing#how-is-the-borrowing-fee-calculated" target="_blank">Read more</Link>
                   </Card>
                 }
               />

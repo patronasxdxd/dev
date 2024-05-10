@@ -7,8 +7,9 @@ export const DEFAULT_VERSION_FOR_TESTING = "v1";
 
 export const supportedNetworks: SupportedNetworks = { 
   1: "mainnet", 
-  5: "goerli", 
-  11155111: "sepolia"
+  11155111: "sepolia", 
+  111: "bob_testnet", 
+  60808: "bob_mainnet",
 };
 
 export const numberify = (bigNumber: BigNumber): number => bigNumber.toNumber();
@@ -21,7 +22,7 @@ export const panic = <T>(e: unknown): T => {
 };
 
 export type SupportedNetworks = {
-  [key: string]: "mainnet" | "goerli" | "sepolia";
+  [key: string]: "mainnet" | "sepolia" | "bob_testnet" | "bob_mainnet";
 };
 
 export type Resolved<T> = T extends Promise<infer U> ? U : T;

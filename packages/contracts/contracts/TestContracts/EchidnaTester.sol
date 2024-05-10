@@ -56,7 +56,7 @@ contract EchidnaTester {
             address(0),
             address(0),
             address(0),
-            90 * 24 * 60 * 60
+            15 * 24 * 60 * 60
         );
 
         collSurplusPool = new CollSurplusPool();

@@ -79,6 +79,7 @@ contract('BorrowerOperations', async accounts => {
       THUSD_GAS_COMPENSATION = await borrowerOperations.THUSD_GAS_COMPENSATION()
       MIN_NET_DEBT = await borrowerOperations.MIN_NET_DEBT()
       BORROWING_FEE_FLOOR = await borrowerOperations.BORROWING_FEE_FLOOR()
+
       delay = (await contracts.thusdToken.governanceTimeDelay()).toNumber()
 
     })

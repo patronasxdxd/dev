@@ -40,6 +40,7 @@ contract PCV is IPCV, Ownable, CheckContract, SendCollateral {
 
     constructor(uint256 _governanceTimeDelay) {
         governanceTimeDelay = _governanceTimeDelay;
+        require(governanceTimeDelay <= 30 weeks, "Governance delay is too big");
     }
 
     modifier onlyAfterDebtPaid() {

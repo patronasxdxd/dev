@@ -56,7 +56,7 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
     mapping(address => bool) public burnList;
     mapping(address => bool) public mintList;
 
-    uint256 public immutable governanceTimeDelay;
+    uint256 public governanceTimeDelay;
 
     address public pendingTroveManager;
     address public pendingStabilityPool;
@@ -107,6 +107,22 @@ contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
             "Governance delay has not elapsed"
         );
         _;
+    }
+
+    function increaseGovernanceTimeDelay(
+        uint256 _newGovernanceTimeDelay
+    )
+        external
+        onlyOwner
+    {
+        require(
+            _newGovernanceTimeDelay > governanceTimeDelay,
+            "The governance time delay can only be increased"
+        );
+        require(_newGovernanceTimeDelay <= 30 weeks, "Governance delay is too big");
+
+        governanceTimeDelay = _newGovernanceTimeDelay;
+        emit GovernanceTimeDelayIncreased(_newGovernanceTimeDelay);
     }
 
     // --- Governance ---

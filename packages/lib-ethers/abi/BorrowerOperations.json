@@ -645,19 +645,6 @@
   },
   {
     "inputs": [],
-    "name": "pcv",
-    "outputs": [
-      {
-        "internalType": "contract IPCV",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "pcvAddress",
     "outputs": [
       {
