@@ -14,12 +14,12 @@ interface IRedstoneAdapter {
      */
     function getValueForDataFeed(bytes32) external view returns (uint256);
 
-  /**
-   * @notice Returns details for the given round and data feed
-   * @return dataFeedValue
-   * @return roundDataTimestamp
-   * @return roundBlockTimestamp
-   */
+    /**
+     * @notice Returns details for the given round and data feed
+     * @return dataFeedValue
+     * @return roundDataTimestamp
+     * @return roundBlockTimestamp
+     */
     function getRoundDataFromAdapter(bytes32, uint256) external view returns (uint256 dataFeedValue, uint128 roundDataTimestamp, uint128 roundBlockTimestamp);
 
     /**
