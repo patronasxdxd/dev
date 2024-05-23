@@ -127,12 +127,12 @@ export const oracleAddresses: INetworkOracles = {
   },
   bob_mainnet: {
     tbtc: {
-      chainlinkCompatible: "0x77b5887f0f545cdfaf62e168c10a8ef1c4934c2c",
-      tellor: "0xC866DB9021fe81856fF6c5B3E3514BF9D1593D81"
+      chainlinkCompatible: "0x2d484E029b8Ae5cA6335DAe11fC726B232bE87D1",
+      tellor: "0x896419Ed2E0dC848a1f7d2814F4e5Df4b9B9bFcc"
     },
     eth: {
-      chainlinkCompatible: "0x77b5887f0f545cdfaf62e168c10a8ef1c4934c2c",
-      tellor: "0xC866DB9021fe81856fF6c5B3E3514BF9D1593D81"
+      chainlinkCompatible: "0x2d484E029b8Ae5cA6335DAe11fC726B232bE87D1",
+      tellor: "0x896419Ed2E0dC848a1f7d2814F4e5Df4b9B9bFcc"
     }
   },
   bob_testnet: {
@@ -378,7 +378,7 @@ task("deploy", "Deploys the contracts to the network")
             console.log(`Hooking up PriceFeed with oracles ...`);
 
             const tx = await contracts.priceFeed.setAddresses(
-              oracleAddresses[env.network.name][deployment.collateralSymbol as keyof IAssets].chainlinkCompatible,
+              deployment.addresses.chainlink,
               tellorCallerAddress,
               overrides
             );

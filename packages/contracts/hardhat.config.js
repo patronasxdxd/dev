@@ -69,10 +69,21 @@ module.exports = {
                 getSecret('ACCOUNT2_PRIVATEKEY', '0x3ec7cedbafd0cb9ec05bf9f7ccfa1e8b42b3e3a02c75addfccbfeb328d1b383b')
             ]
         },
+        bob_mainnet: {
+            url: "https://rpc.gobob.xyz/",
+            chainId: 60808,
+            accounts: [
+                getSecret('DEPLOYER_PRIVATEKEY', '0x60ddfe7f579ab6867cbe7a2dc03853dc141d7a4ab6dbefc0dae2d2b1bd4e487f'),
+                getSecret('ACCOUNT2_PRIVATEKEY', '0x3ec7cedbafd0cb9ec05bf9f7ccfa1e8b42b3e3a02c75addfccbfeb328d1b383b')
+            ]
+        },
     },
     etherscan: {
         apiKey: {
-            bob_testnet: getSecret("ETHERSCAN_API_KEY")
+            hardhat: getSecret("ETHERSCAN_API_KEY"),
+            mainnet: getSecret("ETHERSCAN_API_KEY"),
+            bob_testnet: getSecret("ETHERSCAN_API_KEY"),
+            bob_mainnet: getSecret("ETHERSCAN_API_KEY"),
         },
         customChains: [
             {
@@ -83,6 +94,14 @@ module.exports = {
                 browserURL: "https://testnet.rpc.gobob.xyz"
               }
             },
+            {
+                network: "bob_mainnet",
+                chainId: 60808,
+                urls: {
+                  apiURL: "https://explorer.gobob.xyz/api?",
+                  browserURL: "https://rpc.gobob.xyz"
+                }
+              },
         ],
     },
     mocha: {
