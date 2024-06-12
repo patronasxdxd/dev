@@ -6,7 +6,7 @@
 
 The borrower operation's allowance of user's collateral erc20 tokens.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 erc20TokenAllowance: Decimal;

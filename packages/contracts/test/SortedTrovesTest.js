@@ -58,11 +58,7 @@ contract('SortedTroves', async accounts => {
     beforeEach(async () => {
       contracts = await deploymentHelper.deployLiquityCore(accounts)
       contracts.troveManager = await TroveManagerTester.new()
-      contracts.thusdToken = await THUSDToken.new(
-        contracts.troveManager.address,
-        contracts.stabilityPool.address,
-        contracts.borrowerOperations.address
-      )
+      contracts.thusdToken = (await deploymentHelper.deployTHUSDToken(contracts)).thusdToken
 
       priceFeed = contracts.priceFeedTestnet
       sortedTroves = contracts.sortedTroves
@@ -281,7 +277,7 @@ contract('SortedTroves', async accounts => {
 
     context('when params are wrongly set', () => {
       it('setParams(): reverts if size is zero', async () => {
-        await th.assertRevert(sortedTroves.setParams(0, sortedTrovesTester.address, sortedTrovesTester.address), 'SortedTroves: Size can’t be zero')
+        await th.assertRevert(sortedTroves.setParams(0, sortedTrovesTester.address, sortedTrovesTester.address), 'SortedTroves: Size cant be zero')
       })
     })
 

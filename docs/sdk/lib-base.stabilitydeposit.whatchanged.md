@@ -6,7 +6,7 @@
 
 Calculate the difference between the `currentTHUSD` in this Stability Deposit and `thatTHUSD`<!-- -->.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 whatChanged(thatTHUSD: Decimalish): StabilityDepositChange<Decimal> | undefined;
@@ -18,7 +18,7 @@ whatChanged(thatTHUSD: Decimalish): StabilityDepositChange<Decimal> | undefined;
 |  --- | --- | --- |
 |  thatTHUSD | [Decimalish](./lib-base.decimalish.md) |  |
 
-<b>Returns:</b>
+**Returns:**
 
 [StabilityDepositChange](./lib-base.stabilitydepositchange.md)<!-- -->&lt;[Decimal](./lib-base.decimal.md)<!-- -->&gt; \| undefined
 

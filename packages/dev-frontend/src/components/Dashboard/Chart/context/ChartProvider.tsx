@@ -1,25 +1,41 @@
 import React, { useState, useEffect } from "react";
-
-import { createClient } from "urql";
 import { ChartContext } from "./ChartContext";
 
-import { useLiquity } from "../../../../hooks/LiquityContext";
+import { useThreshold } from "../../../../hooks/ThresholdContext";
+import { Decimal } from "@threshold-usd/lib-base";
+import { fetchCoinGeckoPrice } from "./fetchCoinGeckoPrice";
+import axios from "axios";
 
 export type TimestampsObject = {
-  universalTimestamp: number, 
-  localTimestamp: number
+  universalTimestamp: number;
+  localTimestamp: number;
 }
+
 export type BlockObject = {
-  number?: string, 
-  __typename?: string
+  number?: string;
+  __typename?: string;
 };
-export type tvlData = {
-  totalCollateral: number, 
-  blockNumber: number
+
+export type TvlData = {
+  totalCollateral: Decimal;
+  blockNumber: number;
 };
+
+export type Tvl = {
+  version: string;
+  collateral: string;
+  tvl: TvlData[]
+};
+
 export type FunctionalPanelProps = {
   loader?: React.ReactNode;
+  children?: React.ReactNode;
 };
+
+const coingeckoIdsBySymbol = {
+  eth: "ethereum",
+  tbtc: "tbtc"
+}
 
 const fetchBlockByTimestamp = (timestamp: number, blocksApiUrl: string) => {
   const query = `
@@ -70,102 +86,168 @@ export const createListOfTimestamps = (): Array<TimestampsObject> => {
   return timestamps;
 };
 
-export const queryBlocksByTimestamps = async (timestamps: Array<TimestampsObject>, blocksApiUrl: string): Promise<Array<BlockObject>> => {
-  const Blocks = timestamps.map(async (timestamp): Promise<BlockObject> => {
+export async function queryBlocksByTimestamps(timestamps: TimestampsObject[], blocksApiUrl: string): Promise<BlockObject[]> {
+  const blockPromises = timestamps.map(async (timestamp) => {
     const blocksData = await fetchBlockByTimestamp(timestamp.universalTimestamp, blocksApiUrl);
     return blocksData.data.blocks[0];
-  })
-  return Promise.all(Blocks);
-};
-
-export const queryTvlByBlocks = async (blocks: Array<BlockObject>, thresholdUsdApiUrl: string): Promise<Array<tvlData>> => {
-  const tvlData: Array<Promise<tvlData>> = blocks.map(async (block) => {
-    const blockNumber: number = Number(block.number);
-    return fetchTvlByBlock(blockNumber, thresholdUsdApiUrl)
-    .then((result) => {
-      const tvlValue: tvlData = result.data ? {
-        totalCollateral: Number(result.data.systemStates[0].totalCollateral), 
-        blockNumber: blockNumber
-      } : {
-        totalCollateral: 0, 
-        blockNumber: blockNumber
-      };
-      return tvlValue;
-    })
   });
-  return Promise.all(tvlData);
+  return Promise.all(blockPromises);
+}
+
+export const queryTvlByBlocks = async (
+  blocks: Array<BlockObject>,
+  thresholdUsdApiUrl: string
+): Promise<Array<TvlData>> => {
+  try {
+    // Use map() to transform each block into a Promise that resolves to TvlData
+    const tvlData = await Promise.all(
+      blocks.map(async (block) => {
+        const blockNumber = Number(block.number);
+
+        // Fetch TVL data using the fetchTvlByBlock() function
+        const result = await fetchTvlByBlock(blockNumber, thresholdUsdApiUrl);
+        
+        // Check if the result data contains systemStates; if not, set totalCollateral to 0
+        const totalCollateral = result.data?.systemStates[0]?.totalCollateral || 0;
+        const decimalTotalCollateral = Decimal.from(totalCollateral);
+        return {
+          totalCollateral: decimalTotalCollateral,
+          blockNumber,
+        };
+      })
+    );
+    return tvlData;
+  } catch (error) {
+    console.error('queryTvlByBlocks error: ', error);
+    return [];
+  }
 };
 
-export const queryTvl = async (blocksApiUrl: string, thresholdUsdApiUrl: string):  Promise<Array<tvlData>> => {
+export const queryTvl = async (blocksApiUrl: string, thresholdUsdApiUrl: string, coingeckoId: string): Promise<Array<TvlData>> => {
+  // Get an array of timestamps for the past 30 days.
   const timestamps: Array<TimestampsObject> = createListOfTimestamps();
-  return queryBlocksByTimestamps(timestamps, blocksApiUrl).then(
-    async (blocks) => {
-      const tvl = await queryTvlByBlocks(blocks, thresholdUsdApiUrl);
-      return tvl;
-    }
-  );
+
+  try {
+    // Query blocks by timestamps.
+    const blocks = await queryBlocksByTimestamps(timestamps, blocksApiUrl);
+
+    // Query TVL by blocks.
+    const historicalTvl = await queryTvlByBlocks(blocks, thresholdUsdApiUrl);
+
+    // Calculate TVL price based on coingecko ID.
+    const pricedHistoricalTvl = await calculateTvlPrice(historicalTvl, coingeckoId);
+
+    // Return the priced historical TVL.
+    return pricedHistoricalTvl;
+  } catch (error) {
+    console.error('queryTvl error: ', error);
+    return [];
+  }
+};
+
+export const calculateTvlPrice = async (historicalTvl: Array<TvlData>, coingeckoId: string): Promise<Array<TvlData>> => {
+  // fetch the USD token price from the CoinGecko API
+  const { tokenPriceUSD } = await fetchCoinGeckoPrice(coingeckoId);
+
+  // map over the historical TVL data and price each entry in USD
+  const pricedHistoricalTvl = historicalTvl.map(({ totalCollateral, blockNumber }) => {
+    // multiply the total collateral by the USD token price to get the total value in USD
+    const pricedTvl: Decimal = totalCollateral.mul(tokenPriceUSD);
+
+    // return a new TVL entry with the priced total value and the original block number
+    return { totalCollateral: pricedTvl, blockNumber };
+  });
+
+  // return the priced TVL data
+  return pricedHistoricalTvl;
 };
 
 async function fetchData(API_URL: string, query: string) {
-  const client = createClient({
-    url: API_URL
-  });
-  const response = await client.query(query).toPromise();
-  return response;
-};
+  try {
+    const response = await axios.post(API_URL, { query });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+}
 
-export const ChartProvider: React.FC<FunctionalPanelProps> = ({ children, loader })  => {
+export const ChartProvider = ({ children }: FunctionalPanelProps): JSX.Element  => {
   const timestamps: Array<TimestampsObject> = createListOfTimestamps();
-  const [ isTVLDataAvailable , setisTVLDataAvailable ] = useState<boolean>(true);
-  const [ tvl, setTvl ] = useState<Array<tvlData>>();
-  const [ isMounted, setIsMounted ] = useState<boolean>(true);
-  const { config, provider } = useLiquity();
-  const { blocksApiUrl, thresholdUsdApiUrl } = config;
+  const [isTVLDataAvailable, setisTVLDataAvailable] = useState<boolean>(true);
+  const [tvl, setTvl] = useState<Tvl[]>([]);
+  const [isMounted, setIsMounted] = useState<boolean>(true);
+
+  const { threshold, config, provider } = useThreshold();
+  const { blocksApiUrl, thresholdUsdApiUrl, isUnsupportedNetwork } = config;
 
   const getTVLData = () => {
-    return provider.getNetwork()
-    .then((network) => {
-      const networkName = network.name === 'homestead' ? 'ethereum' : network.name;
-      const blocksUrlByNetwork = `https://${blocksApiUrl}/${networkName}-blocks`;
-      const thresholdUrlByNetwork = `https://${thresholdUsdApiUrl}/${networkName}-thresholdusd`;
-      return queryTvl(blocksUrlByNetwork, thresholdUrlByNetwork)
-        .then((result) => setTvl(result));
-    })
-    .catch((error) => {
+    if (isUnsupportedNetwork) {
+      console.error(`The network is unsupported in config.json file`);
       setisTVLDataAvailable(false);
-      console.error('failed to fetch tvl: ', error);
-    });
-  }
+      return;
+    }
+
+    if (!blocksApiUrl || !thresholdUsdApiUrl || !coingeckoIdsBySymbol) {
+      console.error(`You must add a config.json file into the public source folder.`);
+      setisTVLDataAvailable(false);
+      return;
+    }
+
+    // Get the network name and corresponding blocks URL
+    return provider.getNetwork()
+      .then((network) => {
+        const networkName = network.name === 'homestead' ? 'mainnet' : network.name;
+        const blocksUrlByNetwork = `https://${blocksApiUrl}/${networkName === 'mainnet' ? 'ethereum' : network.name}-blocks`;
+        
+        // Loop through the collaterals in the threshold object and fetch the TVL data for each collateral
+        for (const thresholdCollateral of threshold) {
+          const {collateral, version} = thresholdCollateral
+          const thresholdUrlByNetwork = `https://${thresholdUsdApiUrl}/${collateral}-${version}-${networkName}-thresholdusd`;
+          queryTvl(blocksUrlByNetwork, thresholdUrlByNetwork, (coingeckoIdsBySymbol as {[key: string]: string})[collateral])
+            .then((result) => {
+              setTvl((prev) => { return [...prev, {
+                  collateral: collateral,
+                  version: version,
+                  tvl: result
+                }]
+              });
+            })
+            .catch((error) => {
+              setisTVLDataAvailable(false);
+              console.error('failed to fetch tvl: ', error);
+            });
+        }
+      })
+      .catch((error) => {
+        setisTVLDataAvailable(false);
+        console.error('failed to fetch tvl: ', error);
+      });
+  };
   
   useEffect(() => {
-    if (isMounted) {
-      getTVLData();
-      setInterval(() => {
-        getTVLData();
-      }, 90000); //Fetch TVL every 90 seconds
-    };
+    if (!isMounted) {
+      return;
+    }
+    getTVLData();
+
     return () => {
       setIsMounted(false);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted]);
 
-  if (!blocksApiUrl || !thresholdUsdApiUrl) {
-    console.error(`You must add a config.json file into the public source folder.`)
-    return <>{children}</>
-  };
+  if (isUnsupportedNetwork) return <ChartContext.Provider value={{ isUnsupportedNetwork }}>{children}</ChartContext.Provider>;
 
-  if (!isTVLDataAvailable) {
+  if (!isTVLDataAvailable || !timestamps || tvl.length !== threshold.length) {
     return <>{children}</>
-  };
-
-  if (!timestamps || !tvl) {
-    return <>{loader}</>
   };
 
   const chartProvider = {
     tvl,
-    timestamps
+    timestamps,
+    isUnsupportedNetwork: false,
   };
+  
   return <ChartContext.Provider value={chartProvider}>{children}</ChartContext.Provider>;
 };

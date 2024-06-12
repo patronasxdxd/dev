@@ -13,7 +13,7 @@ import {
   THUSD_LIQUIDATION_RESERVE,
   THUSD_MINIMUM_DEBT,
   THUSD_MINIMUM_NET_DEBT
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 // project imports
 import erc20Abi from "../abi/ERC20Test.json";
@@ -21,6 +21,7 @@ import { EthersLiquity } from "../src/EthersLiquity";
 import { _LiquityDeploymentJSON } from "../src/contracts";
 import * as th from "../utils/testHelpers";
 import * as dh from "../utils/debugHelpers";
+import { oracleAddresses } from "../hardhat.config";
 
 const STARTING_BALANCE = Decimal.from(100);
 
@@ -55,7 +56,7 @@ describe("EthersLiquity - StabilityPool", () => {
     [deployer, funder, user, ...otherUsers] = await ethers.getSigners();
 
     // deploy smart contracts
-    deployment = await deployLiquity(deployer);
+    deployment = await deployLiquity(deployer, oracleAddresses, "tbtc");
 
     // create different accounts / liquity connections for the users
     const otherUsersSubset = otherUsers.slice(0, 5);

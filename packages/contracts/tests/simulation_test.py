@@ -95,6 +95,7 @@ def setAddresses(contracts):
         contracts.troveManager.address,
         contracts.borrowerOperations.address,
         contracts.activePool.address,
+        contracts.collateral.address,
         { 'from': accounts[0] }
     )
 

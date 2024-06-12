@@ -42,6 +42,7 @@ contract('Pool Manager: Sum-Product rounding errors', async accounts => {
 
     for (let account of depositors) {
       await openTrove({ extraTHUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: account } })
+      await thusdToken.approve(stabilityPool.address, dec(100, 18), {from: account})
       await stabilityPool.provideToSP(dec(100, 18), { from: account })
     }
 
@@ -60,13 +61,13 @@ contract('Pool Manager: Sum-Product rounding errors', async accounts => {
     }
 
     const SP_TotalDeposits = await stabilityPool.getTotalTHUSDDeposits()
-    const SP_ETH = await stabilityPool.getCollateralBalance()
+    const SP_Collateral = await stabilityPool.getCollateralBalance()
     const compoundedDeposit = await stabilityPool.getCompoundedTHUSDDeposit(depositors[0])
-    const ETH_Gain = await stabilityPool.getCurrentETHGain(depositors[0])
+    const Collateral_Gain = await stabilityPool.getCurrentCollateralGain(depositors[0])
 
     // Check depostiors receive their share without too much error
     assert.isAtMost(th.getDifference(SP_TotalDeposits.div(th.toBN(depositors.length)), compoundedDeposit), 100000)
-    assert.isAtMost(th.getDifference(SP_ETH.div(th.toBN(depositors.length)), ETH_Gain), 100000)
+    assert.isAtMost(th.getDifference(SP_Collateral.div(th.toBN(depositors.length)), Collateral_Gain), 100000)
   })
 })
 

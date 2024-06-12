@@ -6,7 +6,7 @@
 
 Make a new Stability Deposit, or top up existing one.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 depositTHUSDInStabilityPool(amount: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>;
@@ -18,7 +18,7 @@ depositTHUSDInStabilityPool(amount: Decimalish): Promise<SentLiquityTransaction<
 |  --- | --- | --- |
 |  amount | [Decimalish](./lib-base.decimalish.md) | Amount of thUSD to add to new or existing deposit. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[SentLiquityTransaction](./lib-base.sentliquitytransaction.md)<!-- -->&lt;S, [LiquityReceipt](./lib-base.liquityreceipt.md)<!-- -->&lt;R, [StabilityDepositChangeDetails](./lib-base.stabilitydepositchangedetails.md)<!-- -->&gt;&gt;&gt;
 

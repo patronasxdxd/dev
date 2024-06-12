@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.17;
 
-import "./Dependencies/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import './Interfaces/IBorrowerOperations.sol';
 import './Interfaces/IStabilityPool.sol';
 import './Interfaces/IBorrowerOperations.sol';
@@ -10,11 +10,9 @@ import './Interfaces/ITroveManager.sol';
 import './Interfaces/ITHUSDToken.sol';
 import './Interfaces/ISortedTroves.sol';
 import "./Dependencies/LiquityBase.sol";
-import "./Dependencies/SafeMath.sol";
-import "./Dependencies/LiquitySafeMath128.sol";
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
-import "./Dependencies/console.sol";
+import "./Dependencies/SendCollateral.sol";
 
 /*
  * The Stability Pool holds THUSD tokens deposited by Stability Pool depositors.
@@ -129,9 +127,7 @@ import "./Dependencies/console.sol";
  * https://github.com/liquity/liquity/blob/master/papers/Scalable_Reward_Distribution_with_Compounding_Stakes.pdf
  *
  */
-contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
-    using SafeMath for uint256;
-    using LiquitySafeMath128 for uint128;
+contract StabilityPool is LiquityBase, Ownable, CheckContract, SendCollateral, IStabilityPool {
 
     string constant public NAME = "StabilityPool";
 
@@ -153,18 +149,14 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
 
    // --- Data structures ---
 
-    struct Deposit {
-        uint initialValue;
-    }
-
     struct Snapshots {
-        uint S;
-        uint P;
+        uint256 S;
+        uint256 P;
         uint128 scale;
         uint128 epoch;
     }
 
-    mapping (address => Deposit) public deposits;  // depositor address -> Deposit struct
+    mapping (address => uint256) public deposits;  // depositor address -> initial value
     mapping (address => Snapshots) public depositSnapshots;  // depositor address -> snapshots struct
 
     /*  Product 'P': Running product by which to multiply an initial deposit, in order to find the current compounded deposit,
@@ -173,9 +165,9 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
     * During its lifetime, a deposit's value evolves from d_t to d_t * P / P_t , where P_t
     * is the snapshot of P taken at the instant the deposit was made. 18-digit decimal.
     */
-    uint public P = DECIMAL_PRECISION;
+    uint256 public P = DECIMAL_PRECISION;
 
-    uint public constant SCALE_FACTOR = 1e9;
+    uint256 public constant SCALE_FACTOR = 1e9;
 
     // Each time the scale of P shifts by SCALE_FACTOR, the scale is incremented by 1
     uint128 public currentScale;
@@ -194,8 +186,8 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
     mapping (uint128 => mapping(uint128 => uint)) public epochToScaleToSum;
 
     // Error trackers for the error correction in the offset calculation
-    uint public lastCollateralError_Offset;
-    uint public lastTHUSDLossError_Offset;
+    uint256 public lastCollateralError_Offset;
+    uint256 public lastTHUSDLossError_Offset;
 
     // --- Contract setters ---
 
@@ -218,7 +210,9 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
         checkContract(_thusdTokenAddress);
         checkContract(_sortedTrovesAddress);
         checkContract(_priceFeedAddress);
-        checkContract(_collateralAddress);
+        if (_collateralAddress != address(0)) {
+            checkContract(_collateralAddress);
+        }
 
         borrowerOperations = IBorrowerOperations(_borrowerOperationsAddress);
         troveManager = ITroveManager(_troveManagerAddress);
@@ -227,6 +221,14 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
         sortedTroves = ISortedTroves(_sortedTrovesAddress);
         priceFeed = IPriceFeed(_priceFeedAddress);
         collateralAddress = _collateralAddress;
+        
+        require(
+            (Ownable(_borrowerOperationsAddress).owner() != address(0) || 
+            borrowerOperations.collateralAddress() == _collateralAddress) &&
+            (Ownable(_activePoolAddress).owner() != address(0) || 
+            activePool.collateralAddress() == _collateralAddress),
+            "The same collateral address must be used for the entire set of contracts"
+        );
 
         emit BorrowerOperationsAddressChanged(_borrowerOperationsAddress);
         emit TroveManagerAddressChanged(_troveManagerAddress);
@@ -255,18 +257,18 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
      *
      * - Sends depositor's accumulated gains (collateral) to depositor
      */
-    function provideToSP(uint _amount) external override {
+    function provideToSP(uint256 _amount) external override {
         _requireNonZeroAmount(_amount);
 
-        uint initialDeposit = deposits[msg.sender].initialValue;
+        uint256 initialDeposit = deposits[msg.sender];
 
-        uint depositorCollateralGain = getDepositorCollateralGain(msg.sender);
-        uint compoundedTHUSDDeposit = getCompoundedTHUSDDeposit(msg.sender);
-        uint THUSDLoss = initialDeposit.sub(compoundedTHUSDDeposit); // Needed only for event log
+        uint256 depositorCollateralGain = getDepositorCollateralGain(msg.sender);
+        uint256 compoundedTHUSDDeposit = getCompoundedTHUSDDeposit(msg.sender);
+        uint256 THUSDLoss = initialDeposit - compoundedTHUSDDeposit; // Needed only for event log
 
         _sendTHUSDtoStabilityPool(msg.sender, _amount);
 
-        uint newDeposit = compoundedTHUSDDeposit.add(_amount);
+        uint256 newDeposit = compoundedTHUSDDeposit + _amount;
         _updateDepositAndSnapshots(msg.sender, newDeposit);
         emit UserDepositChanged(msg.sender, newDeposit);
 
@@ -281,21 +283,21 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
     *
     * If _amount > userDeposit, the user withdraws all of their compounded deposit.
     */
-    function withdrawFromSP(uint _amount) external override {
+    function withdrawFromSP(uint256 _amount) external override {
         if (_amount !=0) {_requireNoUnderCollateralizedTroves();}
-        uint initialDeposit = deposits[msg.sender].initialValue;
+        uint256 initialDeposit = deposits[msg.sender];
         _requireUserHasDeposit(initialDeposit);
 
-        uint depositorCollateralGain = getDepositorCollateralGain(msg.sender);
+        uint256 depositorCollateralGain = getDepositorCollateralGain(msg.sender);
 
-        uint compoundedTHUSDDeposit = getCompoundedTHUSDDeposit(msg.sender);
-        uint THUSDtoWithdraw = LiquityMath._min(_amount, compoundedTHUSDDeposit);
-        uint THUSDLoss = initialDeposit.sub(compoundedTHUSDDeposit); // Needed only for event log
+        uint256 compoundedTHUSDDeposit = getCompoundedTHUSDDeposit(msg.sender);
+        uint256 THUSDtoWithdraw = LiquityMath._min(_amount, compoundedTHUSDDeposit);
+        uint256 THUSDLoss = initialDeposit - compoundedTHUSDDeposit; // Needed only for event log
 
         _sendTHUSDToDepositor(msg.sender, THUSDtoWithdraw);
 
         // Update deposit
-        uint newDeposit = compoundedTHUSDDeposit.sub(THUSDtoWithdraw);
+        uint256 newDeposit = compoundedTHUSDDeposit - THUSDtoWithdraw;
         _updateDepositAndSnapshots(msg.sender, newDeposit);
         emit UserDepositChanged(msg.sender, newDeposit);
 
@@ -309,15 +311,15 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
     * - Leaves their compounded deposit in the Stability Pool
     * - Updates snapshots for deposit */
     function withdrawCollateralGainToTrove(address _upperHint, address _lowerHint) external override {
-        uint initialDeposit = deposits[msg.sender].initialValue;
+        uint256 initialDeposit = deposits[msg.sender];
         _requireUserHasDeposit(initialDeposit);
         _requireUserHasTrove(msg.sender);
         _requireUserHasCollateralGain(msg.sender);
 
-        uint depositorCollateralGain = getDepositorCollateralGain(msg.sender);
+        uint256 depositorCollateralGain = getDepositorCollateralGain(msg.sender);
 
-        uint compoundedTHUSDDeposit = getCompoundedTHUSDDeposit(msg.sender);
-        uint THUSDLoss = initialDeposit.sub(compoundedTHUSDDeposit); // Needed only for event log
+        uint256 compoundedTHUSDDeposit = getCompoundedTHUSDDeposit(msg.sender);
+        uint256 THUSDLoss = initialDeposit - compoundedTHUSDDeposit; // Needed only for event log
 
         _updateDepositAndSnapshots(msg.sender, compoundedTHUSDDeposit);
 
@@ -327,7 +329,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
         emit CollateralGainWithdrawn(msg.sender, depositorCollateralGain, THUSDLoss);
         emit UserDepositChanged(msg.sender, compoundedTHUSDDeposit);
 
-        collateral = collateral.sub(depositorCollateralGain);
+        collateral -= depositorCollateralGain;
         emit StabilityPoolCollateralBalanceUpdated(collateral);
         emit CollateralSent(msg.sender, depositorCollateralGain);
 
@@ -345,13 +347,13 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
     * and transfers the Trove's collateral from ActivePool to StabilityPool.
     * Only called by liquidation functions in the TroveManager.
     */
-    function offset(uint _debtToOffset, uint _collToAdd) external override {
+    function offset(uint256 _debtToOffset, uint256 _collToAdd) external override {
         _requireCallerIsTroveManager();
-        uint totalTHUSD = totalTHUSDDeposits; // cached to save an SLOAD
+        uint256 totalTHUSD = totalTHUSDDeposits; // cached to save an SLOAD
         if (totalTHUSD == 0 || _debtToOffset == 0) { return; }
 
-        (uint collateralGainPerUnitStaked,
-            uint THUSDLossPerUnitStaked) = _computeRewardsPerUnitStaked(_collToAdd, _debtToOffset, totalTHUSD);
+        (uint256 collateralGainPerUnitStaked,
+            uint256 THUSDLossPerUnitStaked) = _computeRewardsPerUnitStaked(_collToAdd, _debtToOffset, totalTHUSD);
 
         _updateRewardSumAndProduct(collateralGainPerUnitStaked, THUSDLossPerUnitStaked);  // updates S and P
 
@@ -361,12 +363,12 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
     // --- Offset helper functions ---
 
     function _computeRewardsPerUnitStaked(
-        uint _collToAdd,
-        uint _debtToOffset,
-        uint _totalTHUSDDeposits
+        uint256 _collToAdd,
+        uint256 _debtToOffset,
+        uint256 _totalTHUSDDeposits
     )
         internal
-        returns (uint collateralGainPerUnitStaked, uint THUSDLossPerUnitStaked)
+        returns (uint256 collateralGainPerUnitStaked, uint256 THUSDLossPerUnitStaked)
     {
         /*
         * Compute the THUSD and collateral rewards. Uses a "feedback" error correction, to keep
@@ -379,43 +381,43 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
         * 4) Store these errors for use in the next correction when this function is called.
         * 5) Note: static analysis tools complain about this "division before multiplication", however, it is intended.
         */
-        uint collateralNumerator = _collToAdd.mul(DECIMAL_PRECISION).add(lastCollateralError_Offset);
+        uint256 collateralNumerator = _collToAdd * DECIMAL_PRECISION + lastCollateralError_Offset;
 
         assert(_debtToOffset <= _totalTHUSDDeposits);
         if (_debtToOffset == _totalTHUSDDeposits) {
             THUSDLossPerUnitStaked = DECIMAL_PRECISION;  // When the Pool depletes to 0, so does each deposit
             lastTHUSDLossError_Offset = 0;
         } else {
-            uint THUSDLossNumerator = _debtToOffset.mul(DECIMAL_PRECISION).sub(lastTHUSDLossError_Offset);
+            uint256 THUSDLossNumerator = _debtToOffset * DECIMAL_PRECISION - lastTHUSDLossError_Offset;
             /*
             * Add 1 to make error in quotient positive. We want "slightly too much" THUSD loss,
             * which ensures the error in any given compoundedTHUSDDeposit favors the Stability Pool.
             */
-            THUSDLossPerUnitStaked = (THUSDLossNumerator.div(_totalTHUSDDeposits)).add(1);
-            lastTHUSDLossError_Offset = (THUSDLossPerUnitStaked.mul(_totalTHUSDDeposits)).sub(THUSDLossNumerator);
+            THUSDLossPerUnitStaked = THUSDLossNumerator / _totalTHUSDDeposits + 1;
+            lastTHUSDLossError_Offset = THUSDLossPerUnitStaked * _totalTHUSDDeposits - THUSDLossNumerator;
         }
 
-        collateralGainPerUnitStaked = collateralNumerator.div(_totalTHUSDDeposits);
-        lastCollateralError_Offset = collateralNumerator.sub(collateralGainPerUnitStaked.mul(_totalTHUSDDeposits));
+        collateralGainPerUnitStaked = collateralNumerator / _totalTHUSDDeposits;
+        lastCollateralError_Offset = collateralNumerator - (collateralGainPerUnitStaked * _totalTHUSDDeposits);
 
         return (collateralGainPerUnitStaked, THUSDLossPerUnitStaked);
     }
 
     // Update the Stability Pool reward sum S and product P
-    function _updateRewardSumAndProduct(uint _collateralGainPerUnitStaked, uint _THUSDLossPerUnitStaked) internal {
-        uint currentP = P;
-        uint newP;
+    function _updateRewardSumAndProduct(uint256 _collateralGainPerUnitStaked, uint256 _THUSDLossPerUnitStaked) internal {
+        uint256 currentP = P;
+        uint256 newP;
 
         assert(_THUSDLossPerUnitStaked <= DECIMAL_PRECISION);
         /*
         * The newProductFactor is the factor by which to change all deposits, due to the depletion of Stability Pool THUSD in the liquidation.
         * We make the product factor 0 if there was a pool-emptying. Otherwise, it is (1 - THUSDLossPerUnitStaked)
         */
-        uint newProductFactor = uint(DECIMAL_PRECISION).sub(_THUSDLossPerUnitStaked);
+        uint256 newProductFactor = DECIMAL_PRECISION - _THUSDLossPerUnitStaked;
 
         uint128 currentScaleCached = currentScale;
         uint128 currentEpochCached = currentEpoch;
-        uint currentS = epochToScaleToSum[currentEpochCached][currentScaleCached];
+        uint256 currentS = epochToScaleToSum[currentEpochCached][currentScaleCached];
 
         /*
         * Calculate the new S first, before we update P.
@@ -424,26 +426,26 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
         *
         * Since S corresponds to collateral gain, and P to deposit loss, we update S first.
         */
-        uint marginalCollateralGain = _collateralGainPerUnitStaked.mul(currentP);
-        uint newS = currentS.add(marginalCollateralGain);
+        uint256 marginalCollateralGain = _collateralGainPerUnitStaked * currentP;
+        uint256 newS = currentS + marginalCollateralGain;
         epochToScaleToSum[currentEpochCached][currentScaleCached] = newS;
         emit S_Updated(newS, currentEpochCached, currentScaleCached);
 
         // If the Stability Pool was emptied, increment the epoch, and reset the scale and product P
         if (newProductFactor == 0) {
-            currentEpoch = currentEpochCached.add(1);
+            currentEpoch = currentEpochCached + 1;
             emit EpochUpdated(currentEpoch);
             currentScale = 0;
             emit ScaleUpdated(currentScale);
             newP = DECIMAL_PRECISION;
 
         // If multiplying P by a non-zero product factor would reduce P below the scale boundary, increment the scale
-        } else if (currentP.mul(newProductFactor).div(DECIMAL_PRECISION) < SCALE_FACTOR) {
-            newP = currentP.mul(newProductFactor).mul(SCALE_FACTOR).div(DECIMAL_PRECISION);
-            currentScale = currentScaleCached.add(1);
+        } else if (currentP * newProductFactor / DECIMAL_PRECISION < SCALE_FACTOR) {
+            newP = currentP * newProductFactor * SCALE_FACTOR / DECIMAL_PRECISION;
+            currentScale = currentScaleCached + 1;
             emit ScaleUpdated(currentScale);
         } else {
-            newP = currentP.mul(newProductFactor).div(DECIMAL_PRECISION);
+            newP = currentP * newProductFactor / DECIMAL_PRECISION;
         }
 
         assert(newP > 0);
@@ -452,7 +454,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
         emit P_Updated(newP);
     }
 
-    function _moveOffsetCollAndDebt(uint _collToAdd, uint _debtToOffset) internal {
+    function _moveOffsetCollAndDebt(uint256 _collToAdd, uint256 _debtToOffset) internal {
         IActivePool activePoolCached = activePool;
 
         // Cancel the liquidated THUSD debt with the THUSD in the stability pool
@@ -465,8 +467,8 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
         activePoolCached.sendCollateral(address(this), _collToAdd);
     }
 
-    function _decreaseTHUSD(uint _amount) internal {
-        uint newTotalTHUSDDeposits = totalTHUSDDeposits.sub(_amount);
+    function _decreaseTHUSD(uint256 _amount) internal {
+        uint256 newTotalTHUSDDeposits = totalTHUSDDeposits - _amount;
         totalTHUSDDeposits = newTotalTHUSDDeposits;
         emit StabilityPoolTHUSDBalanceUpdated(newTotalTHUSDDeposits);
     }
@@ -479,17 +481,17 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
     * d0 is the last recorded deposit value.
     */
     function getDepositorCollateralGain(address _depositor) public view override returns (uint) {
-        uint initialDeposit = deposits[_depositor].initialValue;
+        uint256 initialDeposit = deposits[_depositor];
 
         if (initialDeposit == 0) { return 0; }
 
         Snapshots memory snapshots = depositSnapshots[_depositor];
 
-        uint collateralGain = _getCollateralGainFromSnapshots(initialDeposit, snapshots);
+        uint256 collateralGain = _getCollateralGainFromSnapshots(initialDeposit, snapshots);
         return collateralGain;
     }
 
-    function _getCollateralGainFromSnapshots(uint initialDeposit, Snapshots memory snapshots) internal view returns (uint) {
+    function _getCollateralGainFromSnapshots(uint256 initialDeposit, Snapshots memory snapshots) internal view returns (uint) {
         /*
         * Grab the sum 'S' from the epoch at which the stake was made. The collateral gain may span up to one scale change.
         * If it does, the second portion of the collateral gain is scaled by 1e9.
@@ -497,13 +499,13 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
         */
         uint128 epochSnapshot = snapshots.epoch;
         uint128 scaleSnapshot = snapshots.scale;
-        uint S_Snapshot = snapshots.S;
-        uint P_Snapshot = snapshots.P;
+        uint256 S_Snapshot = snapshots.S;
+        uint256 P_Snapshot = snapshots.P;
 
-        uint firstPortion = epochToScaleToSum[epochSnapshot][scaleSnapshot].sub(S_Snapshot);
-        uint secondPortion = epochToScaleToSum[epochSnapshot][scaleSnapshot.add(1)].div(SCALE_FACTOR);
+        uint256 firstPortion = epochToScaleToSum[epochSnapshot][scaleSnapshot] - S_Snapshot;
+        uint256 secondPortion = epochToScaleToSum[epochSnapshot][scaleSnapshot + 1] / SCALE_FACTOR;
 
-        uint collateralGain = initialDeposit.mul(firstPortion.add(secondPortion)).div(P_Snapshot).div(DECIMAL_PRECISION);
+        uint256 collateralGain = initialDeposit * (firstPortion + secondPortion) / P_Snapshot / DECIMAL_PRECISION;
 
         return collateralGain;
     }
@@ -515,42 +517,42 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
     * where P(0) is the depositor's snapshot of the product P, taken when they last updated their deposit.
     */
     function getCompoundedTHUSDDeposit(address _depositor) public view override returns (uint) {
-        uint initialDeposit = deposits[_depositor].initialValue;
+        uint256 initialDeposit = deposits[_depositor];
         if (initialDeposit == 0) { return 0; }
 
         Snapshots memory snapshots = depositSnapshots[_depositor];
 
-        uint compoundedDeposit = _getCompoundedStakeFromSnapshots(initialDeposit, snapshots);
+        uint256 compoundedDeposit = _getCompoundedStakeFromSnapshots(initialDeposit, snapshots);
         return compoundedDeposit;
     }
 
     // Internal function, used to calculcate compounded deposits.
     function _getCompoundedStakeFromSnapshots(
-        uint initialStake,
+        uint256 initialStake,
         Snapshots memory snapshots
     )
         internal
         view
         returns (uint)
     {
-        uint snapshot_P = snapshots.P;
+        uint256 snapshot_P = snapshots.P;
         uint128 scaleSnapshot = snapshots.scale;
         uint128 epochSnapshot = snapshots.epoch;
 
         // If stake was made before a pool-emptying event, then it has been fully cancelled with debt -- so, return 0
         if (epochSnapshot < currentEpoch) { return 0; }
 
-        uint compoundedStake;
-        uint128 scaleDiff = currentScale.sub(scaleSnapshot);
+        uint256 compoundedStake;
+        uint128 scaleDiff = currentScale - scaleSnapshot;
 
         /* Compute the compounded stake. If a scale change in P was made during the stake's lifetime,
         * account for it. If more than one scale change was made, then the stake has decreased by a factor of
         * at least 1e-9 -- so return 0.
         */
         if (scaleDiff == 0) {
-            compoundedStake = initialStake.mul(P).div(snapshot_P);
+            compoundedStake = initialStake * P / snapshot_P;
         } else if (scaleDiff == 1) {
-            compoundedStake = initialStake.mul(P).div(snapshot_P).div(SCALE_FACTOR);
+            compoundedStake = initialStake * P / snapshot_P / SCALE_FACTOR;
         } else { // if scaleDiff >= 2
             compoundedStake = 0;
         }
@@ -564,7 +566,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
         *
         * Thus it's unclear whether this line is still really needed.
         */
-        if (compoundedStake < initialStake.div(1e9)) {return 0;}
+        if (compoundedStake < initialStake / 1e9) {return 0;}
 
         return compoundedStake;
     }
@@ -572,41 +574,35 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
     // --- Sender functions for THUSD deposit, collateral gains ---
 
     // Transfer the THUSD tokens from the user to the Stability Pool's address, and update its recorded THUSD
-    function _sendTHUSDtoStabilityPool(address _address, uint _amount) internal {
-        thusdToken.sendToPool(_address, address(this), _amount);
-        uint newTotalTHUSDDeposits = totalTHUSDDeposits.add(_amount);
+    function _sendTHUSDtoStabilityPool(address _address, uint256 _amount) internal {
+        thusdToken.transferFrom(_address, address(this), _amount);
+        uint256 newTotalTHUSDDeposits = totalTHUSDDeposits + _amount;
         totalTHUSDDeposits = newTotalTHUSDDeposits;
         emit StabilityPoolTHUSDBalanceUpdated(newTotalTHUSDDeposits);
     }
 
-    function _sendCollateralGainToDepositor(uint _amount) internal {
+    function _sendCollateralGainToDepositor(uint256 _amount) internal {
         if (_amount == 0) {return;}
-        uint newCollateral = collateral.sub(_amount);
-        bool success = false;
+        uint256 newCollateral = collateral - _amount;
         collateral = newCollateral;
         emit StabilityPoolCollateralBalanceUpdated(newCollateral);
         emit CollateralSent(msg.sender, _amount);
 
-        if (collateralAddress == address(0)) {
-          (success, ) = msg.sender.call{ value: _amount }("");
-        } else {
-          success = IERC20(collateralAddress).transfer(msg.sender, _amount);
-        }
-        require(success, "StabilityPool: sending collateral failed");
+        sendCollateral(IERC20(collateralAddress), msg.sender, _amount);
     }
 
     // Send THUSD to user and decrease THUSD in Pool
-    function _sendTHUSDToDepositor(address _depositor, uint THUSDWithdrawal) internal {
+    function _sendTHUSDToDepositor(address _depositor, uint256 THUSDWithdrawal) internal {
         if (THUSDWithdrawal == 0) {return;}
 
-        thusdToken.returnFromPool(address(this), _depositor, THUSDWithdrawal);
+        thusdToken.transfer(_depositor, THUSDWithdrawal);
         _decreaseTHUSD(THUSDWithdrawal);
     }
 
     // --- Stability Pool Deposit Functionality ---
 
-    function _updateDepositAndSnapshots(address _depositor, uint _newValue) internal {
-        deposits[_depositor].initialValue = _newValue;
+    function _updateDepositAndSnapshots(address _depositor, uint256 _newValue) internal {
+        deposits[_depositor] = _newValue;
 
         if (_newValue == 0) {
             delete depositSnapshots[_depositor];
@@ -615,10 +611,10 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
         }
         uint128 currentScaleCached = currentScale;
         uint128 currentEpochCached = currentEpoch;
-        uint currentP = P;
+        uint256 currentP = P;
 
         // Get S and G for the current epoch and current scale
-        uint currentS = epochToScaleToSum[currentEpochCached][currentScaleCached];
+        uint256 currentS = epochToScaleToSum[currentEpochCached][currentScaleCached];
 
         // Record new snapshots of the latest running product P, sum S, and sum G, for the depositor
         depositSnapshots[_depositor].P = currentP;
@@ -640,33 +636,36 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
     }
 
     function _requireNoUnderCollateralizedTroves() internal {
-        uint price = priceFeed.fetchPrice();
+        uint256 price = priceFeed.fetchPrice();
         address lowestTrove = sortedTroves.getLast();
-        uint ICR = troveManager.getCurrentICR(lowestTrove, price);
+        uint256 ICR = troveManager.getCurrentICR(lowestTrove, price);
         require(ICR >= MCR, "StabilityPool: Cannot withdraw while there are troves with ICR < MCR");
     }
 
-    function _requireUserHasDeposit(uint _initialDeposit) internal pure {
+    function _requireUserHasDeposit(uint256 _initialDeposit) internal pure {
         require(_initialDeposit > 0, 'StabilityPool: User must have a non-zero deposit');
     }
 
-    function _requireNonZeroAmount(uint _amount) internal pure {
+    function _requireNonZeroAmount(uint256 _amount) internal pure {
         require(_amount > 0, 'StabilityPool: Amount must be non-zero');
     }
 
     function _requireUserHasTrove(address _depositor) internal view {
-        require(troveManager.getTroveStatus(_depositor) == 1, "StabilityPool: caller must have an active trove to withdraw colalteralGain to");
+        require(
+            troveManager.getTroveStatus(_depositor) == ITroveManager.Status.active, 
+            "StabilityPool: caller must have an active trove to withdraw collateralGain to"
+        );
     }
 
     function _requireUserHasCollateralGain(address _depositor) internal view {
-        uint collateralGain = getDepositorCollateralGain(_depositor);
+        uint256 collateralGain = getDepositorCollateralGain(_depositor);
         require(collateralGain > 0, "StabilityPool: caller must have non-zero collateral Gain");
     }
 
     // When ERC20 token collateral is received this function needs to be called
     function updateCollateralBalance(uint256 _amount) external override {
         _requireCallerIsActivePool();
-		    collateral = collateral.add(_amount);
+        collateral += _amount;
         emit StabilityPoolCollateralBalanceUpdated(collateral);
   	}
 
@@ -674,7 +673,7 @@ contract StabilityPool is LiquityBase, Ownable, CheckContract, IStabilityPool {
 
     receive() external payable {
         _requireCallerIsActivePool();
-        collateral = collateral.add(msg.value);
+        collateral += msg.value;
         emit StabilityPoolCollateralBalanceUpdated(collateral);
     }
 }

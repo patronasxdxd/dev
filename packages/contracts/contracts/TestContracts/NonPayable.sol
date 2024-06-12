@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.17;
 
 //import "../Dependencies/console.sol";
 
 
 contract NonPayable {
     bool isPayable;
+    address immutable public owner = address(this);
 
     function setPayable(bool _isPayable) external {
         isPayable = _isPayable;

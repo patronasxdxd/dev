@@ -6,7 +6,7 @@
 
 Details of a [redeemTHUSD()](./lib-base.transactableliquity.redeemthusd.md) transaction.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface RedemptionDetails 
@@ -14,10 +14,10 @@ export interface RedemptionDetails
 
 ## Properties
 
-|  Property | Type | Description |
-|  --- | --- | --- |
-|  [actualTHUSDAmount](./lib-base.redemptiondetails.actualthusdamount.md) | [Decimal](./lib-base.decimal.md) | Amount of thUSD that was actually redeemed by the transaction. |
-|  [attemptedTHUSDAmount](./lib-base.redemptiondetails.attemptedthusdamount.md) | [Decimal](./lib-base.decimal.md) | Amount of thUSD the redeemer tried to redeem. |
-|  [collateralTaken](./lib-base.redemptiondetails.collateraltaken.md) | [Decimal](./lib-base.decimal.md) | Amount of collateral (e.g. Ether) taken from Troves by the transaction. |
-|  [fee](./lib-base.redemptiondetails.fee.md) | [Decimal](./lib-base.decimal.md) | Amount of native currency (e.g. Ether) deducted as fee from collateral taken. |
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [actualTHUSDAmount](./lib-base.redemptiondetails.actualthusdamount.md) |  | [Decimal](./lib-base.decimal.md) | Amount of thUSD that was actually redeemed by the transaction. |
+|  [attemptedTHUSDAmount](./lib-base.redemptiondetails.attemptedthusdamount.md) |  | [Decimal](./lib-base.decimal.md) | Amount of thUSD the redeemer tried to redeem. |
+|  [collateralTaken](./lib-base.redemptiondetails.collateraltaken.md) |  | [Decimal](./lib-base.decimal.md) | Amount of collateral (e.g. Ether) taken from Troves by the transaction. |
+|  [fee](./lib-base.redemptiondetails.fee.md) |  | [Decimal](./lib-base.decimal.md) | Amount of native currency (e.g. Ether) deducted as fee from collateral taken. |
 

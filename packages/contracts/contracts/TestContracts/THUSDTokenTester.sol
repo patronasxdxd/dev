@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.17;
 
 import "../THUSDToken.sol";
 
@@ -11,10 +11,17 @@ contract THUSDTokenTester is THUSDToken {
     constructor(
         address _troveManagerAddress,
         address _stabilityPoolAddress,
-        address _borrowerOperationsAddress
-    ) THUSDToken(_troveManagerAddress,
-                      _stabilityPoolAddress,
-                      _borrowerOperationsAddress) {}
+        address _borrowerOperationsAddress,
+        uint256 _governanceTimeDelay
+    ) 
+        THUSDToken(_troveManagerAddress,
+                 _stabilityPoolAddress,
+                 _borrowerOperationsAddress,
+                 address(0),
+                 address(0),
+                 address(0),
+                 _governanceTimeDelay
+    ) {}
 
     function unprotectedMint(address _account, uint256 _amount) external {
         // No check on caller here
@@ -22,22 +29,10 @@ contract THUSDTokenTester is THUSDToken {
         _mint(_account, _amount);
     }
 
-    function unprotectedBurn(address _account, uint _amount) external {
+    function unprotectedBurn(address _account, uint256 _amount) external {
         // No check on caller here
 
         _burn(_account, _amount);
-    }
-
-    function unprotectedSendToPool(address _sender,  address _poolAddress, uint256 _amount) external {
-        // No check on caller here
-
-        _transfer(_sender, _poolAddress, _amount);
-    }
-
-    function unprotectedReturnFromPool(address _poolAddress, address _receiver, uint256 _amount ) external {
-        // No check on caller here
-
-        _transfer(_poolAddress, _receiver, _amount);
     }
 
     function callInternalApprove(address owner, address spender, uint256 amount) external {
@@ -51,7 +46,7 @@ contract THUSDTokenTester is THUSDToken {
         }
     }
 
-    function getDigest(address owner, address spender, uint amount, uint nonce, uint deadline) external view returns (bytes32) {
+    function getDigest(address owner, address spender, uint256 amount, uint256 nonce, uint256 deadline) external view returns (bytes32) {
         return keccak256(abi.encodePacked(
                 uint16(0x1901),
                 domainSeparator(),

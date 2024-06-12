@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.17;
 
-import "./Dependencies/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Interfaces/ICollSurplusPool.sol";
-import "./Dependencies/SafeMath.sol";
+import "./Interfaces/IActivePool.sol";
+import "./Interfaces/IBorrowerOperations.sol";
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
-import "./Dependencies/console.sol";
+import "./Dependencies/SendCollateral.sol";
 
 
-contract CollSurplusPool is Ownable, CheckContract, ICollSurplusPool {
-    using SafeMath for uint256;
+contract CollSurplusPool is Ownable, CheckContract, SendCollateral, ICollSurplusPool {
 
     string constant public NAME = "CollSurplusPool";
 
@@ -40,12 +40,22 @@ contract CollSurplusPool is Ownable, CheckContract, ICollSurplusPool {
         checkContract(_borrowerOperationsAddress);
         checkContract(_troveManagerAddress);
         checkContract(_activePoolAddress);
-        checkContract(_collateralAddress);
+        if (_collateralAddress != address(0)) {
+            checkContract(_collateralAddress);
+        }
 
         borrowerOperationsAddress = _borrowerOperationsAddress;
         troveManagerAddress = _troveManagerAddress;
         activePoolAddress = _activePoolAddress;
         collateralAddress = _collateralAddress;
+
+        require(
+            (Ownable(_activePoolAddress).owner() != address(0) || 
+            IActivePool(_activePoolAddress).collateralAddress() == _collateralAddress) &&
+            (Ownable(_borrowerOperationsAddress).owner() != address(0) || 
+            IBorrowerOperations(_borrowerOperationsAddress).collateralAddress() == _collateralAddress),
+            "The same collateral address must be used for the entire set of contracts"
+        );
 
         emit BorrowerOperationsAddressChanged(_borrowerOperationsAddress);
         emit TroveManagerAddressChanged(_troveManagerAddress);
@@ -56,7 +66,7 @@ contract CollSurplusPool is Ownable, CheckContract, ICollSurplusPool {
     }
 
     /* Returns the collateral state variable at ActivePool address.
-       Not necessarily equal to the raw collateral balance - ether can be forcibly sent to contracts. */
+       Not necessarily equal to the raw collateral balance - collateral can be forcibly sent to contracts. */
     function getCollateralBalance() external view override returns (uint) {
         return collateral;
     }
@@ -67,10 +77,10 @@ contract CollSurplusPool is Ownable, CheckContract, ICollSurplusPool {
 
     // --- Pool functionality ---
 
-    function accountSurplus(address _account, uint _amount) external override {
+    function accountSurplus(address _account, uint256 _amount) external override {
         _requireCallerIsTroveManager();
 
-        uint newAmount = balances[_account].add(_amount);
+        uint256 newAmount = balances[_account] + _amount;
         balances[_account] = newAmount;
 
         emit CollBalanceUpdated(_account, newAmount);
@@ -78,22 +88,16 @@ contract CollSurplusPool is Ownable, CheckContract, ICollSurplusPool {
 
     function claimColl(address _account) external override {
         _requireCallerIsBorrowerOperations();
-        uint claimableColl = balances[_account];
+        uint256 claimableColl = balances[_account];
         require(claimableColl > 0, "CollSurplusPool: No collateral available to claim");
 
         balances[_account] = 0;
         emit CollBalanceUpdated(_account, 0);
 
-        collateral = collateral.sub(claimableColl);
+        collateral -= claimableColl;
         emit CollateralSent(_account, claimableColl);
 
-        if (collateralAddress == address(0)) {
-            (bool success, ) = _account.call{ value: claimableColl }("");
-            require(success, "CollSurplusPool: sending collateral failed");
-        } else {
-            bool success = IERC20(collateralAddress).transfer(_account, claimableColl);
-            require(success, "CollSurplusPool: sending collateral failed");
-        }
+        sendCollateral(IERC20(collateralAddress), _account, claimableColl);
     }
 
     // --- 'require' functions ---
@@ -119,13 +123,15 @@ contract CollSurplusPool is Ownable, CheckContract, ICollSurplusPool {
     // When ERC20 token collateral is received this function needs to be called
     function updateCollateralBalance(uint256 _amount) external override {
         _requireCallerIsActivePool();
-		    collateral = collateral.add(_amount);
+        require(collateralAddress != address(0), "CollSurplusPool: ETH collateral needed, not ERC20");
+        collateral += _amount;
   	}
 
     // --- Fallback function ---
 
     receive() external payable {
         _requireCallerIsActivePool();
-        collateral = collateral.add(msg.value);
+        require(collateralAddress == address(0), "CollSurplusPool: ERC20 collateral needed, not ETH");
+        collateral += msg.value;
     }
 }

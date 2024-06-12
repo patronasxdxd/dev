@@ -1,17 +1,13 @@
 import { Block, BlockTag } from "@ethersproject/abstract-provider";
 import { Signer } from "@ethersproject/abstract-signer";
 
-import devOrNull from "../deployments/dev.json";
-import goerli from "../deployments/goerli.json";
-import kovan from "../deployments/kovan.json";
-import rinkeby from "../deployments/rinkeby.json";
-import ropsten from "../deployments/ropsten.json";
-import mainnet from "../deployments/mainnet.json";
-
 import { numberify, panic } from "./_utils";
 import { EthersProvider, EthersSigner } from "./types";
 
+import deployments from "../deployments/collaterals/collaterals.json";
+
 import {
+  CollateralsVersionedDeployments,
   _connectToContracts,
   _LiquityContractAddresses,
   _LiquityContracts,
@@ -19,20 +15,7 @@ import {
 } from "./contracts";
 
 import { _connectToMulticall, _Multicall } from "./_Multicall";
-
-const dev = devOrNull as _LiquityDeploymentJSON | null;
-
-const deployments: {
-  [chainId: number]: _LiquityDeploymentJSON | undefined;
-} = {
-  [mainnet.chainId]: mainnet,
-  [ropsten.chainId]: ropsten,
-  [rinkeby.chainId]: rinkeby,
-  [goerli.chainId]: goerli,
-  [kovan.chainId]: kovan,
-
-  ...(dev !== null ? { [dev.chainId]: dev } : {})
-};
+import { FolderInfo } from "../utils/fsScripts";
 
 declare const brand: unique symbol;
 
@@ -55,6 +38,12 @@ export interface EthersLiquityConnection extends EthersLiquityConnectionOptional
   /** Ethers `Signer` used for sending transactions. */
   readonly signer?: EthersSigner;
 
+  /** deployment collateral of the connected network. */
+  readonly deploymentCollateral: string;
+
+  /** deployment collateral version of the connected network. */
+  readonly deploymentVersion: string;
+
   /** Chain ID of the connected network. */
   readonly chainId: number;
 
@@ -67,14 +56,11 @@ export interface EthersLiquityConnection extends EthersLiquityConnectionOptional
   /** Number of block in which the first Liquity contract was deployed. */
   readonly startBlock: number;
 
-  /** Time period (in seconds) after `deploymentDate` during which redemptions are disabled. */
-  readonly bootstrapPeriod: number;
-
   /** A mapping of Liquity contracts' names to their addresses. */
   readonly addresses: Record<string, string>;
 
   /** @internal */
-  readonly _priceFeedIsTestnet: boolean;
+  readonly _useRealPriceFeed: boolean;
 
   /** @internal */
   readonly _isDev: boolean;
@@ -91,6 +77,8 @@ export interface _InternalEthersLiquityConnection extends EthersLiquityConnectio
 }
 
 const connectionFrom = (
+  deploymentCollateral: string,
+  deploymentVersion: string,
   provider: EthersProvider,
   signer: EthersSigner | undefined,
   _contracts: _LiquityContracts,
@@ -110,6 +98,8 @@ const connectionFrom = (
   }
 
   return branded({
+    deploymentCollateral,
+    deploymentVersion,
     provider,
     signer,
     _contracts,
@@ -180,7 +170,7 @@ export class UnsupportedNetworkError extends Error {
   }
 }
 
-const getProviderAndSigner = (
+export const getProviderAndSigner = (
   signerOrProvider: EthersSigner | EthersProvider
 ): [provider: EthersProvider, signer: EthersSigner | undefined] => {
   const provider: EthersProvider = Signer.isSigner(signerOrProvider)
@@ -194,11 +184,15 @@ const getProviderAndSigner = (
 
 /** @internal */
 export const _connectToDeployment = (
+  collateral: string,
+  version: string,
   deployment: _LiquityDeploymentJSON,
   signerOrProvider: EthersSigner | EthersProvider,
   optionalParams?: EthersLiquityConnectionOptionalParams
 ): EthersLiquityConnection =>
   connectionFrom(
+    collateral,
+    version,
     ...getProviderAndSigner(signerOrProvider),
     _connectToContracts(signerOrProvider, deployment),
     undefined,
@@ -241,7 +235,7 @@ export interface EthersLiquityConnectionOptionalParams {
   readonly userAddress?: string;
 
   /**
-   * Create a {@link @liquity/lib-base#LiquityStore} and expose it as the `store` property.
+   * Create a {@link @threshold-usd/lib-base#LiquityStore} and expose it as the `store` property.
    *
    * @remarks
    * When set to one of the available {@link EthersLiquityStoreOption | options},
@@ -251,13 +245,16 @@ export interface EthersLiquityConnectionOptionalParams {
    * {@link EthersLiquityWithStore}.
    *
    * Note that the store won't start monitoring the blockchain until its
-   * {@link @liquity/lib-base#LiquityStore.start | start()} function is called.
+   * {@link @threshold-usd/lib-base#LiquityStore.start | start()} function is called.
    */
   readonly useStore?: EthersLiquityStoreOption;
 }
 
 /** @internal */
 export function _connectByChainId<T>(
+  collateral: string,
+  version: string,
+  deployment: _LiquityDeploymentJSON,
   provider: EthersProvider,
   signer: EthersSigner | undefined,
   chainId: number,
@@ -266,6 +263,9 @@ export function _connectByChainId<T>(
 
 /** @internal */
 export function _connectByChainId(
+  collateral: string,
+  version: string,
+  deployment: _LiquityDeploymentJSON,
   provider: EthersProvider,
   signer: EthersSigner | undefined,
   chainId: number,
@@ -274,15 +274,17 @@ export function _connectByChainId(
 
 /** @internal */
 export function _connectByChainId(
+  collateral: string,
+  version: string,
+  deployment: _LiquityDeploymentJSON,
   provider: EthersProvider,
   signer: EthersSigner | undefined,
   chainId: number,
   optionalParams?: EthersLiquityConnectionOptionalParams
 ): EthersLiquityConnection {
-  const deployment: _LiquityDeploymentJSON =
-    deployments[chainId] ?? panic(new UnsupportedNetworkError(chainId));
-
   return connectionFrom(
+    collateral,
+    version,
     provider,
     signer,
     _connectToContracts(signer ?? provider, deployment),
@@ -292,12 +294,47 @@ export function _connectByChainId(
   );
 }
 
+/**
+ * Get the versioned Liquity deployments for a given network.
+ * @param network - The name of the network to get deployments for.
+ * @returns A Promise that resolves with an object containing the versioned deployments for each collateral.
+ */
+/** @public */
+export async function getCollateralsDeployments(network: string): Promise<CollateralsVersionedDeployments> {
+  const versionedDeployments: CollateralsVersionedDeployments = {};
+  
+  const collateralDeployments: FolderInfo[] = deployments.subfolders;
+  for (let index = 0; index < collateralDeployments.length; index++) {
+    const collateral = collateralDeployments[index]
+    
+    collateral.subfolders!.forEach(async (versionDeployment) => {
+
+      // Construct the absolute path of the JSON file for the specified network and version.
+      import(`@threshold-usd/lib-ethers/${versionDeployment.path}/${network}.json`)
+        .then((deployment) => versionedDeployments[collateral.name] = {
+            ...versionedDeployments[collateralDeployments[index].name],
+            [versionDeployment.name]: deployment,
+          }
+        )
+        .catch((error) => {
+          if (error.message.includes("Cannot find module")) return;
+          console.error(`Failed to load deployment for ${collateralDeployments[index].name} version ${versionDeployment.name}: ${error}`)
+        });
+    })
+  }
+
+  return versionedDeployments;
+}
+
 /** @internal */
 export const _connect = async (
-  signerOrProvider: EthersSigner | EthersProvider,
+  collateral: string,
+  version: string,
+  deployment: _LiquityDeploymentJSON,
+  provider: EthersProvider,
+  signer?: EthersSigner,
   optionalParams?: EthersLiquityConnectionOptionalParams
 ): Promise<EthersLiquityConnection> => {
-  const [provider, signer] = getProviderAndSigner(signerOrProvider);
 
   if (signer) {
     if (optionalParams?.userAddress !== undefined) {
@@ -310,5 +347,5 @@ export const _connect = async (
     };
   }
 
-  return _connectByChainId(provider, signer, (await provider.getNetwork()).chainId, optionalParams);
+  return _connectByChainId(collateral, version, deployment, provider, signer, (await provider.getNetwork()).chainId, optionalParams);
 };

@@ -6,9 +6,10 @@ import {
   LiquityStoreBaseState,
   TroveWithPendingRedistribution,
   StabilityDeposit,
+  BammDeposit,
   LiquityStore,
   Fees
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 import { decimalify, promiseAllValues } from "./_utils";
 import { ReadableEthersLiquity } from "./ReadableEthersLiquity";
@@ -16,7 +17,7 @@ import { EthersLiquityConnection, _getProvider } from "./EthersLiquityConnection
 import { EthersCallOverrides, EthersProvider } from "./types";
 
 /**
- * Extra state added to {@link @liquity/lib-base#LiquityStoreState} by
+ * Extra state added to {@link @threshold-usd/lib-base#LiquityStoreState} by
  * {@link BlockPolledLiquityStore}.
  *
  * @public
@@ -37,18 +38,20 @@ export interface BlockPolledLiquityStoreExtraState {
 
   /** @internal */
   _feesFactory: (blockTimestamp: number, recoveryMode: boolean) => Fees;
+
+  bammAllowance: Decimal;
 }
 
 /**
  * The type of {@link BlockPolledLiquityStore}'s
- * {@link @liquity/lib-base#LiquityStore.state | state}.
+ * {@link @threshold-usd/lib-base#LiquityStore.state | state}.
  *
  * @public
  */
 export type BlockPolledLiquityStoreState = LiquityStoreState<BlockPolledLiquityStoreExtraState>;
 
 /**
- * Ethers-based {@link @liquity/lib-base#LiquityStore} that updates state whenever there's a new
+ * Ethers-based {@link @threshold-usd/lib-base#LiquityStore} that updates state whenever there's a new
  * block.
  *
  * @public
@@ -82,14 +85,65 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
     return riskiestTroves[0];
   }
 
+  private _getEmptyUserValues() {
+    return {
+      accountBalance: Decimal.ZERO,
+      thusdBalance: Decimal.ZERO,
+      erc20TokenBalance: Decimal.ZERO,
+      erc20TokenAllowance: Decimal.ZERO,
+      collateralSurplusBalance: Decimal.ZERO,
+      troveBeforeRedistribution: new TroveWithPendingRedistribution(
+        AddressZero,
+        "nonExistent"
+      ),
+      stabilityDeposit: new StabilityDeposit(
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO
+      ),
+      bammDeposit: new BammDeposit(
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO,
+        Decimal.ZERO,
+      ),
+    };
+  }
+
+  private async _getUserValues(userAddress: string, blockTag?: number) {
+    return promiseAllValues({
+      accountBalance: this._provider.getBalance(userAddress, blockTag).then(decimalify),
+      thusdBalance: this._readable.getTHUSDBalance(userAddress, { blockTag }),
+      erc20TokenBalance: this._readable.getErc20TokenBalance(userAddress, { blockTag }),
+      erc20TokenAllowance: this._readable.getErc20TokenAllowance(userAddress, { blockTag }),
+      collateralSurplusBalance: this._readable.getCollateralSurplusBalance(userAddress, {
+        blockTag
+      }),
+      troveBeforeRedistribution: this._readable.getTroveBeforeRedistribution(userAddress, {
+        blockTag
+      }),
+      stabilityDeposit: this._readable.getStabilityDeposit(userAddress, { blockTag }),
+      bammDeposit: this._readable.getBammDeposit(userAddress, { blockTag }),
+    });
+  }
+
   private async _get(
     blockTag?: number
   ): Promise<[baseState: LiquityStoreBaseState, extraState: BlockPolledLiquityStoreExtraState]> {
     const { userAddress } = this.connection;
-
+    
+    const userValues = userAddress
+      ? await this._getUserValues(userAddress, blockTag)
+      : this._getEmptyUserValues();
+  
     const {
       blockTimestamp,
       _feesFactory,
+      bammAllowance,
       ...baseState
     } = await promiseAllValues({
       blockTimestamp: this._readable._getBlockTimestamp(blockTag),
@@ -101,37 +155,14 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
       thusdInStabilityPool: this._readable.getTHUSDInStabilityPool({ blockTag }),
       pcvBalance: this._readable.getPCVBalance({ blockTag }),
       _riskiestTroveBeforeRedistribution: this._getRiskiestTroveBeforeRedistribution({ blockTag }),
-
-      ...(userAddress
-        ? {
-            accountBalance: this._provider.getBalance(userAddress, blockTag).then(decimalify),
-            thusdBalance: this._readable.getTHUSDBalance(userAddress, { blockTag }),
-            erc20TokenBalance: this._readable.getErc20TokenBalance(userAddress, { blockTag }),
-            erc20TokenAllowance: this._readable.getErc20TokenAllowance(userAddress, { blockTag }),
-            collateralSurplusBalance: this._readable.getCollateralSurplusBalance(userAddress, {
-              blockTag
-            }),
-            troveBeforeRedistribution: this._readable.getTroveBeforeRedistribution(userAddress, {
-              blockTag
-            }),
-            stabilityDeposit: this._readable.getStabilityDeposit(userAddress, { blockTag })
-          }
-        : {
-            accountBalance: Decimal.ZERO,
-            thusdBalance: Decimal.ZERO,
-            erc20TokenBalance: Decimal.ZERO,
-            erc20TokenAllowance: Decimal.ZERO,
-            collateralSurplusBalance: Decimal.ZERO,
-            troveBeforeRedistribution: new TroveWithPendingRedistribution(
-              AddressZero,
-              "nonExistent"
-            ),
-            stabilityDeposit: new StabilityDeposit(
-              Decimal.ZERO,
-              Decimal.ZERO,
-              Decimal.ZERO
-            )
-          })
+      symbol: this._readable.getSymbol({ blockTag }),
+      collateralAddress: this._readable.getCollateralAddress({ blockTag }),
+      mintList: this._readable.checkMintList({ blockTag }),
+      bammAllowance: this._readable.getBammAllowance({ blockTag }),
+      isStabilityPools: this._readable.isStabilityPools({ blockTag }),
+      isBorrowerOperations: this._readable.isBorrowerOperations({ blockTag }),
+      isTroveManager: this._readable.isTroveManager({ blockTag }),
+      ...userValues
     });
 
     return [
@@ -142,7 +173,8 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
       {
         blockTag,
         blockTimestamp,
-        _feesFactory
+        _feesFactory,
+        bammAllowance
       }
     ];
   }
@@ -180,7 +212,8 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
     return {
       blockTag: stateUpdate.blockTag ?? oldState.blockTag,
       blockTimestamp: stateUpdate.blockTimestamp ?? oldState.blockTimestamp,
-      _feesFactory: stateUpdate._feesFactory ?? oldState._feesFactory
+      _feesFactory: stateUpdate._feesFactory ?? oldState._feesFactory,
+      bammAllowance: stateUpdate.bammAllowance ?? oldState.bammAllowance,
     };
   }
 }

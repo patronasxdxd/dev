@@ -10,12 +10,13 @@ import {
   SuccessfulReceipt,
   SentLiquityTransaction,
   TroveCreationParams,
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 import { _connectToDeployment } from "../src/EthersLiquityConnection";
 import { _LiquityDeploymentJSON } from "../src/contracts";
 import { EthersLiquity } from "../src/EthersLiquity";
 import { EthersTransactionReceipt } from "../src/types";
+import { DEFAULT_COLLATERAL_FOR_TESTING, DEFAULT_VERSION_FOR_TESTING } from "../src/_utils";
 
 const STARTING_BALANCE = Decimal.from(100); // amount of tokens and ETH to initialise
 const GAS_BUDGET = Decimal.from(0.1); // Extra ETH sent to users to be spent on gas
@@ -28,7 +29,7 @@ export const connectToDeployment = async (
   signer: Signer
 ) =>
   EthersLiquity._from(
-    _connectToDeployment(deployment, signer, {
+    _connectToDeployment(DEFAULT_COLLATERAL_FOR_TESTING, DEFAULT_VERSION_FOR_TESTING, deployment, signer, {
       userAddress: await signer.getAddress()
     })
   );

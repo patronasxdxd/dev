@@ -6,12 +6,12 @@
 
 Get the total amount of thUSD currently deposited in the PCV Pool.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 getPCVBalance(): Promise<Decimal>;
 ```
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[Decimal](./lib-base.decimal.md)<!-- -->&gt;
 

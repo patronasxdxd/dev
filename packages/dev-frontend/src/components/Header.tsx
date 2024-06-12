@@ -8,7 +8,11 @@ import { WHITE_FILTER } from "../utils/constants";
 
 const logoHeight: string = "16px";
 
-export const Header: React.FC = ({ children }) => {
+type HeaderProps = {
+  children: React.ReactNode
+}
+
+export const Header = ({ children }: HeaderProps): JSX.Element => {
   const [colorMode, setColorMode] = useColorMode();
   return (
     <Container variant="header">

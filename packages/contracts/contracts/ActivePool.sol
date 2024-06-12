@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.17;
 
-import "./Dependencies/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import './Interfaces/IActivePool.sol';
 import './Interfaces/ICollSurplusPool.sol';
 import './Interfaces/IDefaultPool.sol';
 import './Interfaces/IStabilityPool.sol';
-import "./Dependencies/SafeMath.sol";
+import './Interfaces/IBorrowerOperations.sol';
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
 // import "./Dependencies/console.sol";
+import "./Dependencies/SendCollateral.sol";
 
 /*
  * The Active Pool holds the collateral and THUSD debt (but not THUSD tokens) for all active troves.
@@ -19,8 +20,7 @@ import "./Dependencies/CheckContract.sol";
  * Stability Pool, the Default Pool, or both, depending on the liquidation conditions.
  *
  */
-contract ActivePool is Ownable, CheckContract, IActivePool {
-    using SafeMath for uint256;
+contract ActivePool is Ownable, CheckContract, SendCollateral, IActivePool {
 
     string constant public NAME = "ActivePool";
 
@@ -51,7 +51,9 @@ contract ActivePool is Ownable, CheckContract, IActivePool {
         checkContract(_stabilityPoolAddress);
         checkContract(_defaultPoolAddress);
         checkContract(_collSurplusPoolAddress);
-        checkContract(_collateralAddress);
+        if (_collateralAddress != address(0)) {
+            checkContract(_collateralAddress);
+        }
 
         borrowerOperationsAddress = _borrowerOperationsAddress;
         troveManagerAddress = _troveManagerAddress;
@@ -59,6 +61,18 @@ contract ActivePool is Ownable, CheckContract, IActivePool {
         defaultPoolAddress = _defaultPoolAddress;
         collateralAddress = _collateralAddress;
         collSurplusPoolAddress = _collSurplusPoolAddress;
+
+        require(
+            (Ownable(_defaultPoolAddress).owner() != address(0) || 
+            IDefaultPool(_defaultPoolAddress).collateralAddress() == _collateralAddress) &&
+            (Ownable(_borrowerOperationsAddress).owner() != address(0) || 
+            IBorrowerOperations(_borrowerOperationsAddress).collateralAddress() == _collateralAddress) &&
+            (Ownable(_stabilityPoolAddress).owner() != address(0) || 
+            IStabilityPool(stabilityPoolAddress).collateralAddress() == _collateralAddress) &&
+            (Ownable(_collSurplusPoolAddress).owner() != address(0) || 
+            ICollSurplusPool(_collSurplusPoolAddress).collateralAddress() == _collateralAddress),
+            "The same collateral address must be used for the entire set of contracts"
+        );
 
         emit BorrowerOperationsAddressChanged(_borrowerOperationsAddress);
         emit TroveManagerAddressChanged(_troveManagerAddress);
@@ -87,40 +101,34 @@ contract ActivePool is Ownable, CheckContract, IActivePool {
 
     // --- Pool functionality ---
 
-    function sendCollateral(address _account, uint _amount) external override {
+    function sendCollateral(address _account, uint256 _amount) external override {
         _requireCallerIsBOorTroveMorSP();
-        collateral = collateral.sub(_amount);
+        collateral -= _amount;
         emit ActivePoolCollateralBalanceUpdated(collateral);
         emit CollateralSent(_account, _amount);
 
+        sendCollateral(IERC20(collateralAddress), _account, _amount);
         if (collateralAddress == address(0)) {
-            (bool success, ) = _account.call{ value: _amount }("");
-            require(success, "ActivePool: sending collateral failed");
-        } else {
-            bool success = IERC20(collateralAddress).transfer(_account, _amount);
-            require(success, "ActivePool: sending collateral failed");
-
-            if (_account == defaultPoolAddress) {
-                IDefaultPool(_account).updateCollateralBalance(_amount);
-            }
-            if (_account == collSurplusPoolAddress) {
-                ICollSurplusPool(_account).updateCollateralBalance(_amount);
-            }
-            if (_account == stabilityPoolAddress) {
-                IStabilityPool(_account).updateCollateralBalance(_amount);
-            }
+            return;
+        }
+        if (_account == defaultPoolAddress) {
+            IDefaultPool(_account).updateCollateralBalance(_amount);
+        } else if (_account == collSurplusPoolAddress) {
+            ICollSurplusPool(_account).updateCollateralBalance(_amount);
+        } else if (_account == stabilityPoolAddress) {
+            IStabilityPool(_account).updateCollateralBalance(_amount);
         }
     }
 
-    function increaseTHUSDDebt(uint _amount) external override {
+    function increaseTHUSDDebt(uint256 _amount) external override {
         _requireCallerIsBOorTroveM();
-        THUSDDebt  = THUSDDebt.add(_amount);
+        THUSDDebt += _amount;
         emit ActivePoolTHUSDDebtUpdated(THUSDDebt);
     }
 
-    function decreaseTHUSDDebt(uint _amount) external override {
+    function decreaseTHUSDDebt(uint256 _amount) external override {
         _requireCallerIsBOorTroveMorSP();
-        THUSDDebt = THUSDDebt.sub(_amount);
+        THUSDDebt -= _amount;
         emit ActivePoolTHUSDDebtUpdated(THUSDDebt);
     }
 
@@ -130,7 +138,7 @@ contract ActivePool is Ownable, CheckContract, IActivePool {
         require(
             msg.sender == borrowerOperationsAddress ||
             msg.sender == defaultPoolAddress,
-            "ActivePool: Caller is neither BO nor Default Pool");
+            "ActivePool: Caller is neither BorrowerOperations nor Default Pool");
     }
 
     function _requireCallerIsBOorTroveMorSP() internal view {
@@ -151,7 +159,8 @@ contract ActivePool is Ownable, CheckContract, IActivePool {
     // When ERC20 token collateral is received this function needs to be called
     function updateCollateralBalance(uint256 _amount) external override {
         _requireCallerIsBorrowerOperationsOrDefaultPool();
-		    collateral = collateral.add(_amount);
+        require(collateralAddress != address(0), "ActivePool: ETH collateral needed, not ERC20");
+        collateral += _amount;
         emit ActivePoolCollateralBalanceUpdated(collateral);
   	}
 
@@ -160,7 +169,8 @@ contract ActivePool is Ownable, CheckContract, IActivePool {
     // This executes when the contract recieves ETH
     receive() external payable {
         _requireCallerIsBorrowerOperationsOrDefaultPool();
-        collateral = collateral.add(msg.value);
+        require(collateralAddress == address(0), "ActivePool: ERC20 collateral needed, not ETH");
+        collateral += msg.value;
         emit ActivePoolCollateralBalanceUpdated(collateral);
     }
 }

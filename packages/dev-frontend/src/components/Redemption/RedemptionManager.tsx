@@ -1,33 +1,47 @@
-import React, { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Box, Flex, Card, Link } from "theme-ui";
 
-import { Decimal, Percent, LiquityStoreState, MINIMUM_COLLATERAL_RATIO } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { Decimal, Percent, LiquityStoreState as ThresholdStoreState, MINIMUM_COLLATERAL_RATIO } from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 
 import { COIN } from "../../utils/constants";
 
 import { LoadingOverlay } from "../LoadingOverlay";
-import { EditableRow, StaticRow } from "../Trove/Editor";
+import { EditableRow, StaticRow } from "../Vault/Editor";
 import { ActionDescription, Amount } from "../ActionDescription";
 import { ErrorDescription } from "../ErrorDescription";
 import { useMyTransactionState } from "../Transaction";
 
 import { RedemptionAction } from "./RedemptionAction";
 import { InfoIcon } from "../InfoIcon";
+import { checkTransactionCollateral } from "../../utils/checkTransactionCollateral";
 
 const mcrPercent = new Percent(MINIMUM_COLLATERAL_RATIO).toString(0);
 
-const select = ({ price, fees, total, thusdBalance }: LiquityStoreState) => ({
+const select = ({ price, fees, total, thusdBalance, symbol, isTroveManager }: ThresholdStoreState) => ({
   price,
   fees,
   total,
-  thusdBalance
+  thusdBalance,
+  symbol,
+  isTroveManager
 });
+
+type RedemptionManagerProps = {
+  version: string;
+  collateral: string;
+}
 
 const transactionId = "redemption";
 
-export const RedemptionManager: React.FC = () => {
-  const { price, fees, total, thusdBalance } = useLiquitySelector(select);
+export const RedemptionManager = ({ version, collateral }: RedemptionManagerProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const { price, fees, total, thusdBalance, symbol, isTroveManager } = store
+
   const [thusdAmount, setTHUSDAmount] = useState(Decimal.ZERO);
   const [changePending, setChangePending] = useState(false);
   const editingState = useState<string>();
@@ -39,21 +53,42 @@ export const RedemptionManager: React.FC = () => {
   const ethFee = ethAmount.mul(redemptionRate);
   const maxRedemptionRate = redemptionRate.add(0.001); // TODO slippage tolerance
 
-  const myTransactionState = useMyTransactionState(transactionId);
+  const myTransactionState = useMyTransactionState(transactionId, version, collateral);
+  const isCollateralChecked = checkTransactionCollateral(
+    myTransactionState,
+    version,
+    collateral
+  );
+
+  const handleSetChangePending = useCallback(
+    (value) => {
+      setChangePending(value);
+    },
+    [setChangePending]
+  );
+  
+  const handleSetTHUSDAmount = useCallback(
+    (value) => {
+      setTHUSDAmount(value);
+    },
+    [setTHUSDAmount]
+  );
 
   useEffect(() => {
     if (
-      myTransactionState.type === "waitingForApproval" ||
-      myTransactionState.type === "waitingForConfirmation"
+      isCollateralChecked &&
+      (myTransactionState.type === "waitingForApproval" ||
+      myTransactionState.type === "waitingForConfirmation")
     ) {
-      setChangePending(true);
-    } else if (myTransactionState.type === "failed" || myTransactionState.type === "cancelled") {
-      setChangePending(false);
-    } else if (myTransactionState.type === "confirmed") {
-      setTHUSDAmount(Decimal.ZERO);
-      setChangePending(false);
+      handleSetChangePending(true);
+    } else if (isCollateralChecked && (myTransactionState.type === "failed" || myTransactionState.type === "cancelled")) {
+      handleSetChangePending(false);
+    } else if (isCollateralChecked && (myTransactionState.type === "confirmed" || myTransactionState.type === "confirmedOneShot")) {
+      handleSetTHUSDAmount(Decimal.ZERO);
+      handleSetChangePending(false);
     }
-  }, [myTransactionState.type, setChangePending, setTHUSDAmount]);
+  }, 
+  [isCollateralChecked, myTransactionState.type, handleSetChangePending, handleSetTHUSDAmount, collateral]);
 
   const [canRedeem, description] = total.collateralRatioIsBelowMinimum(price)
     ? [
@@ -77,7 +112,7 @@ export const RedemptionManager: React.FC = () => {
     : [
         true,
         <ActionDescription>
-          You will receive <Amount>{ethAmount.sub(ethFee).prettify(4)} ETH</Amount> in exchange for{" "}
+          You will receive <Amount>{ethAmount.sub(ethFee).prettify(4)} {symbol}</Amount> in exchange for{" "}
           <Amount>
             {thusdAmount.prettify()} {COIN}
           </Amount>
@@ -89,19 +124,24 @@ export const RedemptionManager: React.FC = () => {
     <Card variant="mainCards">
       <Card variant="layout.columns">
         <Flex sx={{
+            justifyContent: "space-between",
             width: "100%",
             gap: 1,
             pb: "1em",
+            px: ["2em", 0],
             borderBottom: 1, 
             borderColor: "border"
-        }}>
-          Redeem
-        </Flex>
-        
+          }}>
+            <Flex sx={{ gap: 1 }}>
+              Reedem
+            </Flex>
+            { symbol } Collateral
+          </Flex>
         <Flex sx={{
           width: "100%",
           flexDirection: "column",
           px: ["1em", 0, "1.6em"],
+          pb: "1em"
         }}>
           <EditableRow
             label="Redeem"
@@ -120,12 +160,12 @@ export const RedemptionManager: React.FC = () => {
               inputId="redeem-fee"
               amount={ethFee.toString(4)}
               pendingAmount={feePct.toString(2)}
-              unit="ETH"
+              unit={ symbol }
               infoIcon={
                 <InfoIcon
                   tooltip={
                     <Card variant="tooltip" sx={{ minWidth: "240px" }}>
-                      The Redemption Fee is charged as a percentage of the redeemed Ether. The Redemption
+                      The Redemption Fee is charged as a percentage of the redeemed collateral. The Redemption
                       Fee depends on thUSD redemption volumes and is 0.5% at minimum.
                     </Card>
                   }
@@ -140,8 +180,10 @@ export const RedemptionManager: React.FC = () => {
 
           <Flex variant="layout.actions">
             <RedemptionAction
+              version={version}
+              collateral={collateral}
               transactionId={transactionId}
-              disabled={!dirty || !canRedeem}
+              disabled={!dirty || !canRedeem || !isTroveManager}
               thusdAmount={thusdAmount}
               maxRedemptionRate={maxRedemptionRate}
             />
@@ -150,10 +192,16 @@ export const RedemptionManager: React.FC = () => {
             alignSelf: "center",
             fontSize: 11,
             fontWeight: "body",
+            justifyContent: "space-between",
+            width: "100%",
+            px: "1em",
             mt: 3
           }}>
-            <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
-            in the documentation
+            <Flex>
+              <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
+              in the documentation
+            </Flex>
+            <Flex>Deployment version: {version}</Flex>
           </Flex>
         </Flex>
         {changePending && <LoadingOverlay />}

@@ -1,6 +1,7 @@
 import { Decimal, Decimalish } from "./Decimal";
 import { Trove, TroveAdjustmentParams, TroveClosureParams, TroveCreationParams } from "./Trove";
 import { StabilityDepositChange } from "./StabilityDeposit";
+import { BammDepositChange } from "./BammDeposit";
 import { FailedReceipt } from "./SendableLiquity";
 
 /**
@@ -128,6 +129,19 @@ export interface StabilityPoolGainsWithdrawalDetails {
 
 /**
  * Details of a
+ * {@link TransactableLiquity.depositTHUSDInBammPool | depositTHUSDInBammPool()} or
+ * {@link TransactableLiquity.withdrawTHUSDFromBammPool | withdrawTHUSDFromBammPool()}
+ * transaction.
+ *
+ * @public
+ */
+export interface BammDepositChangeDetails extends StabilityPoolGainsWithdrawalDetails {
+  /** Change that was made to the deposit by this transaction. */
+  change: BammDepositChange<Decimal>;
+}
+
+/**
+ * Details of a
  * {@link TransactableLiquity.depositTHUSDInStabilityPool | depositTHUSDInStabilityPool()} or
  * {@link TransactableLiquity.withdrawTHUSDFromStabilityPool | withdrawTHUSDFromStabilityPool()}
  * transaction.
@@ -158,7 +172,7 @@ export interface CollateralGainTransferDetails extends StabilityPoolGainsWithdra
  * The functions return the details of the transaction (if any), or throw an implementation-specific
  * subclass of {@link TransactionFailedError} in case of transaction failure.
  *
- * Implemented by {@link @liquity/lib-ethers#EthersLiquity}.
+ * Implemented by {@link @threshold-usd/lib-ethers#EthersLiquity}.
  *
  * @public
  */
@@ -168,7 +182,7 @@ export interface TransactableLiquity {
    *
    * @param params - How much to deposit and borrow.
    * @param maxBorrowingRate - Maximum acceptable
-   *                           {@link @liquity/lib-base#Fees.borrowingRate | borrowing rate}.
+   *                           {@link @threshold-usd/lib-base#Fees.borrowingRate | borrowing rate}.
    *
    * @throws
    * Throws {@link TransactionFailedError} in case of transaction failure.
@@ -195,7 +209,7 @@ export interface TransactableLiquity {
    *
    * @param params - Parameters of the adjustment.
    * @param maxBorrowingRate - Maximum acceptable
-   *                           {@link @liquity/lib-base#Fees.borrowingRate | borrowing rate} if
+   *                           {@link @threshold-usd/lib-base#Fees.borrowingRate | borrowing rate} if
    *                           `params` includes `borrowTHUSD`.
    *
    * @throws
@@ -203,7 +217,7 @@ export interface TransactableLiquity {
    *
    * @remarks
    * The transaction will fail if the Trove's debt would fall below
-   * {@link @liquity/lib-base#THUSD_MINIMUM_DEBT}.
+   * {@link @threshold-usd/lib-base#THUSD_MINIMUM_DEBT}.
    *
    * If `maxBorrowingRate` is omitted, the current borrowing rate plus 0.5% is used as maximum
    * acceptable rate.
@@ -252,7 +266,7 @@ export interface TransactableLiquity {
    *
    * @param amount - The amount of thUSD to borrow.
    * @param maxBorrowingRate - Maximum acceptable
-   *                           {@link @liquity/lib-base#Fees.borrowingRate | borrowing rate}.
+   *                           {@link @threshold-usd/lib-base#Fees.borrowingRate | borrowing rate}.
    *
    * @throws
    * Throws {@link TransactionFailedError} in case of transaction failure.
@@ -286,6 +300,9 @@ export interface TransactableLiquity {
   /** @internal */
   setPrice(price: Decimalish): Promise<void>;
 
+  /** @internal */
+  mint(): Promise<void>;
+
   /**
    * Liquidate one or more undercollateralized Troves.
    *
@@ -307,6 +324,43 @@ export interface TransactableLiquity {
   liquidateUpTo(maximumNumberOfTrovesToLiquidate: number): Promise<LiquidationDetails>;
 
   /**
+   * Make a new Bamm Deposit, or top up existing one.
+   *
+   * @param amount - Amount of thUSD to add to new or existing deposit.
+   *
+   * @throws
+   * Throws {@link TransactionFailedError} in case of transaction failure.
+   *
+   * As a side-effect, the transaction will also pay out an existing Stability Deposit's
+   * {@link @threshold-usd/lib-base#BammDeposit.collateralGain | collateral gain}
+   */
+  depositTHUSDInBammPool(
+    amount: Decimalish
+  ): Promise<BammDepositChangeDetails>;
+
+  /**
+   * Withdraw thUSD from Bamm.
+   *
+   * @param amount - Amount of thUSD to withdraw.
+   *
+   * @throws
+   * Throws {@link TransactionFailedError} in case of transaction failure.
+   *
+   * @remarks
+   * As a side-effect, the transaction will also pay out the Stability Deposit's
+   * {@link @threshold-usd/lib-base#BammDeposit.collateralGain | collateral gain}.
+   */
+  withdrawTHUSDFromBammPool(amount: Decimalish): Promise<BammDepositChangeDetails>;
+
+  /**
+   * Withdraw {@link @threshold-usd/lib-base#BammDeposit.collateralGain | collateral gain} from Bamm Deposit.
+   *
+   * @throws
+   * Throws {@link TransactionFailedError} in case of transaction failure.
+   */
+  withdrawGainsFromBammPool(): Promise<StabilityPoolGainsWithdrawalDetails>;
+
+  /**
    * Make a new Stability Deposit, or top up existing one.
    *
    * @param amount - Amount of thUSD to add to new or existing deposit.
@@ -315,7 +369,7 @@ export interface TransactableLiquity {
    * Throws {@link TransactionFailedError} in case of transaction failure.
    *
    * As a side-effect, the transaction will also pay out an existing Stability Deposit's
-   * {@link @liquity/lib-base#StabilityDeposit.collateralGain | collateral gain}
+   * {@link @threshold-usd/lib-base#StabilityDeposit.collateralGain | collateral gain}
    */
   depositTHUSDInStabilityPool(
     amount: Decimalish
@@ -331,12 +385,18 @@ export interface TransactableLiquity {
    *
    * @remarks
    * As a side-effect, the transaction will also pay out the Stability Deposit's
-   * {@link @liquity/lib-base#StabilityDeposit.collateralGain | collateral gain}.
+   * {@link @threshold-usd/lib-base#StabilityDeposit.collateralGain | collateral gain}.
    */
   withdrawTHUSDFromStabilityPool(amount: Decimalish): Promise<StabilityDepositChangeDetails>;
 
   /**
-   * Withdraw {@link @liquity/lib-base#StabilityDeposit.collateralGain | collateral gain} from Stability Deposit.
+   * @throws
+   * Throws {@link TransactionFailedError} in case of transaction failure.
+   */
+  bammUnlock(): Promise<void>;
+
+  /**
+   * Withdraw {@link @threshold-usd/lib-base#StabilityDeposit.collateralGain | collateral gain} from Stability Deposit.
    *
    * @throws
    * Throws {@link TransactionFailedError} in case of transaction failure.
@@ -344,7 +404,7 @@ export interface TransactableLiquity {
   withdrawGainsFromStabilityPool(): Promise<StabilityPoolGainsWithdrawalDetails>;
 
   /**
-   * Transfer {@link @liquity/lib-base#StabilityDeposit.collateralGain | collateral gain} from
+   * Transfer {@link @threshold-usd/lib-base#StabilityDeposit.collateralGain | collateral gain} from
    * Stability Deposit to Trove.
    *
    * @throws
@@ -354,6 +414,18 @@ export interface TransactableLiquity {
    * The collateral gain is transfered to the Trove as additional collateral.
    */
   transferCollateralGainToTrove(): Promise<CollateralGainTransferDetails>;
+
+  /**
+   * Transfer {@link @threshold-usd/lib-base#BammDeposit.collateralGain | collateral gain} from
+   * Bamm Deposit to Trove.
+   *
+   * @throws
+   * Throws {@link TransactionFailedError} in case of transaction failure.
+   *
+   * @remarks
+   * The collateral gain is transfered to the Trove as additional collateral.
+   */
+  transferBammCollateralGainToTrove(): Promise<CollateralGainTransferDetails>;  
 
   /**
    * Send thUSD tokens to an address.
@@ -371,7 +443,7 @@ export interface TransactableLiquity {
    *
    * @param amount - Amount of thUSD to be redeemed.
    * @param maxRedemptionRate - Maximum acceptable
-   *                            {@link @liquity/lib-base#Fees.redemptionRate | redemption rate}.
+   *                            {@link @threshold-usd/lib-base#Fees.redemptionRate | redemption rate}.
    *
    * @throws
    * Throws {@link TransactionFailedError} in case of transaction failure.
@@ -386,7 +458,7 @@ export interface TransactableLiquity {
    * Claim leftover collateral after a liquidation or redemption.
    *
    * @remarks
-   * Use {@link @liquity/lib-base#ReadableLiquity.getCollateralSurplusBalance | getCollateralSurplusBalance()}
+   * Use {@link @threshold-usd/lib-base#ReadableLiquity.getCollateralSurplusBalance | getCollateralSurplusBalance()}
    * to check the amount of collateral available for withdrawal.
    *
    * @throws
@@ -396,14 +468,14 @@ export interface TransactableLiquity {
 
     /**
    * Allow the borrower operations contract to use user's erc20 tokens for
-   * {@link @liquity/lib-base#TransactableLiquity.openTrove | adjustTrove}.
+   * {@link @threshold-usd/lib-base#TransactableLiquity.openTrove | adjustTrove}.
    *
    * @param allowance - Maximum amount of LP tokens that will be transferrable to liquidity mining
    *                    (`2^256 - 1` by default).
    *
    * @remarks
    * Must be performed before calling
-   * {@link @liquity/lib-base#TransactableLiquity.openTrove | adjustTrove()}.
+   * {@link @threshold-usd/lib-base#TransactableLiquity.openTrove | adjustTrove()}.
    *
    * @throws
    * Throws {@link TransactionFailedError} in case of transaction failure.

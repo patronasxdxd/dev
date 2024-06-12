@@ -1,9 +1,8 @@
-import React from "react";
 import { Card } from "theme-ui";
 import { COIN } from "../../utils/constants";
 
-import { LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState } from "@threshold-usd/lib-base";
+import { useThresholdSelector} from "@threshold-usd/lib-react";
 
 import { BottomCard } from "./BottomCard";
 
@@ -11,12 +10,15 @@ type StabilityPoolCardProps = {
   variant?: string;
 };
 
-const select = ({  thusdBalance }: LiquityStoreState) => ({
+const select = ({  thusdBalance }: ThresholdStoreState) => ({
   thusdBalance
 });
 
-export const StabilityPoolCard: React.FC<StabilityPoolCardProps> = ({ variant = "mainCards" }) => {
-  const { thusdBalance } = useLiquitySelector(select);
+export const StabilityPoolCard = ({ variant = "mainCards" }: StabilityPoolCardProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const thresholdStore = thresholdSelectorStores[0]
+  const store = thresholdStore?.store!;
+  const thusdBalance = store.thusdBalance;
 
   return (
     <Card {...{ variant }}>
@@ -26,9 +28,9 @@ export const StabilityPoolCard: React.FC<StabilityPoolCardProps> = ({ variant = 
         tooltip={`The Stability Pool is the first line of defense in maintaining system solvency. It achieves that by acting as the source of liquidity to repay debt from liquidated Vaults—ensuring that the total ${ COIN } supply always remains backed.`}
         token={ COIN }
         path='/earn'
-        disabled={ true }
+        isPoweredByBProtocol={true}
       >
-        {! thusdBalance.eq(0) ?  thusdBalance.prettify() : '--'}
+        {(!thusdBalance.eq(0) ? thusdBalance.prettify() : '--')}
       </BottomCard>
     </Card>
   );

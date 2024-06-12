@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.17;
 
-import "./Dependencies/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import './Interfaces/IDefaultPool.sol';
 import './Interfaces/IActivePool.sol';
-import "./Dependencies/SafeMath.sol";
 import "./Dependencies/Ownable.sol";
 import "./Dependencies/CheckContract.sol";
-import "./Dependencies/console.sol";
+import "./Dependencies/SendCollateral.sol";
 
 /*
  * The Default Pool holds the collateral and THUSD debt (but not THUSD tokens) from liquidations that have been redistributed
@@ -17,8 +16,7 @@ import "./Dependencies/console.sol";
  * When a trove makes an operation that applies its pending collateral and THUSD debt, its pending collateral and THUSD debt is moved
  * from the Default Pool to the Active Pool.
  */
-contract DefaultPool is Ownable, CheckContract, IDefaultPool {
-    using SafeMath for uint256;
+contract DefaultPool is Ownable, CheckContract, SendCollateral, IDefaultPool {
 
     string constant public NAME = "DefaultPool";
 
@@ -40,11 +38,19 @@ contract DefaultPool is Ownable, CheckContract, IDefaultPool {
     {
         checkContract(_troveManagerAddress);
         checkContract(_activePoolAddress);
-        checkContract(_collateralAddress);
+        if (_collateralAddress != address(0)) {
+            checkContract(_collateralAddress);
+        }
 
         troveManagerAddress = _troveManagerAddress;
         activePoolAddress = _activePoolAddress;
         collateralAddress = _collateralAddress;
+
+        require(
+            (Ownable(_activePoolAddress).owner() != address(0) || 
+            IActivePool(_activePoolAddress).collateralAddress() == _collateralAddress),
+            "The same collateral address must be used for the entire set of contracts"
+        );
 
         emit TroveManagerAddressChanged(_troveManagerAddress);
         emit ActivePoolAddressChanged(_activePoolAddress);
@@ -58,7 +64,7 @@ contract DefaultPool is Ownable, CheckContract, IDefaultPool {
     /*
     * Returns the collateral state variable.
     *
-    * Not necessarily equal to the the contract's raw collateral balance - ether can be forcibly sent to contracts.
+    * Not necessarily equal to the the contract's raw collateral balance - collateral can be forcibly sent to contracts.
     */
     function getCollateralBalance() external view override returns (uint) {
         return collateral;
@@ -70,33 +76,29 @@ contract DefaultPool is Ownable, CheckContract, IDefaultPool {
 
     // --- Pool functionality ---
 
-    function sendCollateralToActivePool(uint _amount) external override {
+    function sendCollateralToActivePool(uint256 _amount) external override {
         _requireCallerIsTroveManager();
         address activePool = activePoolAddress; // cache to save an SLOAD
-        collateral = collateral.sub(_amount);
+        collateral -= _amount;
         emit DefaultPoolCollateralBalanceUpdated(collateral);
         emit CollateralSent(activePool, _amount);
 
+        sendCollateral(IERC20(collateralAddress), activePool, _amount);
         if (collateralAddress == address(0)) {
-            (bool success, ) = activePool.call{ value: _amount }("");
-            require(success, "DefaultPool: sending collateral failed");
-        } else {
-            bool success = IERC20(collateralAddress).transfer(activePool, _amount);
-            // TODO add call to trigger the update in activePool
-            require(success, "DefaultPool: sending collateral failed");
-            IActivePool(activePool).updateCollateralBalance(_amount);
-        }
+            return;
+        } 
+        IActivePool(activePool).updateCollateralBalance(_amount);
     }
 
-    function increaseTHUSDDebt(uint _amount) external override {
+    function increaseTHUSDDebt(uint256 _amount) external override {
         _requireCallerIsTroveManager();
-        THUSDDebt = THUSDDebt.add(_amount);
+        THUSDDebt += _amount;
         emit DefaultPoolTHUSDDebtUpdated(THUSDDebt);
     }
 
-    function decreaseTHUSDDebt(uint _amount) external override {
+    function decreaseTHUSDDebt(uint256 _amount) external override {
         _requireCallerIsTroveManager();
-        THUSDDebt = THUSDDebt.sub(_amount);
+        THUSDDebt -= _amount;
         emit DefaultPoolTHUSDDebtUpdated(THUSDDebt);
     }
 
@@ -113,7 +115,8 @@ contract DefaultPool is Ownable, CheckContract, IDefaultPool {
     // When ERC20 token collateral is received this function needs to be called
     function updateCollateralBalance(uint256 _amount) external override {
         _requireCallerIsActivePool();
-		    collateral = collateral.add(_amount);
+        require(collateralAddress != address(0), "DefaultPool: ETH collateral needed, not ERC20");
+        collateral += _amount;
         emit DefaultPoolCollateralBalanceUpdated(collateral);
   	}
 
@@ -121,7 +124,8 @@ contract DefaultPool is Ownable, CheckContract, IDefaultPool {
 
     receive() external payable {
         _requireCallerIsActivePool();
-        collateral = collateral.add(msg.value);
+        require(collateralAddress == address(0), "DefaultPool: ERC20 collateral needed, not ETH");
+        collateral += msg.value;
         emit DefaultPoolCollateralBalanceUpdated(collateral);
     }
 }

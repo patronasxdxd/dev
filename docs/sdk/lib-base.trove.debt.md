@@ -6,7 +6,7 @@
 
 Amount of thUSD owed.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly debt: Decimal;

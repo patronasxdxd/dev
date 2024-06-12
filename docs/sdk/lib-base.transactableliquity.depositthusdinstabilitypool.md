@@ -6,7 +6,7 @@
 
 Make a new Stability Deposit, or top up existing one.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 depositTHUSDInStabilityPool(amount: Decimalish): Promise<StabilityDepositChangeDetails>;
@@ -18,7 +18,7 @@ depositTHUSDInStabilityPool(amount: Decimalish): Promise<StabilityDepositChangeD
 |  --- | --- | --- |
 |  amount | [Decimalish](./lib-base.decimalish.md) | Amount of thUSD to add to new or existing deposit. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[StabilityDepositChangeDetails](./lib-base.stabilitydepositchangedetails.md)<!-- -->&gt;
 

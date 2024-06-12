@@ -1,14 +1,13 @@
 import { Flex, Image, Link, useColorMode } from "theme-ui";
 import { Icon } from "./Icon";
-
 import { GREY_FILTER } from "../utils/constants";
 
-export const ExternalLinks: React.FC = () => {
+export const ExternalLinks = (): JSX.Element => {
   const [colorMode] = useColorMode();
 
   return (
     <>
-      <Link variant="nav" href="https://github.com/Threshold-USD/dev" target="_blank">
+      <Link variant="nav" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">
         <Icon name="book" />
         Documentation
       </Link>

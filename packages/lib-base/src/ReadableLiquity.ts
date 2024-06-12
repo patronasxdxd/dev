@@ -1,6 +1,7 @@
-import { Decimal } from "./Decimal";
+import { Decimal, Decimalish } from "./Decimal";
 import { Trove, TroveWithPendingRedistribution, UserTrove } from "./Trove";
 import { StabilityDeposit } from "./StabilityDeposit";
+import { BammDeposit } from "./BammDeposit";
 import { Fees } from "./Fees";
 
 
@@ -33,7 +34,7 @@ export interface TroveListingParams {
  * Read the state of the Liquity protocol.
  *
  * @remarks
- * Implemented by {@link @liquity/lib-ethers#EthersLiquity}.
+ * Implemented by {@link @threshold-usd/lib-ethers#EthersLiquity}.
  *
  * @public
  */
@@ -42,7 +43,7 @@ export interface ReadableLiquity {
    * Get the total collateral and debt per stake that has been liquidated through redistribution.
    *
    * @remarks
-   * Needed when dealing with instances of {@link @liquity/lib-base#TroveWithPendingRedistribution}.
+   * Needed when dealing with instances of {@link @threshold-usd/lib-base#TroveWithPendingRedistribution}.
    */
   getTotalRedistributed(): Promise<Trove>;
 
@@ -53,7 +54,7 @@ export interface ReadableLiquity {
    *
    * @remarks
    * The current state of a Trove can be fetched using
-   * {@link @liquity/lib-base#ReadableLiquity.getTrove | getTrove()}.
+   * {@link @threshold-usd/lib-base#ReadableLiquity.getTrove | getTrove()}.
    */
   getTroveBeforeRedistribution(address?: string): Promise<TroveWithPendingRedistribution>;
 
@@ -80,11 +81,28 @@ export interface ReadableLiquity {
   getTotal(): Promise<Trove>;
 
   /**
+   * Get the ERC20 token's symbol .
+   */
+  getSymbol(): Promise<string>;
+
+  /**
+   * Get the collateral address of the BorrowersOperations contract.
+   */
+  getCollateralAddress(): Promise<string>;
+
+  /**
    * Get the current state of a Stability Deposit.
    *
    * @param address - Address that owns the Stability Deposit.
    */
   getStabilityDeposit(address?: string): Promise<StabilityDeposit>;
+
+  /**
+   * Get the current state of a Bamm Deposit.
+   *
+   * @param address - Address that owns the Bamm Deposit.
+   */
+  getBammDeposit(address?: string): Promise<BammDeposit>;
 
   /**
    * Get the total amount of thUSD currently deposited in the Stability Pool.
@@ -111,11 +129,44 @@ export interface ReadableLiquity {
   getErc20TokenBalance(address?: string): Promise<Decimal>;
 
   /**
+   * Get the Stability Pool share.
+   *
+   * @param withdrawAmount - withdraw amount.
+   */
+  getWithdrawsSpShare(withdrawAmount: Decimalish): Promise<string>;
+
+  
+  /**
    * Get the Borrowers Operations contract's allowance of a holder's Erc20 tokens.
    *
    * @param address - Address holding the Erc20 tokens.
    */
   getErc20TokenAllowance(address?: string): Promise<Decimal>;
+
+  /**
+   * Check if the deployment stability pool address was added to the thUSD token.
+   *
+   */
+  isStabilityPools(): Promise<boolean>;
+
+  /**
+   * Check if the deployment borrower operations address was added to the thUSD token.
+   *
+   */
+  isBorrowerOperations(): Promise<boolean>;
+
+  /**
+   * Check if the deployment trove manager address was added to the thUSD token.
+   *
+   */
+  isTroveManager(): Promise<boolean>;    
+
+  /**
+   * Check if a certain address is on the thUSD contract mintList.
+   *
+   * @param address - Address of the BorrowersOpertaions contract
+   */
+  checkMintList(): Promise<boolean>;
 
   /**
    * Get the amount of leftover collateral available for withdrawal by an address.
@@ -124,7 +175,7 @@ export interface ReadableLiquity {
    * When a Trove gets liquidated or redeemed, any collateral it has above 110% (in case of
    * liquidation) or 100% collateralization (in case of redemption) gets sent to a pool, where it
    * can be withdrawn from using
-   * {@link @liquity/lib-base#TransactableLiquity.claimCollateralSurplus | claimCollateralSurplus()}.
+   * {@link @threshold-usd/lib-base#TransactableLiquity.claimCollateralSurplus | claimCollateralSurplus()}.
    */
   getCollateralSurplusBalance(address?: string): Promise<Decimal>;
 

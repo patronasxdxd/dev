@@ -1,10 +1,19 @@
 export {
+  getCollateralsDeployments,
   _connectByChainId,
   EthersLiquityConnection,
   EthersLiquityConnectionOptionalParams,
   EthersLiquityStoreOption,
   UnsupportedNetworkError
 } from "./src/EthersLiquityConnection";
+
+export {
+  _Versions,
+  CollateralsVersionedDeployments,
+  _LiquityContractAddresses,
+  _LiquityContractsKey,
+  _LiquityDeploymentJSON
+} from "./src/contracts";
 
 export * from "./src/types";
 export * from "./src/ReadableEthersLiquity";

@@ -7,7 +7,7 @@ type GenericIconProps = React.ComponentProps<typeof Flex> & {
   justifyContent?: string;
 };
 
-export const GenericIcon: React.FC<GenericIconProps> = ({ imgSrc, height, justifyContent, ...boxProps }) => (
+export const GenericIcon = ({ imgSrc, height, justifyContent, ...boxProps }: GenericIconProps): JSX.Element => (
   <Flex sx={{ lineHeight: 0, justifyContent }} {...boxProps}>
     <Image src={imgSrc} sx={{ height }} />
   </Flex>

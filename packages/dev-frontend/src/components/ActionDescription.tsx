@@ -4,10 +4,12 @@ import { GenericIcon } from "./GenericIcon";
 import { PURPLE_FILTER, WHITE_FILTER } from "../utils/constants";
 
 type ActionDescriptionProps = {
+  children: React.ReactNode
   title?: string;
 };
 
-export const ActionDescription: React.FC<ActionDescriptionProps> = ({ title, children }) => {
+
+export const ActionDescription = ({ title, children }: ActionDescriptionProps): JSX.Element => {
   const [colorMode] = useColorMode();
 
   return (
@@ -19,7 +21,6 @@ export const ActionDescription: React.FC<ActionDescriptionProps> = ({ title, chi
         mt: "1.5em", 
         mb: "0.9em", 
         p: "0.9em",
-
         border: 1,
         borderRadius: "8px",
         borderColor: "border",
@@ -38,6 +39,10 @@ export const ActionDescription: React.FC<ActionDescriptionProps> = ({ title, chi
   )
 };
 
-export const Amount: React.FC = ({ children }) => (
+type AmountProps = {
+  children: React.ReactNode
+}
+
+export const Amount = ({ children }: AmountProps): JSX.Element => (
   <Text sx={{ whiteSpace: "nowrap" }}>{children}</Text>
 );

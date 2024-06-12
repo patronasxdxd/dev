@@ -191,6 +191,7 @@ const theme: Theme = {
     text: "#191d28",
     heading: "#6A7793",
     background: baseColors.white,
+    systemStatsBackGround: "#f3f8fc",
     wrapperBackground: "#f7fafca1",
     muted: "#eaebed",
     inputText: "#6A7793",
@@ -209,6 +210,7 @@ const theme: Theme = {
         heading: "#9974FF",
         background: "#200c5a",
         muted: "#9974FF23",
+        systemStatsBackGround: "#200c5a",
         wrapperBackground: "#150640",
         metaMaskButtonBg: "#7D00FF", 
         metaMaskInnerButtonBg: "#200c5a"
@@ -225,6 +227,7 @@ const theme: Theme = {
         heading: "#F6F7FA",
         background: "#323A47",
         muted: "#9974FF23",
+        systemStatsBackGround: "#323A47",
         wrapperBackground: "#1D2229",
         metaMaskButtonBg: "#4A5568", 
         metaMaskInnerButtonBg: "#323A47"
@@ -513,6 +516,7 @@ const theme: Theme = {
     },
 
     oneThird: {
+      display: "flex",
       pr: cardGapX,
       width: ["100%", "100%", "33%"]
     },
@@ -523,6 +527,7 @@ const theme: Theme = {
     },
 
     twoThirds: {
+      display: "flex",
       pr: cardGapX,
       width: ["100%", "100%", "67%"]
     },

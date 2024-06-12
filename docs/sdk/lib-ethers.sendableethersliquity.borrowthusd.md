@@ -6,7 +6,7 @@
 
 Adjust existing Trove by borrowing more thUSD.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 borrowTHUSD(amount: Decimalish, maxBorrowingRate?: Decimalish, overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<TroveAdjustmentDetails>>;
@@ -20,7 +20,7 @@ borrowTHUSD(amount: Decimalish, maxBorrowingRate?: Decimalish, overrides?: Ether
 |  maxBorrowingRate | [Decimalish](./lib-base.decimalish.md) | Maximum acceptable [borrowing rate](./lib-base.fees.borrowingrate.md)<!-- -->. |
 |  overrides | [EthersTransactionOverrides](./lib-ethers.etherstransactionoverrides.md) |  |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[SentEthersLiquityTransaction](./lib-ethers.sentethersliquitytransaction.md)<!-- -->&lt;[TroveAdjustmentDetails](./lib-base.troveadjustmentdetails.md)<!-- -->&gt;&gt;
 
@@ -30,6 +30,5 @@ Equivalent to:
 
 ```typescript
 adjustTrove({ borrowTHUSD: amount }, maxBorrowingRate)
-
 ```
 

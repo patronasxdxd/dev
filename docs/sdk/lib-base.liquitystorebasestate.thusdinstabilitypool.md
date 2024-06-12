@@ -6,7 +6,7 @@
 
 Total amount of thUSD currently deposited in the Stability Pool.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 thusdInStabilityPool: Decimal;

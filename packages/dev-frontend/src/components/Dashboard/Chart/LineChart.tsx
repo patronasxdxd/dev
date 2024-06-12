@@ -1,10 +1,7 @@
-import React, { useState, useRef, useEffect, MutableRefObject } from "react";
+import { useEffect, useState } from "react";
 import { Box, Card, Flex, useColorMode } from "theme-ui";
-
-import { FIRST_ERC20_COLLATERAL } from "../../../utils/constants";
-
 import { useTvl } from "./context/ChartContext";
-import { tvlData, TimestampsObject } from "./context/ChartProvider";
+import { TimestampsObject, Tvl } from "./context/ChartProvider";
 
 import {
   Chart as ChartJS,
@@ -19,6 +16,10 @@ import {
   ScriptableContext,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { Decimal } from "@threshold-usd/lib-base";
+import { useHover } from "../../../utils/hooks";
+import { LoadingChart } from "./LoadingChart";
+import { UnsupportedNetworkChart } from "./UnsupportedNetworkChart";
 
 ChartJS.register(
   CategoryScale,
@@ -34,7 +35,7 @@ ChartJS.register(
 ChartJS.register({
   id: 'uniqueid',
   beforeDraw: function (chart: any, _easing: any) {
-    if (chart.tooltip._active && chart.tooltip._active.length) {
+    if (chart?.tooltip?._active && chart?.tooltip?._active.length) {
       const ctx = chart.ctx;
       const activePoint = chart.tooltip._active[0];
       const x = activePoint.element.x;
@@ -52,44 +53,69 @@ ChartJS.register({
   }
 });
 
-export const LineChart: React.FC = () => {
+export const LineChart = (): JSX.Element => {
+  const [isMounted, setIsMounted] = useState<boolean>(true);
   const [hoverRef, isHovered] = useHover<HTMLDivElement>();
-  
   const [colorMode] = useColorMode();
   const [activeData, setActiveData] = useState<number | string>('-');
+  const [tvl, setTvl] = useState<Tvl[]>([]);
+  const [loadedChart, setLoadedChart] = useState<boolean>(false);
+  const [timestamps, setTimestamps] = useState<Array<TimestampsObject>>([]);
   const [activeLabel, setActiveLabel] = useState<string>('-');
-  const [chartData, setChartData] = useState<Array<tvlData>>();
+  const [chartData, setChartData] = useState<Array<Number>>([]);
+  const [lastTvlDecimal, setLastTvlDecimal] = useState<Decimal>();
+  const [lastTvlNumber, setLastTvlNumber] = useState<Array<number>>([]);
   const [chartLabels, setChartLabels] = useState<Array<TimestampsObject>>();
+  const [isUnsupportedNetwork, setIsUnsupportedNetwork] = useState<boolean>(false);
 
-  function useHover<T>(): [MutableRefObject<T>, boolean] {
-    const [value, setValue] = useState<boolean>(false); 
-    const ref: any = useRef<T | null>(null);
-    const handleMouseOver = (): void => setValue(true);
-    const handleMouseOut = (): void => setValue(false);
+  useTvl()
+    .then((result) => {
+      if (result?.isUnsupportedNetwork) {
+        setIsUnsupportedNetwork(true) 
+        return
+      }
 
-    useEffect(
-      () => {
-        const node: any = ref.current;
-        if (node) {
-          node.addEventListener("mouseover", handleMouseOver);
-          node.addEventListener("mouseout", handleMouseOut);
-          return () => {
-            node.removeEventListener("mouseover", handleMouseOver);
-            node.removeEventListener("mouseout", handleMouseOut);
-          };
+      if (!result?.tvl || !result.timestamps) return
+
+      setIsUnsupportedNetwork(false)
+      setTvl(result.tvl)
+      setTimestamps(result.timestamps)
+      setLoadedChart(true);
+    })
+    .catch((error) => {
+      setLoadedChart(false)
+      console.error('tvl fetch error: ', error)
+    })
+
+  useEffect(() => {
+    if (!isMounted || !loadedChart) {
+      return;
+    }
+
+    let queriedTvl: Decimal[] = [];
+  
+    for (const collateralTvl of tvl) {
+      collateralTvl.tvl.forEach((tvl, index) => {
+        if (queriedTvl[index] === undefined) {
+          queriedTvl[index] = Decimal.from(0);
         }
-      },
-      [] // Recall only if ref changes
-    );
-    return [ref, value];
-  };
+        queriedTvl[index] = tvl.totalCollateral.add(queriedTvl[index]);
+      });
+    }
+    setLastTvlNumber(queriedTvl.map(decimal => parseInt(decimal.toString())))
+  
+  
+    return () => {
+      setIsMounted(false);
+    };
+  }, [isMounted, loadedChart, tvl, timestamps]);
 
-  useTvl().then((result) => {
-    if (!result) return null;
-    const { tvl , timestamps } = result;
-    setChartData(tvl);
-    setChartLabels(timestamps);
-  });
+  useEffect(() => {
+    if (lastTvlNumber.length > 0 && timestamps.length > 0) {
+      setChartData(lastTvlNumber);
+      setChartLabels(timestamps);
+    }
+  }, [isMounted, lastTvlNumber, timestamps]);
 
   const labels: Array<{[date: string]: string}> = [];
 
@@ -103,19 +129,20 @@ export const LineChart: React.FC = () => {
   });  
 
   const options = {
+    locale: 'en-US',
     borderWidth: 2,
     responsive: true,
     maintainAspectRatio: false,
     elements: {
       point:{
-          radius: 0,
+        radius: 0,
       },
     },
     scales: {
       y: {
         display: false,
         drawTicks: false,
-        beginAtZero: true
+        beginAtZero: true,
       }, 
       x: {
         ticks: {
@@ -153,7 +180,8 @@ export const LineChart: React.FC = () => {
       const activePoint = chart.tooltip._active[0];
       const setIndex = activePoint?.datasetIndex;
       const index = activePoint?.index;
-      const activeData = chart.data?.datasets[setIndex]?.data[index];
+      const activeData = chart.data?.datasets[setIndex] && 
+      Decimal.from(chart.data?.datasets[setIndex]?.data[index]).prettify(2);
       const labelIndex = labels[index];
       const activeLabel = labelIndex && Object.values(labelIndex)[0];
       setActiveData(activeData ? activeData : '-');
@@ -163,14 +191,14 @@ export const LineChart: React.FC = () => {
   
   const data = {
     labels: labels.map((label: {[day: string]: string}) => {
-      return Object.keys(label)
+      return Object.keys(label)[0]
     }),
     datasets: [
       {
         fill: "start",
         lineTension: 0.4,
         label: 'TVL',
-        data: chartData?.map((tvl: tvlData) => tvl?.totalCollateral),
+        data: chartData,
         borderColor: colorMode === "dark" ? "#7d00ff" : colorMode === "darkGrey" ? "#f3f3f3b8" : "#20cb9d",
         pointBackgroundColor: colorMode === 'dark' ? "#7d00ff" : colorMode === "darkGrey" ? "#f3f3f3b8" : "#20cb9d",
         backgroundColor: (context: ScriptableContext<"line">) => {
@@ -184,9 +212,10 @@ export const LineChart: React.FC = () => {
     ],
   };
   return (
-    <Card variant="layout.columns" style={{ height: "25em" }}>
+    <Card variant="layout.columns" sx={{height: "100%"}}>
       <Flex sx={{
         width: "100%",
+        height: "2.5rem",
         gap: 1,
         pb: 3,
         borderBottom: 1, 
@@ -196,42 +225,54 @@ export const LineChart: React.FC = () => {
       </Flex>
       <Flex sx={{
         width: "100%",
+        height: "100%",
         flexDirection: "column",
-        pt: "1em",
-        pl: ["1em", 0, 0, "1em"],
-        gap: "1em",
+        justifyContent: "center",
+        alignItems: "center",
+        pl: ["1rem", 0, 0, "1rem"],
+        py: "2rem",
+        gap: "1rem",
       }}>
         <Box style={{
-          height: "18.5em",
-          marginTop: "2.5em",
-          paddingBottom: "2.5em"
+          height: "20em",
+          width: "100%",
+          paddingBottom: "2.5em",
         }}>
-          <Flex sx={{ 
-            position: "absolute", 
-            marginTop: "-1.6em",
-            fontSize: "1.6em", 
-            fontWeight: "bold", 
-            color: "text"
-          }}>
-            {isHovered ? activeData : '-'} {isHovered && activeData > 0 && ` ${ FIRST_ERC20_COLLATERAL }` }
-          </Flex>
-          <Flex sx={{ 
-            fontSize: ".9em",
-            marginBottom: "1.5em"
-          }}>
-            {isHovered ? activeLabel : '-'}
-          </Flex>
-          <Box sx={{height: "100%"}} ref={hoverRef}>
-            <Line 
-              options={{
-                ...options,
-                interaction: {
-                  mode: 'index',
-                  intersect: false,
-                }
-              }}  
-              data={data} 
-            />
+          {loadedChart && <>
+            <Flex sx={{ 
+              position: "absolute", 
+              gap: "2rem",
+              marginTop: "-1.6rem",
+              fontSize: "1.6rem", 
+              fontWeight: "bold", 
+              color: "text"
+            }}>
+              {(lastTvlDecimal || (isHovered && activeData)) && '$'}
+              {loadedChart && (
+                isHovered 
+                ? activeData 
+                : lastTvlDecimal 
+                  ? lastTvlDecimal.prettify(2) 
+                  : '-'
+              )} 
+            </Flex>
+            <Flex sx={{ 
+              fontSize: ".9em",
+              marginTop: "1rem",
+              marginBottom: "1.5rem",
+              height: "1rem",
+            }}>
+              {loadedChart && isHovered && activeLabel}
+            </Flex>
+          </>}
+          <Box sx={{ display: "flex", paddingBottom: "1rem", height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }} ref={hoverRef}>
+            {
+              isUnsupportedNetwork 
+                ? <UnsupportedNetworkChart />
+                : !loadedChart 
+                  ? <LoadingChart />
+                  : <Line options={{ ...options, interaction: { mode: 'index', intersect: false } }}  data={data} />
+            }
           </Box>
         </Box>
       </Flex>

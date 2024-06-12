@@ -23,7 +23,7 @@ import {
   MINIMUM_BORROWING_RATE,
   THUSD_MINIMUM_DEBT,
   THUSD_MINIMUM_NET_DEBT
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 import { HintHelpers } from "../types";
 
@@ -37,7 +37,8 @@ import { EthersTransactionReceipt } from "../src/types";
 import { _LiquityDeploymentJSON } from "../src/contracts";
 import { _connectToDeployment } from "../src/EthersLiquityConnection";
 import { EthersLiquity } from "../src/EthersLiquity";
-import { ReadableEthersLiquity } from "../src/ReadableEthersLiquity";
+import { oracleAddresses } from "../hardhat.config";
+import { DEFAULT_COLLATERAL_FOR_TESTING, DEFAULT_VERSION_FOR_TESTING } from "../src/_utils";
 
 const provider = ethers.provider;
 
@@ -56,7 +57,7 @@ const connectToDeployment = async (
   signer: Signer
 ) =>
   EthersLiquity._from(
-    _connectToDeployment(deployment, signer, {
+    _connectToDeployment(DEFAULT_COLLATERAL_FOR_TESTING, DEFAULT_VERSION_FOR_TESTING, deployment, signer, {
       userAddress: await signer.getAddress()
     })
   );
@@ -181,7 +182,7 @@ describe("EthersLiquity", () => {
   // Always setup same initial balance for user
   beforeEach(async () => {
     [deployer, funder, user, ...otherUsers] = await ethers.getSigners();
-    deployment = await deployLiquity(deployer);
+    deployment = await deployLiquity(deployer, oracleAddresses, "tbtc");
 
     liquity = await connectToDeployment(deployment, user);
 

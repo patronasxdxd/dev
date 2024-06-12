@@ -5,9 +5,10 @@ import { InfoIcon } from "./InfoIcon";
 type SystemStatProps = {
   info?: React.ReactNode;
   tooltip?: React.ReactNode;
+  children: React.ReactNode
 };
 
-export const SystemStat: React.FC<SystemStatProps> = ({ info, tooltip, children }) => {
+export const SystemStat = ({ info, tooltip, children }: SystemStatProps): JSX.Element => {
     return (
       <Flex sx={{
         justifyContent: "space-between",

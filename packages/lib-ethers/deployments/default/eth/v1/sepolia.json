@@ -1,0 +1,28 @@
+{
+  "chainId": 11155111,
+  "version": "v1",
+  "collateralSymbol": "eth",
+  "deploymentDate": 1697598770309,
+  "_useRealPriceFeed": true,
+  "_isDev": false,
+  "startBlock": 4510979,
+  "addresses": {
+    "activePool": "0x7Ad9aC09aABeA7549061FCa5B46D14295a073330",
+    "borrowerOperations": "0xe2eA5880effFdd234A065dBBC174D6cb8a867167",
+    "troveManager": "0x4D74b0eFfa314a79dFd324C129D5b29c11ADbb04",
+    "collSurplusPool": "0xf5fff7676A98A73D6eCFb6F85dFd1c2b825f5940",
+    "defaultPool": "0xf97C6561228cEa0fA34201e710a9740E41953aC9",
+    "hintHelpers": "0x700138435639Ac2de1b6Ea29c117BD299775DB98",
+    "pcv": "0x74B81477E64fbeF008A2956bA5074F283d68Dc46",
+    "sortedTroves": "0xd2e4d6c9096a37e9FE7B1Ef7778266a4c6Aa1Acd",
+    "stabilityPool": "0x7153332F610f513b9CeC128385926E23a2AC8182",
+    "bLens": "0xc86d498B77542245959625436e679D18f0F4076E",
+    "gasPool": "0x206a6B4a318949655c221BE5Ac54B8740dDe1FA7",
+    "erc20": "0x0000000000000000000000000000000000000000",
+    "priceFeed": "0xA34e20fF8d6569Aa008F15ec58589bE9ad746AB8",
+    "chainlink": "0x694AA1769357215DE4FAC081bf1f309aDC325306",
+    "multiTroveGetter": "0x8C93c45A12a50d29FF9Bee6019FD72Fd48Fb5398",
+    "thusdToken": "0xF3e72cc2e04BB24999718e9b2Ca55fA764c5f9ea",
+    "bamm": "0xB774F31e2f64897fa7Eb9435884E08149eD3F1e5"
+  }
+}

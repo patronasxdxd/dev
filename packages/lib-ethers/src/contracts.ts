@@ -25,6 +25,9 @@ import priceFeedAbi from "../abi/PriceFeed.json";
 import priceFeedTestnetAbi from "../abi/PriceFeedTestnet.json";
 import sortedTrovesAbi from "../abi/SortedTroves.json";
 import stabilityPoolAbi from "../abi/StabilityPool.json";
+import bammAbi from "../abi/BAMM.json";
+import bLensAbi from "../abi/BLens.json";
+import chainlinkTestnetAbi from "../abi/ChainlinkTestnet.json";
 import gasPoolAbi from "../abi/GasPool.json";
 import erc20Abi from "../abi/ERC20Test.json";
 
@@ -42,6 +45,9 @@ import {
   PriceFeedTestnet,
   SortedTroves,
   StabilityPool,
+  BAMM,
+  BLens,
+  ChainlinkTestnet,
   GasPool,
   ERC20Test,
 } from "../types";
@@ -167,6 +173,9 @@ export interface _LiquityContracts {
   priceFeed: PriceFeed | PriceFeedTestnet;
   sortedTroves: SortedTroves;
   stabilityPool: StabilityPool;
+  bamm: BAMM;
+  bLens: BLens;
+  chainlink: ChainlinkTestnet;
   gasPool: GasPool;
   erc20: ERC20Test;
 }
@@ -177,14 +186,14 @@ export const _priceFeedIsTestnet = (
 ): priceFeed is PriceFeedTestnet => "setPrice" in priceFeed;
 
 /** @internal */
-type LiquityContractsKey = keyof _LiquityContracts;
+export type _LiquityContractsKey = keyof _LiquityContracts;
 
 /** @internal */
-export type _LiquityContractAddresses = Record<LiquityContractsKey, string>;
+export type _LiquityContractAddresses = Record<_LiquityContractsKey, string>;
 
-type LiquityContractAbis = Record<LiquityContractsKey, JsonFragment[]>;
+type LiquityContractAbis = Record<_LiquityContractsKey, JsonFragment[]>;
 
-const getAbi = (priceFeedIsTestnet: boolean): LiquityContractAbis => ({
+const getAbi = (useRealPriceFeed: boolean): LiquityContractAbis => ({
   activePool: activePoolAbi,
   borrowerOperations: borrowerOperationsAbi,
   troveManager: troveManagerAbi,
@@ -193,44 +202,75 @@ const getAbi = (priceFeedIsTestnet: boolean): LiquityContractAbis => ({
   hintHelpers: hintHelpersAbi,
   pcv: pcvAbi,
   multiTroveGetter: multiTroveGetterAbi,
-  priceFeed: priceFeedIsTestnet ? priceFeedTestnetAbi : priceFeedAbi,
+  priceFeed: useRealPriceFeed ? priceFeedAbi : priceFeedTestnetAbi,
   sortedTroves: sortedTrovesAbi,
   stabilityPool: stabilityPoolAbi,
+  bamm: bammAbi,
+  bLens: bLensAbi,
+  chainlink: chainlinkTestnetAbi,
   gasPool: gasPoolAbi,
   collSurplusPool: collSurplusPoolAbi,
   erc20: erc20Abi,
 });
 
-const mapLiquityContracts = <T, U>(
-  contracts: Record<LiquityContractsKey, T>,
-  f: (t: T, key: LiquityContractsKey) => U
-) =>
-  Object.fromEntries(
-    Object.entries(contracts).map(([key, t]) => [key, f(t, key as LiquityContractsKey)])
-  ) as Record<LiquityContractsKey, U>;
-
 /** @internal */
 export interface _LiquityDeploymentJSON {
   readonly chainId: number;
+  readonly collateralSymbol: string;
   readonly addresses: _LiquityContractAddresses;
   readonly version: string;
   readonly deploymentDate: number;
   readonly startBlock: number;
-  readonly bootstrapPeriod: number;
-  readonly _priceFeedIsTestnet: boolean;
+  readonly _useRealPriceFeed: boolean;
   readonly _isDev: boolean;
+}
+
+/** @internal */
+export type _Versions = Record<string, _LiquityDeploymentJSON>
+
+/** @public */
+export type CollateralsVersionedDeployments = Record<string, _Versions>
+
+const mapLiquityContracts = <T, U>(
+  contracts: Record<_LiquityContractsKey, T>,
+  f: (t: T, key: _LiquityContractsKey) => U
+) => {
+  // Check that contracts is not null or undefined
+  if (!contracts) {
+    throw new Error('Contracts object cannot be null or undefined');
+  }
+
+  return Object.fromEntries(
+    Object.entries(contracts).map(([key, t]) => [key, f(t, key as _LiquityContractsKey)])
+  ) as Record<_LiquityContractsKey, U>
 }
 
 /** @internal */
 export const _connectToContracts = (
   signerOrProvider: EthersSigner | EthersProvider,
-  { addresses, _priceFeedIsTestnet }: _LiquityDeploymentJSON
+  { addresses, _useRealPriceFeed }: _LiquityDeploymentJSON
 ): _LiquityContracts => {
-  const abi = getAbi(_priceFeedIsTestnet);
+  // Check that addresses is not null or undefined
+  if (!addresses) {
+    throw new Error('Addresses object cannot be null or undefined');
+  }
+
+  const abi = getAbi(_useRealPriceFeed);
 
   return mapLiquityContracts(
     addresses,
-    (address, key) =>
-      new _LiquityContract(address, abi[key], signerOrProvider) as _TypedLiquityContract
+    (address, key) => {
+      // Check that address is not null or undefined
+      if (!address) {
+        throw new Error(`Address for ${key} cannot be null or undefined`);
+      }
+
+      // Check that the ABI for the key is not null or undefined
+      if (!abi[key]) {
+        throw new Error(`ABI for ${key} cannot be null or undefined`);
+      }
+
+      return new _LiquityContract(address, abi[key], signerOrProvider) as _TypedLiquityContract
+    }
   ) as _LiquityContracts;
 };

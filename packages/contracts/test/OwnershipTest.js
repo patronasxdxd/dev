@@ -1,10 +1,10 @@
 const deploymentHelper = require("../utils/deploymentHelpers.js")
 const { TestHelper: th, MoneyValues: mv } = require("../utils/testHelpers.js")
 
-const GasPool = artifacts.require("./GasPool.sol")
+const Dummy = artifacts.require("./Dummy.sol")
 const BorrowerOperationsTester = artifacts.require("./BorrowerOperationsTester.sol")
 
-contract('All Liquity functions with onlyOwner modifier', async accounts => {
+contract('All functions with onlyOwner modifier', async accounts => {
 
   const [owner, alice, bob] = accounts;
 
@@ -15,10 +15,10 @@ contract('All Liquity functions with onlyOwner modifier', async accounts => {
   let activePool
   let stabilityPool
   let defaultPool
+  let gasPool
   let borrowerOperations
 
   let pcv
-  let lockupContractFactory
 
   before(async () => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
@@ -31,6 +31,7 @@ contract('All Liquity functions with onlyOwner modifier', async accounts => {
     activePool = contracts.activePool
     stabilityPool = contracts.stabilityPool
     defaultPool = contracts.defaultPool
+    gasPool = contracts.gasPool
     borrowerOperations = contracts.borrowerOperations
     pcv = contracts.pcv
   })
@@ -42,22 +43,24 @@ contract('All Liquity functions with onlyOwner modifier', async accounts => {
     await testWrongAddress(contract, params, bob, method, skip, 'Account code size cannot be zero')
   }
   const testWrongAddress = async (contract, params, address, method, skip, message) => {
-    for (let i = skip; i < params.length; i++) {
+    for (let i = 0; i < params.length; i++) {
+      if (i == skip - 1) continue
       const newParams = [...params]
       newParams[i] = address
       await th.assertRevert(contract[method](...newParams, { from: owner }), message)
     }
   }
 
-  const testSetAddresses = async (contract, numberOfAddresses) => {
-    const dumbContract = await GasPool.new()
+  const testSetAddresses = async (contract, numberOfAddresses, collateralAddressNumber = 0) => {
+    const dumbContract = await Dummy.new()
+    await dumbContract.setCollateral(dumbContract.address)
     const params = Array(numberOfAddresses).fill(dumbContract.address)
 
     // Attempt call from alice
     await th.assertRevert(contract.setAddresses(...params, { from: alice }))
 
     // Attempt to use zero address
-    await testZeroAddress(contract, params)
+    await testZeroAddress(contract, params, method = 'setAddresses', skip = collateralAddressNumber)
     // Attempt to use non contract
     await testNonContractAddress(contract, params)
 
@@ -76,31 +79,37 @@ contract('All Liquity functions with onlyOwner modifier', async accounts => {
 
   describe('BorrowerOperations', async accounts => {
     it("setAddresses(): reverts when called by non-owner, with wrong addresses, or twice", async () => {
-      await testSetAddresses(borrowerOperations, 11)
+      await testSetAddresses(borrowerOperations, 11, 11)
+    })
+  })
+
+  describe('GasPool', async accounts => {
+    it("setAddresses(): reverts when called by non-owner, with wrong addresses, or twice", async () => {
+      await testSetAddresses(gasPool, 2)
     })
   })
 
   describe('DefaultPool', async accounts => {
     it("setAddresses(): reverts when called by non-owner, with wrong addresses, or twice", async () => {
-      await testSetAddresses(defaultPool, 3)
+      await testSetAddresses(defaultPool, 3, 3)
     })
   })
 
   describe('StabilityPool', async accounts => {
     it("setAddresses(): reverts when called by non-owner, with wrong addresses, or twice", async () => {
-      await testSetAddresses(stabilityPool, 7)
+      await testSetAddresses(stabilityPool, 7, 7)
     })
   })
 
   describe('ActivePool', async accounts => {
     it("setAddresses(): reverts when called by non-owner, with wrong addresses, or twice", async () => {
-      await testSetAddresses(activePool, 6)
+      await testSetAddresses(activePool, 6, 6)
     })
   })
 
   describe('SortedTroves', async accounts => {
     it("setParams(): reverts when called by non-owner, with wrong addresses, or twice", async () => {
-      const dumbContract = await GasPool.new()
+      const dumbContract = await Dummy.new()
       const params = [10000001, dumbContract.address, dumbContract.address]
 
       // Attempt call from alice
@@ -122,7 +131,7 @@ contract('All Liquity functions with onlyOwner modifier', async accounts => {
 
   describe('PCV', async accounts => {
     it("setAddresses(): reverts when called by non-owner, with wrong addresses, or twice", async () => {
-      await testSetAddresses(pcv, 4)
+      await testSetAddresses(pcv, 4, 4)
     })
   })
 })

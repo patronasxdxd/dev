@@ -5,7 +5,7 @@ import { Icon } from "./Icon";
 import { ExternalLinks } from "./ExternalLinks";
 import { UserAccount } from "./UserAccount";
 
-export const Nav: React.FC = () => {
+export const Nav = (): JSX.Element => {
   return (
     <Box sx={{
       bg: "background",
@@ -29,10 +29,10 @@ export const Nav: React.FC = () => {
           </Flex>
           Borrow
         </Link>
-        {/*<Link to="/earn">
+        <Link to="/earn">
           <Icon name="chart-line" />
           Earn
-        </Link>*/}
+        </Link>
         <Link to="/redemption">
           <Icon name="check" />
           Redeem

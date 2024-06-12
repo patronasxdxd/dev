@@ -6,7 +6,7 @@
 
 Adjust existing Trove by borrowing more thUSD.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 borrowTHUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<TroveAdjustmentDetails>;
@@ -19,7 +19,7 @@ borrowTHUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<TroveAdj
 |  amount | [Decimalish](./lib-base.decimalish.md) | The amount of thUSD to borrow. |
 |  maxBorrowingRate | [Decimalish](./lib-base.decimalish.md) | Maximum acceptable [borrowing rate](./lib-base.fees.borrowingrate.md)<!-- -->. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[TroveAdjustmentDetails](./lib-base.troveadjustmentdetails.md)<!-- -->&gt;
 
@@ -33,6 +33,5 @@ Equivalent to:
 
 ```typescript
 adjustTrove({ borrowTHUSD: amount }, maxBorrowingRate)
-
 ```
 

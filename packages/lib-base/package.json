@@ -1,19 +1,18 @@
 {
-  "name": "@liquity/lib-base",
-  "version": "0.0.0-semantic-release",
-  "description": "Liquity SDK shared interfaces",
+  "name": "@threshold-usd/lib-base",
+  "version": "3.0.0",
+  "description": "Threshold USD SDK shared interfaces",
   "keywords": [
-    "Liquity",
+    "Threshold USD",
     "protocol",
     "DeFi",
     "Ethereum"
   ],
-  "homepage": "https://github.com/liquity/liquity#readme",
+  "homepage": "https://github.com/thresholdusd/threshold-usd#readme",
   "license": "MIT",
-  "author": "Daniel Simon <dani@liquity.org>",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "repository": "https://github.com/liquity/dev",
+  "repository": "https://github.com/thresholdusd/dev",
   "scripts": {
     "prepare": "run-s prepare:*",
     "prepare:eslint": "eslint src",

@@ -1,49 +1,32 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.17;
+
+import "usingtellor/contracts/TellorPlayground.sol";
 
 
-contract MockTellor {
+contract MockTellor is TellorPlayground {
 
     // --- Mock price data ---
 
-    bool didRetrieve = true; // default to a positive retrieval
-    uint private price;
-    uint private updateTime;
+    // bytes public immutable queryData;
+    bytes32 public immutable queryId;
 
-    bool private revertRequest;
+    constructor (bytes memory _queryData) {
+        // queryData = _queryData;
+        queryId = keccak256(_queryData);
+    }
 
     // --- Setters for mock price data ---
 
-    function setPrice(uint _price) external {
-        price = _price;
+    function setUpdateTime(uint256 _updateTime) external {
+        timestamps[queryId].push(_updateTime);
     }
 
-      function setDidRetrieve(bool _didRetrieve) external {
-        didRetrieve = _didRetrieve;
-    }
+}
 
-    function setUpdateTime(uint _updateTime) external {
-        updateTime = _updateTime;
-    }
+contract BrokenMockTellor {
 
-      function setRevertRequest() external {
-        revertRequest = !revertRequest;
-    }
-
-    // --- Mock data reporting functions ---
-
-    function getTimestampbyRequestIDandIndex(uint, uint) external view returns (uint) {
-        return updateTime;
-    }
-
-    function getNewValueCountbyRequestId(uint) external view returns (uint) {
-        if (revertRequest) {require (1 == 0, "Tellor request reverted");}
-        return 1;
-    }
-
-    function retrieveData(uint256, uint256) external view returns (uint256) {
-        return price;
-    }
+    fallback() external { revert(); }
 
 }

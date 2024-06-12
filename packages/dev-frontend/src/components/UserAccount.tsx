@@ -1,26 +1,29 @@
-import React from "react";
-import { useWeb3React } from "@web3-react/core";
-import { Text, Flex, Box, Image } from "theme-ui";
+import { Text, Flex, Box } from "theme-ui";
 
 import { shortenAddress } from "../utils/shortenAddress";
-import { injectedConnector } from "../connectors/injectedConnector";
+import { useConnectWallet } from "@web3-onboard/react";
+import { WalletState } from "@web3-onboard/core";
 
-export const UserAccount: React.FC = () => {
-  const { activate, deactivate,  active, account } = useWeb3React<unknown>();
+export const UserAccount = (): JSX.Element => {
+  const [{ wallet }, connect, disconnect] = useConnectWallet();
 
-  if (active) {
+  const disconnectWallet = (wallet: WalletState) => {
+    localStorage.removeItem('walletLabel')
+    disconnect(wallet)
+  }
+
+  if (wallet?.accounts[0]) {
     return (
       <Box
         sx={{ cursor: "pointer" }}
         onClick={() => {
-          deactivate();
+          disconnectWallet(wallet);
         }}
       >
         <Flex variant="layout.userAccount">
-          <Image src="./icons/metamask.png" sx={{ height: "16px" }} />
           <Flex variant="layout.account">
             <Text as="span" sx={{ fontSize: "0.8rem", fontWeight: "bold" }}>
-              {account ?  shortenAddress(account) : 'Connect Wallet'}
+              {wallet?.accounts[0].address ?  shortenAddress(wallet?.accounts[0].address) : 'Connect Wallet'}
             </Text>
           </Flex>
         </Flex>
@@ -31,11 +34,10 @@ export const UserAccount: React.FC = () => {
       <Box
         sx={{ cursor: "pointer" }}
         onClick={() => {
-          activate(injectedConnector);
+          connect();
         }}
       >
         <Flex variant="layout.userAccount">
-          <Image src="./icons/metamask.png" sx={{ height: "16px" }} />
           <Flex variant="layout.account">
             <Text as="span" sx={{ fontSize: "0.8rem", fontWeight: "bold" }}>
               Connect Wallet

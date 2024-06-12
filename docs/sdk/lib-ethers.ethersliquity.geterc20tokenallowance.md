@@ -6,7 +6,7 @@
 
 Get the Borrowers Operations contract's allowance of a holder's Erc20 tokens.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 getErc20TokenAllowance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal>;
@@ -19,7 +19,7 @@ getErc20TokenAllowance(address?: string, overrides?: EthersCallOverrides): Promi
 |  address | string | Address holding the Erc20 tokens. |
 |  overrides | [EthersCallOverrides](./lib-ethers.etherscalloverrides.md) |  |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[Decimal](./lib-base.decimal.md)<!-- -->&gt;
 

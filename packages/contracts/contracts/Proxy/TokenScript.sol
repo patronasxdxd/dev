@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.17;
 
 import "../Dependencies/CheckContract.sol";
-import "../Dependencies/IERC20.sol";
+import "../Interfaces/ITHUSDToken.sol";
 
 
 contract TokenScript is CheckContract {
     string constant public NAME = "TokenScript";
 
-    IERC20 immutable token;
+    ITHUSDToken immutable token;
 
     constructor(address _tokenAddress) {
         checkContract(_tokenAddress);
-        token = IERC20(_tokenAddress);
+        token = ITHUSDToken(_tokenAddress);
     }
 
     function transfer(address recipient, uint256 amount) external returns (bool) {

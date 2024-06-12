@@ -6,7 +6,7 @@
 
 Send thUSD tokens to an address.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 sendTHUSD(toAddress: string, amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<void>>;
@@ -20,7 +20,7 @@ sendTHUSD(toAddress: string, amount: Decimalish, overrides?: EthersTransactionOv
 |  amount | [Decimalish](./lib-base.decimalish.md) | Amount of thUSD to send. |
 |  overrides | [EthersTransactionOverrides](./lib-ethers.etherstransactionoverrides.md) |  |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[SentEthersLiquityTransaction](./lib-ethers.sentethersliquitytransaction.md)<!-- -->&lt;void&gt;&gt;
 

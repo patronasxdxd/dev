@@ -1,36 +1,18 @@
-import React from "react";
-import { Box, Card, Container, Heading, Link, Paragraph } from "theme-ui";
-import { SystemStatsCard } from "../components/SystemStatsCard";
-import { InfoMessage } from "../components/InfoMessage";
-import { Vault } from "../components/Trove/Vault";
-import { COIN, FIRST_ERC20_COLLATERAL } from "../utils/constants";
+import { Container } from "theme-ui";
+import { Vault } from "../components/Vault/Vault";
+import { COIN } from "../utils/constants";
+import { PageRow } from "../components/PageRow";
+import { PageHeading } from "../components/PageHeading";
 
-export const VaultPage: React.FC = () => {
+export const VaultPage = (): JSX.Element => {  
   return (
     <Container variant="singlePage">
-      <Heading as="h2" sx={{ ml: "1em", mt: "2.5em", fontWeight: "semibold" }}>
-        Open a Vault
-      </Heading>
-      <Card sx={{ mr: [0, "2em"] }}>
-        <Box sx={{ px: "2.5em", py: "1.5em" }}>
-          <InfoMessage title="About this functionality">
-            <Paragraph sx={{ mb: "0.5em" }}>
-              To borrow you must open a Vault and deposit a certain amount of collateral ({ FIRST_ERC20_COLLATERAL }) to it. Then you can draw { COIN } up to a collateral ratio of 120%. A minimum debt of 2,000 { COIN } is required.
-            </Paragraph>
-            <Link variant="infoLink" href="https://github.com/Threshold-USD/dev" target="_blank">
-              Read more
-            </Link>
-          </InfoMessage>
-        </Box>
-      </Card>
-      <Container variant="pageRow">
-        <Container variant="firstHalf">
-          <Vault />
-        </Container>
-        <Container variant="secondHalf">
-          <SystemStatsCard />
-        </Container>
-      </Container>
+      <PageHeading
+        heading="Open a Vault"
+        description={`To borrow you must open a Vault and deposit a certain amount of collateral to it. Then you can draw ${ COIN } up to a collateral ratio of 110%. A minimum debt of 2,000 ${ COIN } is required.`}
+        link="https://github.com/Threshold-USD/dev"
+      />
+      <PageRow Component={Vault} />
     </Container>
   );
 };

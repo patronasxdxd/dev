@@ -2,6 +2,7 @@ const SortedTroves = artifacts.require("./SortedTroves.sol")
 const TroveManager = artifacts.require("./TroveManager.sol")
 const PriceFeedTestnet = artifacts.require("./PriceFeedTestnet.sol")
 const THUSDToken = artifacts.require("./THUSDToken.sol")
+const THUSDOwner = artifacts.require("./THUSDOwner.sol")
 const ActivePool = artifacts.require("./ActivePool.sol");
 const DefaultPool = artifacts.require("./DefaultPool.sol");
 const StabilityPool = artifacts.require("./StabilityPool.sol")
@@ -20,7 +21,8 @@ const BorrowerOperationsTester = artifacts.require("./BorrowerOperationsTester.s
 const TroveManagerTester = artifacts.require("./TroveManagerTester.sol")
 const THUSDTokenTester = artifacts.require("./THUSDTokenTester.sol")
 const ERC20Test = artifacts.require("./ERC20Test.sol")
-const PCVTester = artifacts.require("./PCVTester.sol")
+
+const Dummy = artifacts.require("Dummy")
 
 // Proxy scripts
 const BorrowerOperationsScript = artifacts.require('BorrowerOperationsScript')
@@ -43,18 +45,13 @@ const {
 const ZERO_ADDRESS = '0x' + '0'.repeat(40)
 const maxBytes32 = '0x' + 'f'.repeat(64)
 
+const thusdDelay = 15 * 24 * 60 * 60  // 15 days in seconds
+const pcvDelay = 120 * 24 * 60 * 60  // 120 days in seconds
+
 class DeploymentHelper {
 
   static async deployLiquityCore(accounts) {
-    const cmdLineArgs = process.argv
-    const frameworkPath = cmdLineArgs[1]
-    // console.log(`Framework used:  ${frameworkPath}`)
-
-    if (frameworkPath.includes("hardhat")) {
-      return this.deployHardhat(accounts)
-    } else if (frameworkPath.includes("truffle")) {
-      return this.deployTruffle(accounts)
-    }
+    return this.deployHardhat(accounts)
   }
 
   static async deployHardhat(accounts) {
@@ -73,10 +70,14 @@ class DeploymentHelper {
     const thusdToken = await THUSDToken.new(
       troveManager.address,
       stabilityPool.address,
-      borrowerOperations.address
+      borrowerOperations.address,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      thusdDelay
     )
-    const pcv = await PCV.new()
-
+    const pcv = await PCV.new(pcvDelay)
+    
     PCV.setAsDeployed(pcv)
     THUSDToken.setAsDeployed(thusdToken)
     DefaultPool.setAsDeployed(defaultPool)
@@ -121,6 +122,7 @@ class DeploymentHelper {
   }
 
   static async deployTesterContractsHardhat(accounts) {
+    const [owner, integrationsGuild, governorBravo] = accounts;
     const testerContracts = {}
 
     // Contract without testers (yet)
@@ -138,70 +140,40 @@ class DeploymentHelper {
     testerContracts.troveManager = await TroveManagerTester.new()
     testerContracts.functionCaller = await FunctionCaller.new()
     testerContracts.hintHelpers = await HintHelpers.new()
-    testerContracts.thusdToken =  await THUSDTokenTester.new(
+    testerContracts.thusdToken = await THUSDTokenTester.new(
       testerContracts.troveManager.address,
       testerContracts.stabilityPool.address,
-      testerContracts.borrowerOperations.address
+      testerContracts.borrowerOperations.address,
+      thusdDelay
     )
-    testerContracts.pcv = await PCVTester.new()
-    return testerContracts
-  }
-
-  static async deployTruffle() {
-    const priceFeedTestnet = await PriceFeedTestnet.new()
-    const sortedTroves = await SortedTroves.new()
-    const troveManager = await TroveManager.new()
-    const activePool = await ActivePool.new()
-    const stabilityPool = await StabilityPool.new()
-    const erc20 = ERC20Test.new()
-    const gasPool = await GasPool.new()
-    const defaultPool = await DefaultPool.new()
-    const collSurplusPool = await CollSurplusPool.new()
-    const functionCaller = await FunctionCaller.new()
-    const borrowerOperations = await BorrowerOperations.new()
-    const hintHelpers = await HintHelpers.new()
-    const thusdToken = await THUSDToken.new(
-      troveManager.address,
-      stabilityPool.address,
-      borrowerOperations.address
+    testerContracts.thusdOwner = await THUSDOwner.new(
+      governorBravo,
+      testerContracts.thusdToken.address,
+      integrationsGuild
     )
-    const pcv = await PCV.new()
-
-    PCV.setAsDeployed(pcv)
-
+    testerContracts.pcv = await PCV.new(pcvDelay)
+    
     let index = 0;
     for (const account of accounts) {
-      await erc20.mint(account, await contracts.erc20.balanceOf(account))
+      await testerContracts.erc20.mint(account, await web3.eth.getBalance(account))
       index++;
 
       if (index >= 50)
         break;
     }
 
-    const contracts = {
-      priceFeedTestnet,
-      thusdToken,
-      sortedTroves,
-      troveManager,
-      activePool,
-      stabilityPool,
-      erc20,
-      gasPool,
-      defaultPool,
-      collSurplusPool,
-      functionCaller,
-      borrowerOperations,
-      hintHelpers,
-      pcv
-    }
-    return contracts
+    return testerContracts
   }
 
   static async deployTHUSDToken(contracts) {
     contracts.thusdToken = await THUSDToken.new(
       contracts.troveManager.address,
       contracts.stabilityPool.address,
-      contracts.borrowerOperations.address
+      contracts.borrowerOperations.address,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      thusdDelay
     )
     return contracts
   }
@@ -210,7 +182,8 @@ class DeploymentHelper {
     contracts.thusdToken = await THUSDTokenTester.new(
       contracts.troveManager.address,
       contracts.stabilityPool.address,
-      contracts.borrowerOperations.address
+      contracts.borrowerOperations.address,
+      thusdDelay
     )
     return contracts
   }
@@ -313,6 +286,11 @@ class DeploymentHelper {
       contracts.erc20.address
     )
 
+    await contracts.gasPool.setAddresses(
+      contracts.troveManager.address,
+      contracts.thusdToken.address
+    )
+
     await contracts.collSurplusPool.setAddresses(
       contracts.borrowerOperations.address,
       contracts.troveManager.address,
@@ -326,11 +304,15 @@ class DeploymentHelper {
       contracts.troveManager.address
     )
 
+    if (!contracts.bamm) {
+      contracts.bamm = await Dummy.new()
+      await contracts.bamm.setCollateral(contracts.erc20.address)
+    }
     await contracts.pcv.setAddresses(
       contracts.thusdToken.address,
-      contracts.troveManager.address,
       contracts.borrowerOperations.address,
-      contracts.activePool.address
+      contracts.bamm.address,
+      contracts.erc20.address
     )
 
   }

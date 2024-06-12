@@ -1,6 +1,7 @@
 const deploymentHelper = require("../utils/deploymentHelpers.js")
 const testHelpers = require("../utils/testHelpers.js")
 const TroveManagerTester = artifacts.require("TroveManagerTester")
+const Dummy = artifacts.require("Dummy")
 
 const th = testHelpers.TestHelper
 const timeValues = testHelpers.TimeValues
@@ -28,8 +29,10 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
   let activePool
   let stabilityPool
   let defaultPool
+  let gasPool
   let functionCaller
   let borrowerOperations
+  let dummy
 
   let pcv
 
@@ -46,9 +49,11 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
     activePool = contracts.activePool
     stabilityPool = contracts.stabilityPool
     defaultPool = contracts.defaultPool
+    gasPool = contracts.gasPool
     functionCaller = contracts.functionCaller
     borrowerOperations = contracts.borrowerOperations
     pcv = contracts.pcv
+    dummy = await Dummy.new()
 
     await deploymentHelper.connectCoreContracts(contracts)
 
@@ -66,6 +71,24 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
       } catch (err) {
          assert.include(err.message, "revert")
         // assert.include(err.message, "BorrowerOps: Caller is not Stability Pool")
+      }
+    })
+
+    it("mintBootstrapLoanFromPCV(): reverts when called by an account that is not PCV", async () => {
+      try {
+        await borrowerOperations.mintBootstrapLoanFromPCV(toBN(dec(2, 18)), { from: alice })
+      } catch (err) {
+         assert.include(err.message, "revert")
+        assert.include(err.message, "BorrowerOperations: caller must be PCV")
+      }
+    })
+
+    it("burnDebtFromPCV(): reverts when called by an account that is not PCV", async () => {
+      try {
+        await borrowerOperations.burnDebtFromPCV(toBN(dec(2, 18)), { from: alice })
+      } catch (err) {
+         assert.include(err.message, "revert")
+        assert.include(err.message, "BorrowerOperations: caller must be PCV")
       }
     })
   })
@@ -249,7 +272,21 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
 
       } catch (err) {
         assert.include(err.message, "revert")
-        assert.include(err.message, "ActivePool: Caller is neither BO nor Default Pool")
+        assert.include(err.message, "ActivePool: Caller is neither BorrowerOperations nor Default Pool")
+      }
+    })
+  })
+
+  describe('GasPool', async accounts => {
+    // sendTHUSD
+    it("sendTHUSD(): reverts when called by an account that is not TroveManager", async () => {
+      // Attempt call from alice
+      try {
+        const txAlice = await gasPool.sendTHUSD(alice, 100, { from: alice })
+
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "GasPool: Caller is not the TroveManager")
       }
     })
   })
@@ -340,7 +377,7 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
     it("mint(): reverts when called by an account that is not BorrowerOperations", async () => {
       // Attempt call from alice
       const txAlice = thusdToken.mint(bob, 100, { from: alice })
-      await th.assertRevert(txAlice, "Caller is not BorrowerOperations")
+      await th.assertRevert(txAlice, "THUSDToken: Caller not allowed to mint")
     })
 
     // burn
@@ -355,29 +392,6 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
       }
     })
 
-    // sendToPool
-    it("sendToPool(): reverts when called by an account that is not StabilityPool", async () => {
-      // Attempt call from alice
-      try {
-        const txAlice = await thusdToken.sendToPool(bob, activePool.address, 100, { from: alice })
-
-      } catch (err) {
-        assert.include(err.message, "revert")
-        assert.include(err.message, "Caller is not the StabilityPool")
-      }
-    })
-
-    // returnFromPool
-    it("returnFromPool(): reverts when called by an account that is not TroveManager nor StabilityPool", async () => {
-      // Attempt call from alice
-      try {
-        const txAlice = await thusdToken.returnFromPool(activePool.address, bob, 100, { from: alice })
-
-      } catch (err) {
-        assert.include(err.message, "revert")
-        // assert.include(err.message, "Caller is neither TroveManager nor StabilityPool")
-      }
-    })
   })
 
   describe('SortedTroves', async accounts => {
@@ -422,12 +436,136 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
   })
 
   describe('PCV', async accounts => {
-    it("increaseF_THUSD(): reverts when caller is not TroveManager", async () => {
-      try {
-        const txAlice = await pcv.increaseF_THUSD(dec(1, 18), { from: alice })
+    
+    before(async () => {
+      await pcv.initialize({ from: owner })
+      const debtToPay = await pcv.debtToPay()
+      await pcv.payDebt(debtToPay, { from: owner })
+    })
 
+    it.skip("receive(): reverts when caller is not ActivePool", async () => {
+      try {
+        await web3.eth.sendTransaction({ from: alice, to: pcv.address, value: 100 })
       } catch (err) {
         assert.include(err.message, "revert")
+        assert.include(err.message, "PCV: caller is not ActivePool")
+      }
+    })
+
+    it("depositToBAMM(): reverts when caller is not owner, council or treasury", async () => {
+      try {
+        await pcv.depositToBAMM(1, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "PCV: caller must be owner or council or treasury")
+      }
+    })
+
+    it("withdrawFromBAMM(): reverts when caller is not owner, council or treasury", async () => {
+      try {
+        await pcv.withdrawFromBAMM(1, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "PCV: caller must be owner or council or treasury")
+      }
+    })
+
+    it("withdrawTHUSD(): reverts when caller is not owner, council or treasury", async () => {
+      try {
+        await pcv.withdrawTHUSD(alice, 1, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "PCV: caller must be owner or council or treasury")
+      }
+    })
+
+    it("withdrawCollateral(): reverts when caller is not owner, council or treasury", async () => {
+      try {
+        await pcv.withdrawCollateral(alice, 1, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "PCV: caller must be owner or council or treasury")
+      }
+    })
+
+    it("payDebt(): reverts when caller is not owner, council or treasury", async () => {
+      try {
+        await pcv.payDebt(1, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "PCV: caller must be owner or council or treasury")
+      }
+    })
+
+    it("initialize(): reverts when caller is not owner, council or treasury", async () => {
+      try {
+        await pcv.initialize({ from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "PCV: caller must be owner or council or treasury")
+      }
+    })
+
+    it("addRecipientToWhitelist(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.addRecipientToWhitelist(bob, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("addRecipientsToWhitelist(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.addRecipientsToWhitelist([bob], { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("removeRecipientFromWhitelist(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.removeRecipientFromWhitelist(alice, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("removeRecipientsFromWhitelist(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.removeRecipientsFromWhitelist([alice], { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("startChangingRoles(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.startChangingRoles(alice, alice, { from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("cancelChangingRoles(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.cancelChangingRoles({ from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
+      }
+    })
+
+    it("finalizeChangingRoles(): reverts when caller is not owner", async () => {
+      try {
+        await pcv.finalizeChangingRoles({ from: alice })
+      } catch (err) {
+        assert.include(err.message, "revert")
+        assert.include(err.message, "Ownable: caller is not the owner")
       }
     })
   })

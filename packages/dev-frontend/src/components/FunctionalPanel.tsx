@@ -1,27 +1,28 @@
 import React from "react";
 import { Wallet } from "@ethersproject/wallet";
 
-import { Decimal, Difference, Trove } from "@liquity/lib-base";
-import { LiquityStoreProvider } from "@liquity/lib-react";
+import { Decimal, Difference, Trove as Vault } from "@threshold-usd/lib-base";
+import { ThresholdStoreProvider } from "@threshold-usd/lib-react";
 
-import { useLiquity } from "../hooks/LiquityContext";
-import { TroveViewProvider } from "./Trove/context/TroveViewProvider";
+import { useThreshold } from "../hooks/ThresholdContext";
+import { VaultViewProvider } from "./Vault/context/VaultViewProvider";
 import { TransactionMonitor } from "./Transaction";
+import { StabilityViewProvider } from "./Stability/context/StabilityViewProvider";
 
 type FunctionalPanelProps = {
   loader?: React.ReactNode;
+  children: React.ReactNode;
 };
 
-export const FunctionalPanel: React.FC<FunctionalPanelProps> = ({ children, loader }) => {
-
-  const { account, provider, liquity } = useLiquity();
+export const FunctionalPanel = ({ children, loader }: FunctionalPanelProps): JSX.Element => {
+  const { account, provider, threshold } = useThreshold();
 
   // For console tinkering ;-)
   Object.assign(window, {
     account,
     provider,
-    liquity,
-    Trove,
+    threshold,
+    Vault,
     Decimal,
     Difference,
     Wallet
@@ -29,11 +30,13 @@ export const FunctionalPanel: React.FC<FunctionalPanelProps> = ({ children, load
 
   return (
     <>
-      <LiquityStoreProvider {...{ loader }} store={liquity.store}>
-        <TroveViewProvider>
-          {children}
-        </TroveViewProvider>
-      </LiquityStoreProvider>
+      <ThresholdStoreProvider {...{ loader }} threshold={threshold}>
+        <VaultViewProvider {...{ loader}}>
+          <StabilityViewProvider {...{ loader}}>
+            {children}
+          </StabilityViewProvider>
+        </VaultViewProvider>
+      </ThresholdStoreProvider>
       <TransactionMonitor />
     </>            
   );

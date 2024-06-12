@@ -5,7 +5,7 @@ import { Icon } from "./Icon";
 import { Nav } from "./Nav";
 import { NavPopUp } from "./NavPopUp";
 
-export const HamburgerMenu: React.FC = () => {
+export const HamburgerMenu = (): JSX.Element => {
 
   const [SideBarOpen, setSideBarOpen] = useState(false);
   const SideBarOverlayRef = useRef<HTMLDivElement>(null);

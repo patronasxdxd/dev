@@ -1,81 +1,72 @@
 import React, { useState, useContext, useEffect, useCallback } from "react";
-import { Flex, Text, Box } from "theme-ui";
 import { Provider, TransactionResponse, TransactionReceipt } from "@ethersproject/abstract-provider";
 import { hexDataSlice, hexDataLength } from "@ethersproject/bytes";
 import { defaultAbiCoder } from "@ethersproject/abi";
 
-import { buildStyles, CircularProgressbarWithChildren } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 
-import { EthersTransactionOverrides, EthersTransactionCancelledError } from "@liquity/lib-ethers";
-import { SentLiquityTransaction, LiquityReceipt } from "@liquity/lib-base";
+import { EthersTransactionOverrides, EthersTransactionCancelledError } from "@threshold-usd/lib-ethers";
+import { SentLiquityTransaction as SentThresholdTransaction, LiquityReceipt as ThresholdReceipt } from "@threshold-usd/lib-base";
 
-import { useLiquity } from "../hooks/LiquityContext";
+import { useThreshold } from "../hooks/ThresholdContext";
 
-import { Icon } from "./Icon";
-import { Tooltip, TooltipProps, Hoverable } from "./Tooltip";
+import { Tooltip } from "./Tooltip";
+import type { TooltipProps } from "./Tooltip";
+import { checkTransactionCollateral } from "../utils/checkTransactionCollateral";
 
-const strokeWidth = 10;
-
-const circularProgressbarStyle = {
-  strokeLinecap: "butt",
-  pathColor: "white",
-  trailColor: "rgba(255, 255, 255, 0.33)"
-};
-
-const slowProgress = {
-  strokeWidth,
-  styles: buildStyles({
-    ...circularProgressbarStyle,
-    pathTransitionDuration: 30
-  })
-};
-
-const fastProgress = {
-  strokeWidth,
-  styles: buildStyles({
-    ...circularProgressbarStyle,
-    pathTransitionDuration: 0.75
-  })
-};
+import { TransactionStatus } from "./TransactionStatus";
 
 type TransactionIdle = {
   type: "idle";
+  version: string;
+  collateral: string;
 };
 
 type TransactionFailed = {
   type: "failed";
   id: string;
   error: Error;
+  version: string;
+  collateral: string;
 };
 
 type TransactionWaitingForApproval = {
   type: "waitingForApproval";
   id: string;
+  version: string;
+  collateral: string;
 };
 
 type TransactionCancelled = {
   type: "cancelled";
   id: string;
+  version: string;
+  collateral: string;
 };
 
 type TransactionWaitingForConfirmations = {
   type: "waitingForConfirmation";
   id: string;
   tx: SentTransaction;
+  version: string;
+  collateral: string;
 };
 
 type TransactionConfirmed = {
   type: "confirmed";
   id: string;
+  version: string;
+  collateral: string;
 };
 
 type TransactionConfirmedOneShot = {
   type: "confirmedOneShot";
   id: string;
+  version: string;
+  collateral: string;
 };
 
-type TransactionState =
+export type TransactionState =
   | TransactionIdle
   | TransactionFailed
   | TransactionWaitingForApproval
@@ -88,8 +79,12 @@ const TransactionContext = React.createContext<
   [TransactionState, (state: TransactionState) => void] | undefined
 >(undefined);
 
-export const TransactionProvider: React.FC = ({ children }) => {
-  const transactionState = useState<TransactionState>({ type: "idle" });
+type TransactionProviderProps = {
+  children: React.ReactNode
+}
+
+export const TransactionProvider = ({ children }: TransactionProviderProps): JSX.Element => {
+  const transactionState = useState<TransactionState>({ type: "idle", version: "", collateral: "" });
   return (
     <TransactionContext.Provider value={transactionState}>{children}</TransactionContext.Provider>
   );
@@ -105,13 +100,18 @@ const useTransactionState = () => {
   return transactionState;
 };
 
-export const useMyTransactionState = (myId: string | RegExp): TransactionState => {
+export const useMyTransactionState = (myId: string | RegExp, version: string, collateral: string): TransactionState => {
   const [transactionState] = useTransactionState();
+  const isCollateralChecked = checkTransactionCollateral(
+    transactionState,
+    version,
+    collateral
+  );
 
-  return transactionState.type !== "idle" &&
+  return isCollateralChecked && transactionState.type !== "idle" &&
     (typeof myId === "string" ? transactionState.id === myId : transactionState.id.match(myId))
-    ? transactionState
-    : { type: "idle" };
+    ? { ...transactionState, version: transactionState.version, collateral: transactionState.collateral }
+    : { type: "idle", version: transactionState.version, collateral: transactionState.collateral };
 };
 
 const hasMessage = (error: unknown): error is { message: string } =>
@@ -126,9 +126,9 @@ type ButtonlikeProps = {
   onClick?: () => void;
 };
 
-type SentTransaction = SentLiquityTransaction<
+type SentTransaction = SentThresholdTransaction<
   TransactionResponse,
-  LiquityReceipt<TransactionReceipt>
+  ThresholdReceipt<TransactionReceipt>
 >;
 
 export type TransactionFunction = (
@@ -138,21 +138,25 @@ export type TransactionFunction = (
 type TransactionProps<C> = {
   id: string;
   tooltip?: string;
-  tooltipPlacement?: TooltipProps<C>["placement"];
+  tooltipPlacement?: TooltipProps["placement"];
   showFailure?: "asTooltip" | "asChildText";
   requires?: readonly (readonly [boolean, string])[];
   send: TransactionFunction;
+    version: string;
+  collateral: string;
   children: C;
 };
 
 export const useTransactionFunction = (
   id: string,
-  send: TransactionFunction
+  send: TransactionFunction,
+  version: string,
+  collateral: string,
 ): [sendTransaction: () => Promise<void>, transactionState: TransactionState] => {
   const [transactionState, setTransactionState] = useTransactionState();
 
   const sendTransaction = useCallback(async () => {
-    setTransactionState({ type: "waitingForApproval", id });
+    setTransactionState({ type: "waitingForApproval", id, version, collateral });
 
     try {
       const tx = await send();
@@ -160,52 +164,58 @@ export const useTransactionFunction = (
       setTransactionState({
         type: "waitingForConfirmation",
         id,
-        tx
+        tx, 
+        version,
+        collateral,
       });
     } catch (error) {
       if (hasMessage(error) && error.message.includes("User denied transaction signature")) {
-        setTransactionState({ type: "cancelled", id });
-      } 
-      else if (hasMessage(error) && error.message.includes("nothing to liquidate")) {
-        setTransactionState({ 
-          type: "failed", 
-          id, 
-          error: new Error("There are no vaults under-collateralized to liquidate") });
-      } 
-      else {
+        setTransactionState({ type: "cancelled", id, version, collateral, });
+      } else {
         console.error(error);
 
         setTransactionState({
           type: "failed",
           id,
-          error: new Error("Failed to send transaction (try again)")
+          error: new Error("Failed to send transaction (try again)"),
+          version,
+          collateral,
         });
       }
     }
-  }, [send, id, setTransactionState]);
+  }, [send, id, version, collateral, setTransactionState]);
 
   return [sendTransaction, transactionState];
 };
 
-export function Transaction<C extends React.ReactElement<ButtonlikeProps & Hoverable>>({
+export function Transaction<C extends React.ReactElement<ButtonlikeProps>>({
   id,
   tooltip,
   tooltipPlacement,
   showFailure,
   requires,
   send,
+  version,
+  collateral,
   children
 }: TransactionProps<C>) {
-  const [sendTransaction, transactionState] = useTransactionFunction(id, send);
+  const [sendTransaction, transactionState] = useTransactionFunction(id, send, version, collateral);
   const trigger = React.Children.only<C>(children);
 
   const failureReasons = (requires || [])
     .filter(([requirement]) => !requirement)
     .map(([, reason]) => reason);
 
+    const isCollateralChecked = checkTransactionCollateral(
+      transactionState,
+      version,
+      collateral
+    );
+
   if (
-    transactionState.type === "waitingForApproval" ||
-    transactionState.type === "waitingForConfirmation"
+    isCollateralChecked &&
+    (transactionState.type === "waitingForApproval" ||
+    transactionState.type === "waitingForConfirmation")
   ) {
     failureReasons.push("You must wait for confirmation");
   }
@@ -242,7 +252,6 @@ export function Transaction<C extends React.ReactElement<ButtonlikeProps & Hover
   );
 }
 
-// Doesn't work on Kovan:
 // https://github.com/MetaMask/metamask-extension/issues/5579
 const tryToGetRevertReason = async (provider: Provider, tx: TransactionReceipt) => {
   try {
@@ -256,145 +265,118 @@ const tryToGetRevertReason = async (provider: Provider, tx: TransactionReceipt) 
   }
 };
 
-const Donut = React.memo(
-  CircularProgressbarWithChildren,
-  ({ value: prev }, { value: next }) => prev === next
-);
-
-type TransactionProgressDonutProps = {
-  state: TransactionState["type"];
-};
-
-const TransactionProgressDonut: React.FC<TransactionProgressDonutProps> = ({ state }) => {
-  const [value, setValue] = useState(0);
-  const maxValue = 1;
-
-  useEffect(() => {
-    if (state === "confirmed") {
-      setTimeout(() => setValue(maxValue), 40);
-    } else {
-      setTimeout(() => setValue(maxValue * 0.67), 20);
-    }
-  }, [state]);
-
-  return state === "confirmed" ? (
-    <Donut {...{ value, maxValue, ...fastProgress }}>
-      <Icon name="check" color="white" size="lg" />
-    </Donut>
-  ) : state === "failed" || state === "cancelled" ? (
-    <Donut value={0} {...{ maxValue, ...fastProgress }}>
-      <Icon name="times" color="white" size="lg" />
-    </Donut>
-  ) : (
-    <Donut {...{ value, maxValue, ...slowProgress }}>
-      <Icon name="cog" color="white" size="lg" spin />
-    </Donut>
-  );
-};
-
-export const TransactionMonitor: React.FC = () => {
-  const { provider } = useLiquity();
+export const TransactionMonitor = (): JSX.Element => {
+  const { provider } = useThreshold();
   const [transactionState, setTransactionState] = useTransactionState();
 
   const id = transactionState.type !== "idle" ? transactionState.id : undefined;
   const tx = transactionState.type === "waitingForConfirmation" ? transactionState.tx : undefined;
+  const version = transactionState.version !== "" ? transactionState.version : undefined
+  const collateral = transactionState.collateral !== "" ? transactionState.collateral : undefined
 
   useEffect(() => {
-    if (id && tx) {
-      let cancelled = false;
-      let finished = false;
+    if (!id || !tx || !version || !collateral) {
+      return
+    }
+    let cancelled = false;
+    let finished = false;
 
-      const txHash = tx.rawSentTransaction.hash;
-
-      const waitForConfirmation = async () => {
-        try {
-          const receipt = await tx.waitForReceipt();
-
-          if (cancelled) {
-            return;
-          }
-
-          const { confirmations } = receipt.rawReceipt;
-          const blockNumber = receipt.rawReceipt.blockNumber + confirmations - 1;
-          console.log(`Block #${blockNumber} ${confirmations}-confirms tx ${txHash}`);
-          console.log(`Finish monitoring tx ${txHash}`);
-          finished = true;
-
-          if (receipt.status === "succeeded") {
-            console.log(`${receipt}`);
-
-            setTransactionState({
-              type: "confirmedOneShot",
-              id
-            });
-          } else {
-            const reason = await tryToGetRevertReason(provider, receipt.rawReceipt);
-
-            if (cancelled) {
-              return;
-            }
-
-            console.error(`Tx ${txHash} failed`);
-            if (reason) {
-              console.error(`Revert reason: ${reason}`);
-            }
-
-            setTransactionState({
-              type: "failed",
-              id,
-              error: new Error(reason ? `Reverted: ${reason}` : "Failed")
-            });
-          }
-        } catch (rawError) {
-          if (cancelled) {
-            return;
-          }
-
-          finished = true;
-
-          if (rawError instanceof EthersTransactionCancelledError) {
-            console.log(`Cancelled tx ${txHash}`);
-            setTransactionState({ type: "cancelled", id });
-          } else {
-            console.error(`Failed to get receipt for tx ${txHash}`);
-            console.error(rawError);
-
-            setTransactionState({
-              type: "failed",
-              id,
-              error: new Error("Failed")
-            });
-          }
+    const txHash = tx.rawSentTransaction.hash;
+    const waitForConfirmation = async () => {
+      try {
+        const receipt = await tx.waitForReceipt();
+        if (cancelled) {
+          return;
         }
-      };
+        
+        const { confirmations } = receipt.rawReceipt;
+        const blockNumber = receipt.rawReceipt.blockNumber + confirmations - 1;
+        console.log(`Block #${blockNumber} ${confirmations}-confirms tx ${txHash}`);
+        console.log(`Finish monitoring tx ${txHash}`);
+        finished = true;
 
+        if (receipt.status === "succeeded") {
+          console.log(`${receipt}`);
+
+          setTransactionState({
+            type: "confirmedOneShot",
+            id,
+            version,
+            collateral
+          });
+        } else {
+          const reason = await tryToGetRevertReason(provider as Provider, receipt.rawReceipt);
+
+          if (cancelled) {
+            return;
+          }
+
+          console.error(`Tx ${txHash} failed`);
+          if (reason) {
+            console.error(`Revert reason: ${reason}`);
+          }
+
+          setTransactionState({
+            type: "failed",
+            id,
+            error: new Error(reason ? `Reverted: ${reason}` : "Failed"),
+            version,
+            collateral
+          });
+        }
+      } catch (rawError) {
+        if (cancelled) {
+          return;
+        }
+
+        finished = true;
+
+        if (rawError instanceof EthersTransactionCancelledError) {
+          console.log(`Cancelled tx ${txHash}`);
+          setTransactionState({ type: "cancelled", id, version, collateral });
+        } else {
+          console.error(`Failed to get receipt for tx ${txHash}`);
+          console.error(rawError);
+
+          setTransactionState({
+            type: "failed",
+            id,
+            error: new Error("Failed"),
+            version,
+            collateral
+          });
+        }
+      }
+    }
+   
       console.log(`Start monitoring tx ${txHash}`);
       waitForConfirmation();
 
       return () => {
         if (!finished) {
-          setTransactionState({ type: "idle" });
+          setTransactionState({ type: "idle", version, collateral });
           console.log(`Cancel monitoring tx ${txHash}`);
           cancelled = true;
         }
       };
-    }
-  }, [provider, id, tx, setTransactionState]);
+  }, [provider, id, tx, setTransactionState, version, collateral]);
 
   useEffect(() => {
-    if (transactionState.type === "confirmedOneShot" && id) {
+    if (transactionState.type === "confirmedOneShot" && id && version && collateral) {
       // hack: the txn confirmed state lasts 5 seconds which blocks other states, review with Dani
-      setTransactionState({ type: "confirmed", id });
+      setTransactionState({ type: "confirmed", id, version, collateral  });
     } else if (
-      transactionState.type === "confirmed" ||
+      (transactionState.type === "confirmed" ||
       transactionState.type === "failed" ||
-      transactionState.type === "cancelled"
+      transactionState.type === "cancelled") &&
+      (transactionState.version === version &&
+      transactionState.collateral === collateral)
     ) {
       let cancelled = false;
 
       setTimeout(() => {
         if (!cancelled) {
-          setTransactionState({ type: "idle" });
+          setTransactionState({ type: "idle", version, collateral  });
         }
       }, 5000);
 
@@ -402,46 +384,24 @@ export const TransactionMonitor: React.FC = () => {
         cancelled = true;
       };
     }
-  }, [transactionState.type, setTransactionState, id]);
+  }, [
+    transactionState.type, 
+    transactionState.collateral, 
+    transactionState.version, 
+    setTransactionState, 
+    id, 
+    version, 
+    collateral
+  ]);
 
   if (transactionState.type === "idle" || transactionState.type === "waitingForApproval") {
-    return null;
+    return <></>;
   }
 
   return (
-    <Flex
-      sx={{
-        alignItems: "center",
-        bg:
-          transactionState.type === "confirmed"
-            ? "success"
-            : transactionState.type === "cancelled"
-            ? "warning"
-            : transactionState.type === "failed"
-            ? "danger"
-            : "primary",
-        p: 3,
-        pl: 4,
-        left: 0,
-        position: "fixed",
-        width: "100vw",
-        bottom: 0,
-        overflow: "hidden"
-      }}
-    >
-      <Box sx={{ mr: 3, width: "40px", height: "40px" }}>
-        <TransactionProgressDonut state={transactionState.type} />
-      </Box>
-
-      <Text sx={{ fontSize: 3, color: "white" }}>
-        {transactionState.type === "waitingForConfirmation"
-          ? "Waiting for confirmation"
-          : transactionState.type === "cancelled"
-          ? "Cancelled"
-          : transactionState.type === "failed"
-          ? transactionState.error.message
-          : "Confirmed"}
-      </Text>
-    </Flex>
+    <TransactionStatus
+      state={transactionState.type}
+      message={transactionState.type === "failed" ? transactionState.error.message : undefined}
+    />
   );
 };

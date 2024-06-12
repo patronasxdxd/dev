@@ -1,41 +1,48 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.17;
 
 import "../Interfaces/ITellorCaller.sol";
-import "./ITellor.sol";
-import "./SafeMath.sol";
+import "usingtellor/contracts/interface/ITellor.sol";
 /*
 * This contract has a single external function that calls Tellor: getTellorCurrentValue().
 *
-* The function is called by the Liquity contract PriceFeed.sol. If any of its inner calls to Tellor revert,
+* The function is called by the thUSD contract PriceFeed.sol. If any of its inner calls to Tellor revert,
 * this function will revert, and PriceFeed will catch the failure and handle it accordingly.
 *
-* The function comes from Tellor's own wrapper contract, 'UsingTellor.sol':
+* The function comes from Tellor's own wrapper contract, 'UsingTellor.sol' and 
+* an example of how to integrate the Tellor oracle into a Liquity-like system `TellorCaller.col`:
 * https://github.com/tellor-io/usingtellor/blob/master/contracts/UsingTellor.sol
+* https://github.com/tellor-io/tellor-caller-liquity/blob/main/contracts/TellorCaller.sol
 *
 */
 contract TellorCaller is ITellorCaller {
-    using SafeMath for uint256;
 
-    ITellor public tellor;
+    uint256 constant public DISPUTE_DELAY = 15 minutes; // 15 minutes delay
 
-    constructor (address _tellorMasterAddress) {
+    ITellor public immutable tellor;
+    bytes32 public immutable queryId;
+
+    uint256 public lastStoredTimestamp;
+    uint256 public lastStoredPrice;
+
+    /**
+     * @param _tellorMasterAddress Address of Tellor contract
+     * @param _queryId Pre-calculated hash of query. See https://queryidbuilder.herokuapp.com/spotprice
+     */
+    constructor (address _tellorMasterAddress, bytes32 _queryId) {
         tellor = ITellor(_tellorMasterAddress);
+        queryId = _queryId;
     }
 
     /*
-    * getTellorCurrentValue(): identical to getCurrentValue() in UsingTellor.sol
-    *
     * @dev Allows the user to get the latest value for the requestId specified
-    * @param _requestId is the requestId to look up the value for
     * @return ifRetrieve bool true if it is able to retrieve a value, the value, and the value's timestamp
     * @return value the value retrieved
     * @return _timestampRetrieved the value's timestamp
     */
-    function getTellorCurrentValue(uint256 _requestId)
+    function getTellorCurrentValue()
         external
-        view
         override
         returns (
             bool ifRetrieve,
@@ -43,11 +50,19 @@ contract TellorCaller is ITellorCaller {
             uint256 _timestampRetrieved
         )
     {
-        uint256 _count = tellor.getNewValueCountbyRequestId(_requestId);
-        uint256 _time =
-            tellor.getTimestampbyRequestIDandIndex(_requestId, _count.sub(1));
-        uint256 _value = tellor.retrieveData(_requestId, _time);
-        if (_value > 0) return (true, _value, _time);
-        return (false, 0, _time);
+        // retrieve most recent value from those older than DISPUTE_DELAY for a specific queryId. 
+        // The time buffer allows time for a bad value to be disputed
+        (, bytes memory data, uint256 timestamp) = 
+            tellor.getDataBefore(queryId, block.timestamp - DISPUTE_DELAY);
+        uint256 _value = abi.decode(data, (uint256));
+        if (timestamp == 0 || _value == 0) return (false, _value, timestamp);
+        if (timestamp > lastStoredTimestamp) {
+            lastStoredTimestamp = timestamp;
+            lastStoredPrice = _value;
+            return (true, _value, timestamp);
+        } else {
+            return (true, lastStoredPrice, lastStoredTimestamp);
+        }
     }
+
 }

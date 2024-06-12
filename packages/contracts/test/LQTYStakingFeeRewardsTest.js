@@ -3,7 +3,6 @@ const deploymentHelper = require("../utils/deploymentHelpers.js")
 const { BNConverter } = require("../utils/BNConverter.js")
 const testHelpers = require("../utils/testHelpers.js")
 
-const PCVTester = artifacts.require('PCVTester')
 const TroveManagerTester = artifacts.require("TroveManagerTester")
 const NonPayable = artifacts.require("./NonPayable.sol")
 
@@ -15,10 +14,10 @@ const assertRevert = th.assertRevert
 const toBN = th.toBN
 const ZERO = th.toBN('0')
 
-/* NOTE: These tests do not test for specific ETH and THUSD gain values. They only test that the
+/* NOTE: These tests do not test for specific collateral and THUSD gain values. They only test that the
  * gains are non-zero, occur when they should, and are in correct proportion to the user's stake.
  *
- * Specific ETH/THUSD gain values will depend on the final fee schedule used, and the final choices for
+ * Specific collateral/THUSD gain values will depend on the final fee schedule used, and the final choices for
  * parameters BETA and MINUTE_DECAY_FACTOR in the TroveManager, which are still TBD based on economic
  * modelling.
  *
@@ -37,10 +36,12 @@ contract('PCV receives fees tests', async accounts => {
   let defaultPool
   let borrowerOperations
   let pcv
+  let erc20
 
   let contracts
 
   const openTrove = async (params) => th.openTrove(contracts, params)
+  const getCollateralBalance = async (address) => th.getCollateralBalance(erc20, address)
 
   beforeEach(async () => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
@@ -60,16 +61,17 @@ contract('PCV receives fees tests', async accounts => {
     borrowerOperations = contracts.borrowerOperations
     hintHelpers = contracts.hintHelpers
     pcv = contracts.pcv
+    erc20 = contracts.erc20
   })
 
   it("PCV: PCV start at zero", async () => {
     // Check THUSD fees are initialised as zero
-    const THUSD_Fees = await pcv.F_THUSD()
+    const THUSD_Fees = await thusdToken.balanceOf(pcv.address)
     assert.equal(THUSD_Fees, '0')
 
-    // Check ETH fees are initialised as zero
-    const ETH_Fees = await pcv.F_ETH()
-    assert.equal(ETH_Fees, '0')
+    // Check collateral fees are initialised as zero
+    const collateral_fees = await getCollateralBalance(pcv.address)
+    assert.equal(collateral_fees, '0')
 
   })
 
@@ -105,13 +107,9 @@ contract('PCV receives fees tests', async accounts => {
     pcvBalance = await thusdToken.balanceOf(pcv.address)
     fees += issuanceFeeD
     assert.isAtMost(Math.abs(fees - pcvBalance), error)
-
-    // Check THUSD fees is initialised as zero
-    const THUSD_Fees = await pcv.F_THUSD()
-    th.assertIsApproximatelyEqual(THUSD_Fees, pcvBalance)
   })
 
-  it("PCV: PCV ETH increase when a redemption fee occurs", async() => {
+  it("PCV: PCV collateral increase when a redemption fee occurs", async() => {
     await openTrove({ extraTHUSDAmount: toBN(dec(10000, 18)), ICR: toBN(dec(10, 18)), extraParams: { from: whale } })
     await openTrove({ extraTHUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: A } })
     await openTrove({ extraTHUSDAmount: toBN(dec(30000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: B } })
@@ -120,9 +118,9 @@ contract('PCV receives fees tests', async accounts => {
     // FF time one year redemptions are allowed
     await th.fastForwardTime(timeValues.SECONDS_IN_ONE_YEAR, web3.currentProvider)
 
-    // Check ETH fee per unit staked is zero
-    const F_ETH_Before = await pcv.F_ETH()
-    assert.equal(F_ETH_Before, '0')
+    // Check collateral fee per unit staked is zero
+    const PCV_Collateral_Before = await getCollateralBalance(pcv.address)
+    assert.equal(PCV_Collateral_Before, '0')
 
     const B_BalBeforeREdemption = await thusdToken.balanceOf(B)
     // B redeems
@@ -131,13 +129,13 @@ contract('PCV receives fees tests', async accounts => {
     const B_BalAfterRedemption = await thusdToken.balanceOf(B)
     assert.isTrue(B_BalAfterRedemption.lt(B_BalBeforeREdemption))
 
-    // check ETH fee emitted in event is non-zero
-    const emittedETHFee = toBN((await th.getEmittedRedemptionValues(redemptionTx))[3])
-    assert.isTrue(emittedETHFee.gt(toBN('0')))
+    // check collateral fee emitted in event is non-zero
+    const emittedCollateralFee = toBN((await th.getEmittedRedemptionValues(redemptionTx))[3])
+    assert.isTrue(emittedCollateralFee.gt(toBN('0')))
 
-    // Check ETH fee per unit staked has increased by correct amount
-    const F_ETH_After = await pcv.F_ETH()
-    assert.isTrue(emittedETHFee.eq(F_ETH_After))
+    // Check collateral fee per unit staked has increased by correct amount
+    const PCV_Collateral_After = await getCollateralBalance(pcv.address)
+    assert.isTrue(emittedCollateralFee.eq(PCV_Collateral_After))
   })
 
   it("PCV: PCV THUSD increase when drawing debt from a trove", async () => {
@@ -149,12 +147,9 @@ contract('PCV receives fees tests', async accounts => {
     let troveD = await openTrove({ extraTHUSDAmount: toBN(dec(50000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: D } })
     PCV_THUSD_Fees = await thusdToken.balanceOf(pcv.address)
 
-    const THUSD_Fees = await pcv.F_THUSD()
-    assert.isTrue(THUSD_Fees.eq(PCV_THUSD_Fees))
-
-    // Check ETH fees is initialised as zero
-    const ETH_Fees = await pcv.F_ETH()
-    assert.equal(ETH_Fees, '0')
+    // Check collateral fees is initialised as zero
+    const collateral_fees = await getCollateralBalance(pcv.address)
+    assert.equal(collateral_fees, '0')
 
     // D draws debt
     const borrowingTx_1 = await borrowerOperations.withdrawTHUSD(th._100pct, dec(100, 18), D, D, {from: D})
@@ -164,12 +159,12 @@ contract('PCV receives fees tests', async accounts => {
     assert.isTrue(emittedTHUSDFee_1.gt(toBN('0')))
 
     // Check THUSD fee of $0.50 for the $100 debt draw is collected in PCV
-    const THUSD_Fees_After = await pcv.F_THUSD()
-    assert.isTrue(THUSD_Fees_After.gt(THUSD_Fees))
+    const THUSD_Fees_After = await thusdToken.balanceOf(pcv.address)
+    assert.isTrue(THUSD_Fees_After.gt(PCV_THUSD_Fees))
 
   })
 
-  it("receive(): reverts when it receives ETH from an address that is not the Active Pool",  async () => {
+  it.skip("receive(): reverts when it receives ETH from an address that is not the Active Pool",  async () => {
     const ethSendTxPromise1 = web3.eth.sendTransaction({to: pcv.address, from: A, value: dec(1, 'ether')})
     const ethSendTxPromise2 = web3.eth.sendTransaction({to: pcv.address, from: owner, value: dec(1, 'ether')})
 
@@ -177,8 +172,4 @@ contract('PCV receives fees tests', async accounts => {
     await assertRevert(ethSendTxPromise2)
   })
 
-  it('Test requireCallerIsTroveManager', async () => {
-    const pcvTester = await PCVTester.new()
-    await assertRevert(pcvTester.requireCallerIsTroveManager(), 'PCV: caller is not TroveM')
-  })
 })

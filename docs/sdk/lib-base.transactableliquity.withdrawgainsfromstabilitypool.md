@@ -6,12 +6,12 @@
 
 Withdraw [collateral gain](./lib-base.stabilitydeposit.collateralgain.md) from Stability Deposit.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 withdrawGainsFromStabilityPool(): Promise<StabilityPoolGainsWithdrawalDetails>;
 ```
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[StabilityPoolGainsWithdrawalDetails](./lib-base.stabilitypoolgainswithdrawaldetails.md)<!-- -->&gt;
 

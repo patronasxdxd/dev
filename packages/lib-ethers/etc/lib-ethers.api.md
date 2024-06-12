@@ -4,20 +4,33 @@
 
 ```ts
 
+import { BammDeposit } from '@liquity/lib-base';
+import { BammDepositChangeDetails } from '@liquity/lib-base';
+import { BigNumber } from '@ethersproject/bignumber';
 import { BigNumberish } from '@ethersproject/bignumber';
 import { BlockTag } from '@ethersproject/abstract-provider';
+import { BytesLike } from '@ethersproject/bytes';
+import { CallOverrides } from '@ethersproject/contracts';
 import { CollateralGainTransferDetails } from '@liquity/lib-base';
+import { Contract } from '@ethersproject/contracts';
+import { ContractInterface } from '@ethersproject/contracts';
+import { ContractTransaction } from '@ethersproject/contracts';
 import { Decimal } from '@liquity/lib-base';
 import { Decimalish } from '@liquity/lib-base';
 import { ErrorCode } from '@ethersproject/logger';
+import { EventFilter } from '@ethersproject/contracts';
 import { FailedReceipt } from '@liquity/lib-base';
 import { Fees } from '@liquity/lib-base';
 import { LiquidationDetails } from '@liquity/lib-base';
 import { LiquityReceipt } from '@liquity/lib-base';
 import { LiquityStore } from '@liquity/lib-base';
 import { LiquityStoreState } from '@liquity/lib-base';
+import { Log } from '@ethersproject/abstract-provider';
+import { LogDescription } from '@ethersproject/abi';
 import { MinedReceipt } from '@liquity/lib-base';
 import { ObservableLiquity } from '@liquity/lib-base';
+import { Overrides } from '@ethersproject/contracts';
+import { PayableOverrides } from '@ethersproject/contracts';
 import { PopulatableLiquity } from '@liquity/lib-base';
 import { PopulatedLiquityTransaction } from '@liquity/lib-base';
 import { PopulatedRedemption } from '@liquity/lib-base';
@@ -58,6 +71,8 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
 
 // @public
 export interface BlockPolledLiquityStoreExtraState {
+    // (undocumented)
+    bammAllowance: boolean;
     blockTag?: number;
     blockTimestamp: number;
     // @internal (undocumented)
@@ -73,15 +88,20 @@ export interface BorrowingOperationOptionalParams {
     maxBorrowingRate?: Decimalish;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "CollateralsVersionedDeployments" is marked as @public, but its signature references "_Versions" which is marked as @internal
+//
+// @public (undocumented)
+export type CollateralsVersionedDeployments = Record<string, _Versions>;
+
 // @internal (undocumented)
-export function _connectByChainId<T>(provider: EthersProvider, signer: EthersSigner | undefined, chainId: number, optionalParams: EthersLiquityConnectionOptionalParams & {
+export function _connectByChainId<T>(collateral: string, version: string, deployment: _LiquityDeploymentJSON, provider: EthersProvider, signer: EthersSigner | undefined, chainId: number, optionalParams: EthersLiquityConnectionOptionalParams & {
     useStore: T;
 }): EthersLiquityConnection & {
     useStore: T;
 };
 
 // @internal (undocumented)
-export function _connectByChainId(provider: EthersProvider, signer: EthersSigner | undefined, chainId: number, optionalParams?: EthersLiquityConnectionOptionalParams): EthersLiquityConnection;
+export function _connectByChainId(collateral: string, version: string, deployment: _LiquityDeploymentJSON, provider: EthersProvider, signer: EthersSigner | undefined, chainId: number, optionalParams?: EthersLiquityConnectionOptionalParams): EthersLiquityConnection;
 
 // @public
 export interface EthersCallOverrides {
@@ -98,7 +118,11 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     // (undocumented)
     approveErc20(allowance?: Decimalish, overrides?: EthersTransactionOverrides): Promise<void>;
     // (undocumented)
+    bammUnlock(overrides?: EthersTransactionOverrides): Promise<void>;
+    // (undocumented)
     borrowTHUSD(amount: Decimalish, maxBorrowingRate?: Decimalish, overrides?: EthersTransactionOverrides): Promise<TroveAdjustmentDetails>;
+    // (undocumented)
+    checkMintList(overrides?: EthersCallOverrides): Promise<boolean>;
     // (undocumented)
     claimCollateralSurplus(overrides?: EthersTransactionOverrides): Promise<void>;
     // (undocumented)
@@ -112,6 +136,8 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     // (undocumented)
     depositCollateral(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<TroveAdjustmentDetails>;
     // (undocumented)
+    depositTHUSDInBammPool(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<BammDepositChangeDetails>;
+    // (undocumented)
     depositTHUSDInStabilityPool(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<StabilityDepositChangeDetails>;
     // @internal (undocumented)
     static _from(connection: EthersLiquityConnection & {
@@ -121,8 +147,14 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     static _from(connection: EthersLiquityConnection): EthersLiquity;
     // @internal (undocumented)
     _getActivePool(overrides?: EthersCallOverrides): Promise<Trove>;
+    // (undocumented)
+    getBammAllowance(overrides?: EthersCallOverrides): Promise<boolean>;
+    // (undocumented)
+    getBammDeposit(address?: string, overrides?: EthersCallOverrides): Promise<BammDeposit>;
     // @internal (undocumented)
     _getBlockTimestamp(blockTag?: BlockTag): Promise<number>;
+    // (undocumented)
+    getCollateralAddress(overrides?: EthersCallOverrides): Promise<string>;
     // (undocumented)
     getCollateralSurplusBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal>;
     // @internal (undocumented)
@@ -144,6 +176,8 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     // (undocumented)
     getStabilityDeposit(address?: string, overrides?: EthersCallOverrides): Promise<StabilityDeposit>;
     // (undocumented)
+    getSymbol(overrides?: EthersCallOverrides): Promise<string>;
+    // (undocumented)
     getTHUSDBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal>;
     // (undocumented)
     getTHUSDInStabilityPool(overrides?: EthersCallOverrides): Promise<Decimal>;
@@ -161,8 +195,16 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     }, overrides?: EthersCallOverrides): Promise<TroveWithPendingRedistribution[]>;
     // (undocumented)
     getTroves(params: TroveListingParams, overrides?: EthersCallOverrides): Promise<UserTrove[]>;
+    // (undocumented)
+    getWithdrawsSpShare(withdrawAmount: Decimalish, overrides?: EthersCallOverrides): Promise<string>;
     hasStore(): this is EthersLiquityWithStore;
     hasStore(store: "blockPolled"): this is EthersLiquityWithStore<BlockPolledLiquityStore>;
+    // (undocumented)
+    isBorrowerOperations(overrides?: EthersCallOverrides): Promise<boolean>;
+    // (undocumented)
+    isStabilityPools(overrides?: EthersCallOverrides): Promise<boolean>;
+    // (undocumented)
+    isTroveManager(overrides?: EthersCallOverrides): Promise<boolean>;
     // (undocumented)
     liquidate(address: string | string[], overrides?: EthersTransactionOverrides): Promise<LiquidationDetails>;
     // (undocumented)
@@ -180,11 +222,17 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     // @internal (undocumented)
     setPrice(price: Decimalish, overrides?: EthersTransactionOverrides): Promise<void>;
     // (undocumented)
+    transferBammCollateralGainToTrove(overrides?: EthersTransactionOverrides): Promise<CollateralGainTransferDetails>;
+    // (undocumented)
     transferCollateralGainToTrove(overrides?: EthersTransactionOverrides): Promise<CollateralGainTransferDetails>;
     // (undocumented)
     withdrawCollateral(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<TroveAdjustmentDetails>;
     // (undocumented)
+    withdrawGainsFromBammPool(overrides?: EthersTransactionOverrides): Promise<StabilityPoolGainsWithdrawalDetails>;
+    // (undocumented)
     withdrawGainsFromStabilityPool(overrides?: EthersTransactionOverrides): Promise<StabilityPoolGainsWithdrawalDetails>;
+    // (undocumented)
+    withdrawTHUSDFromBammPool(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<BammDepositChangeDetails>;
     // (undocumented)
     withdrawTHUSDFromStabilityPool(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<StabilityDepositChangeDetails>;
 }
@@ -194,9 +242,10 @@ export interface EthersLiquityConnection extends EthersLiquityConnectionOptional
     // @internal (undocumented)
     readonly [brand]: unique symbol;
     readonly addresses: Record<string, string>;
-    readonly bootstrapPeriod: number;
     readonly chainId: number;
+    readonly deploymentCollateral: string;
     readonly deploymentDate: Date;
+    readonly deploymentVersion: string;
     // @internal (undocumented)
     readonly _isDev: boolean;
     // @internal (undocumented)
@@ -263,6 +312,33 @@ export type EthersTransactionReceipt = TransactionReceipt;
 // @public
 export type EthersTransactionResponse = TransactionResponse;
 
+// @public (undocumented)
+export function getCollateralsDeployments(network: string): Promise<CollateralsVersionedDeployments>;
+
+// @internal (undocumented)
+export type _LiquityContractAddresses = Record<_LiquityContractsKey, string>;
+
+// @internal (undocumented)
+export type _LiquityContractsKey = keyof _LiquityContracts;
+
+// @internal (undocumented)
+export interface _LiquityDeploymentJSON {
+    // (undocumented)
+    readonly addresses: _LiquityContractAddresses;
+    // (undocumented)
+    readonly chainId: number;
+    // (undocumented)
+    readonly deploymentDate: number;
+    // (undocumented)
+    readonly _isDev: boolean;
+    // (undocumented)
+    readonly _priceFeedIsTestnet: boolean;
+    // (undocumented)
+    readonly startBlock: number;
+    // (undocumented)
+    readonly version: string;
+}
+
 // @alpha (undocumented)
 export class ObservableEthersLiquity implements ObservableLiquity {
     constructor(readable: ReadableEthersLiquity);
@@ -292,6 +368,8 @@ export class PopulatableEthersLiquity implements PopulatableLiquity<EthersTransa
     // (undocumented)
     approveErc20(allowance?: Decimalish, overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<void>>;
     // (undocumented)
+    bammUnlock(overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<void>>;
+    // (undocumented)
     borrowTHUSD(amount: Decimalish, maxBorrowingRate?: Decimalish, overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<TroveAdjustmentDetails>>;
     // (undocumented)
     claimCollateralSurplus(overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<void>>;
@@ -299,6 +377,8 @@ export class PopulatableEthersLiquity implements PopulatableLiquity<EthersTransa
     closeTrove(overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<TroveClosureDetails>>;
     // (undocumented)
     depositCollateral(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<TroveAdjustmentDetails>>;
+    // (undocumented)
+    depositTHUSDInBammPool(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<BammDepositChangeDetails>>;
     // (undocumented)
     depositTHUSDInStabilityPool(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<StabilityDepositChangeDetails>>;
     // (undocumented)
@@ -316,11 +396,17 @@ export class PopulatableEthersLiquity implements PopulatableLiquity<EthersTransa
     // @internal (undocumented)
     setPrice(price: Decimalish, overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<void>>;
     // (undocumented)
+    transferBammCollateralGainToTrove(overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<CollateralGainTransferDetails>>;
+    // (undocumented)
     transferCollateralGainToTrove(overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<CollateralGainTransferDetails>>;
     // (undocumented)
     withdrawCollateral(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<TroveAdjustmentDetails>>;
     // (undocumented)
+    withdrawGainsFromBammPool(overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<StabilityPoolGainsWithdrawalDetails>>;
+    // (undocumented)
     withdrawGainsFromStabilityPool(overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<StabilityPoolGainsWithdrawalDetails>>;
+    // (undocumented)
+    withdrawTHUSDFromBammPool(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<BammDepositChangeDetails>>;
     // (undocumented)
     withdrawTHUSDFromStabilityPool(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<StabilityDepositChangeDetails>>;
     }
@@ -381,6 +467,8 @@ export interface _RawTransactionReplacedError extends Error {
 export class ReadableEthersLiquity implements ReadableLiquity {
     // @internal
     constructor(connection: EthersLiquityConnection);
+    // (undocumented)
+    checkMintList(overrides?: EthersCallOverrides): Promise<boolean>;
     // @internal (undocumented)
     static connect(signerOrProvider: EthersSigner | EthersProvider, optionalParams: EthersLiquityConnectionOptionalParams & {
         useStore: "blockPolled";
@@ -397,8 +485,14 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     static _from(connection: EthersLiquityConnection): ReadableEthersLiquity;
     // @internal (undocumented)
     _getActivePool(overrides?: EthersCallOverrides): Promise<Trove>;
+    // (undocumented)
+    getBammAllowance(overrides?: EthersCallOverrides): Promise<boolean>;
+    // (undocumented)
+    getBammDeposit(address?: string, overrides?: EthersCallOverrides): Promise<BammDeposit>;
     // @internal (undocumented)
     _getBlockTimestamp(blockTag?: BlockTag): Promise<number>;
+    // (undocumented)
+    getCollateralAddress(overrides?: EthersCallOverrides): Promise<string>;
     // (undocumented)
     getCollateralSurplusBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal>;
     // @internal (undocumented)
@@ -420,6 +514,8 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     // (undocumented)
     getStabilityDeposit(address?: string, overrides?: EthersCallOverrides): Promise<StabilityDeposit>;
     // (undocumented)
+    getSymbol(overrides?: EthersCallOverrides): Promise<string>;
+    // (undocumented)
     getTHUSDBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal>;
     // (undocumented)
     getTHUSDInStabilityPool(overrides?: EthersCallOverrides): Promise<Decimal>;
@@ -437,8 +533,16 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     }, overrides?: EthersCallOverrides): Promise<TroveWithPendingRedistribution[]>;
     // (undocumented)
     getTroves(params: TroveListingParams, overrides?: EthersCallOverrides): Promise<UserTrove[]>;
+    // (undocumented)
+    getWithdrawsSpShare(withdrawAmount: Decimalish, overrides?: EthersCallOverrides): Promise<string>;
     hasStore(): this is ReadableEthersLiquityWithStore;
     hasStore(store: "blockPolled"): this is ReadableEthersLiquityWithStore<BlockPolledLiquityStore>;
+    // (undocumented)
+    isBorrowerOperations(overrides?: EthersCallOverrides): Promise<boolean>;
+    // (undocumented)
+    isStabilityPools(overrides?: EthersCallOverrides): Promise<boolean>;
+    // (undocumented)
+    isTroveManager(overrides?: EthersCallOverrides): Promise<boolean>;
 }
 
 // @public
@@ -457,6 +561,8 @@ export class SendableEthersLiquity implements SendableLiquity<EthersTransactionR
     // (undocumented)
     approveErc20(allowance?: Decimalish, overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<void>>;
     // (undocumented)
+    bammUnlock(overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<void>>;
+    // (undocumented)
     borrowTHUSD(amount: Decimalish, maxBorrowingRate?: Decimalish, overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<TroveAdjustmentDetails>>;
     // (undocumented)
     claimCollateralSurplus(overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<void>>;
@@ -464,6 +570,8 @@ export class SendableEthersLiquity implements SendableLiquity<EthersTransactionR
     closeTrove(overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<TroveClosureDetails>>;
     // (undocumented)
     depositCollateral(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<TroveAdjustmentDetails>>;
+    // (undocumented)
+    depositTHUSDInBammPool(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<BammDepositChangeDetails>>;
     // (undocumented)
     depositTHUSDInStabilityPool(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<StabilityDepositChangeDetails>>;
     // (undocumented)
@@ -481,11 +589,17 @@ export class SendableEthersLiquity implements SendableLiquity<EthersTransactionR
     // @internal (undocumented)
     setPrice(price: Decimalish, overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<void>>;
     // (undocumented)
+    transferBammCollateralGainToTrove(overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<CollateralGainTransferDetails>>;
+    // (undocumented)
     transferCollateralGainToTrove(overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<CollateralGainTransferDetails>>;
     // (undocumented)
     withdrawCollateral(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<TroveAdjustmentDetails>>;
     // (undocumented)
+    withdrawGainsFromBammPool(overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<StabilityPoolGainsWithdrawalDetails>>;
+    // (undocumented)
     withdrawGainsFromStabilityPool(overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<StabilityPoolGainsWithdrawalDetails>>;
+    // (undocumented)
+    withdrawTHUSDFromBammPool(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<BammDepositChangeDetails>>;
     // (undocumented)
     withdrawTHUSDFromStabilityPool(amount: Decimalish, overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<StabilityDepositChangeDetails>>;
 }
@@ -517,6 +631,9 @@ export class UnsupportedNetworkError extends Error {
     constructor(chainId: number);
     readonly chainId: number;
 }
+
+// @internal (undocumented)
+export type _Versions = Record<string, _LiquityDeploymentJSON>;
 
 
 // (No @packageDocumentation comment for this package)

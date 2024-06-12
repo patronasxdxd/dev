@@ -1,34 +1,56 @@
 import React, { useEffect } from "react";
 import { Button, Flex, Spinner } from "theme-ui";
 
-import { LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
+import { LiquityStoreState as ThresholdStoreState } from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 
-import { useLiquity } from "../hooks/LiquityContext";
+import { useThreshold } from "../hooks/ThresholdContext";
 
 import { Transaction, useMyTransactionState } from "./Transaction";
-import { useTroveView } from "./Trove/context/TroveViewContext";
+import { useVaultView } from "./Vault/context/VaultViewContext";
+import { checkTransactionCollateral } from "../utils/checkTransactionCollateral";
 
-const select = ({ collateralSurplusBalance }: LiquityStoreState) => ({
-  collateralSurplusBalance
+const select = ({ collateralSurplusBalance, symbol }: ThresholdStoreState) => ({
+  collateralSurplusBalance, symbol
 });
 
-export const CollateralSurplusAction: React.FC = () => {
-  const { collateralSurplusBalance } = useLiquitySelector(select);
-  const {
-    liquity: { send: liquity }
-  } = useLiquity();
+type CollateralSurplusActionProps = {
+  version: string
+  collateral: string
+}
+
+export const CollateralSurplusAction = ({ version, collateral }: CollateralSurplusActionProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const collateralSurplusBalance = store.collateralSurplusBalance;
+  const symbol = store.symbol;
+  
+  const { threshold } = useThreshold()
+  const collateralThreshold = threshold.find((versionedThreshold) => {
+    return versionedThreshold.version === version && versionedThreshold.collateral === collateral;
+  })!;
+  
+  const send = collateralThreshold.store.send
 
   const myTransactionId = "claim-coll-surplus";
-  const myTransactionState = useMyTransactionState(myTransactionId);
+  const myTransactionState = useMyTransactionState(myTransactionId, version, collateral);
 
-  const { dispatchEvent } = useTroveView();
+  const { dispatchEvent } = useVaultView();
+
+  const isCollateralChecked = checkTransactionCollateral(
+    myTransactionState,
+    version,
+    collateral
+  );
 
   useEffect(() => {
-    if (myTransactionState.type === "confirmedOneShot") {
-      dispatchEvent("TROVE_SURPLUS_COLLATERAL_CLAIMED");
+    if (isCollateralChecked && myTransactionState.type === "confirmedOneShot") {
+      dispatchEvent("VAULT_SURPLUS_COLLATERAL_CLAIMED", version, collateral);
     }
-  }, [myTransactionState.type, dispatchEvent]);
+  }, [isCollateralChecked, myTransactionState.type, dispatchEvent, version, collateral]);
 
   return myTransactionState.type === "waitingForApproval" ? (
     <Flex variant="layout.actions">
@@ -42,10 +64,12 @@ export const CollateralSurplusAction: React.FC = () => {
     <Flex variant="layout.actions">
       <Transaction
         id={myTransactionId}
-        send={liquity.claimCollateralSurplus.bind(liquity, undefined)}
+        send={send.claimCollateralSurplus.bind(send, undefined)}
+        version={version}
+        collateral={collateral}
       >
-        <Button sx={{ mx: 2 }}>Claim {collateralSurplusBalance.prettify()} ETH</Button>
+        <Button sx={{ mx: 2, width: "100%" }}>Claim {collateralSurplusBalance.prettify()} {symbol}</Button>
       </Transaction>
     </Flex>
-  ) : null;
+  ) : <></>;
 };

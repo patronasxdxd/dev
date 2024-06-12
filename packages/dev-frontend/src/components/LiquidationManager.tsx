@@ -1,15 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card, Flex, Button, Link, Input, ThemeUICSSProperties } from "theme-ui";
-import { StaticAmounts, Row } from "./Trove/Editor";
-import { useLiquity } from "../hooks/LiquityContext";
+import { StaticAmounts, Row } from "./Vault/Editor";
+import { useThreshold } from "../hooks/ThresholdContext";
 import { Transaction } from "./Transaction";
 import { InfoIcon } from "./InfoIcon";
-
-const inputId: string = "liquidate-vaults";
+import { LiquityStoreState as ThresholdStoreState} from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 
 const editableStyle: ThemeUICSSProperties = {
   backgroundColor: "terciary",
-
   px: "1.1em",
   py: "0.45em",
   border: 1,
@@ -22,26 +21,53 @@ const editableStyle: ThemeUICSSProperties = {
   fontSize: 3,
 };
 
-export const LiquidationManager: React.FC = () => {
-  const {
-    liquity: { send: liquity }
-  } = useLiquity();
-  const [numberOfTrovesToLiquidate, setNumberOfTrovesToLiquidate] = useState("90");
+type LiquidationManagerProps = {
+  version: string
+  collateral: string
+  isMintList: boolean
+}
+
+const selector = ({ symbol, isTroveManager }: ThresholdStoreState) => ({
+  symbol,
+  isTroveManager
+});
+
+export const LiquidationManager = ({ version, collateral, isMintList }: LiquidationManagerProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(selector);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const { symbol, isTroveManager } = store;
   
+  const { threshold } = useThreshold()
+  const collateralThreshold = threshold.find((versionedThreshold) => {
+    return versionedThreshold.version === version && versionedThreshold.collateral === collateral;
+  })!;
+  
+  const send = collateralThreshold.store.send
+
+  const inputId: string = "liquidate-vaults";
+  const [numberOfVaultsToLiquidate, setNumberOfVaultsToLiquidate] = useState("90");
   const [editing, setEditing] = useState<string>();
 
   return (
     <Card variant="mainCards">
       <Card variant="layout.columns">
         <Flex sx={{
+          justifyContent: "space-between",
           width: "100%",
           gap: 1,
           pb: "1em",
+          px: ["2em", 0],
           borderBottom: 1, 
           borderColor: "border"
         }}>
-          Liquidate
-          <InfoIcon size="sm" tooltip={<Card variant="tooltip">Vaults that fall under the minimum collateral ratio of 110% will be closed (liquidated). The debt of the Vault is canceled and absorbed by the Stability Pool and its collateral distributed among Stability Providers.</Card>} />
+          <Flex sx={{ gap: 1 }}>
+            Liquidate
+            <InfoIcon size="sm" tooltip={<Card variant="tooltip">Vaults that fall under the minimum collateral ratio of 110% will be closed (liquidated). The debt of the Vault is canceled and absorbed by the Stability Pool and its collateral distributed among Stability Providers.</Card>} />
+          </Flex>
+          {symbol} Collateral
         </Flex>
         <Flex sx={{
           width: "100%",
@@ -57,8 +83,8 @@ export const LiquidationManager: React.FC = () => {
                 type="number"
                 min="1"
                 step="1"
-                value={numberOfTrovesToLiquidate}
-                onChange={e => setNumberOfTrovesToLiquidate(e.target.value)}
+                value={numberOfVaultsToLiquidate}
+                onChange={e => setNumberOfVaultsToLiquidate(e.target.value)}
                 onBlur={() => {
                   setEditing(undefined);
                 }}
@@ -78,32 +104,39 @@ export const LiquidationManager: React.FC = () => {
                 }}
                 labelledBy={`${inputId}-label`}
                 onClick={() => setEditing(inputId)}
-                {...{ inputId, amount: numberOfTrovesToLiquidate, unit: "Vaults" }}
+                {...{ inputId, amount: numberOfVaultsToLiquidate, unit: "Vaults" }}
               />
             </>
           )}
-
           <Flex sx={{ ml: 2, alignItems: "center" }}>
             <Transaction
               id="batch-liquidate"
               send={overrides => {
-                if (!numberOfTrovesToLiquidate) {
+                if (!numberOfVaultsToLiquidate) {
                   throw new Error("Invalid number");
                 }
-                return liquity.liquidateUpTo(parseInt(numberOfTrovesToLiquidate, 10), overrides);
+                return send.liquidateUpTo(parseInt(numberOfVaultsToLiquidate, 10), overrides);
               }}
+              version={version}
+              collateral={collateral}
             >
-              <Button sx={{ width: "100%" }}>Liquidate</Button>
+              <Button disabled={!isTroveManager} sx={{ width: "100%" }}>Liquidate</Button>
             </Transaction>
           </Flex>
           <Flex sx={{ 
             alignSelf: "center",
             fontSize: 11,
             fontWeight: "body",
+            justifyContent: "space-between",
+            width: "100%",
+            px: "1em",
             mt: 2
           }}>
-            <Link variant="cardLinks" href="https://github.com/Threshold-USD/dev#readme" target="_blank">Read about</Link>
-            in the documentation
+            <Flex>
+              <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
+              in the documentation
+            </Flex>
+            <Flex>Deployment version: {version}</Flex>
           </Flex>
         </Flex>
       </Card>

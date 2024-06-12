@@ -6,7 +6,7 @@
 
 Details of a [withdrawGainsFromStabilityPool()](./lib-base.transactableliquity.withdrawgainsfromstabilitypool.md) transaction.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface StabilityPoolGainsWithdrawalDetails 
@@ -14,9 +14,9 @@ export interface StabilityPoolGainsWithdrawalDetails
 
 ## Properties
 
-|  Property | Type | Description |
-|  --- | --- | --- |
-|  [collateralGain](./lib-base.stabilitypoolgainswithdrawaldetails.collateralgain.md) | [Decimal](./lib-base.decimal.md) | Amount of native currency (e.g. Ether) paid out to the depositor in this transaction. |
-|  [newTHUSDDeposit](./lib-base.stabilitypoolgainswithdrawaldetails.newthusddeposit.md) | [Decimal](./lib-base.decimal.md) | Amount of thUSD in the deposit directly after this transaction. |
-|  [thusdLoss](./lib-base.stabilitypoolgainswithdrawaldetails.thusdloss.md) | [Decimal](./lib-base.decimal.md) | Amount of thUSD burned from the deposit by liquidations since the last modification. |
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [collateralGain](./lib-base.stabilitypoolgainswithdrawaldetails.collateralgain.md) |  | [Decimal](./lib-base.decimal.md) | Amount of native currency (e.g. Ether) paid out to the depositor in this transaction. |
+|  [newTHUSDDeposit](./lib-base.stabilitypoolgainswithdrawaldetails.newthusddeposit.md) |  | [Decimal](./lib-base.decimal.md) | Amount of thUSD in the deposit directly after this transaction. |
+|  [thusdLoss](./lib-base.stabilitypoolgainswithdrawaldetails.thusdloss.md) |  | [Decimal](./lib-base.decimal.md) | Amount of thUSD burned from the deposit by liquidations since the last modification. |
 

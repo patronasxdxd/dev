@@ -2,6 +2,7 @@ import assert from "assert";
 
 import { Decimal } from "./Decimal";
 import { StabilityDeposit } from "./StabilityDeposit";
+import { BammDeposit } from "./BammDeposit";
 import { Trove, TroveWithPendingRedistribution, UserTrove } from "./Trove";
 import { Fees } from "./Fees";
 
@@ -25,6 +26,15 @@ export interface LiquityStoreBaseState {
 
   /** The borrower operation's allowance of user's collateral erc20 tokens. */
   erc20TokenAllowance: Decimal;
+
+  /** Check if the deployment stability pool address was added to the thUSD token. */
+  isStabilityPools: boolean;
+
+  /** Check if the deployment borrower operations address was added to the thUSD token. */
+  isBorrowerOperations: boolean;
+
+  /** Check if the deployment trove manager address was added to the thUSD token. */
+  isTroveManager: boolean;
 
   /**
    * Amount of leftover collateral available for withdrawal to the user.
@@ -64,8 +74,20 @@ export interface LiquityStoreBaseState {
    */
   troveBeforeRedistribution: TroveWithPendingRedistribution;
 
+  /** token's ERC20 symbol. */
+  symbol: string;
+
+  /** BorrowersOperations contract collateral address. */
+  collateralAddress: string;
+
   /** User's stability deposit. */
   stabilityDeposit: StabilityDeposit;
+
+  /** User's bamm deposit. */
+  bammDeposit: BammDeposit;
+
+  /** MintList validation. */
+  mintList: boolean;
 
   /** @internal */
   _feesInNormalMode: Fees;
@@ -165,7 +187,7 @@ const difference = <T>(a: T, b: T) =>
  * The type parameter `T` may be used to type extra state added to {@link LiquityStoreState} by the
  * subclass.
  *
- * Implemented by {@link @liquity/lib-ethers#BlockPolledLiquityStore}.
+ * Implemented by {@link @threshold-usd/lib-ethers#BlockPolledLiquityStore}.
  *
  * @public
  */
@@ -325,6 +347,12 @@ export abstract class LiquityStore<T = unknown> {
         baseStateUpdate.erc20TokenAllowance
       ),
 
+      isStabilityPools: baseState.isStabilityPools,
+
+      isBorrowerOperations: baseState.isBorrowerOperations,
+
+      isTroveManager: baseState.isTroveManager,
+
       collateralSurplusBalance: this._updateIfChanged(
         eq,
         "collateralSurplusBalance",
@@ -357,11 +385,24 @@ export abstract class LiquityStore<T = unknown> {
         baseStateUpdate.troveBeforeRedistribution
       ),
 
+      symbol: baseState.symbol,
+
+      collateralAddress: baseState.collateralAddress,
+
+      mintList: baseState.mintList,
+
       stabilityDeposit: this._updateIfChanged(
         equals,
         "stabilityDeposit",
         baseState.stabilityDeposit,
         baseStateUpdate.stabilityDeposit
+      ),
+
+      bammDeposit: this._updateIfChanged(
+        equals,
+        "bammDeposit",
+        baseState.bammDeposit,
+        baseStateUpdate.bammDeposit
       ),
 
       _feesInNormalMode: this._silentlyUpdateIfChanged(

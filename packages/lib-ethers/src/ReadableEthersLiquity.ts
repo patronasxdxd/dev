@@ -2,26 +2,34 @@ import { BlockTag } from "@ethersproject/abstract-provider";
 
 import {
   Decimal,
+  Decimalish,
   Fees,
   LiquityStore,
   ReadableLiquity,
   StabilityDeposit,
+  BammDeposit,
   Trove,
   TroveListingParams,
   TroveWithPendingRedistribution,
   UserTrove,
   UserTroveStatus
-} from "@liquity/lib-base";
+} from "@threshold-usd/lib-base";
 
 import { MultiTroveGetter } from "../types";
 
-import { decimalify, panic } from "./_utils";
+import { decimalify, DEFAULT_COLLATERAL_FOR_TESTING, DEFAULT_VERSION_FOR_TESTING, panic, supportedNetworks } from "./_utils";
 import { EthersCallOverrides, EthersProvider, EthersSigner } from "./types";
 
 import {
+  _LiquityDeploymentJSON
+} from "./contracts"
+import {
+  getCollateralsDeployments,
   EthersLiquityConnection,
   EthersLiquityConnectionOptionalParams,
   EthersLiquityStoreOption,
+  getProviderAndSigner,
+  UnsupportedNetworkError,
   _connect,
   _getBlockTimestamp,
   _getContracts,
@@ -29,6 +37,8 @@ import {
 } from "./EthersLiquityConnection";
 
 import { BlockPolledLiquityStore } from "./BlockPolledLiquityStore";
+import { BigNumber } from "@ethersproject/bignumber";
+import { ZERO_ADDRESS } from "../utils/constants";
 
 // TODO: these are constant in the contracts, so it doesn't make sense to make a call for them,
 // but to avoid having to update them here when we change them in the contracts, we could read
@@ -74,7 +84,7 @@ const expectPositiveInt = <K extends string>(obj: { [P in K]?: number }, key: K)
 };
 
 /**
- * Ethers-based implementation of {@link @liquity/lib-base#ReadableLiquity}.
+ * Ethers-based implementation of {@link @threshold-usd/lib-base#ReadableLiquity}.
  *
  * @public
  */
@@ -125,7 +135,13 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     signerOrProvider: EthersSigner | EthersProvider,
     optionalParams?: EthersLiquityConnectionOptionalParams
   ): Promise<ReadableEthersLiquity> {
-    return ReadableEthersLiquity._from(await _connect(signerOrProvider, optionalParams));
+    const [provider, signer] = getProviderAndSigner(signerOrProvider);
+    const chainId = (await provider.getNetwork()).chainId
+    const versionedDeployments = await getCollateralsDeployments(supportedNetworks[chainId])
+    const importedDeployment: _LiquityDeploymentJSON =
+    versionedDeployments.v1.deployment ?? panic(new UnsupportedNetworkError(chainId));
+
+    return ReadableEthersLiquity._from(await _connect(DEFAULT_COLLATERAL_FOR_TESTING, DEFAULT_VERSION_FOR_TESTING, importedDeployment, provider, signer, optionalParams));
   }
 
   /**
@@ -143,19 +159,19 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return false;
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getTotalRedistributed} */
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getTotalRedistributed} */
   async getTotalRedistributed(overrides?: EthersCallOverrides): Promise<Trove> {
     const { troveManager } = _getContracts(this.connection);
 
     const [collateral, debt] = await Promise.all([
-      troveManager.L_ETH({ ...overrides }).then(decimalify),
+      troveManager.L_Collateral({ ...overrides }).then(decimalify),
       troveManager.L_THUSDDebt({ ...overrides }).then(decimalify)
     ]);
 
     return new Trove(collateral, debt);
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getTroveBeforeRedistribution} */
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getTroveBeforeRedistribution} */
   async getTroveBeforeRedistribution(
     address?: string,
     overrides?: EthersCallOverrides
@@ -175,14 +191,14 @@ export class ReadableEthersLiquity implements ReadableLiquity {
         decimalify(trove.coll),
         decimalify(trove.debt),
         decimalify(trove.stake),
-        new Trove(decimalify(snapshot.ETH), decimalify(snapshot.THUSDDebt))
+        new Trove(decimalify(snapshot.collateral), decimalify(snapshot.THUSDDebt))
       );
     } else {
       return new TroveWithPendingRedistribution(address, userTroveStatusFrom(trove.status));
     }
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getTrove} */
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getTrove} */
   async getTrove(address?: string, overrides?: EthersCallOverrides): Promise<UserTrove> {
     const [trove, totalRedistributed] = await Promise.all([
       this.getTroveBeforeRedistribution(address, overrides),
@@ -192,14 +208,14 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return trove.applyRedistribution(totalRedistributed);
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getNumberOfTroves} */
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getNumberOfTroves} */
   async getNumberOfTroves(overrides?: EthersCallOverrides): Promise<number> {
     const { troveManager } = _getContracts(this.connection);
 
     return (await troveManager.getTroveOwnersCount({ ...overrides })).toNumber();
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getPrice} */
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getPrice} */
   getPrice(overrides?: EthersCallOverrides): Promise<Decimal> {
     const { priceFeed } = _getContracts(this.connection);
 
@@ -234,7 +250,7 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return new Trove(liquidatedCollateral, closedDebt);
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getTotal} */
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getTotal} */
   async getTotal(overrides?: EthersCallOverrides): Promise<Trove> {
     const [activePool, defaultPool] = await Promise.all([
       this._getActivePool(overrides),
@@ -244,7 +260,118 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return activePool.add(defaultPool);
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getStabilityDeposit} */
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getWithdrawsSpShare} */
+  async getWithdrawsSpShare(
+    withdrawAmount: Decimalish,
+    overrides?: EthersCallOverrides
+  ): Promise<string> {
+    const address = _requireAddress(this.connection);
+    const { bamm } = _getContracts(this.connection);
+
+    const [
+      stake, // users share in the bamm
+      {currentUSD}
+    ] = await Promise.all([
+      bamm.stake(address),
+      this.getBammDeposit(address, overrides)
+    ]);
+
+    // amount * stake / currentUSD
+    const spShare = currentUSD 
+      ? decimalify(stake).mul(Decimal.from(withdrawAmount)).div(currentUSD).toString() 
+      : Decimal.from(0).toString() 
+
+    return spShare
+  }
+
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getSymbol} */
+  async getSymbol(overrides?: EthersCallOverrides): Promise<string> {
+    const { erc20, borrowerOperations } = _getContracts(this.connection);
+    const collateralAddress = await borrowerOperations.collateralAddress();
+
+    if (collateralAddress === ZERO_ADDRESS) {
+      return "ETH"
+    }
+
+    return erc20.symbol({ ...overrides });
+  }
+
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getCollateralAddress} */
+  getCollateralAddress(overrides?: EthersCallOverrides): Promise<string> {
+    const { borrowerOperations } = _getContracts(this.connection);
+
+    return borrowerOperations.collateralAddress({ ...overrides });
+  }
+
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getBammDeposit} */
+  async getBammDeposit(
+    address?: string,
+    overrides?: EthersCallOverrides
+  ): Promise<BammDeposit> {
+    const _1e18 = BigNumber.from(10).pow(18)
+
+    address ??= _requireAddress(this.connection);
+    const { stabilityPool, bamm, priceFeed } = _getContracts(this.connection);
+
+    const [
+      initialValue,
+      currentBammTHUSD,
+      bammPendingCollateral,
+      total,
+      stake,
+      totalThusdInSp,
+    ] = await Promise.all([
+      stabilityPool.deposits(address, { ...overrides }),
+      stabilityPool.getCompoundedTHUSDDeposit(bamm.address, { ...overrides }),
+      stabilityPool.getDepositorCollateralGain(bamm.address, { ...overrides }),
+      bamm.totalSupply({ ...overrides }),
+      bamm.stake(address, { ...overrides}),
+      stabilityPool.getTotalTHUSDDeposits({ ...overrides }),
+    ]);
+    const isTotalGreaterThanZero = total.gt(BigNumber.from(0))
+    const isTotalThusdInSpGreaterThanZero = totalThusdInSp.gt(BigNumber.from(0))
+    
+    // stake times thUSD divided by total
+    const currentTHUSD = isTotalGreaterThanZero 
+      ? stake.mul(currentBammTHUSD).div(total) 
+      : BigNumber.from(0)
+
+    // bammDeposit.currentLUSD.mulDiv(100, thusdInBammPool);
+    const bammShare = isTotalThusdInSpGreaterThanZero 
+      ? Decimal.fromBigNumber(currentBammTHUSD).mul(100).div(Decimal.fromBigNumber(totalThusdInSp)) 
+      : Decimal.from(0)
+
+    // bamm share in SP times stake div by total
+    const poolShare = isTotalGreaterThanZero 
+      ? bammShare.mul(Decimal.fromBigNumber(stake)).div(Decimal.fromBigNumber(total)) 
+      : Decimal.from(0)
+
+    const bammCollateralBalance = (await bamm.provider.getBalance(bamm.address)).add(bammPendingCollateral)
+    const currentCollateral = isTotalGreaterThanZero 
+      ? stake.mul(bammCollateralBalance).div(total) 
+      : BigNumber.from(0)
+    
+    const price = await priceFeed.callStatic.fetchPrice({ ...overrides })
+
+    const currentUSD = currentTHUSD.add(currentCollateral.mul(price).div(_1e18))
+
+    const bammPoolShare = isTotalGreaterThanZero 
+      ? Decimal.fromBigNumber(stake).mulDiv(100, Decimal.fromBigNumber(total)) 
+      : Decimal.from(0)
+    
+    return new BammDeposit(
+      bammPoolShare,
+      poolShare,
+      decimalify(initialValue),
+      Decimal.fromBigNumber(currentUSD),
+      Decimal.fromBigNumber(currentTHUSD),
+      Decimal.fromBigNumber(currentCollateral),
+      Decimal.fromBigNumber(bammCollateralBalance),
+      Decimal.fromBigNumber(currentBammTHUSD)
+    );
+  }
+
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getStabilityDeposit} */
   async getStabilityDeposit(
     address?: string,
     overrides?: EthersCallOverrides
@@ -269,14 +396,14 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     );
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getTHUSDInStabilityPool} */
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getTHUSDInStabilityPool} */
   getTHUSDInStabilityPool(overrides?: EthersCallOverrides): Promise<Decimal> {
     const { stabilityPool } = _getContracts(this.connection);
 
     return stabilityPool.getTotalTHUSDDeposits({ ...overrides }).then(decimalify);
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getPCVBalance} */
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getPCVBalance} */
   getPCVBalance(overrides?: EthersCallOverrides): Promise<Decimal> {
     const { pcv } = _getContracts(this.connection);
     const { thusdToken } = _getContracts(this.connection);
@@ -284,7 +411,7 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return thusdToken.balanceOf(pcv.address, { ...overrides }).then(decimalify);
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getTHUSDBalance} */
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getTHUSDBalance} */
   getTHUSDBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     address ??= _requireAddress(this.connection);
     const { thusdToken } = _getContracts(this.connection);
@@ -292,23 +419,65 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     return thusdToken.balanceOf(address, { ...overrides }).then(decimalify);
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getErc20TokenBalance} */
-  getErc20TokenBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getErc20TokenBalance} */
+  async getErc20TokenBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     address ??= _requireAddress(this.connection);
-    const { erc20 } = _getContracts(this.connection);
+    const { borrowerOperations } = _getContracts(this.connection);
+    const collateralAddress = await borrowerOperations.collateralAddress();
 
+    if (collateralAddress === ZERO_ADDRESS) {
+      return this.connection.provider.getBalance(address).then(decimalify)
+    }
+
+    const { erc20 } = _getContracts(this.connection);
     return erc20.balanceOf(address, { ...overrides }).then(decimalify);
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getErc20TokenAllowance} */
-  getErc20TokenAllowance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getErc20TokenAllowance} */
+  async getErc20TokenAllowance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     address ??= _requireAddress(this.connection);
+    const largeAllowanceBigNumber = BigNumber.from("0x8888888888888888888888888888888888888888888888888888888888888888");
+    const largeAllowanceDecimal = decimalify(largeAllowanceBigNumber);
+
     const { erc20, borrowerOperations } = _getContracts(this.connection);
+    const collateralAddress = await borrowerOperations.collateralAddress();
+
+    if (collateralAddress === ZERO_ADDRESS) {
+      return largeAllowanceDecimal;
+    }
 
     return erc20.allowance(address, borrowerOperations.address, { ...overrides }).then(decimalify);
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getCollateralSurplusBalance} */
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.isStabilityPools} */
+  isStabilityPools(overrides?: EthersCallOverrides): Promise<boolean> {
+    const { stabilityPool, thusdToken } = _getContracts(this.connection);
+
+    return thusdToken.burnList(stabilityPool.address, { ...overrides });
+  }
+  
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.isBorrowerOperations} */
+  isBorrowerOperations(overrides?: EthersCallOverrides): Promise<boolean> {
+    const { borrowerOperations, thusdToken } = _getContracts(this.connection);
+
+    return thusdToken.burnList(borrowerOperations.address, { ...overrides });
+  }
+
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.isTroveManager} */
+  isTroveManager(overrides?: EthersCallOverrides): Promise<boolean> {
+    const { troveManager, thusdToken } = _getContracts(this.connection);
+
+    return thusdToken.burnList(troveManager.address, { ...overrides });
+  }
+
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.checkMintList} */
+  checkMintList(overrides?: EthersCallOverrides): Promise<boolean> {
+    const { thusdToken, borrowerOperations } = _getContracts(this.connection);
+
+    return thusdToken.mintList(borrowerOperations.address, { ...overrides });
+  }
+
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getCollateralSurplusBalance} */
   getCollateralSurplusBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
     address ??= _requireAddress(this.connection);
     const { collSurplusPool } = _getContracts(this.connection);
@@ -322,7 +491,7 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     overrides?: EthersCallOverrides
   ): Promise<TroveWithPendingRedistribution[]>;
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.(getTroves:2)} */
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.(getTroves:2)} */
   getTroves(params: TroveListingParams, overrides?: EthersCallOverrides): Promise<UserTrove[]>;
 
   async getTroves(
@@ -387,7 +556,7 @@ export class ReadableEthersLiquity implements ReadableLiquity {
       );
   }
 
-  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getFees} */
+  /** {@inheritDoc @threshold-usd/lib-base#ReadableLiquity.getFees} */
   async getFees(overrides?: EthersCallOverrides): Promise<Fees> {
     const [createFees, total, price, blockTimestamp] = await Promise.all([
       this._getFeesFactory(overrides),
@@ -397,6 +566,14 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     ]);
 
     return createFees(blockTimestamp, total.collateralRatioIsBelowCritical(price));
+  }
+
+  async getBammAllowance(overrides?: EthersCallOverrides): Promise<Decimal> {
+    const { thusdToken, bamm } = _getContracts(this.connection);
+    const address = _requireAddress(this.connection);
+
+    const allowance = await thusdToken.allowance(address, bamm.address, { ...overrides }).then(decimalify);
+    return allowance;
   }
 }
 
@@ -412,12 +589,12 @@ const mapBackendTroves = (troves: BackendTroves): TroveWithPendingRedistribution
         decimalify(trove.coll),
         decimalify(trove.debt),
         decimalify(trove.stake),
-        new Trove(decimalify(trove.snapshotETH), decimalify(trove.snapshotTHUSDDebt))
+        new Trove(decimalify(trove.snapshotCollateral), decimalify(trove.snapshotTHUSDDebt))
       )
   );
 
 /**
- * Variant of {@link ReadableEthersLiquity} that exposes a {@link @liquity/lib-base#LiquityStore}.
+ * Variant of {@link ReadableEthersLiquity} that exposes a {@link @threshold-usd/lib-base#LiquityStore}.
  *
  * @public
  */
@@ -496,6 +673,26 @@ class _BlockPolledReadableEthersLiquity
     return this._blockHit(overrides) ? this.store.state.total : this._readable.getTotal(overrides);
   }
 
+  async getWithdrawsSpShare(withdrawAmount: Decimalish, overrides?: EthersCallOverrides): Promise<string> {
+    return this._readable.getWithdrawsSpShare(withdrawAmount, overrides)
+  }
+
+  async getSymbol(
+    overrides?: EthersCallOverrides
+  ): Promise<string> {
+    return this._blockHit(overrides)
+      ? this.store.state.symbol
+      : this._readable.getSymbol(overrides);
+  }
+
+  async getCollateralAddress(
+    overrides?: EthersCallOverrides
+  ): Promise<string> {
+    return this._blockHit(overrides)
+      ? this.store.state.collateralAddress
+      : this._readable.getCollateralAddress(overrides);
+  }
+
   async getStabilityDeposit(
     address?: string,
     overrides?: EthersCallOverrides
@@ -504,6 +701,15 @@ class _BlockPolledReadableEthersLiquity
       ? this.store.state.stabilityDeposit
       : this._readable.getStabilityDeposit(address, overrides);
   }
+
+  async getBammDeposit(
+    address?: string,
+    overrides?: EthersCallOverrides
+  ): Promise<BammDeposit> {
+    return this._userHit(address, overrides)
+      ? this.store.state.bammDeposit
+      : this._readable.getBammDeposit(address, overrides);
+    }
 
   async getTHUSDInStabilityPool(overrides?: EthersCallOverrides): Promise<Decimal> {
     return this._blockHit(overrides)
@@ -533,6 +739,30 @@ class _BlockPolledReadableEthersLiquity
     return this._userHit(address, overrides)
       ? this.store.state.erc20TokenAllowance
       : this._readable.getErc20TokenAllowance(address, overrides);
+  }
+
+  async isStabilityPools(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._blockHit(overrides)
+      ? this.store.state.isStabilityPools
+      : this._readable.isStabilityPools(overrides);
+  }
+
+  async isBorrowerOperations(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._blockHit(overrides)
+      ? this.store.state.isBorrowerOperations
+      : this._readable.isBorrowerOperations(overrides);
+  }
+
+  async isTroveManager(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._blockHit(overrides)
+      ? this.store.state.isTroveManager
+      : this._readable.isTroveManager(overrides);
+  }
+
+  async checkMintList(overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._blockHit(overrides)
+      ? this.store.state.mintList
+      : this._readable.checkMintList(overrides);
   }
 
   async getCollateralSurplusBalance(
@@ -579,5 +809,11 @@ class _BlockPolledReadableEthersLiquity
 
   _getDefaultPool(): Promise<Trove> {
     throw new Error("Method not implemented.");
+  }
+
+  async getBammAllowance(overrides?: EthersCallOverrides): Promise<Decimal> {
+    return this._blockHit(overrides)
+      ? this.store.state.bammAllowance
+      : this._readable.getBammAllowance(overrides);
   }
 }

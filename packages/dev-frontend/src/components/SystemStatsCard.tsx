@@ -1,74 +1,84 @@
-import React, { useState, useEffect } from "react";
-import { Box, Button, Card, Flex, Input, ThemeUICSSProperties } from "theme-ui";
-import { Decimal, Percent, LiquityStoreState } from "@liquity/lib-base";
-import { useLiquitySelector } from "@liquity/lib-react";
-import { COIN, FIRST_ERC20_COLLATERAL } from "../utils/constants";
-import { useLiquity } from "../hooks/LiquityContext";
+import { useState, useEffect } from "react";
+import { Box, Card, Flex } from "theme-ui";
+import { Decimal, Percent, LiquityStoreState as ThresholdStoreState } from "@threshold-usd/lib-base";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
+import { COIN } from "../utils/constants";
 
 import { SystemStat } from "./SystemStat";
-import { Transaction } from "./Transaction";
+import { EditPrice } from "./Dashboard/EditPrice";
+import { MintErc20 } from "./Dashboard/MintErc20";
 
 type SystemStatsCardProps = {
   variant?: string;
+  IsPriceEditable?: boolean
 };
 
-const editableStyle: ThemeUICSSProperties = {
-  bg: "white",
-  px: "1.1em",
-  py: "0.3em",
-  border: 1,
-  borderColor: "border",
-  borderRadius: 8,
-  flexGrow: 1,
-  pl: 3,
-  boxShadow: 0
-};
-
-const select = ({
+const selector = ({
   numberOfTroves,
   price,
   total,
   thusdInStabilityPool,
   borrowingRate,
   redemptionRate,
-  pcvBalance
-}: LiquityStoreState) => ({
+  pcvBalance,
+  symbol,
+  bammDeposit
+}: ThresholdStoreState) => ({
   numberOfTroves,
   price,
   total,
   thusdInStabilityPool,
   borrowingRate,
   redemptionRate,
-  pcvBalance
+  pcvBalance,
+  symbol,
+  bammDeposit
 });
 
-export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "info" }) => {
-
-  const {
-    liquity: {
-      send: liquity,
-      connection: { _priceFeedIsTestnet: canSetPrice }
-    }
-  } = useLiquity();
-
-  const {
-    numberOfTroves,
-    price,
-    total,
-    borrowingRate,
-    thusdInStabilityPool,
-    pcvBalance
-  } = useLiquitySelector(select);
-
-  const [editedPrice, setEditedPrice] = useState(price.toString(2));
-  const borrowingFeePct = new Percent(borrowingRate);
+export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemStatsCardProps): JSX.Element => {
+  const thresholdSelectorStores = useThresholdSelector(selector);
+  const [borrowingFeeAvgPct, setBorrowingFeeAvgPct] = useState(new Percent(Decimal.from(0)))
+  const [totalVaults, setTotalVaults] = useState(0)
+  // const [thusdInSP, setThusdInSP] = useState(Decimal.from(0))
+  const [thusdInBammm, setThusdInBamm] = useState(Decimal.from(0))
+  const [thusdSupply, setThusdSupply] = useState(Decimal.from(0))
+  const [pcvBal, setPcvBal] = useState(Decimal.from(0))
+  const [isMounted, setIsMounted] = useState<boolean>(true);
 
   useEffect(() => {
-    setEditedPrice(price.toString(2));
-  }, [price]);
+    if (!isMounted) {
+      return;
+    }
+    let borrowingFee = Decimal.from(0)
+    let thusdSupply = Decimal.from(0)
+    let thusdInBamm = Decimal.from(0)
+
+    thresholdSelectorStores.forEach(collateralStore => {
+      const thresholdStore = thresholdSelectorStores.find((store) => {
+        return store.version === collateralStore.version && store.collateral === collateralStore.collateral;
+      });
+
+      borrowingFee = borrowingFee.add(thresholdStore?.store.borrowingRate!)
+      setTotalVaults(prev => prev + thresholdStore?.store.numberOfTroves!)
+      // setThusdInSP(prev => prev.add(thresholdStore?.store.thusdInStabilityPool!))
+      setPcvBal(prev => prev.add(thresholdStore?.store.pcvBalance!))
+      thusdSupply = thusdSupply.add(thresholdStore?.store.total.debt!)
+      thusdInBamm = thusdInBamm.add(thresholdStore?.store.bammDeposit.totalThusdInBamm!)
+    })
+
+    const borrowingfeeAvg = borrowingFee.div(thresholdSelectorStores.length)
+    setBorrowingFeeAvgPct(new Percent(borrowingfeeAvg))
+    setThusdSupply(thusdSupply)
+    setThusdInBamm(thusdInBamm)
+
+    return () => {
+      setIsMounted(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted])
 
   return (
-    <Card {...{ variant }}>
+    <Card {...{ variant }} sx={{ width: "100%", bg: "systemStatsBackGround"}}>
       <Card variant="layout.columns">
         <Flex sx={{
           width: "100%",
@@ -88,107 +98,78 @@ export const SystemStatsCard: React.FC<SystemStatsCardProps> = ({ variant = "inf
           gap: "1em"
         }}>
           <SystemStat
-            info="Borrowing Fee"
+            info={`Borrowing Fee ${ thresholdSelectorStores.length > 1 ? "Avg." : "" }`}
             tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount, and is part of a Vault's debt."
           >
-            {borrowingFeePct.toString(2)}
-          </SystemStat>
+            {borrowingFeeAvgPct && borrowingFeeAvgPct.toString(2)}
+          </SystemStat>    
           <SystemStat
-            info="Vaults"
+            info="Total Vaults"
             tooltip="The total number of active Vaults in the system."
           >
-              {Decimal.from(numberOfTroves).prettify(0)}
+            {Decimal.from(totalVaults).prettify(0)}
           </SystemStat>
+          {thresholdSelectorStores.map((collateralStore, index) => (
+            <SystemStat
+              key={index}
+              info={`${ collateralStore.store.symbol } deposited collateral`}
+              tooltip={`The Total Value Locked (TVL) is the total value of ${ collateralStore.store.symbol } locked as collateral in the system.`}
+            >
+              { collateralStore.store.total.collateral.shorten() } { collateralStore.store.symbol }
+            </SystemStat>
+          ))}
           <SystemStat
-            info="TVL"
-            tooltip={`The Total Value Locked (TVL) is the total value of Ether locked as collateral in the system, given in ${ FIRST_ERC20_COLLATERAL } and USD.`}
+            info={`${ COIN } in B.AMM`}
+            tooltip={`The total ${ COIN } currently held in the Backstop AMM, expressed as an amount.`}
           >
-            {total.collateral.shorten()} { FIRST_ERC20_COLLATERAL }
-          </SystemStat>
-          <SystemStat
-            info={`${ COIN } in Stability Pool`}
-            tooltip={`The total ${ COIN } currently held in the Stability Pool, expressed as an amount and a fraction of the ${ COIN } supply.`}
-          >
-            {thusdInStabilityPool.shorten()}
+            {thusdInBammm.shorten()}
           </SystemStat>
           <SystemStat
             info={`${ COIN } in PCV`}
             tooltip={`The total ${ COIN } currently held in the PCV, expressed as an amount and a fraction of the ${ COIN } supply.`}
           >
-            {pcvBalance.prettify()}
-          </SystemStat>
+            {pcvBal.shorten()}
+          </SystemStat>             
           <SystemStat
             info={`${ COIN } Supply`}
             tooltip={`The total ${ COIN } minted by the Threshold USD Protocol.`}
           >
-            {total.debt.shorten()}
+            {thusdSupply.shorten()}
           </SystemStat>
-          {total.collateralRatioIsBelowCritical(price) &&
-            (<SystemStat
-              info="Recovery Mode"
-              tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Trove's debt. Operations are also restricted that would negatively impact the TCR."
-            >
-              {total.collateralRatioIsBelowCritical(price) ? <Box color="danger">Yes</Box> : "No"}
-            </SystemStat>)
-          }
+          {thresholdSelectorStores.map((collateralStore, index) => {
+            return collateralStore.store.total.collateralRatioIsBelowCritical(collateralStore.store.price) 
+            && (
+                <SystemStat
+                  key={index}
+                  info={`${ collateralStore.store.symbol } Recovery Mode`}
+                  tooltip="Recovery Mode is activated when the Total Collateral Ratio (TCR) falls below 150%. When active, your Vault can be liquidated if its collateral ratio is below the TCR. The maximum collateral you can lose from liquidation is capped at 110% of your Vault's debt. Operations are also restricted that would negatively impact the TCR."
+                >
+                  <Box color="danger">Yes</Box>
+                </SystemStat>
+              )
+          })}
         </Flex>
-        <Flex sx={{
-          width: "100%",
-          gap: 1,
-          pt: 4,
-          pb: 2,
-          borderBottom: 1,
-          borderColor: "border"
-        }}>
-          { FIRST_ERC20_COLLATERAL } Price
-        </Flex>
-        <Flex sx={{
+        <Box sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          rowGap: 3,
+          columnGap: 2,
           width: "100%",
           fontSize: "0.9em",
-          pt: 14,
+          pt: 4,
           pb: 3
         }}>
-          <SystemStat>
-            {canSetPrice ? (
-              <Flex sx={{ mb:1, alignItems: "center", height: "1.2em", }}>
-                <Input
-                  variant="layout.balanceRow"
-                  sx={{
-                  ...editableStyle,
-                  color: "inputText"
-                  }}
-                  type="number"
-                  step="any"
-                  value={editedPrice}
-                  onChange={e => setEditedPrice(e.target.value)}
-                />
-                <Transaction
-                  id="set-price"
-                  tooltip="Set the WETH price in the testnet"
-                  tooltipPlacement="bottom"
-                  send={overrides => {
-                    if (!editedPrice) {
-                      throw new Error("Invalid price");
-                    }
-                    return liquity.setPrice(Decimal.from(editedPrice), overrides);
-                  }}
-                >
-                  <Button sx={{
-                    ml: 3,
-                    width: "1rem",
-                    height: "1rem",
-                    borderRadius: 6,
-                    top: 0
-                  }}>
-                    Set
-                  </Button>
-                </Transaction>
-              </Flex>
-            ) : (
-              price.toString(2)
-            )}
-          </SystemStat>
-        </Flex>
+          {IsPriceEditable === true &&
+            thresholdSelectorStores.map((collateralStore, index) => {
+              return <EditPrice key={index} version={collateralStore.version} collateral={collateralStore.collateral} />
+            })
+          }
+        </Box>
+        {IsPriceEditable === true &&
+            thresholdSelectorStores.map((collateralStore, index) => {
+              return <MintErc20 key={index} version={collateralStore.version} collateral={collateralStore.collateral} />
+            })
+          }
       </Card>
     </Card>
   );

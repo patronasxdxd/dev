@@ -1,52 +1,56 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Box, Button, Card, Container, Flex, Image, Link, Text  } from "theme-ui";
 
 import {
   Percent,
   MINIMUM_COLLATERAL_RATIO,
   CRITICAL_COLLATERAL_RATIO,
-  UserTrove,
+  UserTrove as UserVault,
   Decimal
-} from "@liquity/lib-base";
-import { BlockPolledLiquityStoreState } from "@liquity/lib-ethers";
-import { useLiquitySelector } from "@liquity/lib-react";
+} from "@threshold-usd/lib-base";
+import { BlockPolledLiquityStoreState as BlockPolledThresholdStoreState } from "@threshold-usd/lib-ethers";
+import { useThresholdSelector } from "@threshold-usd/lib-react";
 import { Web3Provider } from "@ethersproject/providers";
 import { useWeb3React } from "@web3-react/core";
 
 import { shortenAddress } from "../utils/shortenAddress";
-import { useLiquity } from "../hooks/LiquityContext";
+import { useThreshold } from "../hooks/ThresholdContext";
 import { COIN } from "../utils/constants";
 
 import { Icon } from "./Icon";
 import { Transaction } from "./Transaction";
 import { Tooltip } from "./Tooltip";
 import { Abbreviation } from "./Abbreviation";
+import { useWalletConnector } from "../hooks/WalletConnectorContext";
 
 const rowHeight = "40px";
+const pageSize = 10;
 
-const liquidatableInNormalMode = (trove: UserTrove, price: Decimal) =>
-  [trove.collateralRatioIsBelowMinimum(price), "Collateral ratio not low enough"] as const;
+const liquidatableInNormalMode = (vault: UserVault, price: Decimal) =>
+  [vault.collateralRatioIsBelowMinimum(price), "Collateral ratio not low enough"] as const;
 
 const liquidatableInRecoveryMode = (
-  trove: UserTrove,
+  vault: UserVault,
   price: Decimal,
   totalCollateralRatio: Decimal,
   thusdInStabilityPool: Decimal
 ) => {
-  const collateralRatio = trove.collateralRatio(price);
+  const collateralRatio = vault.collateralRatio(price);
 
   if (collateralRatio.gte(MINIMUM_COLLATERAL_RATIO) && collateralRatio.lt(totalCollateralRatio)) {
     return [
-      trove.debt.lte(thusdInStabilityPool),
+      vault.debt.lte(thusdInStabilityPool),
       "There's not enough thUSD in the Stability pool to cover the debt"
     ] as const;
   } else {
-    return liquidatableInNormalMode(trove, price);
+    return liquidatableInNormalMode(vault, price);
   }
 };
 
 type RiskyVaultsProps = {
-  pageSize: number;
+  version: string
+  collateral: string
+  isMintList: boolean
 };
 
 const select = ({
@@ -54,32 +58,43 @@ const select = ({
   price,
   total,
   thusdInStabilityPool,
-  blockTag
-}: BlockPolledLiquityStoreState) => ({
+  blockTag,
+  symbol
+}: BlockPolledThresholdStoreState) => ({
   numberOfTroves,
   price,
   recoveryMode: total.collateralRatioIsBelowCritical(price),
   totalCollateralRatio: total.collateralRatio(price),
   thusdInStabilityPool,
-  blockTag
+  blockTag,
+  symbol
 });
 
-export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
-  const { chainId } = useWeb3React<Web3Provider>();
-  const {
-    blockTag,
-    numberOfTroves,
-    recoveryMode,
-    totalCollateralRatio,
-    thusdInStabilityPool,
-    price
-  } = useLiquitySelector(select);
-  const { liquity } = useLiquity();
+export const RiskyVaults = ({ version, collateral }: RiskyVaultsProps): JSX.Element => {
+  const { account: {chainId} } = useWalletConnector();
+  const thresholdSelectorStores = useThresholdSelector(select);
+  const thresholdStore = thresholdSelectorStores.find((store) => {
+    return store.version === version && store.collateral === collateral;
+  });
+  const store = thresholdStore?.store!;
+  const blockTag = store.blockTag;
+  const numberOfTroves = store.numberOfTroves;
+  const recoveryMode = store.recoveryMode;
+  const totalCollateralRatio = store.totalCollateralRatio;
+  const thusdInStabilityPool = store.thusdInStabilityPool;
+  const price = store.price;
+  const symbol = store.symbol;
+  
+  const { threshold } = useThreshold()
+  const collateralThreshold = threshold.find((versionedThreshold) => {
+    return versionedThreshold.version === version && versionedThreshold.collateral === collateral;
+  })!;
+  
+  const send = collateralThreshold.store.send
 
-  const [troves, setTroves] = useState<UserTrove[]>();
+  const [vaults, setVaults] = useState<UserVault[]>();
   const [reload, setReload] = useState({});
   const forceReload = useCallback(() => setReload({}), []);
-
   const [page, setPage] = useState(0);
   const numberOfPages = Math.ceil(numberOfTroves / pageSize) || 1;
   const clampedPage = Math.min(page, numberOfPages - 1);
@@ -103,29 +118,21 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
   }, [page, clampedPage]);
 
   useEffect(() => {
-    let mounted = true;
-
-    liquity
-      .getTroves(
-        {
-          first: pageSize,
-          sortedBy: "ascendingCollateralRatio",
-          startingAt: clampedPage * pageSize
-        },
-        { blockTag }
-      )
-      .then(troves => {
-        if (mounted) {
-          setTroves(troves);
-        }
-      });
-
-    return () => {
-      mounted = false;
-    };
+      collateralThreshold.store
+        .getTroves(
+          {
+            first: pageSize,
+            sortedBy: "ascendingCollateralRatio",
+            startingAt: clampedPage * pageSize
+          },
+          { blockTag }
+        )
+        .then(vaults => {
+            setVaults(vaults);
+        });
     // Omit blockTag from deps on purpose
     // eslint-disable-next-line
-  }, [liquity, clampedPage, pageSize, reload]);
+  }, [threshold, clampedPage, pageSize, reload]);
 
   useEffect(() => {
     forceReload();
@@ -135,22 +142,14 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
 
   useEffect(() => {
     if (copied !== undefined) {
-      let cancelled = false;
-
       setTimeout(() => {
-        if (!cancelled) {
           setCopied(undefined);
-        }
       }, 2000);
-
-      return () => {
-        cancelled = true;
-      };
     }
   }, [copied]);
 
   return (
-    <Container sx={{ pr: "2rem" }}>
+    <Container>
       <Card variant="mainCards">
         <Card variant="layout.columns">
           <Flex sx={{
@@ -165,7 +164,10 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
             <Box>
               Risky Vaults
             </Box>
-            <Flex sx={{ alignItems: "center" }}>
+            <Flex sx={{ alignItems: "center", gap: "0.5rem" }}>
+              <Flex>
+                {symbol} Collateral
+              </Flex>
               {numberOfTroves !== 0 && (
                 <>
                   <Abbreviation
@@ -189,10 +191,10 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
               )}
             </Flex>
           </Flex>
-          {!troves || troves.length === 0 ? (
-            <Box sx={{ p: [2, 3] }}>
-              <Box sx={{ p: 4, fontSize: 3, textAlign: "center" }}>
-                {!troves ? "Loading..." : "There are no Troves yet"}
+          {!vaults || vaults.length === 0 ? (
+            <Box sx={{ p: [2, 3], width: "100%" }}>
+              <Box sx={{ p: 4, fontSize: 3, textAlign: "center", justifyContent: "center" }}>
+                {!vaults ? "Loading..." : "There are no Vaults yet"}
               </Box>
             </Box>
           ) : (
@@ -218,7 +220,7 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
                     <th style={{ verticalAlign: "top" }}>Owner</th>
                     <th>
                       <Abbreviation short="Coll.">Collateral</Abbreviation>
-                      <Box sx={{ fontSize: [0, 1], fontWeight: "body" }}>ETH</Box>
+                      <Box sx={{ fontSize: [0, 1], fontWeight: "body" }}>{symbol}</Box>
                     </th>
                     <th>
                       Debt
@@ -233,11 +235,11 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {troves.map(
-                    trove =>
-                      !trove.isEmpty && ( // making sure the Trove hasn't been liquidated
-                        // (TODO: remove check after we can fetch multiple Troves in one call)
-                        <tr key={trove.ownerAddress} 
+                  {vaults.map(
+                    vault =>
+                      !vault.isEmpty && ( // making sure the Vault hasn't been liquidated
+                        // (TODO: remove check after we can fetch multiple Vault in one call)
+                        <tr key={vault.ownerAddress} 
                           style={{
                             fontWeight: "bold"
                           }}>
@@ -248,7 +250,7 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
                               height: rowHeight,
                             }}
                           >
-                            <Tooltip message={trove.ownerAddress} placement="top">
+                            <Tooltip message={vault.ownerAddress} placement="top">
                               <Text
                                 variant="address"
                                 sx={{
@@ -257,7 +259,7 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
                                   position: "relative"
                                 }}
                               >
-                                {shortenAddress(trove.ownerAddress)}
+                                {shortenAddress(vault.ownerAddress)}
                                 <Box
                                   sx={{
                                     display: ["block", "none"],
@@ -274,21 +276,22 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
                             </Tooltip>
                             <Link 
                               variant="socialIcons" 
-                              href={(chainId === 3 && `https://ropsten.etherscan.io/address/${trove.ownerAddress}`) ||
-                                `https://etherscan.io/address/${trove.ownerAddress})`} 
+                              href={(chainId === 5 && `https://goerli.etherscan.io/address/${vault.ownerAddress}`) ||
+                              (chainId === 11155111 && `https://sepolia.etherscan.io/address/${vault.ownerAddress}`) ||
+                                `https://etherscan.io/address/${vault.ownerAddress}`} 
                               target="_blank"
                             >
                               <Image src="./icons/external-link.svg" />
                             </Link>
                           </td>
                           <td>
-                            <Abbreviation short={trove.collateral.shorten()}>
-                              {trove.collateral.prettify(4)}
+                            <Abbreviation short={vault.collateral.shorten()}>
+                              {vault.collateral.prettify(4)}
                             </Abbreviation>
                           </td>
                           <td>
-                            <Abbreviation short={trove.debt.shorten()}>
-                              {trove.debt.prettify()}
+                            <Abbreviation short={vault.debt.shorten()}>
+                              {vault.debt.prettify()}
                             </Abbreviation>
                           </td>
                           <td>
@@ -304,29 +307,31 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
                               >
                                 {new Percent(collateralRatio).prettify()}
                               </Text>
-                            ))(trove.collateralRatio(price))}
+                            ))(vault.collateralRatio(price))}
                           </td>
                           <td>
                             <Transaction
-                              id={`liquidate-${trove.ownerAddress}`}
+                              id={`liquidate-${vault.ownerAddress}`}
                               tooltip="Liquidate"
                               requires={[
                                 recoveryMode
                                   ? liquidatableInRecoveryMode(
-                                      trove,
+                                      vault,
                                       price,
                                       totalCollateralRatio,
                                       thusdInStabilityPool
                                     )
-                                  : liquidatableInNormalMode(trove, price)
+                                  : liquidatableInNormalMode(vault, price)
                               ]}
-                              send={liquity.send.liquidate.bind(liquity.send, trove.ownerAddress)}
+                              send={send.liquidate.bind(send, vault.ownerAddress)}
+                              version={version}
+                              collateral={collateral}
                             >
                               <Button variant="dangerIcon">
                                 <Icon name="trash" />
                               </Button>
                             </Transaction>
-                          </td>
+                          </td> 
                         </tr>
                       )
                   )}
@@ -334,6 +339,21 @@ export const RiskyVaults: React.FC<RiskyVaultsProps> = ({ pageSize }) => {
               </Box>
             </Box>
           )}
+          <Flex sx={{ 
+            alignSelf: "center",
+            fontSize: 11,
+            fontWeight: "body",
+            justifyContent: "space-between",
+            width: "100%",
+            px: "1em",
+            mt: 3
+          }}>
+            <Flex>
+              <Link variant="cardLinks" href="https://docs.threshold.network/fundamentals/threshold-usd" target="_blank">Read about</Link>
+              in the documentation
+            </Flex>
+            <Flex>Deployment version: {version}</Flex>
+          </Flex>
         </Card>
       </Card>
     </Container>  

@@ -9,16 +9,17 @@ type RetryDialogProps = {
   retryLabel?: string;
   onCancel: () => void;
   onRetry: () => void;
+  children: React.ReactNode
 };
 
-export const RetryDialog: React.FC<RetryDialogProps> = ({
+export const RetryDialog = ({
   title,
   cancelLabel,
   onCancel,
   retryLabel,
   onRetry,
   children
-}) => (
+}: RetryDialogProps): JSX.Element => (
   <Dialog intent="danger" title={title} cancelLabel={cancelLabel} onCancel={onCancel}>
     <Box sx={{ p: [3, 4] }}>{children}</Box>
     <Flex

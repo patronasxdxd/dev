@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.17;
 
 import "./Interfaces/ITHUSDToken.sol";
-import "./Dependencies/SafeMath.sol";
 import "./Dependencies/CheckContract.sol";
-import "./Dependencies/console.sol";
+import "./Dependencies/Ownable.sol";
+
 /*
 *
 * Based upon OpenZeppelin's ERC20 contract:
@@ -21,14 +21,12 @@ import "./Dependencies/console.sol";
 * transfer() and transferFrom() calls. The purpose is to protect users from losing tokens by mistakenly sending THUSD directly to a Liquity
 * core contract, when they should rather call the right function.
 *
-* 2) sendToPool() and returnFromPool(): functions callable only Liquity core contracts, which move THUSD tokens between Liquity <-> user.
 */
 
-contract THUSDToken is CheckContract, ITHUSDToken {
-    using SafeMath for uint256;
+contract THUSDToken is Ownable, CheckContract, ITHUSDToken {
 
     uint256 private _totalSupply;
-    string constant internal _NAME = "thUSD Stablecoin";
+    string constant internal _NAME = "Threshold USD";
     string constant internal _SYMBOL = "thUSD";
     string constant internal _VERSION = "1";
     uint8 constant internal _DECIMALS = 18;
@@ -55,59 +53,207 @@ contract THUSDToken is CheckContract, ITHUSDToken {
     mapping (address => mapping (address => uint256)) private _allowances;
 
     // --- Addresses ---
-    address public immutable troveManagerAddress;
-    address public immutable stabilityPoolAddress;
-    address public immutable borrowerOperationsAddress;
+    mapping(address => bool) public burnList;
+    mapping(address => bool) public mintList;
+
+    uint256 public governanceTimeDelay;
+
+    address public pendingTroveManager;
+    address public pendingStabilityPool;
+    address public pendingBorrowerOperations;
+    
+    address public pendingRevokedMintAddress;
+    address public pendingRevokedBurnAddress;
+    address public pendingAddedMintAddress;
+
+    uint256 public revokeMintListInitiated;
+    uint256 public revokeBurnListInitiated;
+    uint256 public addContractsInitiated;
+    uint256 public addMintListInitiated;
 
     constructor
     (
-        address _troveManagerAddress,
-        address _stabilityPoolAddress,
-        address _borrowerOperationsAddress
+        address _troveManagerAddress1,
+        address _stabilityPoolAddress1,
+        address _borrowerOperationsAddress1,
+        address _troveManagerAddress2,
+        address _stabilityPoolAddress2,
+        address _borrowerOperationsAddress2,
+        uint256 _governanceTimeDelay
     )
     {
-        checkContract(_troveManagerAddress);
-        checkContract(_stabilityPoolAddress);
-        checkContract(_borrowerOperationsAddress);
-
-        troveManagerAddress = _troveManagerAddress;
-        emit TroveManagerAddressChanged(_troveManagerAddress);
-
-        stabilityPoolAddress = _stabilityPoolAddress;
-        emit StabilityPoolAddressChanged(_stabilityPoolAddress);
-
-        borrowerOperationsAddress = _borrowerOperationsAddress;
-        emit BorrowerOperationsAddressChanged(_borrowerOperationsAddress);
-
+        // when created its linked to one set of contracts and collateral, other collateral types can be added via governance
+        _addSystemContracts(_troveManagerAddress1, _stabilityPoolAddress1, _borrowerOperationsAddress1);
+        if (_troveManagerAddress2 != address(0)) {
+            _addSystemContracts(_troveManagerAddress2, _stabilityPoolAddress2, _borrowerOperationsAddress2);
+        }
         bytes32 hashedName = keccak256(bytes(_NAME));
         bytes32 hashedVersion = keccak256(bytes(_VERSION));
 
         _HASHED_NAME = hashedName;
         _HASHED_VERSION = hashedVersion;
-        _CACHED_CHAIN_ID = _chainID();
+        _CACHED_CHAIN_ID = block.chainid;
         _CACHED_DOMAIN_SEPARATOR = _buildDomainSeparator(_TYPE_HASH, hashedName, hashedVersion);
+        governanceTimeDelay = _governanceTimeDelay;
+        require(governanceTimeDelay <= 30 weeks, "Governance delay is too big");
+    }
+
+    modifier onlyAfterGovernanceDelay(
+        uint256 _changeInitializedTimestamp
+    ) {
+        require(_changeInitializedTimestamp > 0, "Change not initiated");
+        require(
+            block.timestamp >= _changeInitializedTimestamp + governanceTimeDelay,
+            "Governance delay has not elapsed"
+        );
+        _;
+    }
+
+    function increaseGovernanceTimeDelay(
+        uint256 _newGovernanceTimeDelay
+    )
+        external
+        onlyOwner
+    {
+        require(
+            _newGovernanceTimeDelay > governanceTimeDelay,
+            "The governance time delay can only be increased"
+        );
+        require(_newGovernanceTimeDelay <= 30 weeks, "Governance delay is too big");
+
+        governanceTimeDelay = _newGovernanceTimeDelay;
+        emit GovernanceTimeDelayIncreased(_newGovernanceTimeDelay);
+    }
+
+    // --- Governance ---
+
+    function startRevokeMintList(address _account)
+        external
+        onlyOwner
+    {
+        require(mintList[_account], "Incorrect address to revoke");
+
+        revokeMintListInitiated = block.timestamp;
+        pendingRevokedMintAddress = _account;
+    }
+
+    function cancelRevokeMintList() external onlyOwner {
+        require(revokeMintListInitiated != 0, "Revoking from mint list is not started");
+
+        revokeMintListInitiated = 0;
+        pendingRevokedMintAddress = address(0);
+    }
+
+    function finalizeRevokeMintList()
+        external
+        onlyOwner
+        onlyAfterGovernanceDelay(revokeMintListInitiated)
+    {
+        mintList[pendingRevokedMintAddress] = false;
+        revokeMintListInitiated = 0;
+        pendingRevokedMintAddress = address(0);
+    }
+
+    function startAddMintList(address _account) external onlyOwner {
+        require(!mintList[_account], "Incorrect address to add");
+
+        addMintListInitiated = block.timestamp;
+        pendingAddedMintAddress = _account;
+    }
+
+    function cancelAddMintList() external onlyOwner {
+        require(addMintListInitiated != 0, "Adding to mint list is not started");
+
+        addMintListInitiated = 0;
+        pendingAddedMintAddress = address(0);
+    }
+
+    function finalizeAddMintList()
+        external
+        onlyOwner
+        onlyAfterGovernanceDelay(addMintListInitiated)
+    {
+        mintList[pendingAddedMintAddress] = true;
+        addMintListInitiated = 0;
+        pendingAddedMintAddress = address(0);
+    }
+
+    function startAddContracts(address _troveManagerAddress, address _stabilityPoolAddress, address _borrowerOperationsAddress)
+        external
+        onlyOwner
+    {
+        checkContract(_troveManagerAddress);
+        checkContract(_stabilityPoolAddress);
+        checkContract(_borrowerOperationsAddress);
+
+        // save as provisional contracts to add
+        pendingTroveManager = _troveManagerAddress;
+        pendingStabilityPool = _stabilityPoolAddress;
+        pendingBorrowerOperations = _borrowerOperationsAddress;
+
+        // save block number
+        addContractsInitiated = block.timestamp;
+    }
+
+    function cancelAddContracts() external onlyOwner {
+        require(addContractsInitiated != 0, "Adding contracts is not started");
+
+        addContractsInitiated = 0;
+        pendingTroveManager = address(0);
+        pendingStabilityPool = address(0);
+        pendingBorrowerOperations = address(0);
+    }
+
+    function finalizeAddContracts()
+        external
+        onlyOwner
+        onlyAfterGovernanceDelay(addContractsInitiated)
+    {
+        // make sure minimum blocks has passed
+        _addSystemContracts(pendingTroveManager, pendingStabilityPool, pendingBorrowerOperations);
+        addContractsInitiated = 0;
+        pendingTroveManager = address(0);
+        pendingStabilityPool = address(0);
+        pendingBorrowerOperations = address(0);
+    }
+
+    function startRevokeBurnList(address _account)
+        external
+        onlyOwner
+    {
+        require(burnList[_account], "Incorrect address to revoke");
+
+        revokeBurnListInitiated = block.timestamp;
+        pendingRevokedBurnAddress = _account;
+    }
+
+    function cancelRevokeBurnList() external onlyOwner {
+        require(revokeBurnListInitiated != 0, "Revoking from burn list is not started");
+
+        revokeBurnListInitiated = 0;
+        pendingRevokedBurnAddress = address(0);
+    }
+
+    function finalizeRevokeBurnList()
+        external
+        onlyOwner
+        onlyAfterGovernanceDelay(revokeBurnListInitiated)
+    {
+        burnList[pendingRevokedBurnAddress] = false;
+        revokeBurnListInitiated = 0;
+        pendingRevokedBurnAddress = address(0);
     }
 
     // --- Functions for intra-Liquity calls ---
 
     function mint(address _account, uint256 _amount) external override {
-        _requireCallerIsBorrowerOperations();
+        require(mintList[msg.sender], "THUSDToken: Caller not allowed to mint");
         _mint(_account, _amount);
     }
 
     function burn(address _account, uint256 _amount) external override {
-        _requireCallerIsBOorTroveMorSP();
+        require(burnList[msg.sender], "THUSDToken: Caller not allowed to burn");
         _burn(_account, _amount);
-    }
-
-    function sendToPool(address _sender,  address _poolAddress, uint256 _amount) external override {
-        _requireCallerIsStabilityPool();
-        _transfer(_sender, _poolAddress, _amount);
-    }
-
-    function returnFromPool(address _poolAddress, address _receiver, uint256 _amount) external override {
-        _requireCallerIsTroveMorSP();
-        _transfer(_poolAddress, _receiver, _amount);
     }
 
     // --- External functions ---
@@ -138,24 +284,28 @@ contract THUSDToken is CheckContract, ITHUSDToken {
     function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
         _requireValidRecipient(recipient);
         _transfer(sender, recipient, amount);
-        _approve(sender, msg.sender, _allowances[sender][msg.sender].sub(amount, "ERC20: transfer amount exceeds allowance"));
+        uint256 currentAllowance = _allowances[sender][msg.sender];
+        require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
+        _approve(sender, msg.sender, currentAllowance - amount);
         return true;
     }
 
     function increaseAllowance(address spender, uint256 addedValue) external override returns (bool) {
-        _approve(msg.sender, spender, _allowances[msg.sender][spender].add(addedValue));
+        _approve(msg.sender, spender, _allowances[msg.sender][spender] + addedValue);
         return true;
     }
 
     function decreaseAllowance(address spender, uint256 subtractedValue) external override returns (bool) {
-        _approve(msg.sender, spender, _allowances[msg.sender][spender].sub(subtractedValue, "ERC20: decreased allowance below zero"));
+        uint256 currentAllowance = _allowances[msg.sender][spender];
+        require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
+        _approve(msg.sender, spender, currentAllowance - subtractedValue);
         return true;
     }
 
     // --- EIP 2612 Functionality ---
 
     function domainSeparator() public view override returns (bytes32) {
-        if (_chainID() == _CACHED_CHAIN_ID) {
+        if (block.chainid == _CACHED_CHAIN_ID) {
             return _CACHED_DOMAIN_SEPARATOR;
         } else {
             return _buildDomainSeparator(_TYPE_HASH, _HASHED_NAME, _HASHED_VERSION);
@@ -166,8 +316,8 @@ contract THUSDToken is CheckContract, ITHUSDToken {
     (
         address owner,
         address spender,
-        uint amount,
-        uint deadline,
+        uint256 amount,
+        uint256 deadline,
         uint8 v,
         bytes32 r,
         bytes32 s
@@ -191,41 +341,55 @@ contract THUSDToken is CheckContract, ITHUSDToken {
 
     // --- Internal operations ---
 
-    function _chainID() private view returns (uint256 chainID) {
-        assembly {
-            chainID := chainid()
-        }
-    }
-
     function _buildDomainSeparator(bytes32 typeHash, bytes32 hashedName, bytes32 hashedVersion) private view returns (bytes32) {
-        return keccak256(abi.encode(typeHash, hashedName, hashedVersion, _chainID(), address(this)));
+        return keccak256(abi.encode(typeHash, hashedName, hashedVersion, block.chainid, address(this)));
     }
 
     // --- Internal operations ---
+
+    function _addSystemContracts(address _troveManagerAddress, address _stabilityPoolAddress, address _borrowerOperationsAddress) internal {
+        checkContract(_troveManagerAddress);
+        checkContract(_stabilityPoolAddress);
+        checkContract(_borrowerOperationsAddress);
+
+        burnList[_troveManagerAddress] = true;
+        emit TroveManagerAddressAdded(_troveManagerAddress);
+
+        burnList[_stabilityPoolAddress] = true;
+        emit StabilityPoolAddressAdded(_stabilityPoolAddress);
+
+        burnList[_borrowerOperationsAddress] = true;
+        emit BorrowerOperationsAddressAdded(_borrowerOperationsAddress);
+
+        mintList[_borrowerOperationsAddress] = true;
+    }
+
     // Warning: sanity checks (for sender and recipient) should have been done before calling these internal functions
 
     function _transfer(address sender, address recipient, uint256 amount) internal {
         assert(sender != address(0));
         assert(recipient != address(0));
 
-        _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
-        _balances[recipient] = _balances[recipient].add(amount);
+        require(_balances[sender] >= amount, "ERC20: transfer amount exceeds balance");
+        _balances[sender] -= amount;
+        _balances[recipient] += amount;
         emit Transfer(sender, recipient, amount);
     }
 
     function _mint(address account, uint256 amount) internal {
         assert(account != address(0));
 
-        _totalSupply = _totalSupply.add(amount);
-        _balances[account] = _balances[account].add(amount);
+        _totalSupply = _totalSupply + amount;
+        _balances[account] = _balances[account] + amount;
         emit Transfer(address(0), account, amount);
     }
 
     function _burn(address account, uint256 amount) internal {
         assert(account != address(0));
 
-        _balances[account] = _balances[account].sub(amount, "ERC20: burn amount exceeds balance");
-        _totalSupply = _totalSupply.sub(amount);
+        require(_balances[account] >= amount, "ERC20: burn amount exceeds balance");
+        _balances[account] -= amount;
+        _totalSupply -= amount;
         emit Transfer(account, address(0), amount);
     }
 
@@ -245,35 +409,6 @@ contract THUSDToken is CheckContract, ITHUSDToken {
             _recipient != address(this),
             "THUSD: Cannot transfer tokens directly to the THUSD token contract or the zero address"
         );
-        require(
-            _recipient != stabilityPoolAddress &&
-            _recipient != troveManagerAddress &&
-            _recipient != borrowerOperationsAddress,
-            "THUSD: Cannot transfer tokens directly to the StabilityPool, TroveManager or BorrowerOps"
-        );
-    }
-
-    function _requireCallerIsBorrowerOperations() internal view {
-        require(msg.sender == borrowerOperationsAddress, "THUSDToken: Caller is not BorrowerOperations");
-    }
-
-    function _requireCallerIsBOorTroveMorSP() internal view {
-        require(
-            msg.sender == borrowerOperationsAddress ||
-            msg.sender == troveManagerAddress ||
-            msg.sender == stabilityPoolAddress,
-            "THUSD: Caller is neither BorrowerOperations nor TroveManager nor StabilityPool"
-        );
-    }
-
-    function _requireCallerIsStabilityPool() internal view {
-        require(msg.sender == stabilityPoolAddress, "THUSD: Caller is not the StabilityPool");
-    }
-
-    function _requireCallerIsTroveMorSP() internal view {
-        require(
-            msg.sender == troveManagerAddress || msg.sender == stabilityPoolAddress,
-            "THUSD: Caller is neither TroveManager nor StabilityPool");
     }
 
     // --- Optional functions ---

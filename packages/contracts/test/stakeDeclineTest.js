@@ -11,10 +11,10 @@ const mv = testHelpers.MoneyValues
 const timeValues = testHelpers.TimeValues
 
 
-/* NOTE: Some tests involving ETH redemption fees do not test for specific fee values.
+/* NOTE: Some tests involving collateral redemption fees do not test for specific fee values.
  * Some only test that the fees are non-zero when they should occur.
  *
- * Specific ETH gain values will depend on the final fee schedule used, and the final choices for
+ * Specific collateral gain values will depend on the final fee schedule used, and the final choices for
  * the parameter BETA in the TroveManager, which is still TBD based on economic modelling.
  *
  */
@@ -49,11 +49,7 @@ contract('TroveManager', async accounts => {
   beforeEach(async () => {
     contracts = await deploymentHelper.deployLiquityCore(accounts)
     contracts.troveManager = await TroveManagerTester.new()
-    contracts.thusdToken = await THUSDTokenTester.new(
-      contracts.troveManager.address,
-      contracts.stabilityPool.address,
-      contracts.borrowerOperations.address
-    )
+    contracts.thusdToken = (await deploymentHelper.deployTHUSDTokenTester(contracts)).thusdToken
 
     priceFeed = contracts.priceFeedTestnet
     thusdToken = contracts.thusdToken
@@ -65,7 +61,6 @@ contract('TroveManager', async accounts => {
     collSurplusPool = contracts.collSurplusPool
     borrowerOperations = contracts.borrowerOperations
     hintHelpers = contracts.hintHelpers
-    pcv = contracts.pcv
 
     await deploymentHelper.connectCoreContracts(contracts)
   })

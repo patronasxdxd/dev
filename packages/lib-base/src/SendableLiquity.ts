@@ -6,6 +6,7 @@ import {
   LiquidationDetails,
   RedemptionDetails,
   StabilityDepositChangeDetails,
+  BammDepositChangeDetails,
   StabilityPoolGainsWithdrawalDetails,
   TransactableLiquity,
   TroveAdjustmentDetails,
@@ -17,7 +18,7 @@ import {
  * A transaction that has already been sent.
  *
  * @remarks
- * Implemented by {@link @liquity/lib-ethers#SentEthersLiquityTransaction}.
+ * Implemented by {@link @threshold-usd/lib-ethers#SentEthersLiquityTransaction}.
  *
  * @public
  */
@@ -29,7 +30,7 @@ export interface SentLiquityTransaction<S = unknown, T extends LiquityReceipt = 
    * Check whether the transaction has been mined, and whether it was successful.
    *
    * @remarks
-   * Unlike {@link @liquity/lib-base#SentLiquityTransaction.waitForReceipt | waitForReceipt()},
+   * Unlike {@link @threshold-usd/lib-base#SentLiquityTransaction.waitForReceipt | waitForReceipt()},
    * this function doesn't wait for the transaction to be mined.
    */
   getReceipt(): Promise<T>;
@@ -37,8 +38,8 @@ export interface SentLiquityTransaction<S = unknown, T extends LiquityReceipt = 
   /**
    * Wait for the transaction to be mined, and check whether it was successful.
    *
-   * @returns Either a {@link @liquity/lib-base#FailedReceipt} or a
-   *          {@link @liquity/lib-base#SuccessfulReceipt}.
+   * @returns Either a {@link @threshold-usd/lib-base#FailedReceipt} or a
+   *          {@link @threshold-usd/lib-base#SuccessfulReceipt}.
    */
   waitForReceipt(): Promise<Extract<T, MinedReceipt>>;
 }
@@ -136,7 +137,7 @@ export type _SendableFrom<T, R, S> = {
  * The functions return an object implementing {@link SentLiquityTransaction}, which can be used
  * to monitor the transaction and get its details when it succeeds.
  *
- * Implemented by {@link @liquity/lib-ethers#SendableEthersLiquity}.
+ * Implemented by {@link @threshold-usd/lib-ethers#SendableEthersLiquity}.
  *
  * @public
  */
@@ -183,6 +184,9 @@ export interface SendableLiquity<R = unknown, S = unknown>
   /** @internal */
   setPrice(price: Decimalish): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
 
+  /** @internal */
+  mint(): Promise<SentLiquityTransaction<S, LiquityReceipt<R, void>>>;
+
   /** {@inheritDoc TransactableLiquity.liquidate} */
   liquidate(
     address: string | string[]
@@ -192,6 +196,21 @@ export interface SendableLiquity<R = unknown, S = unknown>
   liquidateUpTo(
     maximumNumberOfTrovesToLiquidate: number
   ): Promise<SentLiquityTransaction<S, LiquityReceipt<R, LiquidationDetails>>>;
+
+  /** {@inheritDoc TransactableLiquity.depositTHUSDInBammPool} */
+  depositTHUSDInBammPool(
+    amount: Decimalish
+  ): Promise<SentLiquityTransaction<S, LiquityReceipt<R, BammDepositChangeDetails>>>;
+
+  /** {@inheritDoc TransactableLiquity.withdrawTHUSDFromBammPool} */
+  withdrawTHUSDFromBammPool(
+    amount: Decimalish
+  ): Promise<SentLiquityTransaction<S, LiquityReceipt<R, BammDepositChangeDetails>>>;
+
+  /** {@inheritDoc TransactableLiquity.withdrawGainsFromBammPool} */
+  withdrawGainsFromBammPool(): Promise<
+    SentLiquityTransaction<S, LiquityReceipt<R, StabilityPoolGainsWithdrawalDetails>>
+  >;
 
   /** {@inheritDoc TransactableLiquity.depositTHUSDInStabilityPool} */
   depositTHUSDInStabilityPool(
@@ -203,6 +222,11 @@ export interface SendableLiquity<R = unknown, S = unknown>
     amount: Decimalish
   ): Promise<SentLiquityTransaction<S, LiquityReceipt<R, StabilityDepositChangeDetails>>>;
 
+  /** {@inheritDoc TransactableLiquity.bammUnlock} */
+  bammUnlock(): Promise<
+    SentLiquityTransaction<S, LiquityReceipt<R, void>>
+  >;
+
   /** {@inheritDoc TransactableLiquity.withdrawGainsFromStabilityPool} */
   withdrawGainsFromStabilityPool(): Promise<
     SentLiquityTransaction<S, LiquityReceipt<R, StabilityPoolGainsWithdrawalDetails>>
@@ -210,6 +234,11 @@ export interface SendableLiquity<R = unknown, S = unknown>
 
   /** {@inheritDoc TransactableLiquity.transferCollateralGainToTrove} */
   transferCollateralGainToTrove(): Promise<
+    SentLiquityTransaction<S, LiquityReceipt<R, CollateralGainTransferDetails>>
+  >;
+
+  /** {@inheritDoc TransactableLiquity.transferBammCollateralGainToTrove} */
+  transferBammCollateralGainToTrove(): Promise<
     SentLiquityTransaction<S, LiquityReceipt<R, CollateralGainTransferDetails>>
   >;
 

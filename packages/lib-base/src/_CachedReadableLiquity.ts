@@ -1,6 +1,7 @@
-import { Decimal } from "./Decimal";
+import { Decimal, Decimalish } from "./Decimal";
 import { Fees } from "./Fees";
 import { StabilityDeposit } from "./StabilityDeposit";
+import { BammDeposit } from "./BammDeposit";
 import { Trove, TroveWithPendingRedistribution, UserTrove } from "./Trove";
 import { ReadableLiquity, TroveListingParams } from "./ReadableLiquity";
 
@@ -100,6 +101,27 @@ export class _CachedReadableLiquity<T extends unknown[]>
     );
   }
 
+  async getBammDeposit(address?: string, ...extraParams: T): Promise<BammDeposit> {
+    return (
+      this._cache.getBammDeposit(address, ...extraParams) ??
+      this._readable.getBammDeposit(address, ...extraParams)
+    );
+  }
+
+  async getSymbol(...extraParams: T): Promise<string> {
+    return (
+      this._cache.getSymbol(...extraParams) ??
+      this._readable.getSymbol(...extraParams)
+    );
+  }
+
+  async getCollateralAddress(...extraParams: T): Promise<string> {
+    return (
+      this._cache.getCollateralAddress(...extraParams) ??
+      this._readable.getCollateralAddress(...extraParams)
+    );
+  }
+
   async getTHUSDInStabilityPool(...extraParams: T): Promise<Decimal> {
     return (
       this._cache.getTHUSDInStabilityPool(...extraParams) ??
@@ -132,6 +154,41 @@ export class _CachedReadableLiquity<T extends unknown[]>
     return (
       this._cache.getErc20TokenAllowance(address, ...extraParams) ??
       this._readable.getErc20TokenAllowance(address, ...extraParams)
+    );
+  }
+
+  async isStabilityPools(...extraParams: T): Promise<boolean> {
+    return (
+      this._cache.isStabilityPools(...extraParams) ??
+      this._readable.isStabilityPools(...extraParams)
+    );
+  }
+
+  async isBorrowerOperations(...extraParams: T): Promise<boolean> {
+    return (
+      this._cache.isBorrowerOperations(...extraParams) ??
+      this._readable.isBorrowerOperations(...extraParams)
+    );
+  }
+
+  async isTroveManager(...extraParams: T): Promise<boolean> {
+    return (
+      this._cache.isTroveManager(...extraParams) ??
+      this._readable.isTroveManager(...extraParams)
+    );
+  }
+
+  async getWithdrawsSpShare(withdrawAmount: Decimalish, ...extraParams: T): Promise<string> {
+    return (
+      this._cache.getWithdrawsSpShare(withdrawAmount, ...extraParams) ??
+      this._readable.getWithdrawsSpShare(withdrawAmount, ...extraParams)
+    )
+  }
+
+  async checkMintList(...extraParams: T): Promise<boolean> {
+    return (
+      this._cache.checkMintList(...extraParams) ??
+      this._readable.checkMintList(...extraParams)
     );
   }
 
