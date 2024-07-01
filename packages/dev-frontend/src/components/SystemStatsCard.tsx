@@ -22,7 +22,7 @@ const selector = ({
   redemptionRate,
   pcvBalance,
   symbol,
-  bammDeposit
+  bammDeposit,
 }: ThresholdStoreState) => ({
   numberOfTroves,
   price,
@@ -32,7 +32,8 @@ const selector = ({
   redemptionRate,
   pcvBalance,
   symbol,
-  bammDeposit
+  bammDeposit,
+  totalCollateralRatio: new Percent(total.collateralRatio(price))
 });
 
 export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemStatsCardProps): JSX.Element => {
@@ -96,13 +97,7 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
           color: "text",
           pt: "2em",
           gap: "1em"
-        }}>
-          <SystemStat
-            info={`Borrowing Fee ${ thresholdSelectorStores.length > 1 ? "Avg." : "" }`}
-            tooltip="The Borrowing Fee is a one-off fee charged as a percentage of the borrowed amount, and is part of a Vault's debt."
-          >
-            {borrowingFeeAvgPct && borrowingFeeAvgPct.toString(2)}
-          </SystemStat>    
+        }}>   
           <SystemStat
             info="Total Vaults"
             tooltip="The total number of active Vaults in the system."
@@ -136,6 +131,15 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
           >
             {thusdSupply.shorten()}
           </SystemStat>
+          {thresholdSelectorStores.map((collateralStore, index) => (
+            <SystemStat
+              key={index}
+              info={`${ collateralStore.store.symbol } Total Collateral Ratio`}
+              tooltip={`The Total Collateral Ratio or TCR is the ratio of the Dollar value of the entire system collateral at the current ${collateralStore.store.symbol}:USD price, to the entire system debt. In other words, it's the sum of the collateral of all Troves expressed in USD, divided by the debt of all Troves expressed in thUSD.`}
+            >
+              {collateralStore.store.totalCollateralRatio.prettify()}
+            </SystemStat>
+          ))}
           {thresholdSelectorStores.map((collateralStore, index) => {
             return collateralStore.store.total.collateralRatioIsBelowCritical(collateralStore.store.price) 
             && (
