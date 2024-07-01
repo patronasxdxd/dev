@@ -57,7 +57,7 @@ const chains = [
   {
     id: '0xaa36a7',
     token: 'ETH',
-    label: 'Sepolia',
+    label: 'Ethereum Sepolia',
     rpcUrl: getRpcUrl('0xaa36a7')
   },
   {
@@ -69,7 +69,7 @@ const chains = [
   {
     id: '0xed88',
     token: 'ETH',
-    label: 'Ethereum Mainnet',
+    label: 'BOB Mainnet',
     rpcUrl: getRpcUrl('0xed88')
   },
 ]

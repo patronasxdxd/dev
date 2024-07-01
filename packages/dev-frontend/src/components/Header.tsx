@@ -5,6 +5,7 @@ import { GenericIcon } from "./GenericIcon";
 import { UserAccount } from "./UserAccount";
 
 import { WHITE_FILTER } from "../utils/constants";
+import { UserNetwork } from "./UserNetwork";
 
 const logoHeight: string = "16px";
 
@@ -26,23 +27,24 @@ export const Header = ({ children }: HeaderProps): JSX.Element => {
           gap: 4 
         }}
       >
-          <Flex
-            sx={{
-              cursor: "pointer",
-              alignItems: "left", 
-              justifyContent: "center",
-              width: "1.5em"
-            }}
-            onClick={() => {
-              setColorMode(colorMode === 'default' ? 'dark' : colorMode === 'dark' ? 'darkGrey' : 'default')
-            }}
-          >
-            <GenericIcon 
-              justifyContent="center" 
-              imgSrc={colorMode === "darkGrey" ? "./icons/sun.svg" : "./icons/moon.svg"} 
-              sx={colorMode === "dark" ? {filter: WHITE_FILTER} : {}} 
-            />
-          </Flex>
+        <Flex
+          sx={{
+            cursor: "pointer",
+            alignItems: "left", 
+            justifyContent: "center",
+            width: "1.5em"
+          }}
+          onClick={() => {
+            setColorMode(colorMode === 'default' ? 'dark' : colorMode === 'dark' ? 'darkGrey' : 'default')
+          }}
+        >
+          <GenericIcon 
+            justifyContent="center" 
+            imgSrc={colorMode === "darkGrey" ? "./icons/sun.svg" : "./icons/moon.svg"} 
+            sx={colorMode === "dark" ? {filter: WHITE_FILTER} : {}} 
+          />
+        </Flex>
+        <UserNetwork />
         <UserAccount />
       </Box>
       {children}
