@@ -10,7 +10,7 @@ export const StabilityPoolPage = (): JSX.Element => {
       <PageHeading
         heading="Stability Pool"
         description={`The Stability Pool is the first line of defense in maintaining system solvency. It achieves that by acting as the source of liquidity to repay debt from liquidated Vaults—ensuring that the total ${ COIN } supply always remains backed.`}
-        link="https://github.com/Threshold-USD/dev"
+        link="https://docs.threshold.network/applications/threshold-usd/stability-pool-and-liquidations"
         isPoweredByBProtocol={true}
       />
       <PageRow Component={Stability} />
