@@ -37,6 +37,13 @@ const coingeckoIdsBySymbol = {
   tbtc: "tbtc"
 }
 
+const subgraphIdsByCollateral = {
+  eth: "EHyZHuKyspL8aF37WJBMaKgVBWrD4mNME7VcbzSDgq2o",
+  tbtc: "BjbJ8K9nyNUNCGaModhhUjybfYAwX34ngRMhot5yUx6h"
+}
+
+const subgraphApiKey = process.env.REACT_APP_SUBGRAPH_API_KEY;
+
 const fetchBlockByTimestamp = (timestamp: number, blocksApiUrl: string) => {
   const query = `
   query {
@@ -124,20 +131,13 @@ export const queryTvlByBlocks = async (
 };
 
 export const queryTvl = async (blocksApiUrl: string, thresholdUsdApiUrl: string, coingeckoId: string): Promise<Array<TvlData>> => {
-  // Get an array of timestamps for the past 30 days.
   const timestamps: Array<TimestampsObject> = createListOfTimestamps();
 
   try {
-    // Query blocks by timestamps.
     const blocks = await queryBlocksByTimestamps(timestamps, blocksApiUrl);
-
-    // Query TVL by blocks.
     const historicalTvl = await queryTvlByBlocks(blocks, thresholdUsdApiUrl);
-
-    // Calculate TVL price based on coingecko ID.
     const pricedHistoricalTvl = await calculateTvlPrice(historicalTvl, coingeckoId);
 
-    // Return the priced historical TVL.
     return pricedHistoricalTvl;
   } catch (error) {
     console.error('queryTvl error: ', error);
@@ -193,17 +193,16 @@ export const ChartProvider = ({ children }: FunctionalPanelProps): JSX.Element  
       setisTVLDataAvailable(false);
       return;
     }
-
-    // Get the network name and corresponding blocks URL
+    
     return provider.getNetwork()
       .then((network) => {
         const networkName = network.name === 'homestead' ? 'mainnet' : network.name;
-        const blocksUrlByNetwork = `https://${blocksApiUrl}/${networkName === 'mainnet' ? 'ethereum' : network.name}-blocks`;
+        const blocksUrlByNetwork = `https://gateway-arbitrum.network.thegraph.com/api/${subgraphApiKey}/subgraphs/id/9A6bkprqEG2XsZUYJ5B2XXp6ymz9fNcn4tVPxMWDztYC`;
         
-        // Loop through the collaterals in the threshold object and fetch the TVL data for each collateral
         for (const thresholdCollateral of threshold) {
           const {collateral, version} = thresholdCollateral
-          const thresholdUrlByNetwork = `https://${thresholdUsdApiUrl}/${collateral}-${version}-${networkName}-thresholdusd`;
+          const thresholdUrlByNetwork = `https://gateway-arbitrum.network.thegraph.com/api/${subgraphApiKey}/subgraphs/id/${subgraphIdsByCollateral[collateral as keyof typeof subgraphIdsByCollateral]}`;
+
           queryTvl(blocksUrlByNetwork, thresholdUrlByNetwork, (coingeckoIdsBySymbol as {[key: string]: string})[collateral])
             .then((result) => {
               setTvl((prev) => { return [...prev, {
