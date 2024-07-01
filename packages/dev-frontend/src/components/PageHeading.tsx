@@ -28,9 +28,9 @@ export const PageHeading = ({ heading, description, link, isPoweredByBProtocol, 
     <Card sx={{ mr: [0, "2em"] }}>
       <Box sx={{ px: "2.5em", py: "1.5em" }}>
         <InfoMessage title={descriptionTitle || "About this functionality"}>
-          <Paragraph sx={{ mb: "0.5em" }}>
+          <Box sx={{ mb: "0.5em" }}>
             {description}
-          </Paragraph>
+          </Box>
           <Link variant="infoLink" href={link} target="_blank">
             Read more
           </Link>

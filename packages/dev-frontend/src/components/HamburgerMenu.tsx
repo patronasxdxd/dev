@@ -6,14 +6,13 @@ import { Nav } from "./Nav";
 import { NavPopUp } from "./NavPopUp";
 
 export const HamburgerMenu = (): JSX.Element => {
-
-  const [SideBarOpen, setSideBarOpen] = useState(false);
-  const SideBarOverlayRef = useRef<HTMLDivElement>(null);
+  const [sideBarOpen, setSideBarOpen] = useState(false);
+  const sideBarOverlayRef = useRef<HTMLDivElement>(null);
   
   return (
     <>
       <Button
-        onClick={() => setSideBarOpen(!SideBarOpen)}
+        onClick={() => setSideBarOpen(!sideBarOpen)}
         variant="icon"
         sx={{
           position: "relative",
@@ -22,12 +21,12 @@ export const HamburgerMenu = (): JSX.Element => {
       >
         <Icon name="bars" size="2x" />
       </Button>
-      {SideBarOpen && (
+      {sideBarOpen && (
         <Container
           variant="infoOverlay"
-          ref={SideBarOverlayRef}
+          ref={sideBarOverlayRef}
           onClick={e => {
-            if (e.target === SideBarOverlayRef.current) {
+            if (e.target === sideBarOverlayRef.current) {
               setSideBarOpen(false);
             }
           }}
