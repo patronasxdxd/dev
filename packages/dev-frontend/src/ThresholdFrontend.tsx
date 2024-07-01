@@ -13,12 +13,13 @@ import { FunctionalPanel } from "./components/FunctionalPanel";
 
 import { Dashboard } from "./pages/Dashboard";
 import { RedemptionPage } from "./pages/RedemptionPage";
-import { RiskyVaultsPage } from "./pages/RiskyVaultsPage";
+import { VaultsPage } from "./pages/VaultsPage";
 
 import { VaultPage } from "./pages/VaultPage";
 
 import { ThresholdProvider, supportedNetworks } from "./hooks/ThresholdContext";
 import { StabilityPoolPage } from "./pages/StabilityPoolPage";
+import { Alert } from "./components/Alert";
 
 type ThresholdFrontendProps = {
   loader?: React.ReactNode;
@@ -61,7 +62,7 @@ export const ThresholdFrontend = ({ loader }: ThresholdFrontendProps): JSX.Eleme
           {chainId === 1 ? "Ethereum Mainnet" : supportedNetworks[chainId] ?? "this network"}
         </Flex>.
       </Heading>
-      Please switch to Mainnet or Sepolia.
+      Please switch to BOB or Mainnet.
     </Flex>
   );
 
@@ -91,23 +92,24 @@ export const ThresholdFrontend = ({ loader }: ThresholdFrontendProps): JSX.Eleme
               >
                 <TransactionProvider>
                   <FunctionalPanel loader={loader}>
-                      <Switch>
-                        <Route path="/" exact>
-                          <Dashboard />
-                        </Route>
-                        <Route path="/borrow" exact>
-                          <VaultPage />
-                        </Route>
-                        <Route path="/earn" exact>
-                          <StabilityPoolPage />
-                        </Route>
-                        <Route path="/redemption">
-                          <RedemptionPage />
-                        </Route>
-                        <Route path="/risky-vaults">
-                          <RiskyVaultsPage />
-                        </Route>
-                      </Switch>
+                    <Alert />
+                    <Switch>
+                      <Route path="/" exact>
+                        <Dashboard />
+                      </Route>
+                      <Route path="/borrow" exact>
+                        <VaultPage />
+                      </Route>
+                      <Route path="/redemption">
+                        <RedemptionPage />
+                      </Route>
+                      <Route path="/vaults">
+                        <VaultsPage />
+                      </Route>
+                      <Route path="/stability" exact>
+                        <StabilityPoolPage />
+                      </Route>
+                    </Switch>
                   </FunctionalPanel>
                 </TransactionProvider>
               </ThresholdProvider>
