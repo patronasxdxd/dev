@@ -51,7 +51,7 @@ export const UserNetwork = (): JSX.Element => {
       {userNetworkOpen && (
         <Box
           ref={userNetworkOverlayRef}
-          sx={{ position: "absolute", zIndex: 2, top: 0 }}
+          sx={{ position: "absolute", zIndex: 2 }}
         >
           <Card 
             sx={{
@@ -62,8 +62,8 @@ export const UserNetwork = (): JSX.Element => {
               bg: "white", 
               rounded: "sm",
               width: "10.25rem",
-              left: "3.60rem",
-              top: "1.90rem",
+              left: [0, "3.60rem"],
+              top: "5.5rem",
               overflow: "hidden",
             }}
           >

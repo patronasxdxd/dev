@@ -4,6 +4,7 @@ import { Icon } from "./Icon";
 
 import { ExternalLinks } from "./ExternalLinks";
 import { UserAccount } from "./UserAccount";
+import { UserNetwork } from "./UserNetwork";
 
 export const Nav = (): JSX.Element => {
   return (
@@ -41,8 +42,9 @@ export const Nav = (): JSX.Element => {
           <Icon name="chart-line" />
           Stability
         </Link>
-        <Flex sx={{ mt:"1.5em", alignSelf: "center", display: ["flex", "none"] }}>
+        <Flex sx={{ mt:"1.5em", gap: "1.5em", flexDirection: "column", alignSelf: "center", display: ["flex", "none"] }}>
           <UserAccount />
+          <UserNetwork />
         </Flex>
       </Flex>
       <Flex sx={{ justifyContent: "end", flexDirection: "column", flex: 1 }}>
