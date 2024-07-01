@@ -79,7 +79,7 @@ export const StabilityActionDescription = ({
         <>
           {" "}
           and claiming at least{" "}
-            <Amount>{collateralGain} {collateralSymbol}</Amount>
+          <Amount>{collateralGain}</Amount>
         </>
       )}
     </ActionDescription>

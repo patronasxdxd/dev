@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { Button, Flex, Link } from "theme-ui";
 
-import { Decimal, Decimalish, LiquityStoreState } from "@threshold-usd/lib-base";
+import { BammDeposit, Decimal, Decimalish, LiquityStoreState } from "@threshold-usd/lib-base";
 import { ThresholdStoreUpdate, useThresholdReducer, useThresholdSelector } from "@threshold-usd/lib-react";
 
 import { useMyTransactionState } from "../Transaction";
@@ -100,7 +100,6 @@ export const StabilityDepositManager = (props: StabilityDepositManagerProps): JS
   const thresholdStore = thresholdSelectorStores.find((store) => {
     return store.version === version && store.collateral === collateral;
   });
-
   const isStabilityPools = thresholdStore?.store!.isStabilityPools;
   const { dispatchEvent } = useStabilityView();
 
@@ -151,19 +150,33 @@ export const StabilityDepositManager = (props: StabilityDepositManagerProps): JS
       dispatch={dispatch}
     >
       <Flex variant="layout.actions" sx={{ flexDirection: "column" }}>
-        {validChange ? (
-          <StabilityDepositAction 
-            version={version} 
-            collateral={collateral} 
-            transactionId={transactionId} 
-            change={validChange}
-            isStabilityPools={isStabilityPools}
-          >
-            Confirm
-          </StabilityDepositAction>
-        ) : (
-          <Button disabled>Confirm</Button>
-        )}
+        {validChange 
+          ? (
+              <StabilityDepositAction 
+                version={version} 
+                collateral={collateral} 
+                transactionId={transactionId} 
+                change={validChange}
+                isStabilityPools={isStabilityPools}
+              >
+                Confirm
+              </StabilityDepositAction>
+            ) 
+          : <Button disabled>Confirm</Button>
+        }
+        {originalDeposit.currentTHUSD.gt(Decimal.from(0)) &&
+          <Flex sx={{ flexDirection: "column", mt: 3, width: "100%" }}>
+            <StabilityDepositAction 
+              version={version} 
+              collateral={collateral} 
+              transactionId={transactionId} 
+              change={originalDeposit.whatChanged(Decimal.from(0))!}
+              isStabilityPools={isStabilityPools}
+            >
+              Withdraw
+            </StabilityDepositAction>
+          </Flex>
+        }
         <Button variant="cancel" onClick={handleCancel} sx={{ borderRadius: "12px", mt: 3 }}>
           Cancel
         </Button>
