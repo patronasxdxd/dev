@@ -74,7 +74,7 @@ export const validateStabilityDepositChange = (
       <ErrorDescription>
         You have no allowance. {" "}
         <UnlockButton version={version} collateral={collateral} isMintList={isMintList}>
-          click here to unlock.
+          click here to approve.
         </UnlockButton>
       </ErrorDescription>
     ];

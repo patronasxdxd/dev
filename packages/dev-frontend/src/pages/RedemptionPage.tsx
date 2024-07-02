@@ -18,7 +18,7 @@ export const RedemptionPage = (): JSX.Element => {
             Note: Redemption is not for repaying your loan. To repay your loan, adjust your Vault on the Dashboard.
           </>
         }
-        link="https://github.com/Threshold-USD/dev"
+        link="https://docs.threshold.network/applications/threshold-usd/redemptions-and-thusd-price-stability"
       />
       <PageRow Component={Redemption} />
     </Container>

@@ -4,7 +4,8 @@ import { useThresholdSelector } from "@threshold-usd/lib-react";
 
 import { TopCard } from "./TopCard";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { fetchCoinGeckoPrice } from "./Chart/context/fetchCoinGeckoPrice";
 
 type SystemStatsProps = {
   variant?: string;
@@ -14,8 +15,13 @@ type mintListApproved = {
   version: string;
   collateral: string;
   price: Decimal;
-  totalCollateralRatio: Decimal;
+  amountOfCollateral: Decimal;
   mintList: boolean;
+}
+
+const coingeckoIdsBySymbol = {
+  eth: "ethereum",
+  tbtc: "tbtc"
 }
 
 const selector = ({
@@ -25,62 +31,62 @@ const selector = ({
 }: LiquityStoreState) => ({
   mintList,
   price,
-  totalCollateralRatio: total.collateralRatio(price),
+  amountOfCollateral: total.collateral,
 });
 
-export const ColRatio = ({ variant = "mainCards" }: SystemStatsProps): JSX.Element => {
+export const TVL = ({ variant = "mainCards" }: SystemStatsProps): JSX.Element => {
   const thresholdSelectorStores = useThresholdSelector(selector)
-  const [collateralData, setCollateralData] = useState({collateralsQty: 0, collateralRatioAvgPct: new Percent(Decimal.from(0))})
+  const [tvl, setTvl] = useState(Decimal.from(0))
+  const [mintList, setMintList] = useState<mintListApproved[]>([])
   const [isMounted, setIsMounted] = useState<boolean>(true);
 
   useEffect(() => {
     if (!isMounted) {
       return
     }
-    let mintListApproved: mintListApproved[] = []
     for (const thresholdSelectorStore of thresholdSelectorStores) {
       if (thresholdSelectorStore.store.mintList === true) {
-        mintListApproved = [...mintListApproved, {
+        setMintList(prev => [...prev, {
           version: thresholdSelectorStore.version,
           collateral: thresholdSelectorStore.collateral,
           price: thresholdSelectorStore.store.price, 
-          totalCollateralRatio: thresholdSelectorStore.store.totalCollateralRatio,
+          amountOfCollateral: thresholdSelectorStore.store.amountOfCollateral,
           mintList: true, 
-        }]
+        }])
       }
     }
-    let collateralRatio = Decimal.from(0)   
-
-    for (const collateralApproved of mintListApproved) {  
-      collateralRatio = collateralRatio.infinite || collateralApproved.totalCollateralRatio.infinite
-        ? Decimal.INFINITY 
-        : collateralRatio.add(collateralApproved.totalCollateralRatio) 
-    }
-
-    const collateralRatioAvg = collateralRatio.infinite
-      ? Decimal.INFINITY 
-      : collateralRatio.div(thresholdSelectorStores.length)
-      
-      setCollateralData(
-      {
-        collateralsQty: Object.entries(mintListApproved).length, 
-        collateralRatioAvgPct: new Percent(collateralRatioAvg)
-      }
-    )
     return () => {
       setIsMounted(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const calculateTvl = useCallback(async (mintList: mintListApproved[]) => { 
+    let tvl = Decimal.from(0)
+    for (const collateral of mintList) {
+      const coingeckoId = coingeckoIdsBySymbol[collateral.collateral as keyof typeof coingeckoIdsBySymbol]
+      const { tokenPriceUSD } = await fetchCoinGeckoPrice(coingeckoId);
+      const collateralTvl = tokenPriceUSD.mul(collateral.amountOfCollateral);
+      tvl = tvl.add(collateralTvl)
+    }
+    return tvl;
+  }, [mintList])
+  
+  useEffect(() => {
+    if(mintList.length === 0) return
+    calculateTvl(mintList).then((tvl) => {
+      setTvl(tvl)
+    })
+  }, [mintList])
+
   return (
     <Card {...{ variant }} sx={{ width:"100%"}}>
       <TopCard 
-        name={`${collateralData.collateralsQty > 1 ? "Col. Ratio Avg." : "Total Col. Ratio"}`}
+        name="TVL"
         tooltip="The ratio of the Dollar value of the entire system collateral at the current collateral : USD price, to the entire system debt." 
-        imgSrc="./icons/col-ratio.svg" 
+        imgSrc="./icons/opened-vaults.svg"
       >
-        {collateralData.collateralRatioAvgPct.prettify()}
+        {tvl.shorten()} USD
       </TopCard>
     </Card>
   );

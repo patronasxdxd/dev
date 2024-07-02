@@ -42,6 +42,18 @@ const fetchCoinGeckoSimplePrice = async <T extends string, U extends string>(
   coinIds: readonly T[],
   vsCurrencies: readonly U[]
 ): Promise<CoinGeckoSimplePriceResponse<T, U>> => {
+  const cacheKey = `coinPrice-${coinIds.join("-")}-${vsCurrencies.join("-")}`;
+  const today = new Date().toISOString().split('T')[0];
+
+  const cachedData = localStorage.getItem(cacheKey);
+  
+  if (cachedData) {
+    const { data, date } = JSON.parse(cachedData);
+    if (date === today) {
+      return data;
+    }
+  }
+
   const simplePriceUrl =
     "https://api.coingecko.com/api/v3/simple/price?" +
     new URLSearchParams({
@@ -59,7 +71,9 @@ const fetchCoinGeckoSimplePrice = async <T extends string, U extends string>(
     console.error(response.status)
   }
 
-  return validateCoinGeckoSimplePriceResponse(coinIds, vsCurrencies, await response.json());
+  const validatedResponse = validateCoinGeckoSimplePriceResponse(coinIds, vsCurrencies, await response.json());
+  localStorage.setItem(cacheKey, JSON.stringify({ data: validatedResponse, date: today }));
+  return validatedResponse;
 };
 
 export type tokenPriceResponse = {

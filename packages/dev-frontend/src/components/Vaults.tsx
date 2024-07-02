@@ -26,6 +26,21 @@ import { useWalletConnector } from "../hooks/WalletConnectorContext";
 const rowHeight = "40px";
 const pageSize = 10;
 
+const wssParam: Record<string, string> = {
+  homestead: `wss://eth-mainnet.g.alchemy.com/v2/${process.env.REACT_APP_ALCHEMY_ID}`,
+  sepolia: `wss://eth-sepolia.g.alchemy.com/v2/${process.env.REACT_APP_ALCHEMY_ID}`,
+  bob_testnet: "wss://testnet.rpc.gobob.xyz",
+  bob_mainnet: "wss://rpc.gobob.xyz",
+}
+
+export const explorersPerChainid = { 
+  1: "https://etherscan.io", 
+  11155111: "https://sepolia.etherscan.io", 
+  111: "https://testnet-explorer.gobob.xyz", 
+  60808: "https://explorer.gobob.xyz",
+};
+
+
 const liquidatableInNormalMode = (vault: UserVault, price: Decimal) =>
   [vault.collateralRatioIsBelowMinimum(price), "Collateral ratio not low enough"] as const;
 
@@ -47,7 +62,7 @@ const liquidatableInRecoveryMode = (
   }
 };
 
-type RiskyVaultsProps = {
+type VaultsProps = {
   version: string
   collateral: string
   isMintList: boolean
@@ -70,7 +85,7 @@ const select = ({
   symbol
 });
 
-export const RiskyVaults = ({ version, collateral }: RiskyVaultsProps): JSX.Element => {
+export const Vaults = ({ version, collateral }: VaultsProps): JSX.Element => {
   const { account: {chainId} } = useWalletConnector();
   const thresholdSelectorStores = useThresholdSelector(select);
   const thresholdStore = thresholdSelectorStores.find((store) => {
@@ -162,7 +177,7 @@ export const RiskyVaults = ({ version, collateral }: RiskyVaultsProps): JSX.Elem
             borderColor: "border"
           }}>
             <Box>
-              Risky Vaults
+              Vaults
             </Box>
             <Flex sx={{ alignItems: "center", gap: "0.5rem" }}>
               <Flex>
@@ -276,9 +291,7 @@ export const RiskyVaults = ({ version, collateral }: RiskyVaultsProps): JSX.Elem
                             </Tooltip>
                             <Link 
                               variant="socialIcons" 
-                              href={(chainId === 5 && `https://goerli.etherscan.io/address/${vault.ownerAddress}`) ||
-                              (chainId === 11155111 && `https://sepolia.etherscan.io/address/${vault.ownerAddress}`) ||
-                                `https://etherscan.io/address/${vault.ownerAddress}`} 
+                              href={`${explorersPerChainid[chainId as keyof typeof explorersPerChainid]}/address/${vault.ownerAddress}`} 
                               target="_blank"
                             >
                               <Image src="./icons/external-link.svg" />

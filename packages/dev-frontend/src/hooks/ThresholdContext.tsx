@@ -118,8 +118,7 @@ function iterateVersions(collaterals: CollateralsVersionedDeployments) {
 export const ThresholdProvider = ({
   children,
   loader,
-  unsupportedNetworkFallback,
-  unsupportedMainnetFallback
+  unsupportedNetworkFallback
 }: ThresholdProviderProps): JSX.Element => {
   const { provider, account: { address }, account: {chainId} } = useWalletConnector();
   const [config, setConfig] = useState<ThresholdConfig>();
@@ -186,24 +185,19 @@ export const ThresholdProvider = ({
             provider.closeWebSocket();
           };
         }
-      }
+      } 
     }
   }, [config, connections, chainId]);
+
+  if (provider.network && !supportedNetworks[provider.network.chainId]) {
+    return <>{unsupportedNetworkFallback!(chainId)}</>;
+  }
 
   if (!config || !provider || !address || !chainId) {
     return <>{loader}</>;
   }
 
-  //This conditional should be habilitated only in test-net version
-  if (config.testnetOnly && chainId === 1) {
-    return <>{unsupportedMainnetFallback}</>;
-  }
-
-  if (!connections || connections.length === 0) {
-    return unsupportedNetworkFallback ? <>{unsupportedNetworkFallback(chainId)}</> : <></>;
-  }
-
-  if (threshold.length !== connections.length) {
+  if (threshold.length !== connections?.length) {
     return <>{loader}</>;
   }
 

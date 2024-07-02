@@ -2,7 +2,7 @@ import { Container, Heading } from "theme-ui";
 
 import { BorrowingFee } from "../components/Dashboard/BorrowingFee";
 import { OpenedVaults } from "../components/Dashboard/OpenedVaults";
-import { ColRatio } from "../components/Dashboard/ColRatio";
+import { TVL } from "../components/Dashboard/TVL";
 import { Chart } from "../components/Dashboard/Chart/Chart";
 import { VaultCard } from "../components/Dashboard/VaultCard";
 import { StabilityPoolCard } from "../components/Dashboard/StabilityPoolCard";
@@ -23,7 +23,7 @@ export const Dashboard = (): JSX.Element => (
           <OpenedVaults />
         </Container>
         <Container variant="oneThird">
-          <ColRatio />
+          <TVL />
         </Container>
         <Container variant="twoThirds">
           <Chart />

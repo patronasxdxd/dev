@@ -39,9 +39,9 @@ export const SideNav = (): JSX.Element => {
         <Box as="nav" sx={{ m: 3, mt: 1, p: 0 }} onClick={() => setIsVisible(false)}>
           <Link to="/">Dashboard</Link>
           <Link to="/borrow">Borrow</Link>
-          <Link to="/earn">Earn</Link>
           <Link to="/redemption">Redemption</Link>
-          <Link to="/risky-vault">Risky Vaults</Link>
+          <Link to="/vaults">Vaults</Link>
+          <Link to="/stability">Stability</Link>
         </Box>
       </Flex>
     </Container>

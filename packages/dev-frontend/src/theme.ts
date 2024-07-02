@@ -576,9 +576,9 @@ const theme: Theme = {
 
       display: ["block", "none"],
     },
-
+    
     infoMessage: {
-      display: "flex",
+      display: "flex",  
       justifyContent: "center",
       m: 3,
       alignItems: "center",

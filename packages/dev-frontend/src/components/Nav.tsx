@@ -4,6 +4,7 @@ import { Icon } from "./Icon";
 
 import { ExternalLinks } from "./ExternalLinks";
 import { UserAccount } from "./UserAccount";
+import { UserNetwork } from "./UserNetwork";
 
 export const Nav = (): JSX.Element => {
   return (
@@ -29,20 +30,21 @@ export const Nav = (): JSX.Element => {
           </Flex>
           Borrow
         </Link>
-        <Link to="/earn">
-          <Icon name="chart-line" />
-          Earn
-        </Link>
         <Link to="/redemption">
           <Icon name="check" />
           Redeem
         </Link>
-        <Link to="/risky-vaults">
-          <Icon name="exclamation-triangle" />
-          Risky Vaults
+        <Link to="/vaults">
+          <Icon name="chart-pie" />
+          Vaults
         </Link>
-        <Flex sx={{ mt:"1.5em", alignSelf: "center", display: ["flex", "none"] }}>
+        <Link to="/stability">
+          <Icon name="chart-line" />
+          Stability
+        </Link>
+        <Flex sx={{ mt:"1.5em", gap: "1.5em", flexDirection: "column", alignSelf: "center", display: ["flex", "none"] }}>
           <UserAccount />
+          <UserNetwork />
         </Flex>
       </Flex>
       <Flex sx={{ justifyContent: "end", flexDirection: "column", flex: 1 }}>

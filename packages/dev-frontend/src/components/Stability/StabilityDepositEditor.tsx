@@ -172,7 +172,7 @@ export const StabilityDepositEditor = ({
           mt: 2
         }}>
           <EditableRow
-            label="Deposit"
+            label="Your deposit"
             inputId="deposit-thusd"
             amount={editedUSD.prettify()}
             maxAmount={maxAmount.toString()}

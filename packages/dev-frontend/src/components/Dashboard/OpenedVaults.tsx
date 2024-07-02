@@ -31,7 +31,7 @@ export const OpenedVaults = ({ variant = "mainCards" }: SystemStatsProps): JSX.E
       <TopCard
         name="Total Opened Vaults" 
         tooltip="The total number of active Vaults in the system." 
-        imgSrc="./icons/opened-vaults.svg"
+        imgSrc="./icons/col-ratio.svg" 
       >
         {Decimal.from(numberOfTroves).prettify(0)}
       </TopCard>
