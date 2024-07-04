@@ -16,7 +16,7 @@ type HeaderProps = {
 export const Header = ({ children }: HeaderProps): JSX.Element => {
   const [colorMode, setColorMode] = useColorMode();
   return (
-    <Container variant="header">
+    <Container variant="header" sx={{ zIndex: "2" }}>
       <Link variant="logo" to="/">
         <GenericIcon imgSrc={colorMode === "dark" || colorMode === "darkGrey" ? "./dark-thresholdusd-logo.svg" : "./light-thresholdusd-logo.svg"} height={logoHeight} />
       </Link>
