@@ -15,7 +15,7 @@ const selector = ({
 export const Alert = (): JSX.Element => {
   const thresholdSelectorStores = useThresholdSelector(selector);
 
-  return <Box sx={{position: "absolute", top: "80px", right: "20px", zIndex: "10", px: 4}}>
+  return <Box sx={{position: "absolute", top: "80px", right: "20px", zIndex: "1", px: 4}}>
     {
       thresholdSelectorStores.map(({collateral, store}, index) => {
         if (store.totalCollateralRatio.lt(Decimal.from(2))) {
