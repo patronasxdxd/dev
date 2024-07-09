@@ -43,7 +43,7 @@ export const UserNetwork = (): JSX.Element => {
       >
         <Flex variant="layout.userAccount">
           <Text as="span" sx={{ fontSize: "0.8rem", fontWeight: "bold" }}>
-            {chains.find((chain: Chain) => chain.id === connectedNetwork?.id)?.label}
+            {chains.find((chain: Chain) => chain.id === connectedNetwork?.id)?.label ?? "Select Network"}
           </Text> 
           <Icon name="caret-down" />
         </Flex>
