@@ -62,7 +62,7 @@ export const ThresholdFrontend = ({ loader }: ThresholdFrontendProps): JSX.Eleme
           {chainId === 1 ? "Ethereum Mainnet" : supportedNetworks[chainId] ?? "this network"}
         </Flex>.
       </Heading>
-      Please switch to BOB or Mainnet.
+      Please switch to Ethereum Mainnet or BOB Mainnet.
     </Flex>
   );
 
