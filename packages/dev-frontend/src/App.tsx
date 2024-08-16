@@ -3,6 +3,7 @@ import injectedModule from '@web3-onboard/injected-wallets'
 import walletConnectModule from '@web3-onboard/walletconnect'
 import coinbaseModule from '@web3-onboard/coinbase'
 import tahoModule from '@web3-onboard/taho'
+import gnosisModule  from '@web3-onboard/gnosis'
 import { Flex, Spinner, Heading, ThemeProvider} from "theme-ui";
 
 import { getConfig } from "./config";
@@ -19,7 +20,7 @@ const wcV2InitOptions = {
   /**
    * Chains required to be supported by all wallets connecting to your DApp
    */
-  requiredChains: [1],
+  requiredChains: [1, 60808],
   /**
    * Defaults to `appMetadata.explore` that is supplied to the web3-onboard init
    * Strongly recommended to provide atleast one URL as it is required by some wallets (i.e. MetaMask)
@@ -32,19 +33,21 @@ const injected = injectedModule();
 const coinbase = coinbaseModule();
 const walletConnect = walletConnectModule(wcV2InitOptions)
 const taho = tahoModule();
+const gnosis = gnosisModule()
 
 const wallets = [
   injected,
   taho,
   coinbase,
-  walletConnect
+  walletConnect,
+  gnosis,
 ]
 
 const publicRpcUrls = {
   '0x1': 'https://cloudflare-eth.com/',
   '0xaa36a7': 'https://sepolia.eth.aragon.network/',
-  '0x6f': "wss://testnet.rpc.gobob.xyz",
-  '0xed88': "wss://rpc.gobob.xyz",
+  '0x6f': "https://testnet.rpc.gobob.xyz/",
+  '0xed88': "https://rpc.gobob.xyz/",
 };
 
 const chains = [
