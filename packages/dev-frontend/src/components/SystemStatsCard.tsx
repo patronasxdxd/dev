@@ -33,7 +33,8 @@ const selector = ({
   pcvBalance,
   symbol,
   bammDeposit,
-  totalCollateralRatio: new Percent(total.collateralRatio(price))
+  totalCollateralRatio: new Percent(total.collateralRatio(price)),
+  loanToValue: new Percent(total.loanToValue(price))
 });
 
 export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemStatsCardProps): JSX.Element => {
@@ -140,6 +141,15 @@ export const SystemStatsCard = ({ variant = "info", IsPriceEditable }: SystemSta
               {collateralStore.store.totalCollateralRatio.prettify()}
             </SystemStat>
           ))}
+          {thresholdSelectorStores.map((collateralStore, index) => (
+            <SystemStat
+              key={index}
+              info={`${ collateralStore.store.symbol } Loan to Value`}
+              tooltip={`The Loan to Value is the ratio of the entire system debt to the value of the entire system collateral at the current ${collateralStore.store.symbol}:USD price. In other words, it's the sum of the debt of all Troves expressed in thUSD, divided by the collateral of all Vaults expressed in USD.`}
+            >
+              {collateralStore.store.loanToValue.prettify()}
+            </SystemStat>
+          ))}          
           {thresholdSelectorStores.map((collateralStore, index) => {
             return collateralStore.store.total.collateralRatioIsBelowCritical(collateralStore.store.price) 
             && (

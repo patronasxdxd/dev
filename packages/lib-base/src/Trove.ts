@@ -447,6 +447,11 @@ export class Trove {
     return this.collateral.mulDiv(price, this.debt);
   }
 
+  /** Calculate the Trove's loan to value ratio at a given price. */
+  loanToValue(price: Decimalish): Decimal {
+    return this.debt.mulDiv(Decimal.ONE, this.collateral.mul(price));
+  }
+
   /**
    * Whether the Trove is undercollateralized at a given price.
    *
