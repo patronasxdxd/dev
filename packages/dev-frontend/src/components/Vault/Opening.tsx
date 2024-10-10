@@ -21,6 +21,7 @@ import { COIN } from "../../utils/constants";
 import { InfoIcon } from "../InfoIcon";
 import { LoadingOverlay } from "../LoadingOverlay";
 import { CollateralRatio } from "./CollateralRatio";
+import { LoanToValue } from "./LoanToValue";
 import { EditableRow, StaticRow } from "./Editor";
 import { ExpensiveVaultChangeWarning, GasEstimationState } from "./ExpensiveVaultChangeWarning";
 import {
@@ -88,6 +89,8 @@ export const Opening = (props: OpeningProps): JSX.Element => {
   const collateralMaxedOut = collateralAmount.eq(maxCollateral);
   const collateralRatio =
     !collateralAmount.isZero && !borrowAmount.isZero ? trove.collateralRatio(price) : undefined;
+  const loanToValue = 
+    !collateralAmount.isZero && !borrowAmount.isZero ? trove.loanToValue(price) : undefined;
 
   const [vaultChange, description] = validateVaultChange(
     EMPTY_VAULT,
@@ -241,6 +244,7 @@ export const Opening = (props: OpeningProps): JSX.Element => {
               />
             }
           />
+          <LoanToValue value={loanToValue} />
           <CollateralRatio value={collateralRatio} />
           {description ?? (
             <ActionDescription title={`You haven't borrowed ${COIN} any yet`}>
