@@ -704,6 +704,7 @@ export class Trove {
     // (undocumented)
     get isEmpty(): boolean;
     isOpenableInRecoveryMode(price: Decimalish): boolean;
+    loanToValue(price: Decimalish): Decimal;
     // (undocumented)
     multiply(multiplier: Decimalish): Trove;
     get netDebt(): Decimal;
