@@ -1,5 +1,0 @@
-{
-  "extends": "../../tsconfig.base.json",
-  "include": ["src", "test", "types", "scripts", "utils", "./hardhat.config.ts"],
-  "files": ["hardhat.config.ts"]
-}
